@@ -935,6 +935,265 @@ Twelve joints, four feet, one centre of mass.
 A standing structure.
 \end{remark}
 
+\begin{definition}[Command field]\label{def:command}
+The \emph{command field} is a distribution $U$ over velocity
+commands $u \in \R^3$ (linear and angular velocity targets).
+The \emph{curriculum} is a filtration of command fields of
+increasing support:
+\[
+  \underbrace{U_0 = \delta_0}_{\text{Stand: zero command}}
+  \;\subset\;
+  \underbrace{U_1 = \mathrm{Uniform}(\mathcal{V})}_
+  {\text{Walk: all feasible velocities}}
+  \;\subset\;
+  \underbrace{U_2 = \rho_{\mathrm{task}}}_
+  {\text{Work: task distribution}}.
+\]
+At phase~$k$, the policy $\pi$ receives $u \sim U_k$ and must
+produce torques $\tau = \pi(o, u)$ such that $|\phi| > 0$
+(\cref{ax:viability}).
+Promotion from phase~$k$ to $k+1$ requires
+$\max|\phi| = \min|C|$ (\cref{thm:flowcut}) at~$U_k$:
+flow-cut duality achieved for the current command field.
+\end{definition}
+
+\begin{definition}[Observation space]\label{def:observation}
+The policy $\pi$ receives a composite observation
+$o = (o_{\mathrm{prop}},\, o_{\mathrm{vis}}) \in \R^{42+d}$:
+\begin{itemize}
+  \item \textbf{Proprioception}
+  $o_{\mathrm{prop}} \in \R^{42}$:
+  body orientation $R \in \mathrm{SO}(3)$ (flattened to $\R^9$),
+  position $p \in \R^3$,
+  angular velocity $\omega \in \R^3$,
+  linear velocity $v \in \R^3$,
+  joint angles $\theta \in \R^{12}$,
+  joint velocities $\dot\theta \in \R^{12}$.
+  Sources: IMU and joint encoders.
+  \item \textbf{Vision}
+  $o_{\mathrm{vis}} = \varphi_{\mathrm{vis}}(I) \in \R^{d}$:
+  the camera image $I$ is rendered by the engine
+  ($\mathcal{E}.\texttt{render}$: $q \to I$, non-differentiable)
+  and encoded by a frozen DINOv2 encoder
+  (ViT-S/14, $d = 384$, pretrained on ImageNet,
+  \emph{not updated} by \cref{alg:loco}).
+  Two walls block the gradient:
+  \[
+    q \;\xrightarrow[\text{no } \nabla]{\;\texttt{render}\;}
+    I \;\xrightarrow[\text{frozen}]{\;\varphi_{\mathrm{vis}}\;}
+    o_{\mathrm{vis}}
+    \;\xrightarrow[\nabla \text{ flows}]{\;\pi\;}
+    \tau.
+  \]
+  Gradients from the contact flow~\eqref{eq:contactflow}
+  propagate through $\pi$ but stop at $\varphi_{\mathrm{vis}}$.
+  The renderer and the encoder are both non-differentiable
+  with respect to the training objective.
+\end{itemize}
+Proprioception tells the robot \emph{where it is}.
+Vision tells the robot \emph{what is there}.
+The policy $\pi(o, u)$ fuses both to produce
+$\tau \in \R^{12}$.
+\end{definition}
+
+\begin{definition}[Soft viability margin]\label{def:soft-viability}
+The hard viability margin
+$|\phi| = \min_t\{x_1(t), \ldots, x_k(t)\}$
+in the \textsc{Evaluate} step is non-differentiable:
+$\nabla \min$ is sparse (only the argmin receives gradient) and
+discontinuous at ties.
+Replace the hard $\min$ with its smooth approximation:
+\[
+  \mathrm{soft\text{-}min}_\beta(x_1, \ldots, x_k)
+  \;=\;
+  -\frac{1}{\beta}\,
+  \log\!\Bigl(\sum_{i=1}^{k} e^{-\beta\, x_i}\Bigr).
+\]
+At $\beta \to \infty$, this recovers the hard $\min$.
+At finite $\beta$, every component $x_i$ receives gradient
+proportional to $e^{-\beta\, x_i}/\sum_j e^{-\beta\, x_j}$:
+a softmax weighting.
+The \emph{soft viability margin} is
+\begin{equation}\label{eq:soft-viability}
+  |\phi|_\beta
+  \;=\;
+  \mathrm{soft\text{-}min}_\beta\,\bigl(
+  \underbrace{h(q_t) - h_{\min}}_{\text{height margin}},\;\;
+  \underbrace{\phi_{\max} - \|R_t - I\|_F}_
+  {\text{orientation margin}}
+  \bigr)_{t=0}^{H}.
+\end{equation}
+The temperature $1/\beta$ controls how many timesteps share the
+gradient.
+Small $\beta$ (warm): all timesteps contribute.
+Large $\beta$ (cold): only the worst timestep contributes.
+\end{definition}
+
+\begin{definition}[Computation core]\label{def:computation-core}
+The policy $\pi$ computes via three primitives at each
+layer $\ell = 1, \ldots, L$:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{\textcolor{water}{Matmul}}:\;
+  $y \leftarrow W_\ell\, z_{\ell-1}$.
+  Transport the activation vector from layer $\ell{-}1$ to~$\ell$.
+  \textsc{Slide}: one step of parallel transport
+  (\cref{rem:gauge}).
+  \item \textbf{\textcolor{water}{Add}}:\;
+  $y \leftarrow y + b_\ell$.
+  Shift the transported vector by the bias.
+  Affine extension of \textsc{Slide}.
+  \item \textbf{\textcolor{knife}{Activate}}:\;
+  $z_\ell \leftarrow \mathrm{ReLU}(y) = \max(0,\, y)$,
+  componentwise.
+  Each neuron either passes its signal ($y_i > 0$, contact)
+  or blocks it ($y_i \leq 0$, no contact)---a binary gate
+  in $O(1)$ time.
+  \textsc{Cut}: the knife at the neuron level.
+\end{enumerate}
+One layer:
+$z_\ell = \textcolor{knife}{\mathrm{ReLU}}\bigl(
+\textcolor{water}{W_\ell\, z_{\ell-1} + b_\ell}\bigr)$.
+The output layer is linear (no gate):
+$\tau = \textcolor{water}{W_L\, z_{L-1} + b_L} \in \R^{12}$.
+The full forward pass (\textsc{Compose}):
+\begin{equation}\label{eq:forward}
+  \tau \;=\; \pi(o)
+  \;=\;
+  \textcolor{water}{A_L} \circ
+  \bigl(\textcolor{knife}{r} \circ
+  \textcolor{water}{A_{L-1}}\bigr)
+  \circ \cdots \circ
+  \bigl(\textcolor{knife}{r} \circ
+  \textcolor{water}{A_1}\bigr)(o),
+\end{equation}
+where $A_\ell(\cdot) = W_\ell\,(\cdot) + b_\ell$ and
+$\textcolor{knife}{r} = \mathrm{ReLU}$.
+
+\textcolor{water}{水} $=$ linear transport ($W, b$).
+\textcolor{knife}{刀} $=$ ReLU gate
+($\max(0, \cdot)$: pass or block).
+ReLU is piecewise linear and runs in real linear time---the
+fastest nonlinearity, meeting the deployment constraint of
+\cref{rem:deployment}.
+\end{definition}
+
+\begin{remark}[The forward pass as path integral]
+\label{rem:path-integral}
+For a given input $o$, each ReLU neuron is either active
+($y_i > 0$: contact) or inactive ($y_i \leq 0$: no contact).
+The \emph{activation pattern}
+$\alpha \in \{0,1\}^{n_1 + \cdots + n_{L-1}}$
+is the contact mode of the network---the neural analogue of the
+contact mode lattice $\{0,1\}^4$ in \cref{rem:standing}.
+
+For a fixed pattern $\alpha$, the network is linear:
+\[
+  \pi_\alpha(o)
+  \;=\;
+  \textcolor{water}{W_L\, D_{L-1}^\alpha\, W_{L-1}\,
+  D_{L-2}^\alpha \cdots D_1^\alpha\, W_1}\; o
+  \;+\; \mathrm{bias},
+\]
+where $D_\ell^\alpha = \mathrm{diag}(\alpha_\ell)$ masks
+inactive neurons.
+Different inputs activate different patterns:
+the input space is partitioned into linear regions
+$\{R_\alpha\}$, each with its own transport map.
+The full forward pass is a path integral over activation
+patterns:
+\[
+  \tau \;=\; \pi(o)
+  \;=\;
+  \sum_{\alpha} \mathbf{1}_{o \in R_\alpha}\;
+  \pi_\alpha(o).
+\]
+Sum over patterns, one active per input: a discrete path integral
+with binary action variable.
+
+Three scales of the same gate:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Micro}: ReLU inside one layer---one neuron,
+  one binary gate
+  ($\textcolor{knife}{刀}$: pass or block).
+  \item \textbf{Trajectory}: $L$ layers composed---one
+  forward pass, one activation pattern $\alpha$, one linear
+  path through the network.
+  \item \textbf{Macro}:
+  $\mathrm{soft\text{-}min}_\beta$ over $N$ rollouts of
+  \cref{alg:loco}---Boltzmann reweighting
+  ($\textcolor{sword}{青冥}$) of physical trajectories,
+  selecting the viable ($|\phi|_\beta > 0$).
+\end{enumerate}
+$\textcolor{knife}{刀}$ at the neuron scale (hard gate).
+$\textcolor{sword}{青冥}$ at the rollout scale (soft gate).
+Contact or no contact, $\{0,1\}$ at every level.
+\end{remark}
+
+\begin{algorithm}[H]
+\caption{Forward pass
+  (\textsc{Compose} of \cref{def:computation-core})}
+\label{alg:forward}
+\begin{algorithmic}[1]
+\Require Weights $\{W_\ell,\, b_\ell\}_{\ell=1}^{L}$
+\Statex
+\Function{\textsc{Forward}}{$o,\, u$}
+  \State $z_0 \leftarrow [o;\; u]$
+    \Comment{\textcolor{water}{水: concatenate input}}
+  \For{$\ell = 1, \ldots, L{-}1$}
+    \State \textcolor{water}{\textsc{Matmul}:}\;
+      $y \leftarrow W_\ell\, z_{\ell-1}$
+      \Comment{\textcolor{water}{水: Slide}}
+    \State \textcolor{water}{\textsc{Add}:}\;
+      $y \leftarrow y + b_\ell$
+      \Comment{\textcolor{water}{水: affine Slide}}
+    \State \textcolor{knife}{\textsc{Activate}:}\;
+      $z_\ell \leftarrow \max(0,\, y)$
+      \Comment{\textcolor{knife}{刀: ReLU (Cut)}}
+  \EndFor
+  \State \textcolor{water}{\textsc{Output}:}\;
+    $\tau \leftarrow W_L\, z_{L-1} + b_L$
+    \Comment{\textcolor{water}{水: Slide (no gate)}}
+  \State \Return $\tau \in \R^{12}$
+    \Comment{saves $\{z_\ell, y_\ell\}$ for \cref{alg:backward}}
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[H]
+\caption{Backward pass
+  (pullback through $\pi$, dual of \cref{alg:forward})}
+\label{alg:backward}
+\begin{algorithmic}[1]
+\Require Saved $\{z_\ell\}_{\ell=0}^{L-1}$,\;
+  $\{y_\ell\}_{\ell=1}^{L-1}$ from \textsc{Forward}
+\Statex
+\Function{\textsc{Backward}}{$\delta\tau$}
+  \Comment{$\delta\tau = \nabla_\tau |\phi|_\beta$ from engine}
+  \State \textcolor{water}{\textsc{Output}${}^T$:}\;
+    $\nabla W_L \leftarrow \delta\tau \cdot z_{L-1}^T$;\;\;
+    $\nabla b_L \leftarrow \delta\tau$
+    \Comment{\textcolor{water}{水: Slide${}^T$}}
+  \State $\delta z \leftarrow W_L^T\, \delta\tau$
+    \Comment{\textcolor{water}{水: pullback}}
+  \For{$\ell = L{-}1, \ldots, 1$}
+    \State \textcolor{knife}{\textsc{Activate}${}^T$:}\;
+      $\delta y \leftarrow \delta z \odot
+      \mathbf{1}_{y_\ell > 0}$
+      \Comment{\textcolor{knife}{刀: ReLU mask (same Cut)}}
+    \State \textcolor{water}{\textsc{Matmul}${}^T$:}\;
+      $\nabla W_\ell \leftarrow
+      \delta y \cdot z_{\ell-1}^T$;\;\;
+      $\nabla b_\ell \leftarrow \delta y$
+      \Comment{\textcolor{water}{水: Slide${}^T$}}
+    \State $\delta z \leftarrow W_\ell^T\, \delta y$
+      \Comment{\textcolor{water}{水: pullback to layer $\ell{-}1$}}
+  \EndFor
+  \State \Return
+    $\{\nabla W_\ell,\, \nabla b_\ell\}_{\ell=1}^{L}$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
 The contact gradient flow~\eqref{eq:contactflow} on the standing
 structure of \cref{rem:standing} yields a complete training recipe.
 \Cref{alg:loco} is self-contained: a roboticist with a MuJoCo
@@ -947,17 +1206,22 @@ shaping and no domain knowledge beyond the file itself.
 \begin{algorithmic}[1]
 \Require Engine $\mathcal{E}$ (MuJoCo);\;
   model (\texttt{go2\_mjx.xml});\;
-  sensors (IMU, joint encoders)
+  sensors (IMU, encoders, camera)
+\Require $\mathcal{D}$ (demonstrations for Work;\;
+  $\varnothing$ for Stand/Walk)
 \Require $\eta$ (learning rate),\;
   $\gamma$ (dissipation),\;
+  $\beta$ (soft-min sharpness),\;
+  $L$ (depth),\; $n$ (width),\;
   $H$ (horizon),\;
   $N$ (eval count)
 \Statex
 \State $G,\; c_{\max},\; \theta_0,\; h
   \leftarrow \texttt{parse}(\mathrm{XML})$
   \Comment{graph, limits, pose, height}
-\State $c(e) \leftarrow c_{\max}(e)/2$ for all $e \in E$
-  \Comment{init capacities}
+\State $\{W_\ell, b_\ell\}_{\ell=1}^{L}
+  \leftarrow \texttt{init}(L,\, n)$
+  \Comment{init $\pi$;\; $c(e_\ell) = \|W_\ell\|_F$}
 \Statex
 \For{\textcolor{sword}{\textbf{phase}} $\in$
   \{Stand\,$(U\!=\!\{0\})$,\;\,
@@ -965,48 +1229,65 @@ shaping and no domain knowledge beyond the file itself.
    Work\,$(U\!=\!\mathrm{task})$\}}
   \Comment{\textcolor{sword}{$\varphi$: curriculum}}
   \Repeat
-    \State $u \sim U$
-      \Comment{sample command for current phase}
+    \State $u \sim U$;\;\;
+      $\{\tau_t^*\} \leftarrow \mathcal{D}(u)$
+      \Comment{command $+$ demo ($\varnothing$ if Stand/Walk)}
     \For{$t = 0, \ldots, H$}
       \Comment{\textcolor{water}{水: rollout}}
-      \State $o_t \leftarrow \mathcal{E}.\texttt{sense}(q_t)$
-        \Comment{IMU + encoders $\to \R^{42}$}
-      \State $\tau_t \leftarrow \pi(o_t,\, u)$
-        \Comment{policy: observation $\to$ torques}
+      \State $o_t \leftarrow (o_{\mathrm{prop}},\,
+        \varphi_{\mathrm{vis}}(I_t))$
+        \Comment{\cref{def:observation}: $\R^{42+d}$}
+      \State $\tau_t \leftarrow \textsc{Forward}(o_t,\, u)$
+        \Comment{\cref{alg:forward}: $\R^{42+d} \to \R^{12}$}
       \State $q_{t+1} \leftarrow \mathcal{E}.\texttt{step}(q_t,\, \tau_t)$
         \Comment{EL dynamics}
     \EndFor
     \State \textcolor{water}{\textsc{Evaluate}:}\;
-      $|\phi| \leftarrow
-      \min_{t}\bigl\{
+      $|\phi|_\beta \leftarrow
+      \mathrm{soft\text{-}min}_\beta\bigl\{
       h(q_t)\!-\!h_{\min},\;\,
-      \phi_{\max}\!-\!\|R_t\!-\!I\|_F\bigr\}$
-      \Comment{\textcolor{water}{水: margin}}
-    \State \textcolor{water}{\textsc{Gradient}:}\;
-      $g \leftarrow
-      \mathcal{E}.\texttt{grad}(|\phi|,\, c)$
-      \Comment{\textcolor{water}{水: MJX autodiff}}
-    \State $c(e) \leftarrow c(e)
-      + \eta\bigl[\textcolor{water}{g_e}
-      - \textcolor{knife}{\gamma\, c(e)}\bigr]$
-      \Comment{Eq.~\eqref{eq:contactflow}}
+      \phi_{\max}\!-\!\|R_t\!-\!I\|_F
+      \bigr\}_{t=0}^{H}$
+      \Comment{\textcolor{water}{水: margin} (\cref{def:soft-viability})}
+    \State $|\phi|_\beta \leftarrow
+      \mathrm{soft\text{-}min}_\beta\bigl(
+      |\phi|_\beta,\;\,
+      \varepsilon\!-\!\|\tau_t\!-\!\tau_t^*\|
+      \bigr)_{t}$
+      \Comment{imitation (\cref{def:task-rkhs});
+      skip if $\mathcal{D}\!=\!\varnothing$}
+    \State \textcolor{water}{\textsc{Pullback}:}\;
+      $\delta\tau \leftarrow
+      \mathcal{E}.\texttt{grad}(|\phi|_\beta,\, \{\tau_t\})$
+      \Comment{\textcolor{water}{水: engine autodiff}}
+    \State \textcolor{water}{\textsc{Backward}:}\;
+      $\{\nabla W,\, \nabla b\} \leftarrow
+      \textsc{Backward}(\delta\tau)$
+      \Comment{\cref{alg:backward}: 水$\leftarrow$ to $\pi$}
+    \State $W_\ell \leftarrow W_\ell
+      + \eta\bigl[\textcolor{water}{\nabla W_\ell}
+      - \textcolor{knife}{\gamma\, W_\ell}\bigr]$;\;\;
+      $b_\ell \leftarrow b_\ell
+      + \eta\,\textcolor{water}{\nabla b_\ell}$
+      \Comment{Eq.~\eqref{eq:contactflow} on $\pi$}
     \State \textcolor{knife}{\textsc{Clamp}:}\;
-      $c(e) \leftarrow \min\bigl\{c(e),\;
-      c_{\max}(e)\bigr\}$
-      \Comment{\textcolor{knife}{刀: enforce limits}}
-    \If{$|\phi| \le 0$}
+      $\|W_\ell\|_F \leftarrow
+      \min\bigl(\|W_\ell\|_F,\;
+      c_{\max}(e_\ell)\bigr)$
+      \Comment{\textcolor{knife}{刀: enforce capacity}}
+    \If{$|\phi|_\beta \le 0$}
       \Comment{robot fell}
       \State \textcolor{sword}{\textsc{Reset}:}\;
         $\mathcal{E}.\texttt{reset}(\theta_0)$;\;\;
-        $c \leftarrow c_{\max}/2$
+        $\{W, b\} \leftarrow \texttt{init}(L, n)$
         \Comment{\textcolor{sword}{$\varphi$: recover}}
     \EndIf
   \Until{$\max|\phi| = \min|C|$ for $N$ consecutive rollouts}
 \EndFor
 \Statex
-\Ensure Trained policy
-  $\pi \colon \R^{42} \to \R^{12}$
-  \Comment{42-dim observation $\to$ 12 joint torques}
+\Ensure Trained weights $\{W_\ell, b_\ell\}$:
+  $\pi = \textsc{Forward}(\cdot;\, W, b)
+  \colon \R^{42+d} \to \R^{12}$
 \end{algorithmic}
 \end{algorithm}
 
@@ -1030,8 +1311,12 @@ Standing pose $\theta_0$
   & XML & \texttt{<keyframe>} (default configuration) \\
 Standing height $h$
   & XML & CoM of default keyframe ($0.312$\,m) \\
-Observation $o \in \R^{42}$
+Proprioception $o_{\mathrm{prop}} \in \R^{42}$
   & Sensors & IMU ($R, \omega, v, p$) + encoders ($\theta, \dot\theta$) \\
+Vision $o_{\mathrm{vis}} \in \R^{d}$
+  & Camera & DINOv2 (frozen ViT, $d = 384$) \\
+Command field $U$ (\cref{def:command})
+  & User & Curriculum: $\delta_0$ / Uniform / task \\
 EL dynamics $M, C, g$
   & Engine & \texttt{mj\_step}: $(q, \dot{q}, \tau) \mapsto \ddot{q}$ \\
 Contact mode $c \in \{0,1\}^4$
@@ -1054,4 +1339,369 @@ Given a MuJoCo engine and a \texttt{.xml} model file, every step of
 The standing structure (\cref{rem:standing}) is read from the file.
 The contact dynamics (\cref{sec:contact}) is computed by the engine.
 The algorithm is the bridge.
+\end{remark}
+
+\begin{remark}[The policy as parallel transport]\label{rem:gauge}
+In \cref{alg:loco}, the policy
+$\pi \colon \R^{42+d} \to \R^{12}$
+maps sensor readings to joint torques (\cref{def:observation}).
+Unfolding $\pi$ as a neural network (\cref{def:neural-exgraph}):
+\[
+  o \;\xrightarrow{\;\textcolor{water}{\sigma_1 \circ W_1}\;}
+  h_1 \;\xrightarrow{\;\textcolor{water}{\sigma_2 \circ W_2}\;}
+  \cdots \;\xrightarrow{\;\textcolor{water}{\sigma_L \circ W_L}\;}
+  \tau.
+\]
+Each arrow is a \textsc{Slide} (\S\ref{sec:calculus}, four operations):
+the $(42\!+\!d)$-dimensional observation flows through $L$ layers,
+each applying $\textcolor{water}{\sigma \circ W}$.
+The composite is \textsc{Compose}: the forward pass.
+
+This is parallel transport on the execution graph.
+The weights $\{W_\ell\}_{\ell=1}^L$ define a \emph{connection}:
+a rule for transporting observations through the network.
+Different weights $=$ different connection.
+Training (the \textcolor{water}{水} steps of \cref{alg:loco})
+searches for the connection under which the transported
+observation produces viable torques: $|\phi| > 0$.
+
+The trained network is a fixed connection on the standing structure.
+The spectral gap $\lambda_1 > 0$ (\cref{thm:massgap}) is its
+stability: small perturbations in observation decay, not amplify.
+\end{remark}
+
+\begin{remark}[Frozen and learned connections]\label{rem:frozen-gauge}
+The observation $o = (o_{\mathrm{prop}},\, o_{\mathrm{vis}})$
+(\cref{def:observation}) passes through \emph{two} connections in
+series:
+\[
+  \underbrace{I_{\mathrm{cam}}
+  \;\xrightarrow{\;\varphi_{\mathrm{vis}}\;}
+  o_{\mathrm{vis}}}_
+  {\text{frozen (DINOv2)}}
+  \;\oplus\;
+  o_{\mathrm{prop}}
+  \;\xrightarrow{\;\pi\;}
+  \tau.
+\]
+The visual encoder $\varphi_{\mathrm{vis}}$ is a \emph{frozen
+connection}: a pretrained ViT whose weights are fixed during
+\cref{alg:loco}. It transports raw pixels into a semantic
+embedding space. The policy $\pi$ is a \emph{learned connection}:
+its weights are updated by the \textcolor{water}{水} steps.
+
+In gauge-theoretic language: $\varphi_{\mathrm{vis}}$ is a
+background gauge field (fixed geometry of the visual fibre bundle),
+while $\pi$ is the dynamical gauge field (trained by the contact
+gradient flow~\eqref{eq:contactflow}).
+The visual encoder sees the terrain; the policy decides what to do
+about it. Two connections, one frozen, one learned.
+\end{remark}
+
+\begin{remark}[Deployment: real-time frequency alignment]
+\label{rem:deployment}
+\Cref{alg:loco} trains in simulated time
+($\Delta t = 0.02$\,s, control rate $50$\,Hz).
+Deployment on real hardware requires the same loop at the same rate
+in \emph{real} time:
+\[
+  \underbrace{o_t \leftarrow \texttt{sense}}_
+  {\text{read sensors}}
+  \;\to\;
+  \underbrace{\tau_t \leftarrow \pi(o_t)}_
+  {\text{evaluate NN}}
+  \;\to\;
+  \underbrace{q_{t+1} \leftarrow \texttt{actuate}(\tau_t)}_
+  {\text{command joints}}
+  \;\leq\; 20\,\text{ms}.
+\]
+The entire sense--compute--act cycle must complete within one
+$\Delta t$. If the policy $\pi$ (the connection of
+\cref{rem:gauge}) takes longer than $20$\,ms to evaluate, the
+real-time constraint is violated: the flow is no longer at the
+trained frequency, and viability is not guaranteed.
+
+This is a viability condition on the computation itself.
+The standing structure (\cref{rem:standing}) specifies the physical
+constraints; the frequency constraint specifies the computational
+one. Both must hold for deployment:
+\[
+  \underbrace{|\phi| > 0}_{\text{physics: do not fall}}
+  \quad\wedge\quad
+  \underbrace{t_{\pi} \leq \Delta t}_
+  {\text{compute: do not lag}}.
+\]
+Time must be real and linear.
+No simulation speedup, no frame drops.
+\end{remark}
+
+\begin{remark}[Annealing $\beta$ as renormalisation group flow]
+\label{rem:rg-annealing}
+The soft-min parameter $\beta$ (\cref{def:soft-viability}) anneals
+with the curriculum (\cref{def:command}):
+\[
+  \text{Stand} \;(\beta \text{ small})
+  \;\longrightarrow\;
+  \text{Walk} \;(\beta \text{ medium})
+  \;\longrightarrow\;
+  \text{Work} \;(\beta \text{ large}).
+\]
+This is a renormalisation group (RG) flow from the ultraviolet
+(UV, smooth, all-timestep gradient) to the infrared (IR, sharp,
+worst-timestep gradient).
+At small $\beta$, the viability margin is a soft average: the
+gradient is dense and the optimisation landscape is smooth---the
+robot learns to stand by distributing information across the
+entire trajectory.
+At large $\beta$, the margin approaches the hard $\min$: the
+gradient concentrates on the single worst timestep---the robot
+learns precise footwork by focusing on the critical instant.
+
+The \textsc{Phase} operator ($\textcolor{sword}{\varphi}$) of the
+calculus drives this flow.
+Each phase transition $U_k \to U_{k+1}$ increases both the command
+support and the sharpness $\beta$.
+The contact gradient flow~\eqref{eq:contactflow} operates at the
+current $\beta$; the curriculum selects the scale.
+UV $\to$ IR: smooth $\to$ sharp, Stand $\to$ Work,
+all-timestep $\to$ worst-timestep.
+\end{remark}
+
+\begin{definition}[Task RKHS (学堂)]\label{def:task-rkhs}
+Let $\mathcal{T}$ be a set of tasks, each observed via a camera
+image $I_\tau$.
+The \emph{task kernel} is
+\begin{equation}\label{eq:task-kernel}
+  k(\tau_1, \tau_2)
+  \;=\;
+  \bigl\langle
+  \varphi_{\mathrm{vis}}(I_{\tau_1}),\;\,
+  \varphi_{\mathrm{vis}}(I_{\tau_2})
+  \bigr\rangle_{\R^d},
+\end{equation}
+the inner product of DINOv2 embeddings
+(\cref{def:observation}, $d = 384$).
+The \emph{task RKHS} $\mathcal{H}_k$ is the reproducing kernel
+Hilbert space induced by $k$: the space of skill functions
+$f \colon \mathcal{T} \to \R^{12}$ with reproducing property
+$f(\tau) = \langle f,\, k(\cdot, \tau) \rangle_{\mathcal{H}_k}$.
+
+A \emph{demonstration} for task $\tau$ is a trajectory
+$\mathcal{D}_\tau = \{(o_t,\, \tau_t^*)\}_{t=0}^{H}$
+of observation--torque pairs, collected from a teacher
+(teleoperation, motion capture, or a reference policy).
+The \emph{task margin} at timestep $t$ is
+\begin{equation}\label{eq:task-margin}
+  m_{\mathrm{task}}(t)
+  \;=\;
+  \varepsilon_{\mathrm{task}}
+  \;-\;
+  \bigl\|\pi(o_t, u) - \tau_t^*\bigr\|,
+\end{equation}
+where $\varepsilon_{\mathrm{task}} > 0$ is the imitation
+tolerance.
+The Work-phase viability margin
+extends~\eqref{eq:soft-viability}:
+\begin{equation}\label{eq:work-margin}
+  |\phi|_\beta^{\mathrm{Work}}
+  \;=\;
+  \mathrm{soft\text{-}min}_\beta\bigl(
+  \underbrace{h(q_t) - h_{\min}}_{\text{height}},\;\;
+  \underbrace{\phi_{\max} - \|R_t - I\|_F}_
+  {\text{orientation}},\;\;
+  \underbrace{m_{\mathrm{task}}(t)}_
+  {\text{imitation}}
+  \bigr)_{t=0}^{H}.
+\end{equation}
+During Stand and Walk, $\mathcal{D}_\tau = \varnothing$ and the
+task term is absent ($e^{-\beta \cdot \infty} = 0$ in the
+soft-min).
+During Work, the demonstration is the teacher, and the kernel
+$k$ provides generalisation: a policy trained on demonstrated
+tasks $\{\tau_i\}$ transfers to a new task $\tau^*$ in proportion
+to $k(\tau^*, \tau_i)$.
+\end{definition}
+
+\begin{remark}[The frozen eye as task metric]
+\label{rem:task-metric}
+The DINOv2 encoder $\varphi_{\mathrm{vis}}$
+(\cref{def:observation}) serves two roles:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Observation}: maps camera images to
+  $o_{\mathrm{vis}} \in \R^d$ for the policy
+  (\cref{alg:forward}).
+  \item \textbf{Task metric}: the kernel
+  $k$~\eqref{eq:task-kernel} defines the geometry of the task
+  space $\mathcal{T}$ (\cref{def:task-rkhs}).
+\end{enumerate}
+One encoder, two roles.
+The differentiation boundary (\cref{rem:frozen-gauge}) is also
+the metric boundary: the fixed geometry on which all tasks are
+measured.
+
+Because DINOv2 is pretrained on real images (ImageNet), the
+kernel $k$ is anchored in reality, not simulation.
+Tasks that look similar in the real world are close in
+$\mathcal{H}_k$.
+This bridges the sim-to-real gap for the Work phase:
+a policy trained on task $\tau_1$ in simulation transfers to
+a visually similar task $\tau_2$ in reality because
+$k(\tau_1, \tau_2)$ is large.
+The school (学堂) generalises through the kernel.
+Demonstrations are lessons; the RKHS norm is the grade;
+deployment is graduation.
+\end{remark}
+
+\begin{remark}[Hyperparameter atlas]\label{rem:hyperparameters}
+\Cref{alg:loco} takes seven scalar hyperparameters.
+They split into two tiers by origin.
+
+\medskip
+\noindent
+\textbf{Tier 1: physics-determined}
+(read from the engine or the task; not free choices).
+
+\smallskip
+{\small
+\begin{center}
+\begin{tabular}{@{}l l p{0.62\textwidth}@{}}
+\toprule
+Symbol & Source & Interpretation \\
+\midrule
+$\gamma$ &
+  \texttt{XML} damping &
+  Dissipation rate (thermodynamic 2nd law of the engine).
+  Read from \texttt{go2\_mjx.xml}. \\
+$H$ &
+  Task duration &
+  Horizon: timesteps per rollout.
+  Typical: $500$--$2000$ (at $\Delta t$ of XML). \\
+$\eta$ &
+  Optimiser &
+  Learning rate: the Planck scale of the update---the smallest
+  step that moves $W$ meaningfully.
+  $\eta \ll \gamma^{-1}$ ensures
+  the flow~\eqref{eq:contactflow} is contractive.
+  Typical: $10^{-4}$--$10^{-3}$. \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\smallskip
+$\gamma$ is not a free knob: it is the physical dissipation
+already baked into the simulator's contact model.
+$H$ is set by the task (how long one episode lasts).
+$\eta$ is fundamental: it converts the gradient $\nabla W$ into a
+finite displacement, analogous to the Planck time converting
+energy into frequency ($E = \hbar\omega$).
+Too large $\Rightarrow$ instability; too small $\Rightarrow$
+the agent never moves.
+
+\medskip
+\noindent
+\textbf{Tier 2: user settings}
+(design choices; tune on validation rollouts).
+
+\smallskip
+{\small
+\begin{center}
+\begin{tabular}{@{}l l p{0.62\textwidth}@{}}
+\toprule
+Symbol & Role & Interpretation \\
+\midrule
+$L$ &
+  Depth &
+  Number of layers in $\pi$ (\cref{alg:forward}).
+  Typical: $3$--$5$. \\
+$n$ &
+  Width &
+  Hidden dimension per layer.
+  Typical: $128$--$512$. \\
+$N$ &
+  Eval count &
+  Rollouts per gradient step (sample size for
+  $|\phi|_\beta$).
+  Typical: $64$--$4096$. \\
+$\beta$ &
+  Sharpness &
+  RG scale (\cref{rem:rg-annealing}): small $\beta$ $=$ UV
+  (smooth, exploratory); large $\beta$ $=$ IR (sharp,
+  exploitative).
+  Typical: $1$--$100$. \\
+$\varepsilon_{\mathrm{task}}$ &
+  Imitation &
+  Task margin (\cref{def:task-rkhs});
+  $\varnothing$ during Stand/Walk.
+  Task-dependent. \\
+\bottomrule
+\end{tabular}
+\end{center}
+}
+
+\smallskip
+The tier boundary is sharp: Tier~1 parameters are
+\emph{measured} (from the XML, the task, or the optimiser's
+stability condition); Tier~2 parameters are
+\emph{chosen} (by the user, validated by rollout performance).
+A practitioner who changes the robot changes Tier~1;
+a practitioner who changes the architecture changes Tier~2.
+Neither tier crosses into the other.
+\end{remark}
+
+\begin{remark}[\textcolor{caution}{No tricks needed}]
+\label{rem:no-tricks}
+\Cref{alg:loco} is gradient descent through a differentiable
+simulator.  That is all.  We collect no replay buffer, fit no
+value function, clip no surrogate objective, aggregate no
+datasets.  Specifically:
+
+\begin{itemize}[leftmargin=*]
+\item \textcolor{caution}{\textbf{DAgger}} (Dataset Aggregation)
+  fixes distribution shift: the policy at training time sees
+  states it would not visit at test time.
+  Here there is no shift---every rollout in \cref{alg:loco}
+  starts from $\theta_0$ and runs the \emph{current} $\pi$
+  through the engine.
+  The training distribution \emph{is} the deployment
+  distribution at every iteration.
+  No aggregation needed.
+
+\item \textcolor{caution}{\textbf{PPO}} (Proximal Policy
+  Optimisation) is a sum of heuristics.
+  Strip them one by one:
+  \begin{enumerate}[label=(\roman*)]
+    \item \emph{Surrogate objective} $\to$ unnecessary:
+      MJX gives $\nabla_\tau |\phi|_\beta$ exactly
+      (\textsc{Pullback}, \cref{alg:loco}).
+      No need to approximate the gradient via a clipped ratio.
+    \item \emph{Value baseline} $\to$ unnecessary:
+      $|\phi|_\beta$ is computed per-rollout, not estimated
+      by a learned $V(s)$.
+    \item \emph{Clipping} $\to$ unnecessary:
+      exact gradients do not explode;
+      the capacity clamp (\textsc{Clamp}, \cref{alg:loco})
+      bounds $\|W_\ell\|_F$ directly.
+    \item \emph{Entropy bonus} $\to$ unnecessary:
+      command sampling $u \sim U$ provides exploration;
+      $\beta$-annealing (\cref{rem:rg-annealing}) controls
+      the sharpness schedule.
+  \end{enumerate}
+  What remains after stripping?
+  Gradient descent with dissipation ($\gamma\, W$).
+  That is \cref{alg:loco}.
+
+\item \textcolor{caution}{\textbf{REINFORCE}} / score-function
+  estimators: high variance because they differentiate through
+  $\log \pi$ instead of through the dynamics.
+  MJX differentiates through the dynamics.
+  Variance $\to$ zero (up to finite $N$).
+\end{itemize}
+
+The pattern: every ``trick'' in model-free RL is a patch for a
+missing gradient.
+A differentiable engine provides the gradient.
+The patches become unnecessary.
+\Cref{alg:loco} is not a new algorithm---it is what remains when
+you \textcolor{caution}{delete the patches}.
 \end{remark}
