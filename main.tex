@@ -1,0 +1,720 @@
+\documentclass[11pt]{article}
+
+% ── Packages ──────────────────────────────────────────────
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+% ── Theorem environments ──────────────────────────────────
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{axiom}[theorem]{Axiom}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% ── Macros ────────────────────────────────────────────────
+\newcommand{\Viab}{\mathrm{Viab}}
+\newcommand{\Umax}{U_{\max}}
+\newcommand{\Ur}{U_r}
+\newcommand{\Obs}{\mathcal{O}}
+\newcommand{\R}{\mathbb{R}}
+
+\title{The Knife Is the Mean:\\
+An Agentic Theory of Viability Maintenance}
+\author{Jianghan Zhang\\
+\texttt{Jianghan.Zhang.gr@dartmouth.edu}\\
+Dartmouth College}
+\date{February 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We develop an agentic theory of viability maintenance in systems with a
+principal agent (the \emph{king}) whose survival is governed by a single
+axiom: the existence of a viable path to infinity. Under this axiom, we
+derive a structural criterion---the \emph{knife}---that classifies any
+resource as a threat based on two conditions: autonomous actuation and
+observability. We prove that the knife is not an intrinsic property of a
+resource but a \emph{phase function} determined by the system's mean
+field. We establish three main results: (1)~a binary lifecycle theorem
+(every knife is either relinquished or eliminated), (2)~a fixed-point
+impossibility (no third path exists), and (3)~an unconstrained power
+paradox (maximizing control forces maximizing elimination). The
+framework is validated against Chinese imperial history (475~BCE--1644~CE)
+and extended to the Atlantic triangular trade, the structure of
+ideological hatred, parasitic network topologies, and militarism.
+The central thesis is that the knife is the mean: the critical threshold
+separating tools from threats is determined by the system's average
+autonomous actuation level, making viability maintenance a mean-field
+phenomenon.
+\end{abstract}
+
+% ══════════════════════════════════════════════════════════
+\section{Introduction}\label{sec:intro}
+% ══════════════════════════════════════════════════════════
+
+Consider a system with $n$ agents $a_1, \ldots, a_n$, each possessing a
+control set $U_i$ that determines what actions they can take
+independently. One agent---the \emph{principal agent} or
+\emph{king}---holds maximal authority: $U = \Umax$. The king's sole
+objective is survival, formalized as the existence of a viable path from
+every reachable state to infinity.
+
+This paper asks: \emph{what structural features of the system force the
+king to eliminate other agents?} The answer turns out to be a two-condition
+criterion we call the \emph{knife}. A resource is a knife if and only if
+it can actuate independently of the king \emph{and} the king can observe
+it. This criterion is not chosen---it is the unique logical consequence
+of the viability axiom in a multi-agent environment.
+
+The framework yields several results that are surprising in their
+precision. The lifecycle of every knife is binary: it is either
+voluntarily relinquished (path~(a)) or forcibly eliminated (path~(b)).
+There is no third option---attempting to ``prove your knife is not a
+knife'' is a fixed-point impossibility. Unconstrained power is not
+freedom but a perpetual elimination machine: the more control the king
+has, the more knives he must cut.
+
+The central thesis of this paper is that the knife is the
+\emph{mean field} of the system. The threshold separating tools from
+threats is not absolute but statistical: it is determined by the average
+autonomous actuation level across all agents. When the system's mean
+field shifts (e.g., from wartime to peacetime), the same resource
+changes classification without any change in its physical properties.
+This makes viability maintenance a mean-field phenomenon: the king does
+not respond to individual threats but to deviations from the system mean.
+
+We validate the framework against two millennia of Chinese imperial
+history, where the viability axiom operated with unusual clarity due to
+the concentration of sovereignty in a single agent. The framework
+correctly classifies the fates of historical figures---Han~Xin (knife,
+eliminated), Xiao~He (half-knife, blunted), Zhang~Liang (not a knife,
+survived)---and explains structural phenomena such as the Qin unification
+as a graph-theoretic optimization. Extensions to the Atlantic slave trade,
+the structure of ideological hatred, parasitic network topologies, and
+militarism demonstrate that the framework applies beyond its original
+historical domain.
+
+\paragraph{Organization.}
+\Cref{sec:framework} introduces the viability axiom, the knife
+definition, and the phase transition.
+\Cref{sec:results} presents the main theorems.
+\Cref{sec:meanfield} develops the mean-field interpretation.
+\Cref{sec:applications} applies the framework to historical and
+contemporary systems.
+\Cref{sec:discussion} discusses the domain of applicability and the
+dynamics of the population (the ``water'').
+
+% ══════════════════════════════════════════════════════════
+\section{The Framework}\label{sec:framework}
+% ══════════════════════════════════════════════════════════
+
+\subsection{The viability axiom}\label{sec:axiom}
+
+Let $S$ denote the state space, $U$ the control set of the principal
+agent, and $K \subset S$ the \emph{viability kernel}---the set of states
+in which the king retains supreme authority:
+\[
+  K = \bigl\{\, s \in S \;:\; \text{the king retains supreme authority}
+  \,\bigr\}.
+\]
+
+\begin{axiom}[Viability]\label{ax:viability}
+For every state $s \in S$, there exists a viable path
+$\gamma: [0, \infty) \to K$ with $\gamma(0) = s$:
+\[
+  \forall\, s \in S,\quad
+  \exists\;\gamma: s \to \infty
+  \quad\text{such that}\quad
+  \gamma(t) \in \Viab(K) \;\;\forall\, t \geq 0.
+\]
+\end{axiom}
+
+When $U = \Umax$, the control set is full and this path is
+mathematically guaranteed to exist. The question is: \emph{what can
+break it?}
+
+In a multi-agent system with agents $a_1, \ldots, a_n$, each having
+control set $U_i$, the answer is unique: an actuator whose output can
+push the king's state out of $\Viab(K)$, and which can execute
+\emph{independently of the king}. If the actuator's execution must pass
+through the king, the king can intercept. If it can bypass the king, the
+king's $\Umax$ cannot react in time.
+
+\begin{remark}[Scope]\label{rem:scope}
+This paper presents a compressed model of the topology of execution
+capability under the viability axiom. It deliberately ignores culture,
+personality, economics, and moral narrative in exchange for a testable
+structural criterion. Historical cases are used to validate the
+criterion's discriminating power, not to claim the criterion exhausts
+history.
+\end{remark}
+
+\subsection{The knife}\label{sec:knife}
+
+\begin{definition}[Knife]\label{def:knife}
+A resource $r$ is a \emph{knife} if it satisfies two conditions:
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Autonomous actuation.} The resource can operate
+  independently of the king. Formally, there exists an action
+  $a \in \Ur$ such that the execution function $f_r$ satisfies
+  \[
+    f_r(s, a) \notin K
+    \quad\text{and}\quad
+    a \text{ does not require the king's authorization.}
+  \]
+  \item \textbf{Observability.} The king's detection function $\Obs$
+  can observe $r$ and its execution capability:
+  $r \in \mathrm{Im}(\Obs)$.
+\end{enumerate}
+\end{definition}
+
+The classification is exhaustive:
+\begin{itemize}
+  \item Condition~(1) not satisfied: \textbf{not a knife}. (Zhang
+  Liang's strategic counsel---a pure function that cannot execute
+  itself.)
+  \item Condition~(2) not satisfied: \textbf{hidden knife}. (More
+  dangerous, but outside the king's strategy space. Unobservable
+  $=$ indefensible $=$ system noise.)
+  \item Both satisfied: \textbf{knife}.
+\end{itemize}
+
+\begin{remark}[Intent is irrelevant]\label{rem:intent}
+The criterion tests \emph{capability}, not \emph{intention}. The king
+detects whether you \emph{can} act, not whether you \emph{want to}.
+Loyalty does not enter the criterion.
+\end{remark}
+
+\begin{remark}[Logical necessity]\label{rem:necessity}
+These two conditions are not chosen by the modeler. They are the unique
+logical consequence of the viability axiom $+$ unconstrained power $+$
+multi-agent environment.
+\end{remark}
+
+\subsection{Phase transition}\label{sec:phase}
+
+The knife is a \emph{phase function}, not an intrinsic property.
+
+\begin{proposition}[Phase-dependent labeling]\label{prop:phase}
+The same resource $r$ receives different labels under different system
+phases $\varphi$:
+\[
+  \mathrm{Label}(r, \varphi) =
+  \begin{cases}
+    \textbf{tool} & \text{if } \varphi = \text{wartime (king needs }
+    r\text{'s actuation),} \\
+    \textbf{knife} & \text{if } \varphi = \text{peacetime (king no
+    longer needs } r\text{, but } r \text{ persists).}
+  \end{cases}
+\]
+The phase transition does not change the physical properties of $r$.
+It changes the king's objective function $J(s, \varphi)$.
+\end{proposition}
+
+\begin{proof}
+In wartime, the king's objective $J_{\mathrm{war}}$ includes terms
+where $r$'s actuation has positive utility. In peacetime,
+$J_{\mathrm{peace}}$ optimizes for long-term survival
+($\exists\;\text{path to } \infty$), and the same actuation becomes a
+boundary threat on $\Viab(K)$. The resource $r$ is unchanged;
+the labeling function $\mathrm{Label}(r, \varphi)$ is what shifts.
+\end{proof}
+
+\subsection{The cut vertex principle}\label{sec:cutvertex}
+
+\begin{definition}[Cut vertex]\label{def:cutvertex}
+In the execution graph $G = (V, E)$ of the system, a vertex
+$v \in V$ is a \emph{cut vertex} if $G \setminus \{v\}$ is
+disconnected. An agent who is a cut vertex controls all execution
+chains: removing them disconnects the system.
+\end{definition}
+
+\begin{theorem}[Cut vertex $\neq$ maximum actuator]\label{thm:cutvertex}
+The optimal survival strategy for the king is to be a cut vertex, not
+the maximum actuator. That is, the king maximizes viability by
+ensuring all execution chains pass through him, rather than by
+maximizing his own actuation.
+\end{theorem}
+
+\begin{proof}
+A maximum actuator $v^*$ with $\|U_{v^*}\| = \max_i \|U_i\|$
+suffers from three structural defects:
+\begin{enumerate}[label=(\roman*)]
+  \item \emph{Non-scalability}: a single actuator cannot cover the
+  full state space simultaneously.
+  \item \emph{Single point of failure}: $\Viab(K)$ depends entirely
+  on $v^*$'s performance; one failure collapses the system.
+  \item \emph{Self-referential paradox}: if the king \emph{is} the
+  knife (the strongest autonomous actuator), he cannot perform
+  viability maintenance on himself.
+\end{enumerate}
+A cut vertex $v_c$ with $\|U_{v_c}\| \approx 0$ but routing
+authority over all chains avoids all three: the system is scalable
+(add more actuators), fault-tolerant (one actuator's failure does
+not disconnect the graph), and the king is structurally distinct
+from the knives he must manage.
+\end{proof}
+
+\begin{example}[Liu Bang vs.\ Xiang Yu]\label{ex:liubang}
+Xiang Yu was the strongest actuator in the late Qin system
+(\emph{Shiji}: ``he could lift a bronze tripod''). His strategy:
+$U = \Umax$ through personal combat. Liu Bang had near-zero
+personal actuation but made himself the cut vertex of the execution
+graph: Han Xin's armies needed Liu Bang's legitimacy, Xiao He's
+administration needed his authorization, Zhang Liang's counsel
+needed him to listen.
+
+After the phase transition (founding of the Han dynasty), Liu Bang
+executed precise viability maintenance: killed Han Xin (knife),
+imprisoned then released Xiao He (blunted half-knife), left Zhang
+Liang alone (not a knife). Xiang Yu, the maximum actuator, died at
+Gaixia---a single actuator cannot cover the full state space.
+\end{example}
+
+% ══════════════════════════════════════════════════════════
+\section{Main Results}\label{sec:results}
+% ══════════════════════════════════════════════════════════
+
+\subsection{The binary lifecycle}\label{sec:lifecycle}
+
+\begin{theorem}[Binary fate]\label{thm:lifecycle}
+Every knife has exactly two possible outcomes after phase transition:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Relinquish}: the holder voluntarily sets
+  $\Ur \to \varnothing$.
+  \item \textbf{Elimination}: the king forces removal via
+  $u^* \in \Umax$.
+\end{enumerate}
+There is no path~(c).
+\end{theorem}
+
+\begin{proof}
+The knife criterion is $\Ur \neq \varnothing \;\wedge\;
+r \in \mathrm{Im}(\Obs)$. To exit this classification, at least
+one condition must fail. Condition~(2) is controlled by the king
+(he can always look); only condition~(1) can be changed by the
+holder. Setting $\Ur \to \varnothing$ is path~(a). If the holder
+does not, the king must act (viability axiom), which is path~(b).
+The classification is exhaustive.
+\end{proof}
+
+\begin{remark}[Han Xin's error]\label{rem:hanxin}
+The proverb ``when the cunning hare is killed, the hunting dog is
+cooked'' (\emph{Shiji}, Huaiyin Hou) conflates three structurally
+distinct resources: the \emph{bow} ($\Ur = \varnothing$, tool,
+``stored'' not destroyed), the \emph{dog} ($\Ur \neq \varnothing$,
+actuator, ``cooked''), and the \emph{advisor} (pure function, no
+actuation---Zhang Liang survived). Han Xin quoted the answer but did
+not parse its fine structure.
+\end{remark}
+
+\subsection{The fixed-point impossibility}\label{sec:fixedpoint}
+
+\begin{theorem}[No path (c)]\label{thm:fixedpoint}
+There is no strategy that ``proves your knife is not a knife'' while
+retaining the knife. Formally, the map
+$T: \Ur \mapsto \varnothing$ conditional on $\Ur \neq \varnothing$
+has no fixed point other than $\Ur = \varnothing$.
+\end{theorem}
+
+\begin{proof}
+Case~1: $\Ur = \varnothing$. Then $r$ is not a knife, and no proof
+is needed. $\Ur = \varnothing$ is self-certifying.
+Case~2: $\Ur \neq \varnothing$. Then no speech act can set
+$\Ur \to \varnothing$---the criterion tests physical capability,
+not narrative. The only way to satisfy $T(U_r) = \varnothing$ is to
+physically relinquish $\Ur$, which is path~(a).
+
+Moreover, the act of proving is itself a signal: ``I need to prove
+my knife is not a knife'' implies suspicion, i.e., $r$ is already
+in $\mathrm{Im}(\Obs)$. The proof attempt reinforces condition~(2).
+\end{proof}
+
+\subsection{The unconstrained power paradox}\label{sec:paradox}
+
+\begin{theorem}[Perpetual elimination]\label{thm:paradox}
+$U = \Umax$ implies the king must preemptively eliminate all
+observable autonomous actuators:
+\[
+  U = \Umax \implies
+  \text{the king must preempt all } r \text{ with }
+  \Ur \neq \varnothing \;\wedge\; r \in \mathrm{Im}(\Obs).
+\]
+The more unconstrained the king, the more knives he must cut.
+\end{theorem}
+
+\begin{proof}
+$\Umax$ means the king tolerates \emph{no} autonomous actuation:
+every such actuator is a boundary threat on $\Viab(K)$. A
+constrained system (constitutional regime) institutionalizes knife
+dynamics by installing breakpoints. An unconstrained system must
+handle every knife individually. The paradox: unconstrained power is
+not freedom---it is a perpetual elimination machine.
+\end{proof}
+
+\begin{proposition}[Imperfect observability accelerates the paradox]
+\label{prop:imperfect}
+If the detection function $\Obs$ is imperfect, the paradox
+\emph{intensifies}, not weakens.
+\end{proposition}
+
+\begin{proof}
+Three steps:
+\begin{enumerate}[label=(\roman*)]
+  \item The king knows $\Obs$ is imperfect. Hidden knives
+  (\cref{def:knife}, condition~(2) unsatisfied) are more dangerous
+  than visible ones. The king has motive, capability, and survival
+  obligation to expand $\Obs$.
+  \item Expanding $\Obs$ does not ``discover existing knives''---it
+  \emph{creates new ones} definitionally. A hidden actuator
+  satisfying condition~(1) but not~(2) enters $\mathrm{Im}(\Obs)$
+  upon expansion $\to$ both conditions now satisfied $\to$ it
+  \emph{becomes} a knife. The knife exists in the intersection
+  $\Ur \neq \varnothing \;\wedge\; r \in \mathrm{Im}(\Obs)$;
+  expanding $\Obs$ expands this intersection.
+  \item Positive feedback:
+  $U \to \Umax \implies \Obs \to \Obs_{\max}$.
+  The expansion of $\Obs$ is the \emph{adjoint process} of the
+  expansion of $U$. The elimination machine has two engines: the
+  cutting arm ($U$) and the detecting eye ($\Obs$). They co-drive.
+\end{enumerate}
+Historical instances: Qin's mutual surveillance law
+(\emph{lianzuo}), Han's gold-purity test (\emph{zhuo\-jin
+duo\-jue}), Ming's three-layer nested monitoring (Jinyiwei
+$\to$ Dongchang $\to$ Xichang---each layer itself becomes a new
+knife).
+\end{proof}
+
+\begin{proposition}[$\Umax$ as attractor]\label{prop:attractor}
+$\Umax$ is an attractor, not a state. No historical king achieves
+literal $\Umax$, but the system dynamics point toward it:
+\[
+  \frac{d}{dt}\|U(t) - \Umax\| \leq 0
+  \implies
+  \frac{d}{dt}\bigl(\text{detected knives}\bigr) \geq 0.
+\]
+The paradox describes the trajectory, not the endpoint.
+\end{proposition}
+
+\subsection{The breakpoint criterion}\label{sec:breakpoint}
+
+\begin{corollary}[Breakpoint strategy]\label{cor:breakpoint}
+A resource $r$ is not a knife if and only if its execution chain
+contains at least one node controlled by the king (a
+\emph{breakpoint}):
+\[
+  r \text{ is not a knife}
+  \iff
+  \exists\; v \in \text{execution chain of } r
+  \;\text{s.t.}\; v \text{ is controlled by the king.}
+\]
+\end{corollary}
+
+\begin{proof}
+If a breakpoint exists, $r$ cannot execute independently
+(condition~(1) fails), so $r$ is not a knife. If no breakpoint
+exists, the execution chain is closed and $r$ can actuate
+autonomously, satisfying condition~(1). Combined with
+observability, this makes $r$ a knife.
+\end{proof}
+
+\begin{remark}[Modern translation]\label{rem:modern}
+Zhang Liang's strategy: ``ensure your capability always requires a
+component you do not control.'' Liu Bang's strategy: ``become the
+mandatory node in every execution chain.''
+\end{remark}
+
+% ══════════════════════════════════════════════════════════
+\section{The Knife as Mean Field}\label{sec:meanfield}
+% ══════════════════════════════════════════════════════════
+
+The preceding sections defined the knife as a two-condition criterion
+applied to individual resources. We now argue that the knife is
+fundamentally a \emph{mean-field} phenomenon.
+
+\subsection{The mean actuation field}
+
+Consider $n$ agents with autonomous actuation levels
+$\|U_1\|, \ldots, \|U_n\|$. Define the \emph{mean actuation field}:
+\[
+  \bar{U} = \frac{1}{n} \sum_{i=1}^{n} \|U_i\|.
+\]
+
+The king's detection function $\Obs$ has finite bandwidth: it cannot
+monitor all agents with equal precision. In practice, $\Obs$ triggers
+on agents whose actuation \emph{deviates significantly from the mean}:
+\[
+  r \in \mathrm{Im}(\Obs)
+  \iff
+  \|U_r\| - \bar{U} > \tau(\Obs),
+\]
+where $\tau(\Obs)$ is the detection threshold determined by the king's
+observational capacity.
+
+\begin{theorem}[The knife is the mean]\label{thm:meanfield}
+The knife threshold is determined by the system's mean actuation field.
+A resource $r$ is a knife if and only if:
+\begin{enumerate}[label=(\roman*)]
+  \item $\Ur \neq \varnothing$ (autonomous actuation exists), and
+  \item $\|U_r\|$ exceeds the mean field by more than the detection
+  threshold: $\|U_r\| > \bar{U} + \tau(\Obs)$.
+\end{enumerate}
+Consequently, the phase transition (\cref{prop:phase}) is a shift in
+$\bar{U}$, not a change in any individual $\Ur$.
+\end{theorem}
+
+\begin{proof}
+In wartime, many agents have high actuation (soldiers, generals,
+administrators). The mean $\bar{U}$ is high, so the threshold
+$\bar{U} + \tau(\Obs)$ is high: few agents exceed it. Most actuation
+is \emph{expected} and therefore not flagged.
+
+At the phase transition (end of war), most agents' actuation drops to
+near zero (soldiers demobilize, wartime powers expire). The mean
+$\bar{U}$ drops sharply. But agents who \emph{retain} wartime-level
+actuation now exceed the new, lower threshold. The same $\|U_r\|$
+that was below the wartime mean is now above the peacetime mean.
+
+The knife is not created by the agent---it is created by the shift in
+the mean. The agent's actuation is unchanged; the system's reference
+frame has moved.
+\end{proof}
+
+\begin{remark}[Connection to statistical mechanics]\label{rem:statmech}
+This is precisely the mechanism of a phase transition in statistical
+mechanics: the order parameter (mean actuation) shifts, and
+configurations that were typical in one phase become atypical---and
+therefore detectable---in the other. The viability axiom plays the role
+of the free energy: the system minimizes threats to $\Viab(K)$, just
+as a thermodynamic system minimizes free energy.
+\end{remark}
+
+\subsection{Implications}
+
+The mean-field interpretation resolves several puzzles:
+
+\begin{enumerate}
+  \item \textbf{Why identical resources have different fates.} Two
+  generals with identical $\Ur$ can have opposite outcomes if one
+  operates in a high-$\bar{U}$ environment (wartime coalition) and
+  the other in a low-$\bar{U}$ environment (consolidated empire).
+  The knife is relative to the mean.
+
+  \item \textbf{Why the paradox is a feedback loop.} As the king
+  eliminates knives, $\bar{U}$ drops, lowering the threshold. Agents
+  who were below the old threshold now exceed the new one $\to$ new
+  knives $\to$ more elimination $\to$ lower $\bar{U}$ $\to$ \ldots
+  This is the positive feedback of \cref{thm:paradox}, now given a
+  statistical mechanism.
+
+  \item \textbf{Why self-blunting works.} Xiao He's strategy
+  (self-corruption to signal low $\|U_r\|$) works precisely because
+  the detection function triggers on \emph{deviation from the mean}.
+  By visibly degrading his own actuation, Xiao He pulled $\|U_r\|$
+  toward $\bar{U}$, falling below the detection threshold.
+
+  \item \textbf{Why breakpoints prevent knives.} A breakpoint in the
+  execution chain reduces $\|U_r\|$ (effective autonomous actuation)
+  to below $\bar{U} + \tau(\Obs)$, since the king controls part of
+  the chain. The resource remains capable but not \emph{independently}
+  capable---it does not deviate from the mean.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════
+\section{Applications}\label{sec:applications}
+% ══════════════════════════════════════════════════════════
+
+\subsection{The Qin operating system}\label{sec:qin}
+
+The Qin state (356--207~BCE) provides the first complete engineering
+implementation of the framework. Shang Yang's reforms map directly to
+the formal vocabulary:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Policy} & \textbf{Framework equivalent} & \textbf{Effect} \\
+\midrule
+Abolish well-field system & Remove aristocratic $\Ur$ & Nobles
+$\to$ commoners \\
+Military merit ranks & $\Ur$ controlled by state (revocable) &
+Actuation is rented, not owned \\
+Mutual surveillance (\emph{lianzuo}) & Maximize $\Obs$ &
+Neighbors $=$ distributed sensor network \\
+Standardize weights \& measures & Increase $\Obs$ precision &
+Higher observational resolution \\
+Commandery-county system & All chains through capital &
+King $=$ cut vertex \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Qin's unification of the six states was a graph-theoretic outcome:
+Qin's star graph (center $=$ Xianyang, $O(1)$ dispatch) vs.\ the six
+states' mesh graphs (multiple aristocratic centers, $O(n^2)$
+coordination cost).
+
+Shang Yang's fate validates the framework's robustness: his reform
+network itself became an autonomous actuator ($\Ur \neq \varnothing$).
+The system eliminated its creator---not irony, but a robustness test.
+A knife-detection system that exempts its designer is not robust.
+
+\subsection{The dollar as knife precursor}\label{sec:dollar}
+
+Money is not a knife (it cannot actuate independently). Money is a
+\emph{knife precursor}: a universal voucher exchangeable for
+$\Ur \neq \varnothing$ on the market. The king detects not how much
+money you have, but whether your money has \emph{already converted}
+into autonomous execution capability.
+
+Fan Li (5th century BCE) understood this: he accumulated fortunes
+three times and dispersed them twice, ensuring $\Ur$ never crossed
+the threshold. Shen Wansan and Hu Xueyan did not---their wealth
+formed closed execution loops, and they were eliminated.
+
+\subsection{Further applications}
+
+The framework extends to systems beyond Chinese imperial history.
+Full treatments appear in the extended version:
+
+\begin{itemize}
+  \item \textbf{The Atlantic triangular trade}: a knife with no cut
+  vertex (mesh topology), where abolition was relabeling (path~(c)),
+  not structural change (path~(a)).
+
+  \item \textbf{The structure of ideological hatred}: the corruption
+  of the detection function from $\Obs_{\mathrm{structural}}$
+  (tests $\Ur$) to $\Obs_{\mathrm{identity}}$ (tests group
+  membership). Hate is the operator that performs this corruption.
+
+  \item \textbf{The parasitic cut vertex}: a topological dual of the
+  productive cut vertex, where the routing function extracts rather
+  than builds. Self-terminating by the framework's own logic.
+
+  \item \textbf{Militarism and the net-positive ask}: when the pawn
+  ($\Ur = \varnothing$) captures the cut vertex, producing the
+  structural type of militarism. Willy Brandt's Kniefall (1970) as
+  an existence proof of path~(a), with a comparative analysis of
+  Germany (path~(a)) vs.\ Japan (path~(c), 80 years and counting).
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════
+\section{Discussion}\label{sec:discussion}
+% ══════════════════════════════════════════════════════════
+
+\subsection{Domain of applicability}\label{sec:domain}
+
+The framework is a compressed model that degrades under the following
+conditions:
+
+\begin{center}
+\begin{tabular}{@{}llp{5cm}@{}}
+\toprule
+\textbf{Condition} & \textbf{Failure mode} & \textbf{Example} \\
+\midrule
+Diffuse sovereignty & No unique king; cut vertex undefined & Late
+European feudalism, early federalism \\
+External shock dominance & $\Viab(K)$ broken by external force;
+internal knife dynamics secondary & Mongol invasion, colonialism \\
+Rapid ideological reshaping & $K$ itself is changing faster than
+actuation reshapes state & Religious revolution, ideology \\
+High-latency detection & $\Obs$ too slow; phase transition completes
+before detection & Large empire frontiers \\
+Universal $\Ur \approx \varnothing$ & No knives; framework trivial &
+Extremely atomized societies \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The framework applies to systems with a unique sovereign, differentiated
+agent capabilities, and sufficient observability. This covers the main
+interval of Chinese imperial history but not all political forms.
+
+\subsection{The water dynamics}\label{sec:water}
+
+The viability chain has three levels:
+\[
+  \text{King}
+  \xrightarrow{\text{needs}}
+  \text{Pawn}
+  \xrightarrow{\text{needs}}
+  \text{Water}
+\]
+where \emph{water} denotes the population's aggregate resources. When
+water $= 0$ (the population has nothing left to lose), the pawn becomes
+a knife: $\Ur$ transitions from $\varnothing$ to $\neq \varnothing$
+because the pawn's action space collapses to $\{$submit, rebel$\}$---a
+binary with no intermediate states.
+
+This is the content of the \emph{Du Mu Theorem} (from \emph{A Fang
+Gong Fu}, 825~CE): ``It was not the Qin who destroyed the six states,
+but the six states themselves; it was not the world that destroyed Qin,
+but Qin itself.'' In our language: $\text{water} = 0 \implies
+\text{pawn} \to \text{knife} \implies \text{king absorbed}$.
+
+The population's resources are not a political choice but a viability
+constraint. ``Water can carry the boat, and water can capsize the
+boat'' is not a metaphor---it is a viability theorem.
+
+% ══════════════════════════════════════════════════════════
+\section{Conclusion}\label{sec:conclusion}
+% ══════════════════════════════════════════════════════════
+
+We have presented an agentic theory of viability maintenance built on a
+single axiom (the existence of a viable path to infinity) and a
+two-condition criterion (the knife). The framework produces three main
+theorems (binary lifecycle, fixed-point impossibility, unconstrained
+power paradox) and a central interpretive result: the knife is the mean
+field.
+
+The knife is not an intrinsic property of a resource. It is a
+statistical deviation from the system's mean autonomous actuation,
+made visible by the detection function and made dangerous by the
+viability axiom. Phase transitions shift the mean, not the individual.
+The king responds to the mean, not to intent.
+
+This reframing connects viability maintenance to mean-field theory in
+statistical mechanics, where phase transitions are driven by shifts in
+the order parameter rather than changes in individual configurations.
+The viability axiom plays the role of free energy minimization; the
+knife plays the role of the critical fluctuation.
+
+Two millennia of Chinese imperial history validate the framework with
+unusual clarity. The same structure appears---with instructive
+breaks---in the Atlantic slave trade, ideological hatred, parasitic
+network topologies, and militarism. The framework's failure conditions
+(\cref{sec:domain}) are as informative as its successes: they delineate
+the boundary between systems where the viability axiom operates cleanly
+and systems where it is dominated by other dynamics.
+
+The knife is the mean. Viability maintenance is a mean-field phenomenon.
+The theory is agentic because the agents---not their intentions, not
+their narratives, not their moral qualities, but their structural
+positions in the execution graph---determine the outcome.
+
+\begin{thebibliography}{9}
+\bibitem{aubin} J.-P.~Aubin, \emph{Viability Theory}, Birkh\"auser,
+1991.
+\bibitem{shiji} Sima Qian, \emph{Shiji} (Records of the Grand
+Historian), c.~94~BCE.
+\bibitem{dumu} Du Mu, \emph{A Fang Gong Fu} (Rhapsody on the Epang
+Palace), 825~CE.
+\bibitem{diestel} R.~Diestel, \emph{Graph Theory}, 5th ed., Springer,
+2017.
+\end{thebibliography}
+
+\end{document}
