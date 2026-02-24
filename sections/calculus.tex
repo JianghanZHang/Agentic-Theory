@@ -767,3 +767,291 @@ the Cheeger bound.
 
 A trained network with $\lambda_1 > 0$ has a mass gap. It survives.
 \end{remark}
+
+\subsection{Contact dynamics}\label{sec:contact}
+
+The training paradigm (\cref{def:training-algo}) is not a gradient
+flow. It is a \emph{contact gradient flow}: gradient descent plus a
+dissipation term supplied by the knife. This distinction is the
+difference between symplectic mechanics (energy conserved) and contact
+mechanics (energy dissipates). The knife is the dissipation.
+
+\begin{definition}[Contact structure on the capacity space]
+\label{def:contact}
+Let $\mathcal{C} = \R_{\geq 0}^{|E|}$ be the space of capacity
+assignments on the execution graph $G$ (\cref{def:exgraph}).
+The \emph{extended capacity space} is $\mathcal{C} \times \R$, with
+coordinates $(c, s)$ where $s = |\phi|(c)$ is the max-flow value.
+The \emph{contact $1$-form} is
+\[
+  \alpha \;=\; ds \;-\; \sum_{e \in E}
+  \frac{\partial|\phi|}{\partial c(e)}\, dc(e).
+\]
+The kernel $\ker\alpha$ is the constraint surface: infinitesimal
+changes in capacity that are consistent with flow conservation.
+\end{definition}
+
+\begin{definition}[Knife dissipation]\label{def:dissipation}
+The \emph{knife function} $\gamma \colon E \to \R_{\geq 0}$ is
+\[
+  \gamma(e) \;=\;
+  \begin{cases}
+    \gamma_0 & c(e) > \bar{c} + \tau
+    \quad\text{(\cref{thm:meanfield})}, \\
+    0 & \text{otherwise},
+  \end{cases}
+\]
+where $\gamma_0 > 0$ is the dissipation rate. Weight decay ($L_2$
+regularisation) is the special case $\gamma(e) = \lambda$ for all $e$.
+\end{definition}
+
+\begin{definition}[Contact gradient flow]\label{def:contactflow}
+The \emph{contact gradient flow} on $(\mathcal{C} \times \R, \alpha)$
+is
+\begin{equation}\label{eq:contactflow}
+  \frac{dc(e)}{dt}
+  \;=\;
+  \underbrace{\frac{\partial|\phi|}{\partial c(e)}}_
+  {\textcolor{water}{\text{水: gradient}}}
+  \;-\;
+  \underbrace{\gamma(e)\, c(e)}_
+  {\textcolor{knife}{\text{刀: dissipation}}}.
+\end{equation}
+The first term increases capacity along the flow gradient (backward
+\textsc{Slide}, step~4 of \cref{def:training-algo}). The second term
+decreases capacity on flagged edges (knife detection + \textsc{Cut},
+steps~6--7). SGD with weight decay is this equation discretised with
+$\gamma(e) = \lambda$.
+\end{definition}
+
+\begin{theorem}[Contact Euler--Lagrange equation]
+\label{thm:contactEL}
+At equilibrium of the contact gradient flow~\eqref{eq:contactflow}:
+\begin{equation}\label{eq:contactEL}
+  \frac{\partial|\phi|}{\partial c(e)}
+  \;=\;
+  \gamma(e)\, c(e)
+  \qquad \forall\, e \in E.
+\end{equation}
+This is the \emph{contact Euler--Lagrange equation} of the training
+paradigm.
+\end{theorem}
+
+\begin{proof}
+Set $dc/dt = 0$ in~\eqref{eq:contactflow}.
+\end{proof}
+
+\begin{corollary}[Binary lifecycle from contact dynamics]
+\label{cor:contact-lifecycle}
+Let $e \in E$ be a bypass edge with $c(e) > \bar{c} + \tau$.
+Then $\gamma(e) = \gamma_0 > 0$, so~\eqref{eq:contactEL} requires
+$\partial|\phi|/\partial c(e) = \gamma_0\, c(e) > 0$: the edge must
+carry flow proportional to its capacity.
+If the edge does \emph{not} carry proportional flow
+($\partial|\phi|/\partial c(e) < \gamma_0\, c(e)$), then
+$dc(e)/dt < 0$ and the capacity decays to zero.
+This is \cref{thm:lifecycle} derived from the contact flow:
+every bypass edge either justifies its capacity or loses it.
+\end{corollary}
+
+\begin{remark}[Du Mu as contact collapse]\label{rem:contact-dumu}
+Du Mu's theorem (\cref{thm:dumu}) is the regime $\gamma(e) \to \infty$
+for all $e$: maximum dissipation.
+The contact flow~\eqref{eq:contactflow} drives all capacities to zero
+regardless of the gradient. The system freezes:
+$c \to 0$, $|\phi| \to 0$, $\Gamma = \varnothing$.
+In contact-geometric language, the Reeb vector field dominates the
+Hamiltonian vector field, and the flow collapses onto the zero section.
+\end{remark}
+
+\begin{remark}[Contact structure and the three colours]
+\label{rem:contact-colours}
+The contact flow~\eqref{eq:contactflow} is a competition between two
+terms:
+\begin{itemize}
+  \item $\textcolor{water}{\partial|\phi|/\partial c(e)}$: the gradient
+  pushes capacity \emph{up} (水, flow).
+  \item $\textcolor{knife}{\gamma(e)\,c(e)}$: the knife pushes capacity
+  \emph{down} (刀, dissipation).
+\end{itemize}
+The equilibrium~\eqref{eq:contactEL} is their balance.
+\textsc{Phase} ($\textcolor{sword}{\varphi}$, cyan) changes the
+contact structure itself: a regime change shifts $\gamma$, $\bar{c}$,
+and $\tau$, altering the equilibrium.
+The contact $1$-form $\alpha$ encodes all three:
+$\textcolor{water}{\text{水}}$ in the gradient,
+$\textcolor{knife}{\text{刀}}$ in the dissipation,
+$\textcolor{sword}{\text{青冥}}$ in the form itself.
+\end{remark}
+
+\begin{remark}[Stability]\label{rem:contact-stability}
+The spectral gap $\lambda_1 > 0$ (\cref{thm:massgap}) is the
+stability condition of the contact equilibrium~\eqref{eq:contactEL}.
+Linearising the contact flow around the equilibrium, the eigenvalues
+of the linearised system are bounded below by $\lambda_1$: small
+perturbations in capacity decay at rate $\geq \lambda_1$.
+The mass gap is the stability margin of the contact Euler--Lagrange
+equation.
+\end{remark}
+
+\begin{remark}[The standing structure]\label{rem:standing}
+A quadruped robot instantiates the execution graph physically:
+$12$ joints (edges, capacity $=$ torque $\times$ range),
+$4$ feet (terminal nodes, ground contact),
+$1$ torso centre of mass (the king $\kappa$).
+The viability condition (\cref{ax:viability}): the centre of mass
+lies within the support polygon of grounded feet.
+
+The support is the \emph{contact mode combinatoric} and the
+\emph{constraints}---that is all:
+\begin{itemize}
+  \item \textbf{Mode lattice.}
+  Each foot is grounded ($1$) or lifted ($0$), giving a contact mode
+  $c \in \{0,1\}^4$ with $|\mathcal{C}| = 16$ modes.
+  The support polygon exists when $|c| \geq 3$.
+  \item \textbf{Constraints} (Unitree Go2, MuJoCo Menagerie).
+  Joint limits: ab/ad $\in [-0.863,\, 0.863]$\,rad,
+  hip $\in [-1.047,\, 3.490]$\,rad,
+  knee $\in [-2.697,\, {-0.837}]$\,rad.
+  Torque: $[23.7,\; 23.7,\; 35.55]$\,Nm.
+  Velocity: $21.0$\,rad/s per joint.
+  Standing height: $0.312$\,m.
+  These are the capacity bounds $c(e) \leq c_{\max}(e)$ of the
+  execution graph.
+\end{itemize}
+In any command space~$U$ and any gravitational field~$g$, the same
+graph supports viability.
+\emph{Do anything---or go with the flow---as long as a viable path
+exists---anywhere.}
+
+The tripod gait is redundancy in the min-cut: three feet grounded,
+one moving, so the support polygon persists even during locomotion.
+The contact dynamics of \cref{sec:contact} is here literal: the
+contact $1$-form~$\alpha$ encodes the foot--ground interface, and
+the contact gradient flow~\eqref{eq:contactflow} governs joint
+torque allocation.
+
+Twelve joints, four feet, one centre of mass.
+A standing structure.
+\end{remark}
+
+The contact gradient flow~\eqref{eq:contactflow} on the standing
+structure of \cref{rem:standing} yields a complete training recipe.
+\Cref{alg:loco} is self-contained: a roboticist with a MuJoCo
+engine and a robot XML file can execute it directly, with no reward
+shaping and no domain knowledge beyond the file itself.
+
+\begin{algorithm}[H]
+\caption{Contact-dynamics training for quadruped locomotion}
+\label{alg:loco}
+\begin{algorithmic}[1]
+\Require Engine $\mathcal{E}$ (MuJoCo);\;
+  model (\texttt{go2\_mjx.xml});\;
+  sensors (IMU, joint encoders)
+\Require $\eta$ (learning rate),\;
+  $\gamma$ (dissipation),\;
+  $H$ (horizon),\;
+  $N$ (eval count)
+\Statex
+\State $G,\; c_{\max},\; \theta_0,\; h
+  \leftarrow \texttt{parse}(\mathrm{XML})$
+  \Comment{graph, limits, pose, height}
+\State $c(e) \leftarrow c_{\max}(e)/2$ for all $e \in E$
+  \Comment{init capacities}
+\Statex
+\For{\textcolor{sword}{\textbf{phase}} $\in$
+  \{Stand\,$(U\!=\!\{0\})$,\;\,
+   Walk\,$(U\!=\!\mathrm{Unif})$,\;\,
+   Work\,$(U\!=\!\mathrm{task})$\}}
+  \Comment{\textcolor{sword}{$\varphi$: curriculum}}
+  \Repeat
+    \State $u \sim U$
+      \Comment{sample command for current phase}
+    \For{$t = 0, \ldots, H$}
+      \Comment{\textcolor{water}{水: rollout}}
+      \State $o_t \leftarrow \mathcal{E}.\texttt{sense}(q_t)$
+        \Comment{IMU + encoders $\to \R^{42}$}
+      \State $\tau_t \leftarrow \pi(o_t,\, u)$
+        \Comment{policy: observation $\to$ torques}
+      \State $q_{t+1} \leftarrow \mathcal{E}.\texttt{step}(q_t,\, \tau_t)$
+        \Comment{EL dynamics}
+    \EndFor
+    \State \textcolor{water}{\textsc{Evaluate}:}\;
+      $|\phi| \leftarrow
+      \min_{t}\bigl\{
+      h(q_t)\!-\!h_{\min},\;\,
+      \phi_{\max}\!-\!\|R_t\!-\!I\|_F\bigr\}$
+      \Comment{\textcolor{water}{水: margin}}
+    \State \textcolor{water}{\textsc{Gradient}:}\;
+      $g \leftarrow
+      \mathcal{E}.\texttt{grad}(|\phi|,\, c)$
+      \Comment{\textcolor{water}{水: MJX autodiff}}
+    \State $c(e) \leftarrow c(e)
+      + \eta\bigl[\textcolor{water}{g_e}
+      - \textcolor{knife}{\gamma\, c(e)}\bigr]$
+      \Comment{Eq.~\eqref{eq:contactflow}}
+    \State \textcolor{knife}{\textsc{Clamp}:}\;
+      $c(e) \leftarrow \min\bigl\{c(e),\;
+      c_{\max}(e)\bigr\}$
+      \Comment{\textcolor{knife}{刀: enforce limits}}
+    \If{$|\phi| \le 0$}
+      \Comment{robot fell}
+      \State \textcolor{sword}{\textsc{Reset}:}\;
+        $\mathcal{E}.\texttt{reset}(\theta_0)$;\;\;
+        $c \leftarrow c_{\max}/2$
+        \Comment{\textcolor{sword}{$\varphi$: recover}}
+    \EndIf
+  \Until{$\max|\phi| = \min|C|$ for $N$ consecutive rollouts}
+\EndFor
+\Statex
+\Ensure Trained policy
+  $\pi \colon \R^{42} \to \R^{12}$
+  \Comment{42-dim observation $\to$ 12 joint torques}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Validation chain: MuJoCo $+$ \texttt{go2\_mjx.xml}
+$\Rightarrow$ trained policy]
+\label{rem:validation-chain}
+Every input to \cref{alg:loco} is extracted from two artifacts:
+a physics engine (MuJoCo) and a robot model file
+(\texttt{go2\_mjx.xml}, MuJoCo Menagerie).
+No additional assumptions.
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Algorithm input} & \textbf{Source} & \textbf{Extraction} \\
+\midrule
+Graph $G$ (12 edges, 4 terminals)
+  & XML & Joint topology (\texttt{<body>}/\texttt{<joint>}) \\
+Capacity bounds $c_{\max}(e)$
+  & XML & \texttt{<joint range>}, \texttt{<actuator ctrlrange>} \\
+Standing pose $\theta_0$
+  & XML & \texttt{<keyframe>} (default configuration) \\
+Standing height $h$
+  & XML & CoM of default keyframe ($0.312$\,m) \\
+Observation $o \in \R^{42}$
+  & Sensors & IMU ($R, \omega, v, p$) + encoders ($\theta, \dot\theta$) \\
+EL dynamics $M, C, g$
+  & Engine & \texttt{mj\_step}: $(q, \dot{q}, \tau) \mapsto \ddot{q}$ \\
+Contact mode $c \in \{0,1\}^4$
+  & Engine & \texttt{mj\_contact}: foot--ground detection \\
+Gradient $\partial|\phi|/\partial c(e)$
+  & Engine & MJX autodiff (JAX backend) \\
+Reset to standing
+  & Engine & \texttt{mj\_resetData} \\
+\bottomrule
+\end{tabular}
+\end{center}
+No reward shaping. No domain knowledge beyond what the XML file
+contains. The viability axiom (\cref{ax:viability}) is the only
+objective: $|\phi| > 0$ (do not fall). The knife
+(\cref{def:dissipation}) is the only regulariser:
+$\gamma(e) \cdot c(e)$ (do not exceed limits).
+
+Given a MuJoCo engine and a \texttt{.xml} model file, every step of
+\cref{alg:loco} is mechanically executable.
+The standing structure (\cref{rem:standing}) is read from the file.
+The contact dynamics (\cref{sec:contact}) is computed by the engine.
+The algorithm is the bridge.
+\end{remark}
