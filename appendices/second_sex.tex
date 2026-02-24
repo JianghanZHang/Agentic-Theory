@@ -1,0 +1,202 @@
+\section{第二性 --- The Other as Phase Function}\label{app:secondsex}
+
+Simone de Beauvoir's thesis in \emph{Le Deuxi\`eme Sexe}~\cite{beauvoir}
+can be stated in three sentences.
+One is not born a woman; one becomes one.
+The category ``woman'' is not a biological fact but a relational
+position: the \emph{Other} defined against a \emph{Subject}.
+The boundary between Subject and Other is not intrinsic---it is a
+phase function, a mean-field threshold identical in structure to
+\cref{thm:meanfield}.
+
+\subsection{蔡文姬}
+
+蔡文姬 (Cai Wenji, c.\ 177--250~CE) was the daughter of 蔡邕 (Cai Yong),
+one of the greatest scholars of the Eastern Han.
+She was captured by the 匈奴 (Xiongnu) during the chaos following
+Dong Zhuo's destruction of Luoyang, and lived among them for twelve
+years, bearing two sons to the Xiongnu chieftain 左贤王.
+In 208~CE, 曹操 (Cao Cao)---who had studied under 蔡邕---ransomed her
+back to the Han court.
+She was forced to leave her sons behind and was remarried to 董祀
+(Dong Si).
+
+At every stage of her life, 蔡文姬's identity is defined relationally:
+she is 蔡邕's daughter, 左贤王's captive wife, 曹操's cultural
+project, 董祀's wife.
+The Subject changes; she remains the Other.
+Her own voice---her literary genius---exists in the gap.
+
+\subsection{The mapping}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Beauvoir} & \textbf{蔡文姬} & \textbf{胡笳十八拍} \\
+\midrule
+他者 (Other)       & defined relationally          & depicted as object \\
+内在性 (Immanence) & captivity, body               & content: grief \\
+超越性 (Transcendence) & literary genius            & the poem itself \\
+主体 (Subject)     & 蔡邕\,/\,左贤王\,/\,曹操      & painter\,/\,viewer \\
+永恒女性 (Myth)    & 才女 trope                     & scroll paintings \\
+Knife $=$ mean     & exchange threshold             & Subject/Other boundary \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{The eighteen beats}
+
+胡笳十八拍 (Eighteen Songs of a Nomad Flute)~\cite{liushang} is
+traditionally attributed to 蔡文姬, though the text was composed by
+Liu Shang (刘商) in the Tang dynasty (c.~773~CE), writing in her voice.
+Each 拍 (beat) is a poem-song documenting a stage of her captivity
+and return.
+\Cref{fig:eighteen} traces the narrative arc: the fraction of each
+beat devoted to transcendence (voice, creation, agency) versus
+immanence (being acted upon, grief, objecthood).
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=0.85]
+  % ── Data: transcendence fractions ──
+  % 拍: 1     2     3     4     5     6     7     8     9
+  %     0.20  0.10  0.05  0.15  0.25  0.35  0.30  0.60  0.55
+  % 拍: 10    11    12    13    14    15    16    17    18
+  %     0.40  0.50  0.15  0.30  0.40  0.35  0.20  0.45  0.70
+
+  \def\barw{0.55}
+  \def\barh{5.0}
+  \def\gap{0.22}
+  \def\tvals{{0.20, 0.10, 0.05, 0.15, 0.25, 0.35,
+              0.30, 0.60, 0.55, 0.40, 0.50, 0.15,
+              0.30, 0.40, 0.35, 0.20, 0.45, 0.70}}
+
+  % ── Y-axis labels ──
+  \node[rotate=90, anchor=south, font=\small] at (-0.9, \barh)
+    {超越 (transcendence)};
+  \node[rotate=90, anchor=north, font=\small] at (-0.9, 0)
+    {内在 (immanence)};
+
+  % ── Draw 18 bars ──
+  \foreach \i in {0,...,17} {
+    \pgfmathsetmacro{\x}{\i*(\barw+\gap)}
+    \pgfmathsetmacro{\tv}{\tvals[\i]}
+    \pgfmathsetmacro{\splitY}{\tv*\barh}
+    % Bottom: immanence (knife colour)
+    \fill[knife!20] (\x, 0) rectangle (\x+\barw, \splitY);
+    % Top: transcendence (water colour)
+    \fill[water!20] (\x, \splitY) rectangle (\x+\barw, \barh);
+    % Border
+    \draw[black!40, thin] (\x, 0) rectangle (\x+\barw, \barh);
+    % Split line
+    \draw[black!60, thin] (\x, \splitY) -- (\x+\barw, \splitY);
+    % 拍 number below
+    \pgfmathtruncatemacro{\paiNum}{\i+1}
+    \node[below, font=\tiny] at (\x+\barw/2, 0) {\paiNum};
+  }
+
+  % ── Melody curve through split points ──
+  \draw[black!70, very thick, smooth, tension=0.5]
+    plot coordinates {
+      ({0*(\barw+\gap)+\barw/2},  {0.20*\barh})
+      ({1*(\barw+\gap)+\barw/2},  {0.10*\barh})
+      ({2*(\barw+\gap)+\barw/2},  {0.05*\barh})
+      ({3*(\barw+\gap)+\barw/2},  {0.15*\barh})
+      ({4*(\barw+\gap)+\barw/2},  {0.25*\barh})
+      ({5*(\barw+\gap)+\barw/2},  {0.35*\barh})
+      ({6*(\barw+\gap)+\barw/2},  {0.30*\barh})
+      ({7*(\barw+\gap)+\barw/2},  {0.60*\barh})
+      ({8*(\barw+\gap)+\barw/2},  {0.55*\barh})
+      ({9*(\barw+\gap)+\barw/2},  {0.40*\barh})
+      ({10*(\barw+\gap)+\barw/2}, {0.50*\barh})
+      ({11*(\barw+\gap)+\barw/2}, {0.15*\barh})
+      ({12*(\barw+\gap)+\barw/2}, {0.30*\barh})
+      ({13*(\barw+\gap)+\barw/2}, {0.40*\barh})
+      ({14*(\barw+\gap)+\barw/2}, {0.35*\barh})
+      ({15*(\barw+\gap)+\barw/2}, {0.20*\barh})
+      ({16*(\barw+\gap)+\barw/2}, {0.45*\barh})
+      ({17*(\barw+\gap)+\barw/2}, {0.70*\barh})
+    };
+
+  % ── Annotations above key 拍 ──
+  \node[above, font=\scriptsize, knife] at
+    ({2*(\barw+\gap)+\barw/2}, \barh) {掠};
+  \node[above, font=\scriptsize, water] at
+    ({7*(\barw+\gap)+\barw/2}, \barh) {闻笳};
+  \node[above, font=\scriptsize, knife] at
+    ({11*(\barw+\gap)+\barw/2}, \barh) {别子};
+  \node[above, font=\scriptsize, caution] at
+    ({15*(\barw+\gap)+\barw/2}, \barh) {嫁};
+  \node[above, font=\scriptsize, water] at
+    ({17*(\barw+\gap)+\barw/2}, \barh) {恨};
+
+  % ── Phase braces below ──
+  % Phase I: 离 (拍 1--3, indices 0--2)
+  \draw[decorate, decoration={brace, mirror, amplitude=5pt}]
+    ({0*(\barw+\gap)}, -0.5) -- ({2*(\barw+\gap)+\barw}, -0.5)
+    node[midway, below=6pt, font=\small] {I\;离};
+  % Phase II: 居 (拍 4--12, indices 3--11)
+  \draw[decorate, decoration={brace, mirror, amplitude=5pt}]
+    ({3*(\barw+\gap)}, -0.5) -- ({11*(\barw+\gap)+\barw}, -0.5)
+    node[midway, below=6pt, font=\small] {II\;居};
+  % Phase III: 归 (拍 13--18, indices 12--17)
+  \draw[decorate, decoration={brace, mirror, amplitude=5pt}]
+    ({12*(\barw+\gap)}, -0.5) -- ({17*(\barw+\gap)+\barw}, -0.5)
+    node[midway, below=6pt, font=\small] {III\;归};
+\end{tikzpicture}
+\caption{The eighteen beats as narrative arc.
+  Bottom (\textcolor{knife}{red}): immanence.
+  Top (\textcolor{water}{blue}): transcendence.
+  The melody line traces the Subject/Other boundary---the knife as
+  phase function (\cref{thm:meanfield}).}
+\label{fig:eighteen}
+\end{figure}
+
+\subsection{The cycle}
+
+The narrative arc reveals a cycle:
+Other $\to$ Voice $\to$ Re-objectification $\to$ Myth $\to$ Other.
+
+拍~3 (掠, the capture) is the nadir: transcendence fraction 0.05.
+蔡文姬 is pure object, pure immanence---a body seized as war spoil.
+
+拍~8 (闻笳, hearing the nomad flute) is the inflection point:
+transcendence fraction 0.60.
+The 胡笳 sound triggers memory and creation; for the first time, the
+Other speaks \emph{as} Subject.
+
+拍~12 (别子, farewell to sons) is a collapse: transcendence fraction
+0.15.
+The voice that rose in 拍~8 is crushed by the biological fact of
+motherhood weaponised as immanence.
+She must leave her children to return to a court that values her as
+蔡邕's daughter, not as herself.
+
+拍~16 (嫁, remarriage to 董祀) is the second exchange: transcendence
+fraction 0.20.
+曹操's ``rescue'' completes the circuit: she is transferred from one
+Subject (左贤王) to another (董祀), with 曹操 as broker.
+The rescue \emph{is} the second capture.
+
+拍~18 (恨, the final beat) resolves at transcendence fraction 0.70---the
+highest in the entire poem.
+The voice persists.
+The poem outlives every Subject who defined her.
+
+\subsection{The second sex is the mean}
+
+The 18th~拍 does not liberate 蔡文姬.
+曹操's project was cultural recovery, not emancipation.
+The scroll paintings that follow~\cite{rorex}---depicting her as the
+archetype of the 才女 (talented woman)---complete the mythification
+that Beauvoir identifies as the final mechanism of Othering:
+the \emph{eternal feminine} absorbs the individual voice into a trope.
+
+But the structure is identical to \cref{thm:meanfield}.
+The boundary between Subject and Other is not a property of 蔡文姬; it
+is a phase function of the system's mean field.
+When the mean actuation level shifts (war $\to$ peace, capture $\to$
+ransom), the \emph{same person} crosses the threshold.
+
+The second sex \emph{is} the mean.
