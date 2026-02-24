@@ -58,19 +58,19 @@ configuration 横刀立马 (``horizontal knife, standing horse''):
   \node[white, font=\small, rotate=90] at (0.5,2) {马超};
   \fill[black!35] (3.05,1.05) rectangle (3.95,2.95);
   \node[white, font=\small, rotate=90] at (3.5,2) {黄忠};
-  % Soldiers (1×1)
+  % Soldiers (1×1) — numbered ①②③④ to match 棋谱 (\cref{app:solution})
   \fill[black!12] (1.05,1.05) rectangle (1.95,1.95);
   \draw[black!50] (1.05,1.05) rectangle (1.95,1.95);
-  \node[font=\small] at (1.5,1.5) {兵};
+  \node[font=\small] at (1.5,1.5) {\textcircled{\scriptsize 1}};
   \fill[black!12] (2.05,1.05) rectangle (2.95,1.95);
   \draw[black!50] (2.05,1.05) rectangle (2.95,1.95);
-  \node[font=\small] at (2.5,1.5) {兵};
+  \node[font=\small] at (2.5,1.5) {\textcircled{\scriptsize 2}};
   \fill[black!12] (0.05,0.05) rectangle (0.95,0.95);
   \draw[black!50] (0.05,0.05) rectangle (0.95,0.95);
-  \node[font=\small] at (0.5,0.5) {兵};
+  \node[font=\small] at (0.5,0.5) {\textcircled{\scriptsize 3}};
   \fill[black!12] (3.05,0.05) rectangle (3.95,0.95);
   \draw[black!50] (3.05,0.05) rectangle (3.95,0.95);
-  \node[font=\small] at (3.5,0.5) {兵};
+  \node[font=\small] at (3.5,0.5) {\textcircled{\scriptsize 4}};
   % Free cells
   \draw[densely dashed, black!40] (1.05,0.05) rectangle (1.95,0.95);
   \node[black!50, font=\footnotesize] at (1.5,0.5) {$\varnothing$};
@@ -86,7 +86,7 @@ configuration 横刀立马 (``horizontal knife, standing horse''):
     \node at (5.15,3.75) {将: generals $(1{\times}2)$};
     \fill[black!12] (4.7,3.15) rectangle (5.0,3.35);
     \draw[black!50] (4.7,3.15) rectangle (5.0,3.35);
-    \node at (5.15,3.25) {卒: soldiers $(1{\times}1)$};
+    \node at (5.15,3.25) {卒: \textcircled{\tiny 1}--\textcircled{\tiny 4}\ $(1{\times}1)$};
     \draw[densely dashed, black!40] (4.7,2.65) rectangle (5.0,2.85);
     \node at (5.15,2.75) {$\varnothing$: free cells (水)};
   \end{scope}
@@ -95,7 +95,7 @@ configuration 横刀立马 (``horizontal knife, standing horse''):
 
 Ten pieces ($4 + 2 + 4 \cdot 2 + 4 \cdot 1 = 18$ cells), two free
 cells, exit at bottom center (width~$2$). The minimum solution requires
-81~moves.
+81~步 (steps; \cref{def:bu}).
 
 \subsection{The isomorphism}
 
@@ -149,7 +149,7 @@ agent---\cref{thm:cutvertex} made physical.
 \emph{Water.} When a piece slides left, the free cell moves right.
 The free cell flows in the opposite direction---it \emph{is} the water
 (\cref{def:water}). Each move transfers the free cell to a new
-position, enabling the next move. The 81-move solution is a flow of
+position, enabling the next move. The 81-步 solution is a flow of
 water through 81 channels.
 \end{proof}
 
@@ -178,4 +178,429 @@ The puzzle's $2 \times 2$ classification is formalized in
 \cref{def:fangyuan}. The four statics classify every cell and piece;
 the dynamics---刀 (boundary/cut) and 水 (flow/transport)---emerge from
 the $2 \times 2$ as the calculus operations of \cref{sec:calculus}.
+\end{remark}
+
+\subsection{The experiment}\label{sec:kpc}
+
+\Cref{thm:huarongdao} maps framework concepts to puzzle roles.
+We now make the mapping computational.
+The configuration graph $\mathcal{G}$ has
+$|\mathcal{V}| = 25{,}955$ canonical states and is
+connected; every quantity below is \emph{exact}
+(self-contained solver: \texttt{solver/}).
+
+\subsubsection*{Water as agent}
+
+The proof of \cref{thm:huarongdao} observed that free cells
+flow opposite to piece movement.
+We now invert the perspective entirely:
+the two free cells \emph{are} the agent~(水),
+and the ten pieces \emph{are} the board.
+
+\begin{definition}[水-position and 水-graph]\label{def:water-graph}
+A \emph{水-position} is the unordered pair
+$\{f_1, f_2\} \subset \mathcal{B}$ of free cells.
+Write $W(\sigma)$ for the 水-position of
+configuration~$\sigma$.
+The \emph{水-graph} has vertex set
+$\binom{\mathcal{B}}{2}$ and an edge between
+$W(\sigma)$ and $W(\sigma')$ whenever
+$(\sigma, \sigma') \in \mathcal{E}$.
+\end{definition}
+
+\begin{proposition}[Ergodicity of 水]\label{thm:ergodic}
+All $\binom{20}{2} = 190$ possible 水-positions are
+reachable from $\sigma_0$.
+\end{proposition}
+
+\begin{proof}
+Exhaustive BFS on $\mathcal{G}$: the set
+$\{W(\sigma) : \sigma \text{ reachable from } \sigma_0\}$
+has cardinality $190 = \binom{20}{2}$.
+水 can reach every pair of cells in the board.
+\end{proof}
+
+\begin{definition}[Free-cell modes]\label{def:free-modes}
+The 水-position $\{f_1, f_2\}$ has \emph{mode}:
+\begin{itemize}
+  \item \textbf{H}~(horizontal pair): $f_1, f_2$
+  horizontally adjacent.
+  Enables slides of $2 \times h$ pieces.
+  \item \textbf{V}~(vertical pair): $f_1, f_2$
+  vertically adjacent.
+  Enables slides of $w \times 2$ pieces.
+  \item \textbf{S}~(separated): $f_1, f_2$ non-adjacent.
+  Only $1 \times 1$ pieces (soldiers) can move.
+\end{itemize}
+The king ($2 \times 2$) requires mode H or V\@.
+The knife ($2 \times 1$) requires mode~H\@.
+In mode~S, only soldiers act---水 is diffuse.
+\end{definition}
+
+\subsubsection*{The counting: 81}
+
+\begin{definition}[步 (step)]\label{def:bu}
+A \emph{step}~(步) is a maximal consecutive sequence of
+unit moves of the same piece.
+Equivalently: each step engages one piece;
+all slides of that piece within the step cost zero;
+switching to a different piece costs one.
+\end{definition}
+
+In Chinese puzzle tradition, the standard counting of
+華容道 solutions uses~步, not unit moves.
+The difference is algorithmic:
+
+\begin{algorithm}[H]
+\caption{Minimum-步 solver
+  (0/1~BFS on $\mathcal{G}$)}\label{alg:kpc}
+\begin{algorithmic}[1]
+\Require $\mathcal{G} = (\mathcal{V}, \mathcal{E})$,\;
+  initial $\sigma_0$,\;
+  goal $\sigma(p_*) = E$
+\Ensure Minimum-步 path $\gamma$,\;
+  step count $|\gamma|$
+\Statex
+\State Augment state:
+  $(\sigma, \ell) \in
+  \mathcal{V} \times \{1, \ldots, k, \bot\}$,
+  $\ell$ = last piece moved
+\State $\mathrm{dist}[(\sigma_0, \bot)] \gets 0$;\;
+  $Q \gets \mathrm{deque}
+  \bigl[\bigl((\sigma_0, \bot),\, 0\bigr)\bigr]$
+\While{$Q \neq \varnothing$}
+  \State $(\sigma, \ell),\, d \gets Q.\mathrm{popleft}()$
+  \If{$\sigma(p_*) = E$}
+    \Return $d$ \Comment{goal reached}
+  \EndIf
+  \For{each neighbour $(\sigma', i)$ of $\sigma$}
+    \Comment{$i$ = piece moved}
+    \State $c \gets
+      \begin{cases}
+      0 & i = \ell \\
+      1 & i \neq \ell
+      \end{cases}$
+      \Comment{same piece $\to$ free;
+               switch $\to$ 1~步}
+    \If{$d + c < \mathrm{dist}[(\sigma', i)]$}
+      \State $\mathrm{dist}[(\sigma', i)] \gets d + c$
+      \If{$c = 0$}\;
+        $Q.\mathrm{pushfront}
+        \bigl((\sigma', i),\, d\bigr)$
+      \Else\;
+        $Q.\mathrm{pushback}
+        \bigl((\sigma', i),\, d + 1\bigr)$
+      \EndIf
+    \EndIf
+  \EndFor
+\EndWhile
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Complexity]\label{rem:complexity}
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & \textbf{General} & \textbf{横刀立马} & \textbf{棋谱} \\
+ & (sliding block) & (this instance) & (verification) \\
+\midrule
+Class & PSPACE-complete & --- & --- \\
+$|\mathcal{V}|$ & exponential & $25{,}955$ & --- \\
+$|\mathcal{E}|$ & exponential & $83{,}896$ & --- \\
+Time & exponential & $O(|\mathcal{V}| + |\mathcal{E}|)$ & $O(81)$ \\
+Space & exponential & $O(|\mathcal{V}|)$ & $O(1)$ \\
+Optimal & ? & $81$~步 & $81$~步 (certificate) \\
+\bottomrule
+\end{tabular}
+\end{center}
+The general sliding-block puzzle is PSPACE-complete \cite{hearn}.
+This instance has $25{,}955$~states:
+BFS solves it in ${<}\,1$~second.
+The 棋谱 (\cref{app:solution}) is a certificate
+verifiable in $O(81)$~time and $O(1)$~space.
+The gap from PSPACE to $O(25{,}955)$ is the entire point:
+the board is fixed, the state space is finite,
+the solution is exact.
+\end{remark}
+
+\begin{theorem}[81~步]\label{thm:eightyone}
+The minimum number of steps from $\sigma_0$ to any
+$\sigma_f$ with $\sigma_f(p_*) = E$ is exactly~$81$.
+Moreover:
+\begin{enumerate}[label=(\roman*)]
+  \item The result is \emph{independent} of the base move
+  set: both single-cell unit moves and multi-cell slides
+  yield $81$~步.
+  \item Along the optimal path:
+  $118$~unit moves, of which $37$ are multi-slide steps
+  (same piece slides $\geq 2$ cells).
+  \item The $81$~步 decompose as
+  $9$~king steps $+\; 72$~水-steps.
+  The king acts in only $9/81 \approx 11\%$ of all steps.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(i)~\Cref{alg:kpc} on the single-cell graph returns~$81$.
+Running on the multi-cell graph (where a piece may slide
+multiple cells in one unit move) also returns~$81$.
+The 0/1~cost structure makes intermediate slides free:
+a piece that slides two cells costs the same as one that
+slides one cell---both cost zero if the piece was already
+engaged, one if it is a new engagement.
+
+(ii)--(iii)~Path extraction from the 0/1~BFS parent
+pointers.
+\end{proof}
+
+\begin{remark}[Three counting conventions]\label{rem:counting}
+\begin{center}
+\small
+\begin{tabular}{@{}llcl@{}}
+\toprule
+\textbf{Convention} & \textbf{Definition} &
+  \textbf{Count} & \textbf{Algorithm} \\
+\midrule
+Unit moves & One cell, one direction &
+  $116$ & Standard BFS \\
+Multi-cell moves & One piece, one direction, any dist.\ &
+  $90$ & Standard BFS \\
+步 & One piece, any direction, any dist.\ &
+  $81$ & 0/1~BFS \\
+\bottomrule
+\end{tabular}
+\end{center}
+The 步-count is minimal because it reflects the
+agent's decisions: which piece to engage next.
+This is the natural cost in agentic theory---the number
+of discrete choices, not the number of physical slides.
+\end{remark}
+
+\subsubsection*{Phase decomposition}
+
+\begin{proposition}[Phase decomposition: $9 + 72$]%
+\label{prop:phase-decomp}
+The $81$-步 solution decomposes into $9$~phases,
+separated by the $9$~king steps.
+水 rearranges between each king move:
+\begin{center}
+\small
+\begin{tabular}{@{}ccrll@{}}
+\toprule
+\textbf{Phase} & \textbf{水-steps} &
+  \textbf{King step} & \textbf{Direction} &
+  \textbf{King position} \\
+\midrule
+1 & $25$ & \#26 & $\to$ & $(2, 3)$ \\
+2 & $5$  & \#32 & $\leftarrow$ & $(1, 3)$ \\
+3 & $8$  & \#41 & $\downarrow$ & $(1, 2)$ \\
+4 & $6$  & \#48 & $\downarrow$ & $(1, 1)$ \\
+5 & $3$  & \#52 & $\to$ & $(2, 1)$ \\
+6 & $7$  & \#60 & $\leftarrow$ & $(1, 1)$ \\
+7 & $6$  & \#67 & $\leftarrow$ & $(0, 1)$ \\
+8 & $8$  & \#76 & $\downarrow$ & $(0, 0)$ \\
+9 & $4$  & \#81 & $\to$ & $(1, 0) = E$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Phase~1 is the longest: $25$~水-steps to clear the path.
+This \emph{is} 義釋曹操 (\cref{rem:guanyu}): 水 must
+rearrange $25$~times before the king can move once.
+\end{proposition}
+
+\begin{remark}[King's freedom]\label{rem:king-freedom}
+Along the unit-move optimal path ($116$~moves),
+the king has $\geq 1$ legal move in only
+$16$ of $116$ configurations ($14\%$).
+The remaining $86\%$ of the time, the king is stuck;
+水 works to create the next opening.
+This is \cref{thm:cutvertex} quantified:
+the king is the least mobile agent, and 水 is
+the sole source of mobility.
+\end{remark}
+
+\subsubsection*{Saddle and mirror descent}
+
+\begin{definition}[Primal--dual distances]%
+\label{def:primal-dual}
+For each $\sigma \in \mathcal{V}$:
+\begin{align}
+  d^+(\sigma) &\coloneqq
+    d_{\mathcal{G}}^{\text{步}}(\sigma_0,\, \sigma)
+    && \text{(forward / primal)}, \label{eq:dplus} \\
+  d^-(\sigma) &\coloneqq
+    d_{\mathcal{G}}^{\text{步}}(\sigma,\, \sigma_f)
+    && \text{(backward / dual)}, \label{eq:dminus}
+\end{align}
+where $d_{\mathcal{G}}^{\text{步}}$ is the shortest-path
+metric in steps (0/1~BFS distances).
+\end{definition}
+
+\begin{proposition}[Duality gap]\label{prop:duality-gap}
+For all $\sigma$ on any shortest path
+$\gamma = (s_0, \ldots, s_{81})$:
+\begin{equation}\label{eq:duality-gap}
+  d^+(s_j) + d^-(s_j) \;=\; 81
+  \qquad \text{for all } 0 \leq j \leq 81.
+\end{equation}
+The \emph{saddle configuration} is
+$\sigma^* \coloneqq s_{k^*}$ where
+\[
+  k^* \coloneqq \argmin_{0 \leq j \leq 81}
+  \bigl|\, d^+(s_j) - d^-(s_j) \,\bigr|.
+\]
+Since $d^+(s_j) = j$ and $d^-(s_j) = 81 - j$,
+the saddle is at step $k^* = 40$.
+\end{proposition}
+
+\begin{proof}
+Triangle inequality:
+$81 = d_{\mathcal{G}}^{\text{步}}(\sigma_0, \sigma_f)
+  \leq d^+(s_j) + d^-(s_j)$.
+Equality holds because each $s_j$ lies on a
+$(\sigma_0, \sigma_f)$-geodesic.
+The midpoint $\lfloor 81/2 \rfloor = 40$.
+\end{proof}
+
+\begin{theorem}[Saddle $=$ phase transition]\label{thm:saddle}
+At the saddle $\sigma^*$ (step~$40$):
+\begin{enumerate}[label=(\roman*)]
+  \item 関羽 (knife) is at position $(2, 0)$, far from
+  the exit corridor---she has cleared.
+  \item The 水-mode is H
+  (horizontal pair at $\{(1,2), (2,2)\}$),
+  enabling the king's next descent.
+  \item The king is at $(1, 3)$: it has moved right once
+  (step~$26$) and back left once (step~$32$).
+  The first descent begins at step~$41$.
+\end{enumerate}
+To cross the saddle is to perform 義釋曹操
+(\cref{rem:guanyu}).
+\end{theorem}
+
+\begin{proof}
+By \cref{thm:flowcut}, the min-cut separates
+blocked configurations (関羽 covers exit corridor)
+from open configurations (corridor cleared).
+On the optimal path the cut lies where
+$d^+ \approx d^-$, i.e., step~$40$.
+Direct inspection of the BFS solution confirms:
+at $\sigma^*$, 関羽 has exited the corridor.
+\end{proof}
+
+\begin{remark}[Mirror descent]\label{rem:mirror}
+\Cref{alg:kpc} is mirror descent on a finite graph.
+The forward 0/1~BFS computes the primal potential $d^+$;
+the backward 0/1~BFS computes the dual potential $d^-$.
+At the saddle, $d^+(\sigma^*) = 40$ and
+$d^-(\sigma^*) = 41$: the potentials balance.
+This is the same forward--backward structure as
+\cref{alg:forward,alg:backward}:
+the forward pass computes activations (primal),
+the backward pass computes gradients (dual),
+and the saddle is the phase transition of the loss.
+\end{remark}
+
+\subsubsection*{Mode distribution}
+
+\begin{proposition}[Mode statistics]\label{prop:modes}
+Along the $81$-步 path, the 水-mode after each step is:
+\begin{center}
+\small
+\begin{tabular}{@{}lcl@{}}
+\toprule
+\textbf{Mode} & \textbf{Count} & \textbf{Enables} \\
+\midrule
+H (horizontal) & $27$ & knife, king (horizontal) \\
+V (vertical)   & $42$ & generals, king (vertical) \\
+S (separated)  & $12$ & soldiers only \\
+\bottomrule
+\end{tabular}
+\end{center}
+The dominance of V-mode ($52\%$) reflects the
+puzzle's vertical bias: the king must descend $3$~rows.
+S-mode ($15\%$) appears when 水 must diffuse to
+reposition---it is the ``reset'' phase.
+The king moves only in H or V mode, never in S\@.
+\end{proposition}
+
+\subsubsection*{The isomorphism, completed}
+
+\Cref{thm:huarongdao} identified the viability roles.
+\Cref{thm:eightyone} extends the isomorphism to the
+\emph{computational} structure of \cref{sec:calculus}:
+
+\begin{table}[H]
+\centering\small
+\caption{Agentic calculus on 華容道: complete correspondence.}%
+\label{tab:kpc}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Calculus (\cref{sec:calculus})} &
+\textbf{華容道} &
+\textbf{Value} \\
+\midrule
+Execution graph (\cref{def:exgraph}) &
+  Configuration graph $\mathcal{G}$ &
+  $25{,}955$ states \\
+Agentic flow (\cref{def:flow}) &
+  水-flow (free-cell agent) &
+  $190/190$ ergodic \\
+Min-cut (\cref{thm:flowcut}) &
+  関羽 blocks corridor &
+  Cleared at step~$40$ \\
+Max-flow &
+  Optimal 步-path &
+  $81$~步 \\
+Forward pass (\cref{alg:forward}) &
+  $d^+$: primal 0/1~BFS &
+  Distance from $\sigma_0$ \\
+Backward pass (\cref{alg:backward}) &
+  $d^-$: dual 0/1~BFS &
+  Distance to $\sigma_f$ \\
+Saddle of loss &
+  $\sigma^*$: $d^+ \approx d^-$ &
+  Step~$40$ \\
+Contact modes (\cref{sec:contact}) &
+  水-modes (H, V, S) &
+  $3$ modes \\
+Mobility $\propto 1/s$ &
+  King: $9/81$; Soldiers: most &
+  Heavy-tailed \\
+Spectral gap (\cref{thm:massgap}) &
+  $\lambda_1 > 0$ &
+  $\mathcal{G}$ connected \\
+Horizon $H$ &
+  Geodesic in 步 &
+  $81$ \\
+Phase decomposition &
+  $9$~king $+ 72$~水 &
+  $25$~步 to clear \\
+刀 dissipation (\cref{def:dissipation}) &
+  関羽 yields &
+  Phase~1: 義釋曹操 \\
+水 (\cref{def:water}) &
+  Free-cell agent &
+  $190/190$ ergodic \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{remark}[$81$ as horizon]\label{rem:eightyone}
+The minimum $81$ is not an arbitrary combinatorial fact.
+It is the \emph{horizon} of the predictive controller:
+the geodesic length in $\mathcal{G}$ measured in~步,
+equivalently the minimum number of
+\textcolor{water}{水}~decisions to transport the king from
+$\sigma_0$ to the exit.
+In the language of \cref{thm:massgap}:
+$H = 81$ is the spectral gap made finite.
+
+The three conventions (\cref{rem:counting}) separate
+cleanly: unit moves ($116$) count physical slides;
+multi-cell moves ($90$) count piece--direction pairs;
+步~($81$) count agent decisions.
+The agentic theory uses~步 because it counts
+\emph{what the agent chooses}, not what the physics does.
 \end{remark}
