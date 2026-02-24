@@ -151,6 +151,24 @@ Each main theorem translates directly:
 \end{itemize}
 \end{remark}
 
+\begin{remark}[抽刀断水水更流]\label{rem:libai}
+Li Bai's line assigns the calculus its colours:
+\[
+  \textcolor{knife}{\text{抽刀}} \;\;
+  \textcolor{knife}{\partial} \;\;
+  \textcolor{water}{\text{水}} \;\;
+  \textcolor{water}{\text{水}}\textcolor{sword}{\text{更流.}}
+\]
+\textsc{Cut} ($\textcolor{knife}{\partial}$, red) acts on flow
+($\textcolor{water}{\sigma}$, blue); flow intensifies. The mechanism
+is \textsc{Phase} ($\textcolor{sword}{\varphi}$, cyan): cutting
+shifts the mean field (\cref{thm:meanfield}), exposing new bypass
+edges, producing more flow---\cref{thm:paradox} in seven characters.
+The sword is 青冥 ($\textcolor{sword}{\text{青}}$): the colour of the
+mean, the colour of Phase, the colour that connects
+$\textcolor{knife}{\text{刀}}$ to $\textcolor{water}{\text{水}}$.
+\end{remark}
+
 \subsection{方圆 $\times$ 黑白: the type system}\label{sec:fangyuan}
 
 The calculus has a type system: a $2 \times 2$ classification that
@@ -323,102 +341,155 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
 \centering
 \begin{tikzpicture}[
   node distance=0.9cm and 1.8cm,
-  proc/.style={rectangle, rounded corners=3pt, draw, thick,
-    minimum width=4.8cm, minimum height=0.7cm, align=center,
-    font=\small},
-  decision/.style={diamond, draw, thick, aspect=2.5,
+  % ── water (水) nodes: blue ──
+  wtr/.style={rectangle, rounded corners=3pt, draw=water, thick,
+    fill=water!6, minimum width=5.0cm, minimum height=0.7cm,
+    align=center, font=\small},
+  % ── knife (刀) node: red ──
+  knf/.style={diamond, draw=knife, thick, aspect=2.5,
+    fill=knife!6, minimum width=1.2cm, align=center, font=\small,
+    inner sep=1pt},
+  % ── phase (青冥) nodes: cyan ──
+  phs/.style={rectangle, rounded corners=3pt, draw=sword, thick,
+    fill=sword!6, minimum width=5.0cm, minimum height=0.7cm,
+    align=center, font=\small},
+  phsd/.style={diamond, draw=sword, thick, aspect=2.5,
+    fill=sword!6, minimum width=1.2cm, align=center, font=\small,
+    inner sep=1pt},
+  % ── neutral (terminal) ──
+  term/.style={rectangle, rounded corners=8pt, draw, very thick,
+    minimum width=5.0cm, minimum height=0.7cm, align=center,
+    font=\small\bfseries},
+  % ── convergence diamond ──
+  convd/.style={diamond, draw, thick, aspect=2.5,
     minimum width=1.2cm, align=center, font=\small,
     inner sep=1pt},
-  term/.style={rectangle, rounded corners=8pt, draw, very thick,
-    minimum width=4.8cm, minimum height=0.7cm, align=center,
-    font=\small\bfseries},
   arr/.style={-{Stealth[length=5pt]}, thick},
   lbl/.style={font=\scriptsize, fill=white, inner sep=1pt},
-  op/.style={font=\scriptsize\itshape, text=black!60}
+  ref/.style={font=\tiny, text=black!55, anchor=west},
+  op/.style={font=\scriptsize\itshape}
 ]
 
 % ── Nodes ──
 \node[term] (init)
   {1.\ Initialise: random $c(e)$};
 
-\node[proc, below=of init] (fwd)
-  {2.\ \textsc{Compose}: $\sigma_L \circ \cdots \circ \sigma_1$};
+\node[wtr, below=of init] (fwd)
+  {2.\ \textsc{Compose}: $\textcolor{water}{\sigma_L \circ
+  \cdots \circ \sigma_1}$};
 
-\node[proc, below=of fwd] (loss)
-  {3.\ Flow deficit: $\mathcal{L} = -|\phi|$};
+\node[wtr, below=of fwd] (loss)
+  {3.\ Flow deficit: $\textcolor{water}{\mathcal{L} = -|\phi|}$};
 
-\node[proc, below=of loss] (bwd)
-  {4.\ Backward \textsc{Slide}: $\nabla_c \mathcal{L}$};
+\node[wtr, below=of loss] (bwd)
+  {4.\ Backward \textsc{Slide}:
+  $\textcolor{water}{\nabla_c \mathcal{L}}$};
 
-\node[proc, below=of bwd] (sgd)
-  {5.\ Update: $c \leftarrow c - \eta\,\nabla_c\mathcal{L}$};
+\node[wtr, below=of bwd] (sgd)
+  {5.\ Update:
+  $\textcolor{water}{c \leftarrow c - \eta\,\nabla_c\mathcal{L}}$};
 
-\node[decision, below=1.1cm of sgd] (knife)
-  {6.\ $c(e) > \bar{c}{+}\tau$\,?};
+\node[knf, below=1.1cm of sgd] (knife)
+  {6.\ $\textcolor{knife}{c(e) > \bar{c}{+}\tau}$\,?};
 
-\node[proc, right=of knife] (cut)
-  {7.\ \textsc{Cut} $\partial$ / \textsc{Phase} $\varphi$};
+\node[phs, right=of knife] (cut)
+  {7.\ \textcolor{knife}{\textsc{Cut} $\partial$} /
+  \textcolor{sword}{\textsc{Phase} $\varphi$}};
 
-\node[decision, below=1.1cm of knife] (viable)
-  {8.\ $|\phi| > 0$\,?};
+\node[phsd, below=1.1cm of knife] (viable)
+  {8.\ $\textcolor{sword}{|\phi| > 0}$\,?};
 
-\node[decision, below=1.1cm of viable] (conv)
+\node[convd, below=1.1cm of viable] (conv)
   {9.\ $\max|\phi| = \min|C|$\,?};
 
 \node[term, below=1.0cm of conv] (done)
   {Trained network. Survives.};
 
-% ── Operation annotations ──
-\node[op, left=0.5cm of fwd] {$\circ$};
-\node[op, left=0.5cm of bwd] {$\sigma^{-1}$ (水)};
-\node[op, right=0.1cm of cut.east] {$\partial,\,\varphi$};
+% ── Reference annotations ──
+% init: right (no loop passes here)
+\node[ref] at ($(init.east)+(0.15,0)$)
+  {Def.~\ref{def:neural-exgraph}};
+% steps 2--5: LEFT side (right side reserved for loop-back arrow)
+\node[ref, anchor=east] at ($(fwd.west)+(-0.15,0)$)
+  {Def.~\ref{def:flow},\; $\sigma$};
+\node[ref, anchor=east] at ($(loss.west)+(-0.15,0)$)
+  {Thm~\ref{thm:flowcut},\; $|\phi|$};
+\node[ref, anchor=east] at ($(bwd.west)+(-0.15,0)$)
+  {Def.~\ref{def:flow},\; $\sigma^{-1}$};
+% knife: above-right (clear of spine)
+\node[ref] at ($(knife.east)+(1.0,0.35)$)
+  {Thm~\ref{thm:meanfield}};
+% cut/phase: below
+\node[ref] at ($(cut.south)+(0,-0.12)$)
+  {Thm~\ref{thm:lifecycle}\;($\partial$),\;
+   Thm~\ref{thm:paradox}\;($\varphi$)};
+% viable: above-right
+\node[ref] at ($(viable.east)+(1.0,0.35)$)
+  {Ax.~\ref{ax:viability}};
+% conv: LEFT side (right side reserved for loop-back arrow)
+\node[ref, anchor=east] at ($(conv.west)+(-0.15,0)$)
+  {Thm~\ref{thm:flowcut}};
+
+% ── Operation annotations (left margin, coloured) ──
+\node[op, text=water, left=1.8cm of fwd] {$\circ$};
+\node[op, text=water, left=1.8cm of bwd]
+  {$\sigma^{-1}$ (\textcolor{water}{水})};
+\node[op, text=sword, right=0.1cm of cut.east] {};
 
 % ── Arrows: main spine ──
 \draw[arr] (init) -- (fwd);
-\draw[arr] (fwd) -- (loss);
+\draw[arr, water] (fwd) -- (loss);
 \draw[arr] (loss) -- (bwd);
-\draw[arr] (bwd) -- (sgd);
+\draw[arr, water] (bwd) -- (sgd);
 \draw[arr] (sgd) -- (knife);
 \draw[arr] (knife) -- node[lbl, right] {no} (viable);
-\draw[arr] (viable) -- node[lbl, right] {yes} (conv);
+\draw[arr, sword] (viable) -- node[lbl, right] {yes} (conv);
 \draw[arr] (conv) -- node[lbl, right] {yes} (done);
 
 % ── Arrows: branches ──
-\draw[arr] (knife) -- node[lbl, above] {yes} (cut);
-\draw[arr] (cut) |- (viable);
+\draw[arr, knife] (knife) -- node[lbl, above] {yes} (cut);
+\draw[arr, sword] (cut) |- (viable);
 
 % ── Loop back: not converged → step 2 ──
-\draw[arr] (conv.east) -- ++(1.6,0)
-  node[lbl, above, pos=0.4] {no}
+\draw[arr] (conv.east) -- ++(7.5,0)
+  node[lbl, above, pos=0.15] {no}
   |- (fwd.east);
 
 % ── Viability failure → phase/restart ──
-\draw[arr] (viable.west) -- ++(-1.6,0)
-  node[lbl, above, pos=0.4] {no}
+\draw[arr, sword] (viable.west) -- ++(-5.0,0)
+  node[lbl, above, pos=0.25] {no}
   |- (init.west);
 
-% ── Brace: forward flow / backward water ──
+% ── Brace: forward flow (blue) ──
 \draw[decorate, decoration={brace, amplitude=4pt, mirror},
-  thick, black!40]
-  ($(fwd.north east)+(0.15,0.05)$) --
-  ($(loss.south east)+(0.15,-0.05)$)
-  node[midway, right=5pt, font=\scriptsize, text=black!50]
-  {flow $\to$};
+  thick, water!60]
+  ($(fwd.north east)+(0.12,0.05)$) --
+  ($(loss.south east)+(0.12,-0.05)$)
+  node[midway, right=5pt, font=\scriptsize, text=water]
+  {\textcolor{water}{flow $\to$}};
 
+% ── Brace: backward water (blue) ──
 \draw[decorate, decoration={brace, amplitude=4pt},
-  thick, black!40]
-  ($(bwd.north west)+(-0.15,0.05)$) --
-  ($(sgd.south west)+(-0.15,-0.05)$)
-  node[midway, left=5pt, font=\scriptsize, text=black!50]
-  {$\leftarrow$ 水};
+  thick, water!60]
+  ($(bwd.north west)+(-0.12,0.05)$) --
+  ($(sgd.south west)+(-0.12,-0.05)$)
+  node[midway, left=5pt, font=\scriptsize, text=water]
+  {$\leftarrow$ \textcolor{water}{水}};
 
 \end{tikzpicture}
-\caption{The training paradigm. Forward pass (steps 2--3) sends flow
-$\kappa \to \infty$; backward pass (steps 4--5) sends water
-$\infty \to \kappa$. Knife detection (step~6) and viability check
-(step~8) are the two decision gates. The main loop (steps 2--8)
-terminates when $\max|\phi| = \min|C|$: max-flow achieved, network
-survives.}
+\caption{The training paradigm as roadmap.
+\textcolor{water}{Blue} (水): flow operations
+(steps 2--5, Defs.~\ref{def:flow}--\ref{def:exgraph}).
+\textcolor{knife}{Red} (刀): knife detection
+(step~6, Thm~\ref{thm:meanfield}).
+\textcolor{sword}{Cyan} (青冥): phase and viability
+(steps 7--8, Thms~\ref{thm:lifecycle},
+\ref{thm:paradox}, Ax.~\ref{ax:viability}).
+Convergence (step~9): $\max|\phi| = \min|C|$
+(Thm~\ref{thm:flowcut}).
+The loop is 抽刀断水水更流: \textcolor{knife}{cut}
+$\to$ \textcolor{sword}{phase} $\to$
+\textcolor{water}{more flow}.}
 \label{fig:training}
 \end{figure}
 
