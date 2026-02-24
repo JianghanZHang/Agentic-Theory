@@ -1,0 +1,315 @@
+\section{Applications}\label{sec:applications}
+
+\subsection{The Qin operating system}\label{sec:qin}
+
+The Qin state (356--207~BCE) provides the first complete engineering
+implementation of the framework. Shang Yang's reforms map directly to
+the formal vocabulary:
+
+\begin{center}
+\begin{tabular}{@{}lp{5cm}p{5cm}@{}}
+\toprule
+\textbf{Policy} & \textbf{Framework equivalent} & \textbf{Effect} \\
+\midrule
+Abolish well-field system & Remove aristocratic $\Ur$ & Nobles
+$\to$ commoners \\
+Military merit ranks & $\Ur$ controlled by state (revocable) &
+Actuation is rented, not owned \\
+Mutual surveillance (\emph{lianzuo}) & Maximize $\Obs$ &
+Neighbors $=$ distributed sensor network \\
+Standardize weights \& measures & Increase $\Obs$ precision &
+Higher observational resolution \\
+Commandery-county system & All chains through capital &
+King $=$ cut vertex \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Qin's unification of the six states was a graph-theoretic outcome:
+Qin's star graph (center $=$ Xianyang, $O(1)$ dispatch) vs.\ the six
+states' mesh graphs (multiple aristocratic centers, $O(n^2)$
+coordination cost).
+
+Shang Yang's fate validates the framework's robustness: his reform
+network itself became an autonomous actuator ($\Ur \neq \varnothing$).
+The system eliminated its creator---not irony, but a robustness test.
+A knife-detection system that exempts its designer is not robust.
+
+\subsubsection{The submartingale-induced unitary group}
+
+More precisely, Shang Yang's reform sequence is a
+\emph{submartingale-induced unitary group}.
+
+\begin{definition}[Submartingale reform]\label{def:submartingale}
+A reform sequence $X_0, X_1, \ldots, X_n$ is a \emph{submartingale}
+if each step strictly increases the centralization index:
+$\mathbb{E}[X_{k+1}] \geq X_k$, and each step is irreversible
+(reversal requires undoing all subsequent steps).
+\end{definition}
+
+Shang Yang's five reforms form such a sequence:
+\[
+  \underbrace{\text{abolish well-fields}}_{X_0}
+  \to \underbrace{\text{merit ranks}}_{X_1}
+  \to \underbrace{\text{mutual surveillance}}_{X_2}
+  \to \underbrace{\text{standard measures}}_{X_3}
+  \to \underbrace{\text{commandery-county}}_{X_4}.
+\]
+Each step burns the entropy of the old feudal order irreversibly.
+
+Once installed, the system forms a \emph{unitary group}: a
+structure-preserving transformation that maintains its invariants
+(king $=$ cut vertex, all knives eliminated) at every cycle, applied
+to every vector in the state space without exception.
+
+\begin{theorem}[Shang Yang's paradox]\label{thm:shangyang}
+Any agent who installs a knife-elimination system via submartingale
+reform must possess $\Ur \neq \varnothing$ to execute the installation.
+But the submartingale is monotone: each step lowers the detection
+threshold. The installer's own actuation becomes increasingly visible
+with each reform step. Upon completion, the unitary group acts on the
+installer:
+\[
+  \underbrace{\text{installer drives submartingale}}_{\text{requires }
+  \Ur \neq \varnothing}
+  \;\longrightarrow\;
+  \underbrace{\text{unitary group forms}}_{\text{detects all }
+  \Ur \neq \varnothing}
+  \;\longrightarrow\;
+  \underbrace{\text{group acts on installer}}_{\text{elimination}}.
+\]
+The system has no creator exemption.
+\end{theorem}
+
+\begin{proof}
+The installer is not in the invariant subspace of the group he
+created (because $\Ur \neq \varnothing$). A unitary group does not
+preserve non-invariant elements---it decomposes them. But unitary
+means \emph{norm-preserving}: the installer is destroyed, but his
+contributions are fully conserved. The reforms---commandery-county
+system, merit ranks, mutual surveillance, standard measures---persist
+uniformly across the empire. The person is eliminated; not one bit of
+the contribution is lost. This is not destruction but
+\emph{delocalization}: a localized power entity is scattered across
+the full state space by the unitary action. Norm conserved, structure
+zeroed.
+\end{proof}
+
+\subsubsection{The existence proof}
+
+Qin unified the six states, then collapsed (207~BCE, lasting only
+15~years). But Qin left something more powerful than any army: an
+\emph{existence proof}.
+
+\begin{theorem}[Qin existence theorem]\label{thm:qin}
+\[
+  \exists\;\text{centralized state}\;\text{s.t.}\;
+  \text{autonomous actuation} = 0
+  \;\wedge\;
+  \text{state functions.}
+\]
+\end{theorem}
+
+Before Qin, no one knew a state without feudal aristocrats was
+possible. Qin proved it was---and proved it functioned \emph{better}
+(star-graph dispatch vs.\ mesh-graph coordination). You cannot refute
+an existence proof. You can burn the paper, but the theorem persists.
+
+After Qin fell, two men entered the ruins. Liu Bang, then a minor
+official, had once seen the First Emperor's procession and sighed:
+``A great man should be like this!''---\emph{I want to BE this system's
+cut vertex}. Xiang Yu, upon conquering Xianyang, burned the palaces
+and said: ``Who would be emperor in the dark where no one can
+see?''---he wanted the \emph{trophy}, not the \emph{theorem}. One read
+the existence proof. The other burned it. The one who read it founded
+a dynasty that lasted four centuries.
+
+\subsection{The dollar as knife precursor}\label{sec:dollar}
+
+Money is not a knife (it cannot actuate independently). Money is a
+\emph{knife precursor}: a universal voucher exchangeable for
+$\Ur \neq \varnothing$ on the market. The king detects not how much
+money you have, but whether your money has \emph{already converted}
+into autonomous execution capability.
+
+Fan Li (5th century BCE) understood this: he accumulated fortunes
+three times and dispersed them twice, ensuring $\Ur$ never crossed
+the threshold. Shen Wansan and Hu Xueyan did not---their wealth
+formed closed execution loops, and they were eliminated.
+
+\subsection{The Atlantic triangular trade: a knife with no cut
+vertex}\label{sec:triangle}
+
+The Atlantic Triangular Trade (16th--19th century) is a three-leg
+closed execution loop: manufactured goods (Europe $\to$ West Africa),
+enslaved human beings (West Africa $\to$ Americas), raw materials
+(Americas $\to$ Europe). This loop satisfies \cref{def:knife}: it
+actuates autonomously (multiple nations operate independent instances;
+remove any one and the loop continues) and is observable (300~years of
+ships, ledgers, and auction blocks).
+
+The loop has a property stronger than condition~(1): it is
+\emph{self-financing}. The raw materials extracted on leg~3 fund the
+goods shipped on leg~1, which purchase the enslaved labor on leg~2,
+who produce the raw materials on leg~3. A knife that funds its own
+actuation cannot be starved from outside.
+
+\paragraph{Where the isomorphism breaks.}
+In \cref{sec:water}, the king--pawn relationship is sustained by water
+(viability bargain: $\text{water} > 0$). In the Triangular Trade,
+enslaved people had $\text{water} = 0$ from day one. Force~$F$
+substituted for water---temporarily. The substitution cost: every unit
+of force burns resources drawn from the extracted water on leg~3. The
+loop becomes a self-financing violence machine. \Cref{sec:water}
+predicts $\text{water} = 0 \implies \text{pawn} \to \text{knife}
+\implies \text{collapse}$; force delays but does not prevent this.
+The longer the delay, the more violent the eventual resolution.
+
+\paragraph{Abolition as relabeling.}
+Applying \cref{prop:phase}: did abolition (1807--1888) change the
+\emph{physics} or only the \emph{label}? The labor force moved from
+slavery to sharecropping on the same plantations, the resource flow
+(raw materials $\to$ Europe) persisted, the force mechanism shifted
+from slave codes to Jim Crow and convict leasing, and the laborer
+still had no breakpoint. Verdict: phase transition in the sense of
+\cref{sec:phase}---label changed, topology unchanged. This is
+path~(c), which \cref{thm:fixedpoint} proves is not a resolution.
+
+\begin{theorem}[Closed-loop knife]\label{thm:triangle}
+Any closed execution loop that is self-financing, has no cut vertex
+(mesh topology, multiple independent operators), and substitutes
+force for water, has exactly two exit paths: physical dismantlement
+of the loop topology [path~(a)], or system-level collapse when
+force-substitution fails [path~(b)]. Relabeling [path~(c)] preserves
+$\Ur \neq \varnothing$ and resolves nothing.
+\end{theorem}
+
+\paragraph{Missing cut vertex.}
+The essay's framework (\cref{sec:cutvertex}) assumes a single cut
+vertex. The Triangular Trade has none: its topology is a mesh, not a
+star. Removing any one colonial power does not disconnect the loop.
+This makes path~(a) structurally harder---there is no single point to
+dismantle---but does not create a third option.
+
+\subsection{The corrupted detection function}\label{sec:nazi}
+
+\Cref{def:knife} uses a structural detection function
+$\Obs_{\mathrm{structural}}$ that tests $\Ur$: \emph{what can the
+resource do independently?} This function is identity-blind. Zhang
+Liang is safe because $\Ur = \varnothing$, not because he is Zhang
+Liang.
+
+\begin{definition}[Detection function corruption]\label{def:corruption}
+A detection function is \emph{corrupted} when $\Obs_{\mathrm{structural}}$
+(tests $\Ur$) is replaced by $\Obs_{\mathrm{identity}}$ (tests group
+membership):
+\[
+  \Obs_{\mathrm{identity}}:\;
+  r \;\mapsto\;
+  \begin{cases}
+    \textbf{knife} & \text{if } \mathrm{agent}(r) \in \text{Group } X, \\
+    \textbf{not knife} & \text{otherwise.}
+  \end{cases}
+\]
+\end{definition}
+
+The corruption produces a \emph{false positive catastrophe}: every
+member of Group~$X$ with $\Ur = \varnothing$ is classified as a knife
+and eliminated. Every agent outside Group~$X$ with $\Ur \neq \varnothing$
+is a false negative. Six million false positives is the output of a
+corrupted detection function running to completion.
+
+\begin{definition}[Nazi structure]\label{def:nazi}
+A system exhibits \emph{Nazi structure} if and only if: (1)~it performs
+viability maintenance (eliminates perceived threats to $\Viab(K)$),
+(2)~its detection criterion is identity-based, not structure-based,
+and (3)~it executes path~(b) against agents classified by identity
+who do not satisfy \cref{def:knife} ($\Ur = \varnothing$ for the
+individual). These conditions are necessary and sufficient.
+\end{definition}
+
+\begin{corollary}[Identity-invariance]\label{cor:nazi}
+The Nazi structure is identity-invariant on both sides: it depends
+neither on the identity of the perpetrator nor on the identity of the
+target. Replacing Group~$X$ with any other identity group preserves
+all three conditions.
+\end{corollary}
+
+The operator that maps $\Obs_{\mathrm{structural}} \mapsto
+\Obs_{\mathrm{identity}}$ is \emph{Hate}. In this framework, Hate is
+not an emotion---it is an operator on detection functions with a
+precise signature (structural $\to$ identity) and a precise output
+(mass false positives). The motivation is irrelevant; the mapping
+determines the output.
+
+\subsection{The parasitic cut vertex}\label{sec:parasite}
+
+\Cref{thm:cutvertex} establishes the cut vertex as the optimal
+survival strategy: route all execution chains through yourself.
+A \emph{parasitic cut vertex} has the same topology but opposite flow
+direction: it routes access and information for extraction rather than
+coordination.
+
+\begin{definition}[Parasitic cut vertex]\label{def:parasite}
+A parasitic cut vertex $v_p$ satisfies:
+(1)~$G \setminus \{v_p\}$ is disconnected (cut vertex),
+(2)~$v_p$ holds no formal authority ($\Ur \approx \varnothing$
+officially),
+(3)~$v_p$ extracts resources from both sides of the partition by
+routing access across the cut.
+\end{definition}
+
+The parasitic cut vertex turns \emph{others} into pawns via the
+routing function (e.g., blackmail: ``I route your secret; comply or I
+re-route it publicly''). This is \cref{thm:cutvertex} inverted:
+instead of building the system, the parasite extracts from it.
+
+\begin{proposition}[Self-termination]\label{prop:parasite}
+A parasitic cut vertex is self-terminating. When the secrecy that
+maintains the cut ($\text{water} = \text{secrecy}$) fails, the graph
+reconnects, the cut vertex property vanishes, and the former parasite
+faces the combined action of all previously partitioned nodes.
+\end{proposition}
+
+Unlike the productive cut vertex (which may persist for centuries via
+institutional embedding), the parasitic variant stores no structural
+contribution. Upon delocalization, norm is conserved but there is
+nothing to conserve: the extraction leaves no invariant.
+
+\subsection{Militarism and the net-positive ask}\label{sec:militarism}
+
+Militarism is the structural type where the pawn ($\Ur = \varnothing$,
+the military apparatus) captures the cut vertex position, producing
+$\Ur \neq \varnothing$ for the military and $\Ur \to \varnothing$ for
+civilian institutions. In the framework's language: the pawn becomes the king.
+
+\begin{example}[The Kniefall: path~(a) in 30 seconds]\label{ex:kniefall}
+On December~7, 1970, West German Chancellor Willy Brandt knelt before
+the Warsaw Ghetto Uprising memorial. This act satisfies four conditions
+that make it a pure instance of path~(a):
+\emph{physical} (a bodily act, not a speech act---cannot be retracted
+by reinterpretation),
+\emph{unconditional} (no negotiation, no demand for reciprocity),
+\emph{performed by the cut vertex} (the head of state, the node
+through which all institutional chains pass), and
+\emph{irretractable} (a photograph is a permanent record).
+Brandt's Kniefall is an existence proof that path~(a) is available to
+any system.
+\end{example}
+
+After the Kniefall, Germany installed institutional breakpoints:
+Article~1 of the \emph{Grundgesetz} (``Human dignity is inviolable''),
+the Federal Constitutional Court as an independent $\Obs$, EU and NATO
+membership as external breakpoints. These institutionalize the phase
+transition: the system moved from $U = \Umax$ (Nazi regime) through
+path~(a) (Kniefall) to a constrained system with structural breakpoints.
+
+\begin{proposition}[Net-positive theorem]\label{prop:netpositive}
+Path~(a) is strictly net-positive for all parties. Comparative evidence:
+Germany (path~(a), Kniefall 1970) vs.\ Japan (path~(c), relabeling
+without structural change, 80~years and counting). Every measurable
+outcome---diplomatic relations, regional stability, economic
+integration, soft power, domestic constitutional health---favors the
+path~(a) system. The cost of path~(a) is pride. The return is
+everything else.
+\end{proposition}

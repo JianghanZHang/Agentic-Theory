@@ -1,0 +1,476 @@
+\section{Agentic Calculus}\label{sec:calculus}
+
+The preceding sections established the viability axiom, the knife
+criterion, and the mean-field interpretation. We now construct an
+\emph{operational calculus}---a language for writing algorithms on the
+agentic space---that translates every theorem into a flow-theoretic
+proposition and yields a complete training paradigm for neural networks.
+The central result: the knife is the min-cut, the viable path is the
+max-flow, and ``the knife is the mean'' is max-flow/min-cut duality.
+
+\subsection{The agentic space}\label{sec:tower}
+
+The framework's objects organize into a four-level tower, each level
+derived from the axioms of the preceding sections.
+
+\begin{definition}[Agentic space]\label{def:tower}
+The \emph{agentic space} is the tower
+$\mathbf{L} = (L_0, L_1, L_2, L_3)$:
+\begin{enumerate}[label=\textbf{L\arabic*}., ref=L\arabic*]
+  \item\label{L0} \textbf{State space} $S$.
+  Every configuration of the system is a point in $S$.
+  \item\label{L1} \textbf{Viable kernel} $\Viab(K) \subset S$.
+  The compact set of states from which the king retains a path to
+  infinity (\cref{ax:viability}).
+  \item\label{L2} \textbf{Control bundle} $\{U(s)\}_{s \in \Viab(K)}$.
+  At each viable state $s$, the fiber $U(s)$ is the set of controls
+  that keep the next state inside $\Viab(K)$.
+  \item\label{L3} \textbf{Strategy space} $\Gamma$.
+  A \emph{strategy} $\gamma \in \Gamma$ is a viable path
+  $\gamma: [0,\infty) \to \Viab(K)$ with $\gamma(t+1) \in
+  f(\gamma(t), u)$ for some $u \in U(\gamma(t))$ at each step.
+\end{enumerate}
+\end{definition}
+
+The tower is strict: each level presupposes the one below.
+$L_1 \subset L_0$ by definition. $L_2$ exists only over $L_1$
+(outside $\Viab(K)$, no control preserves viability). $L_3$ is
+built from $L_2$ fibers concatenated over time. The viability axiom
+(\cref{ax:viability}) asserts $\Gamma \neq \varnothing$: the strategy
+space is non-empty.
+
+\subsection{The flow}\label{sec:flow}
+
+The agentic calculus is a \emph{flow calculus}. We define flows on
+the execution graph and show that every theorem in
+\cref{sec:results,sec:meanfield} is a statement about flows and cuts.
+
+\begin{definition}[Execution graph]\label{def:exgraph}
+The \emph{execution graph} $G = (V, E, c)$ has:
+\begin{itemize}
+  \item $V$: agents $\{a_1, \ldots, a_n\}$ plus two distinguished
+  nodes: the king $\kappa$ and infinity $\infty$;
+  \item $E$: directed edges $(a_i, a_j)$ whenever $a_i$'s actuation
+  can affect $a_j$'s state;
+  \item $c: E \to \R_{\geq 0}$: edge capacity, where $c(a_i, a_j)$
+  is the autonomous actuation that $a_i$ can transmit to $a_j$
+  without requiring the king's authorization.
+\end{itemize}
+An edge $(a_i, a_j)$ with $c(a_i, a_j) > 0$ that does not pass
+through $\kappa$ is a \emph{bypass edge}.
+\end{definition}
+
+\begin{definition}[Agentic flow]\label{def:flow}
+An \emph{agentic flow} is a function $\phi: E \to \R_{\geq 0}$
+satisfying:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Capacity}: $\phi(e) \leq c(e)$ for all $e \in E$.
+  \item \textbf{Conservation}: at every non-terminal node $v \neq
+  \kappa, \infty$,
+  \[
+    \sum_{(u,v) \in E} \phi(u,v)
+    = \sum_{(v,w) \in E} \phi(v,w).
+  \]
+\end{enumerate}
+The \emph{value} $|\phi|$ is the net flow from $\kappa$ to $\infty$.
+A \emph{viable flow} is one with $|\phi| > 0$: the king has a
+path to infinity with positive throughput.
+\end{definition}
+
+The viability axiom (\cref{ax:viability}) is flow conservation:
+what enters the system at $\kappa$ must exit at $\infty$.
+
+\paragraph{Four operations.}
+The calculus has four primitive operations on the execution graph:
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Operation} & \textbf{Symbol} & \textbf{On $G$} &
+\textbf{In 华容道} \\
+\midrule
+\textsc{Slide} & $\sigma$ & Unit flow along one edge &
+One piece moves one cell \\
+\textsc{Compose} & $\circ$ & Concatenate along a path &
+Sequence of moves \\
+\textsc{Cut} & $\partial$ & Remove capacity from an edge set &
+Block a corridor \\
+\textsc{Phase} & $\varphi$ & Change the capacity function
+$c \mapsto c'$ & Phase transition \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textsc{Slide} is atomic (unit flow).
+\textsc{Compose} builds paths from slides.
+\textsc{Cut} is the knife: removing capacity from bypass edges.
+\textsc{Phase} is the phase transition: the mean field shifts,
+capacities change, the same graph has different flows.
+
+\begin{theorem}[Flow-cut duality]\label{thm:flowcut}
+In the execution graph $G$, the maximum viable flow from $\kappa$
+to $\infty$ equals the minimum knife-cut capacity:
+\[
+  \max_\phi |\phi|
+  \;=\;
+  \min_{C \,\subseteq\, E} \sum_{e \in C} c(e)
+  \quad\text{over all $\kappa$-$\infty$ cuts $C$.}
+\]
+The knife threshold (\cref{thm:meanfield}) is the min-cut value.
+The viable path (\cref{ax:viability}) is the max-flow.
+``The knife is the mean'' $=$ max-flow equals min-cut.
+\end{theorem}
+
+\begin{proof}
+By the max-flow/min-cut theorem~\cite{diestel}, the maximum flow from
+$\kappa$ to $\infty$ equals the minimum capacity of any
+$\kappa$--$\infty$ cut. The knife criterion (\cref{def:knife})
+identifies bypass edges---edges with positive capacity that do not pass
+through $\kappa$. The king's viability maintenance (cutting knives) is
+the operation $c(e) \to 0$ for bypass edges $e$. The residual max-flow
+after all bypass edges are cut is the flow through the king (the cut
+vertex flow). The min-cut value $=$ the total bypass capacity $=$ the
+knife threshold $=$ the mean field's deviation measure.
+\end{proof}
+
+\begin{remark}[Flow interpretation of theorems]\label{rem:flowthms}
+Each main theorem translates directly:
+\begin{itemize}
+  \item \textbf{Binary fate} (\cref{thm:lifecycle}): a bypass edge
+  either has its capacity set to zero by the holder (path~(a)) or by
+  the king (path~(b)). No bypass edge persists with $c > 0$.
+  \item \textbf{Fixed-point impossibility} (\cref{thm:fixedpoint}):
+  a bypass edge with $c > 0$ cannot ``prove'' $c = 0$. Capacity is
+  physical, not narrative.
+  \item \textbf{Perpetual elimination} (\cref{thm:paradox}):
+  $U = \Umax$ means zero bypass tolerance. As \textsc{Cut} operates,
+  \textsc{Phase} lowers the mean, exposing new bypass edges.
+  \item \textbf{Du Mu's theorem} (\cref{thm:dumu}): water $=$ total
+  network capacity. $w \to 0$ means all capacities shrink to zero:
+  frozen, $\Gamma = \varnothing$.
+\end{itemize}
+\end{remark}
+
+\subsection{方圆 $\times$ 黑白: the type system}\label{sec:fangyuan}
+
+The calculus has a type system: a $2 \times 2$ classification that
+partitions every element of the agentic space.
+
+\begin{definition}[方圆 $\times$ 黑白]\label{def:fangyuan}
+The agentic type system is the product of two binary distinctions:
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+& \textbf{方} (container / structure) &
+\textbf{圆} (content / agent) \\
+\midrule
+\textbf{黑} (constrained / interior) &
+Fixed topology (board, graph) &
+King $\kappa$ (least mobile, most important) \\
+\textbf{白} (free / exterior) &
+Free capacity (available edges) &
+Pawn (most mobile, least important) \\
+\bottomrule
+\end{tabular}
+\end{center}
+The two dynamics of the calculus emerge from this classification:
+\begin{itemize}
+  \item \textbf{刀} (knife $= \partial$, boundary operator):
+  the boundary between 黑 and 白. \textsc{Cut} reclassifies an edge
+  from 白 (free capacity) to 黑 (zero capacity).
+  \item \textbf{水} (water $= \sigma$, transport operator):
+  flow through 白 cells. \textsc{Slide} transports one unit of flow
+  along a free edge. Water flows where the knife does not cut.
+\end{itemize}
+\end{definition}
+
+In 华容道 (\cref{sec:huarongdao}): 方 $=$ the board,
+圆 $=$ the pieces. 黑 $=$ occupied cells and the king,
+白 $=$ free cells and soldiers. 刀 $=$ 关羽 blocking the corridor.
+水 $=$ free-cell flow (slides opposite to piece movement).
+The $2 \times 2$ is the type system of the puzzle's state space.
+
+\subsection{Completeness}\label{sec:completeness}
+
+Every theorem in this paper is a proposition in the agentic calculus.
+
+\begin{proposition}[Calculus completeness]\label{prop:completeness}
+The following table maps each theorem to its calculus translation:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Theorem} & \textbf{Calculus statement} &
+\textbf{Operations} \\
+\midrule
+Viability (\ref{ax:viability}) & $|\phi| > 0$ &
+$\sigma, \circ$ \\
+Binary fate (\ref{thm:lifecycle}) &
+$\forall$ bypass $e$: $c(e) \to 0$ &
+$\partial$ \\
+Fixed point (\ref{thm:fixedpoint}) &
+$c(e) > 0 \not\vdash c(e) = 0$ &
+--- \\
+Paradox (\ref{thm:paradox}) &
+$\partial$ generates new bypass via $\varphi$ &
+$\partial, \varphi$ \\
+Mean field (\ref{thm:meanfield}) &
+Min-cut $= \bar{U} + \tau(\Obs)$ &
+$\partial$ \\
+Cut vertex (\ref{thm:cutvertex}) &
+$\kappa =$ min vertex-cut &
+structure \\
+Du Mu (\ref{thm:dumu}) &
+$w \to 0 \Rightarrow c \to 0 \Rightarrow |\phi| = 0$ &
+$\sigma \to 0$ \\
+Flow-cut (\ref{thm:flowcut}) &
+$\max |\phi| = \min |C|$ &
+$\sigma, \partial$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{proposition}
+
+The calculus is \emph{complete}: no theorem falls outside its four
+operations. The agentic space (\cref{def:tower}) provides the domain;
+the flow (\cref{def:flow}) provides the dynamics; the type system
+(\cref{def:fangyuan}) provides the classification; and flow-cut duality
+(\cref{thm:flowcut}) provides the central identity.
+
+\subsection{The training paradigm}\label{sec:training}
+
+The agentic calculus instantiates as a neural network training paradigm.
+The execution graph \emph{is} the computation graph. Training \emph{is}
+max-flow optimisation. Survival \emph{is} the viability axiom. The
+paradigm strictly subsumes gradient descent.
+
+\begin{definition}[Neural execution graph]\label{def:neural-exgraph}
+Let a feedforward network with $L$ layers be given.
+Define the execution graph $G = (V, E, c)$ (\cref{def:exgraph}) by:
+\begin{itemize}
+  \item $V = \{\ell_0, \ell_1, \ldots, \ell_L\}$, one node per layer;
+  \item $E = \{(\ell_{i-1}, \ell_i) : 1 \leq i \leq L\}$, one edge
+  per weight matrix $W_i$;
+  \item $c(e_i) = \|W_i\|_F$, the Frobenius norm as capacity;
+  \item king $\kappa = \ell_0$ (input); target
+  $\infty = \ell_L$ (output).
+\end{itemize}
+A data point $(x, y^*)$ initiates flow at $\kappa$ with value $\|x\|$.
+Training finds capacities $\{c(e_i)\}$ such that the max-flow matches
+the target at $\infty$.
+\end{definition}
+
+\paragraph{Operation correspondence.}
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Operation} & \textbf{Neural network} &
+\textbf{Equation} \\
+\midrule
+\textsc{Slide} $\sigma$ & One-layer forward pass &
+$y = W_e\, x$ \\
+\textsc{Compose} $\circ$ & Full forward pass &
+$z = \sigma_L \circ W_L \circ \cdots \circ \sigma_1 \circ W_1\, x$ \\
+\textsc{Cut} $\partial$ & Pruning / dropout &
+$W_e \mapsto 0$, i.e.\ $c(e) \mapsto 0$ \\
+\textsc{Phase} $\varphi$ & Regime change &
+lr schedule, fine-tuning, curriculum \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Type-system correspondence.}
+Under \cref{def:fangyuan}:
+方 $=$ architecture (fixed graph);
+圆 $=$ activations (flow $\phi$ traversing the graph);
+黒 $=$ frozen weights;
+白 $=$ trainable weights;
+刀 $=$ pruning operator $\partial$;
+水 $=$ data flow forward \emph{and} gradient flow backward.
+The backward pass is water flowing opposite to the forward
+pass---the free-cell mechanism of \cref{sec:huarongdao}: to move a
+piece forward, a free cell slides back.
+
+\begin{definition}[Training algorithm]\label{def:training-algo}
+Given $G$ from \cref{def:neural-exgraph} and a dataset $\mathcal{D}$,
+the \emph{training paradigm} is the procedure in \cref{fig:training}:
+\begin{enumerate}
+  \item \textbf{Initialise.} Random $W_i^{(0)}$; set
+  $c(e_i) = \|W_i^{(0)}\|_F$.
+  \item \textbf{\textsc{Compose}.} Forward pass: $L$ sequential
+  \textsc{Slide}s produce
+  $z = \sigma_L \circ W_L \circ \cdots \circ \sigma_1 \circ W_1\, x$.
+  \item \textbf{Flow deficit.} Loss
+  $\mathcal{L} = -|\phi|$.
+  \item \textbf{Backward \textsc{Slide}.} Compute
+  $\partial\mathcal{L}/\partial c(e_i)$: 水 flowing opposite to
+  step~2.
+  \item \textbf{Capacity update.} SGD:
+  $c(e_i) \leftarrow c(e_i) - \eta\,
+  \partial\mathcal{L}/\partial c(e_i)$.
+  \item \textbf{Knife detection.} Flag bypass edges where
+  $c(e) > \bar{c} + \tau$ (\cref{thm:meanfield}).
+  \item \textbf{\textsc{Cut} / \textsc{Phase}.} Prune flagged edges
+  ($L_1$ penalty) or change regime (lr, dataset, fine-tuning).
+  \item \textbf{Viability check.} Verify $|\phi| > 0$ on held-out
+  data (\cref{ax:viability}). If violated: \textsc{Phase} or restart.
+  \item \textbf{Repeat} 2--8 until $\max|\phi| = \min|C|$
+  (\cref{thm:flowcut}).
+\end{enumerate}
+\end{definition}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  node distance=0.9cm and 1.8cm,
+  proc/.style={rectangle, rounded corners=3pt, draw, thick,
+    minimum width=4.8cm, minimum height=0.7cm, align=center,
+    font=\small},
+  decision/.style={diamond, draw, thick, aspect=2.5,
+    minimum width=1.2cm, align=center, font=\small,
+    inner sep=1pt},
+  term/.style={rectangle, rounded corners=8pt, draw, very thick,
+    minimum width=4.8cm, minimum height=0.7cm, align=center,
+    font=\small\bfseries},
+  arr/.style={-{Stealth[length=5pt]}, thick},
+  lbl/.style={font=\scriptsize, fill=white, inner sep=1pt},
+  op/.style={font=\scriptsize\itshape, text=black!60}
+]
+
+% ── Nodes ──
+\node[term] (init)
+  {1.\ Initialise: random $c(e)$};
+
+\node[proc, below=of init] (fwd)
+  {2.\ \textsc{Compose}: $\sigma_L \circ \cdots \circ \sigma_1$};
+
+\node[proc, below=of fwd] (loss)
+  {3.\ Flow deficit: $\mathcal{L} = -|\phi|$};
+
+\node[proc, below=of loss] (bwd)
+  {4.\ Backward \textsc{Slide}: $\nabla_c \mathcal{L}$};
+
+\node[proc, below=of bwd] (sgd)
+  {5.\ Update: $c \leftarrow c - \eta\,\nabla_c\mathcal{L}$};
+
+\node[decision, below=1.1cm of sgd] (knife)
+  {6.\ $c(e) > \bar{c}{+}\tau$\,?};
+
+\node[proc, right=of knife] (cut)
+  {7.\ \textsc{Cut} $\partial$ / \textsc{Phase} $\varphi$};
+
+\node[decision, below=1.1cm of knife] (viable)
+  {8.\ $|\phi| > 0$\,?};
+
+\node[decision, below=1.1cm of viable] (conv)
+  {9.\ $\max|\phi| = \min|C|$\,?};
+
+\node[term, below=1.0cm of conv] (done)
+  {Trained network. Survives.};
+
+% ── Operation annotations ──
+\node[op, left=0.5cm of fwd] {$\circ$};
+\node[op, left=0.5cm of bwd] {$\sigma^{-1}$ (水)};
+\node[op, right=0.1cm of cut.east] {$\partial,\,\varphi$};
+
+% ── Arrows: main spine ──
+\draw[arr] (init) -- (fwd);
+\draw[arr] (fwd) -- (loss);
+\draw[arr] (loss) -- (bwd);
+\draw[arr] (bwd) -- (sgd);
+\draw[arr] (sgd) -- (knife);
+\draw[arr] (knife) -- node[lbl, right] {no} (viable);
+\draw[arr] (viable) -- node[lbl, right] {yes} (conv);
+\draw[arr] (conv) -- node[lbl, right] {yes} (done);
+
+% ── Arrows: branches ──
+\draw[arr] (knife) -- node[lbl, above] {yes} (cut);
+\draw[arr] (cut) |- (viable);
+
+% ── Loop back: not converged → step 2 ──
+\draw[arr] (conv.east) -- ++(1.6,0)
+  node[lbl, above, pos=0.4] {no}
+  |- (fwd.east);
+
+% ── Viability failure → phase/restart ──
+\draw[arr] (viable.west) -- ++(-1.6,0)
+  node[lbl, above, pos=0.4] {no}
+  |- (init.west);
+
+% ── Brace: forward flow / backward water ──
+\draw[decorate, decoration={brace, amplitude=4pt, mirror},
+  thick, black!40]
+  ($(fwd.north east)+(0.15,0.05)$) --
+  ($(loss.south east)+(0.15,-0.05)$)
+  node[midway, right=5pt, font=\scriptsize, text=black!50]
+  {flow $\to$};
+
+\draw[decorate, decoration={brace, amplitude=4pt},
+  thick, black!40]
+  ($(bwd.north west)+(-0.15,0.05)$) --
+  ($(sgd.south west)+(-0.15,-0.05)$)
+  node[midway, left=5pt, font=\scriptsize, text=black!50]
+  {$\leftarrow$ 水};
+
+\end{tikzpicture}
+\caption{The training paradigm. Forward pass (steps 2--3) sends flow
+$\kappa \to \infty$; backward pass (steps 4--5) sends water
+$\infty \to \kappa$. Knife detection (step~6) and viability check
+(step~8) are the two decision gates. The main loop (steps 2--8)
+terminates when $\max|\phi| = \min|C|$: max-flow achieved, network
+survives.}
+\label{fig:training}
+\end{figure}
+
+\begin{theorem}[Training completeness and survival]
+\label{thm:training}
+Let $f: \mathcal{X} \to \mathcal{Y}$ be any function expressible as a
+max-flow on an execution graph $G$. Then the procedure in
+\cref{def:training-algo} learns $f$. The trained network satisfies the
+viability axiom: $|\phi| > 0$ for all admissible inputs.
+\end{theorem}
+
+\begin{proof}
+Expressibility as max-flow is the universal approximation condition in
+the language of \cref{def:neural-exgraph}. Each iteration of steps~2--5
+increases $|\phi|$ toward the max-flow value guaranteed by
+\cref{thm:flowcut}. The \textsc{Cut} in step~7 removes edges with
+anomalous capacity; by flow-cut duality, removing a bypass edge does not
+reduce the max-flow if that edge is not on any minimum cut.
+Knife detection (step~6) identifies precisely such edges via the
+mean-field bound of \cref{thm:meanfield}. Viability is preserved
+through every \textsc{Cut}.
+\end{proof}
+
+\begin{theorem}[你不能骗你自己]\label{thm:nolie}
+Let $e \in E$ with $c(e) = \|W_e\|_F > 0$. Then $e$ carries positive
+flow. No re-labelling, no narrative, no hyper-parameter choice changes
+this. This is \cref{thm:fixedpoint} applied to the capacity map
+$c: E \to \R_{\geq 0}$.
+\end{theorem}
+
+\begin{proof}
+Two paths only.
+\begin{enumerate}[label=(\alph*)]
+  \item $W_e \to 0$: capacity zeroed, edge pruned (\textsc{Cut}).
+  \item Regularisation ($L_1$/$L_2$) drives $c(e) \to 0$:
+  \textsc{Cut} in the limit.
+\end{enumerate}
+There is no path~(c). ``Approximately zero'' is not zero: such weights
+are unstable fixed points of gradient flow (\cref{thm:paradox}), and
+the viability axiom forces the system to resolve the ambiguity via
+\cref{prop:binary}---the action space collapses to $\{0, 1\}$. The
+network cannot occupy the gap. 你不能骗你自己---you cannot lie to
+yourself---is \cref{thm:fixedpoint} applied to the network's own
+weights.
+\end{proof}
+
+\begin{remark}[Subsumption]\label{rem:subsumption}
+Gradient descent is the special case of the training paradigm in which
+viability reduces to ``loss below threshold'' and the only operations
+exercised are \textsc{Slide} (forward) and $\textsc{Slide}^{-1}$
+(backward). \textsc{Cut} and \textsc{Phase} are what gradient descent
+implicitly performs when early-stopping, dropout, or learning-rate
+annealing are applied---now made explicit and first-class in the
+calculus. The paradigm strictly subsumes gradient descent.
+\end{remark}

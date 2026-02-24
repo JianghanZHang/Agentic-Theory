@@ -1,0 +1,93 @@
+\section{The Knife as Mean Field}\label{sec:meanfield}
+
+The preceding sections defined the knife as a two-condition criterion
+applied to individual resources. We now argue that the knife is
+fundamentally a \emph{mean-field} phenomenon.
+
+\subsection{The mean actuation field}
+
+Consider $n$ agents with autonomous actuation levels
+$\|U_1\|, \ldots, \|U_n\|$. Define the \emph{mean actuation field}:
+\[
+  \bar{U} = \frac{1}{n} \sum_{i=1}^{n} \|U_i\|.
+\]
+
+The king's detection function $\Obs$ has finite bandwidth: it cannot
+monitor all agents with equal precision. In practice, $\Obs$ triggers
+on agents whose actuation \emph{deviates significantly from the mean}:
+\[
+  r \in \mathrm{Im}(\Obs)
+  \iff
+  \|U_r\| - \bar{U} > \tau(\Obs),
+\]
+where $\tau(\Obs)$ is the detection threshold determined by the king's
+observational capacity.
+
+\begin{theorem}[The knife is the mean]\label{thm:meanfield}
+The knife threshold is determined by the system's mean actuation field.
+A resource $r$ is a knife if and only if:
+\begin{enumerate}[label=(\roman*)]
+  \item $\Ur \neq \varnothing$ (autonomous actuation exists), and
+  \item $\|U_r\|$ exceeds the mean field by more than the detection
+  threshold: $\|U_r\| > \bar{U} + \tau(\Obs)$.
+\end{enumerate}
+Consequently, the phase transition (\cref{prop:phase}) is a shift in
+$\bar{U}$, not a change in any individual $\Ur$.
+\end{theorem}
+
+\begin{proof}
+In wartime, many agents have high actuation (soldiers, generals,
+administrators). The mean $\bar{U}$ is high, so the threshold
+$\bar{U} + \tau(\Obs)$ is high: few agents exceed it. Most actuation
+is \emph{expected} and therefore not flagged.
+
+At the phase transition (end of war), most agents' actuation drops to
+near zero (soldiers demobilize, wartime powers expire). The mean
+$\bar{U}$ drops sharply. But agents who \emph{retain} wartime-level
+actuation now exceed the new, lower threshold. The same $\|U_r\|$
+that was below the wartime mean is now above the peacetime mean.
+
+The knife is not created by the agent---it is created by the shift in
+the mean. The agent's actuation is unchanged; the system's reference
+frame has moved.
+\end{proof}
+
+\begin{remark}[Connection to statistical mechanics]\label{rem:statmech}
+This is precisely the mechanism of a phase transition in statistical
+mechanics: the order parameter (mean actuation) shifts, and
+configurations that were typical in one phase become atypical---and
+therefore detectable---in the other. The viability axiom plays the role
+of the free energy: the system minimizes threats to $\Viab(K)$, just
+as a thermodynamic system minimizes free energy.
+\end{remark}
+
+\subsection{Implications}
+
+The mean-field interpretation resolves several puzzles:
+
+\begin{enumerate}
+  \item \textbf{Why identical resources have different fates.} Two
+  generals with identical $\Ur$ can have opposite outcomes if one
+  operates in a high-$\bar{U}$ environment (wartime coalition) and
+  the other in a low-$\bar{U}$ environment (consolidated empire).
+  The knife is relative to the mean.
+
+  \item \textbf{Why the paradox is a feedback loop.} As the king
+  eliminates knives, $\bar{U}$ drops, lowering the threshold. Agents
+  who were below the old threshold now exceed the new one $\to$ new
+  knives $\to$ more elimination $\to$ lower $\bar{U}$ $\to$ \ldots
+  This is the positive feedback of \cref{thm:paradox}, now given a
+  statistical mechanism.
+
+  \item \textbf{Why self-blunting works.} Xiao He's strategy
+  (self-corruption to signal low $\|U_r\|$) works precisely because
+  the detection function triggers on \emph{deviation from the mean}.
+  By visibly degrading his own actuation, Xiao He pulled $\|U_r\|$
+  toward $\bar{U}$, falling below the detection threshold.
+
+  \item \textbf{Why breakpoints prevent knives.} A breakpoint in the
+  execution chain reduces $\|U_r\|$ (effective autonomous actuation)
+  to below $\bar{U} + \tau(\Obs)$, since the king controls part of
+  the chain. The resource remains capable but not \emph{independently}
+  capable---it does not deviate from the mean.
+\end{enumerate}

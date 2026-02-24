@@ -1,0 +1,102 @@
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Domain of applicability}\label{sec:domain}
+
+The framework is a compressed model that degrades under the following
+conditions:
+
+\begin{center}
+\begin{tabular}{@{}lp{5.5cm}p{5cm}@{}}
+\toprule
+\textbf{Condition} & \textbf{Failure mode} & \textbf{Example} \\
+\midrule
+Diffuse sovereignty & No unique king; cut vertex undefined & Late
+European feudalism, early federalism \\
+External shock dominance & $\Viab(K)$ broken by external force;
+internal knife dynamics secondary & Mongol invasion, colonialism \\
+Rapid ideological reshaping & $K$ itself is changing faster than
+actuation reshapes state & Religious revolution, ideology \\
+High-latency detection & $\Obs$ too slow; phase transition completes
+before detection & Large empire frontiers \\
+Universal $\Ur \approx \varnothing$ & No knives; framework trivial &
+Extremely atomized societies \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The framework applies to systems with a unique sovereign, differentiated
+agent capabilities, and sufficient observability. This covers the main
+interval of Chinese imperial history but not all political forms.
+
+\subsection{The water dynamics}\label{sec:water}
+
+The framework so far analyzes one layer: the king--knife interaction. A
+complete viability analysis requires the \emph{viability chain}---the
+three-level dependency that sustains the system:
+\[
+  \text{King}
+  \xrightarrow{\;\text{needs}\;}
+  \text{Pawn}
+  \xrightarrow{\;\text{needs}\;}
+  \text{Water.}
+\]
+The \emph{pawn} is any agent with $\Ur \neq \varnothing$ whose actuation
+is currently directed by the king (soldiers, administrators, tax
+collectors). \emph{Water} is the population's aggregate resource
+level---the substrate from which the pawn draws manpower, revenue, and
+legitimacy.
+
+\begin{definition}[Water]\label{def:water}
+Water $w(t) \in [0, W_{\max}]$ is the population's aggregate extractable
+resource level at time $t$. The pawn's actuation is bounded by water:
+$\|\Ur\| \leq g(w)$ for some monotone function $g$ with $g(0) = 0$.
+\end{definition}
+
+The king needs the pawn to execute viability maintenance (eliminate
+knives, administer territory). The pawn needs water to function. If
+$w \to 0$, the pawn's actuation capacity collapses regardless of the
+king's commands.
+
+\begin{proposition}[Binary action space at $w = 0$]\label{prop:binary}
+When $w(t) \to 0$, the pawn's action space collapses to a binary:
+\[
+  A_{\text{pawn}} = \{\text{submit},\; \text{rebel}\}.
+\]
+The intermediate options (negotiate, migrate, trade, accumulate) require
+$w > 0$. At $w = 0$, the pawn has nothing to lose, and the viability
+axiom (\cref{ax:viability}) now applies \emph{to the pawn}: the pawn's
+own survival requires a viable path, and submission no longer provides
+one. The pawn becomes a knife---$\Ur$ transitions from $\varnothing$ to
+$\neq \varnothing$---and the king faces a knife he created by exhausting
+the water.
+\end{proposition}
+
+\begin{theorem}[Du Mu's theorem]\label{thm:dumu}
+Let $w(t)$ be decreasing under extraction. Then:
+\[
+  w(t) \to 0
+  \implies
+  \text{pawn} \to \text{knife}
+  \implies
+  \text{king absorbed.}
+\]
+The causal chain is internal: the system destroys itself by exhausting
+its own substrate.
+\end{theorem}
+
+This is the content of Du Mu's \emph{A Fang Gong Fu} (825~CE): ``It was
+not the Qin who destroyed the six states, but the six states themselves;
+it was not the world that destroyed Qin, but Qin itself.'' In our
+language: the states depleted their own water, creating the knives that
+destroyed them. Qin, having unified, then depleted its own water
+(conscription for the Great Wall and Epang Palace), creating the knives
+(Chen Sheng, Wu Guang) that destroyed it.
+
+\begin{remark}[Water as viability constraint]
+``Water can carry the boat, and water can capsize the boat'' (attributed
+to Wei Zheng, Tang dynasty) is not a metaphor. It is a restatement of
+\cref{thm:dumu}: the substrate that enables the king's viability
+($w > 0$ $\implies$ pawn functions $\implies$ king's path to $\infty$
+exists) is the same substrate whose depletion destroys it ($w = 0$
+$\implies$ pawn $\to$ knife $\implies$ no path to $\infty$).
+\end{remark}

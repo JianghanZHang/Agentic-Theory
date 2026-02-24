@@ -1,0 +1,225 @@
+\section{The Framework}\label{sec:framework}
+
+\subsection{The viability axiom}\label{sec:axiom}
+
+Let $S$ denote the state space, $U$ the control set of the principal
+agent, and $K \subset S$ the \emph{viability kernel}---the set of states
+in which the king retains supreme authority:
+\[
+  K = \bigl\{\, s \in S \;:\; \text{the king retains supreme authority}
+  \,\bigr\}.
+\]
+
+\begin{axiom}[Viability]\label{ax:viability}
+For every state $s \in S$, there exists a viable path
+$\gamma: [0, \infty) \to K$ with $\gamma(0) = s$:
+\[
+  \forall\, s \in S,\quad
+  \exists\;\gamma: s \to \infty
+  \quad\text{such that}\quad
+  \gamma(t) \in \Viab(K) \;\;\forall\, t \geq 0.
+\]
+\end{axiom}
+
+When $U = \Umax$, the control set is full and this path is
+mathematically guaranteed to exist. The question is: \emph{what can
+break it?}
+
+In a multi-agent system with agents $a_1, \ldots, a_n$, each having
+control set $U_i$, the answer is unique: an actuator whose output can
+push the king's state out of $\Viab(K)$, and which can execute
+\emph{independently of the king}. If the actuator's execution must pass
+through the king, the king can intercept. If it can bypass the king, the
+king's $\Umax$ cannot react in time.
+
+\begin{remark}[Scope]\label{rem:scope}
+This paper presents a compressed model of the topology of execution
+capability under the viability axiom. It deliberately ignores culture,
+personality, economics, and moral narrative in exchange for a testable
+structural criterion. Historical cases are used to validate the
+criterion's discriminating power, not to claim the criterion exhausts
+history.
+\end{remark}
+
+\subsection{The knife}\label{sec:knife}
+
+\begin{definition}[Knife]\label{def:knife}
+A resource $r$ is a \emph{knife} if it satisfies two conditions:
+\begin{enumerate}[label=(\arabic*)]
+  \item \textbf{Autonomous actuation.} The resource can operate
+  independently of the king. Formally, there exists an action
+  $a \in \Ur$ such that the execution function $f_r$ satisfies
+  \[
+    f_r(s, a) \notin K
+    \quad\text{and}\quad
+    a \text{ does not require the king's authorization.}
+  \]
+  \item \textbf{Observability.} The king's detection function $\Obs$
+  can observe $r$ and its execution capability:
+  $r \in \mathrm{Im}(\Obs)$.
+\end{enumerate}
+\end{definition}
+
+The classification is exhaustive:
+\begin{itemize}
+  \item Condition~(1) not satisfied: \textbf{not a knife}. (Zhang
+  Liang's strategic counsel---a pure function that cannot execute
+  itself.)
+  \item Condition~(2) not satisfied: \textbf{hidden knife}. (More
+  dangerous, but outside the king's strategy space. Unobservable
+  $=$ indefensible $=$ system noise.)
+  \item Both satisfied: \textbf{knife}.
+\end{itemize}
+
+\begin{remark}[Intent is irrelevant]\label{rem:intent}
+The criterion tests \emph{capability}, not \emph{intention}. The king
+detects whether you \emph{can} act, not whether you \emph{want to}.
+Loyalty does not enter the criterion.
+\end{remark}
+
+\begin{remark}[Logical necessity]\label{rem:necessity}
+These two conditions are not chosen by the modeler. They are the unique
+logical consequence of the viability axiom $+$ unconstrained power $+$
+multi-agent environment.
+\end{remark}
+
+\subsection{Phase transition}\label{sec:phase}
+
+The knife is a \emph{phase function}, not an intrinsic property.
+
+\begin{proposition}[Phase-dependent labeling]\label{prop:phase}
+The same resource $r$ receives different labels under different system
+phases $\varphi$:
+\[
+  \mathrm{Label}(r, \varphi) =
+  \begin{cases}
+    \textbf{tool} & \text{if } \varphi = \text{wartime (king needs }
+    r\text{'s actuation),} \\
+    \textbf{knife} & \text{if } \varphi = \text{peacetime (king no
+    longer needs } r\text{, but } r \text{ persists).}
+  \end{cases}
+\]
+The phase transition does not change the physical properties of $r$.
+It changes the king's objective function $J(s, \varphi)$.
+\end{proposition}
+
+\begin{proof}
+In wartime, the king's objective $J_{\mathrm{war}}$ includes terms
+where $r$'s actuation has positive utility. In peacetime,
+$J_{\mathrm{peace}}$ optimizes for long-term survival
+($\exists\;\text{path to } \infty$), and the same actuation becomes a
+boundary threat on $\Viab(K)$. The resource $r$ is unchanged;
+the labeling function $\mathrm{Label}(r, \varphi)$ is what shifts.
+\end{proof}
+
+\subsection{The cut vertex principle}\label{sec:cutvertex}
+
+\begin{definition}[Cut vertex]\label{def:cutvertex}
+In the execution graph $G = (V, E)$ of the system, a vertex
+$v \in V$ is a \emph{cut vertex} if $G \setminus \{v\}$ is
+disconnected. An agent who is a cut vertex controls all execution
+chains: removing them disconnects the system.
+\end{definition}
+
+\begin{theorem}[Cut vertex $\neq$ maximum actuator]\label{thm:cutvertex}
+The optimal survival strategy for the king is to be a cut vertex, not
+the maximum actuator. That is, the king maximizes viability by
+ensuring all execution chains pass through him, rather than by
+maximizing his own actuation.
+\end{theorem}
+
+\begin{proof}
+A maximum actuator $v^*$ with $\|U_{v^*}\| = \max_i \|U_i\|$
+suffers from three structural defects:
+\begin{enumerate}[label=(\roman*)]
+  \item \emph{Non-scalability}: a single actuator cannot cover the
+  full state space simultaneously.
+  \item \emph{Single point of failure}: $\Viab(K)$ depends entirely
+  on $v^*$'s performance; one failure collapses the system.
+  \item \emph{Self-referential paradox}: if the king \emph{is} the
+  knife (the strongest autonomous actuator), he cannot perform
+  viability maintenance on himself.
+\end{enumerate}
+A cut vertex $v_c$ with $\|U_{v_c}\| \approx 0$ but routing
+authority over all chains avoids all three: the system is scalable
+(add more actuators), fault-tolerant (one actuator's failure does
+not disconnect the graph), and the king is structurally distinct
+from the knives he must manage.
+\end{proof}
+
+\begin{example}[Liu Bang vs.\ Xiang Yu]\label{ex:liubang}
+Xiang Yu was the strongest actuator in the late Qin system
+(\emph{Shiji}: ``he could lift a bronze tripod''). His strategy:
+$U = \Umax$ through personal combat. Liu Bang had near-zero
+personal actuation but made himself the cut vertex of the execution
+graph: Han Xin's armies needed Liu Bang's legitimacy, Xiao He's
+administration needed his authorization, Zhang Liang's counsel
+needed him to listen.
+
+After the phase transition (founding of the Han dynasty), Liu Bang
+executed precise viability maintenance: killed Han Xin (knife),
+imprisoned then released Xiao He (blunted half-knife), left Zhang
+Liang alone (not a knife). Xiang Yu, the maximum actuator, died at
+Gaixia---a single actuator cannot cover the full state space.
+\end{example}
+
+\subsection{Case analysis: the three fates}\label{sec:cases}
+
+The framework's discriminating power is tested against three figures from
+the Han founding (c.~202~BCE), all subordinates of the same king (Liu
+Bang), operating in the same post-unification phase:
+
+\begin{center}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Agent} & $\Ur$ & $\mathrm{Im}(\Obs)$ &
+\textbf{Classification} & \textbf{Fate} \\
+\midrule
+Han Xin & $\neq \varnothing$ (military) & Yes & Knife &
+Path~(b): eliminated \\
+Xiao He & $\neq \varnothing$ (admin) & Yes & Half-knife &
+Path~(a): self-blunted \\
+Zhang Liang & $= \varnothing$ (counsel) & Yes & Not a knife &
+Survived \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+All three are visible ($r \in \mathrm{Im}(\Obs)$). The discriminant is
+condition~(1): can the resource actuate independently?
+
+\begin{example}[Han Xin: pure knife]\label{ex:hanxin}
+Han Xin commanded armies that obeyed \emph{him}, not Liu Bang. His
+execution chain was closed: he could mobilize, march, and fight without
+the king's authorization. Both conditions of \cref{def:knife} satisfied.
+After the phase transition, the knife criterion triggered and Liu Bang
+eliminated him. Han Xin's quoted proverb (``when the hare dies, the dog
+is cooked'') correctly identified path~(b) but failed to act on it---he
+understood the classification but not that the only exit was path~(a).
+\end{example}
+
+\begin{example}[Xiao He: self-blunting]\label{ex:xiaohe}
+Xiao He administered the capital and controlled grain supply---autonomous
+actuation at the logistical level. The king observed this
+($r \in \mathrm{Im}(\Obs)$), making Xiao He a knife by
+\cref{def:knife}. Xiao He's response: deliberate self-corruption
+(accepting bribes conspicuously). This performed two operations
+simultaneously:
+\begin{enumerate}[label=(\roman*)]
+  \item \emph{Signal reduction}: visible moral degradation signals
+  $\|U_r\| \to 0$ (an official this corrupt cannot coordinate a revolt).
+  \item \emph{Mean-field alignment}: pull $\|U_r\|$ toward $\bar{U}$,
+  falling below the detection threshold (\cref{thm:meanfield}).
+\end{enumerate}
+This is path~(a) executed through reputation rather than resignation.
+\end{example}
+
+\begin{example}[Zhang Liang: structural safety]\label{ex:zhangliang}
+Zhang Liang was a strategist. Strategy is a pure function: it
+\emph{advises} action but cannot \emph{execute} it. Zhang Liang's
+counsel required Liu Bang's decision, Liu Bang's generals, and Liu
+Bang's administration to produce any effect. Every execution chain
+passed through the king (\cref{cor:breakpoint}). Result:
+$\Ur = \varnothing$, condition~(1) fails, not a knife.
+Zhang Liang retired and survived.
+\end{example}
