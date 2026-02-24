@@ -545,3 +545,225 @@ implicitly performs when early-stopping, dropout, or learning-rate
 annealing are applied---now made explicit and first-class in the
 calculus. The paradigm strictly subsumes gradient descent.
 \end{remark}
+
+\subsection{The Hilbert space}\label{sec:hilbert}
+
+The capacity measure gives the agentic space the structure of a Hilbert
+space. This single construction yields integration, spectral analysis,
+and a direct connection to physics.
+
+\begin{definition}[Capacity measure]\label{def:measure}
+The \emph{capacity measure} $\mu_c$ on $E$ is defined for any
+$A \subseteq E$ by
+\[
+  \mu_c(A) \;=\; \sum_{e \in A} c(e).
+\]
+This is the measure induced by the capacity function $c$ of the
+execution graph (\cref{def:exgraph}).
+\end{definition}
+
+\begin{definition}[Agentic Hilbert space]\label{def:hilbert}
+The \emph{agentic Hilbert space} is
+\[
+  \mathcal{H} \;=\; L^2(E,\,\mu_c),
+\]
+the space of square-integrable flows on $E$, with inner product
+\[
+  \langle \phi_1,\, \phi_2 \rangle_c
+  \;=\; \sum_{e \in E} \phi_1(e)\,\phi_2(e)\,c(e)
+\]
+and norm $\|\phi\|_c = \sqrt{\langle \phi,\phi \rangle_c}$.
+Every agentic flow (\cref{def:flow}) is a vector in $\mathcal{H}$.
+\end{definition}
+
+\begin{proposition}[Integration]\label{prop:integration}
+The flow-cut duality of \cref{thm:flowcut} is a statement about
+integrals and measures on $\mathcal{H}$:
+\begin{enumerate}[label=(\roman*)]
+  \item The max-flow value is a boundary integral:
+  \[
+    |\phi| \;=\; \int_{\partial\kappa} \phi\, d\mu_c
+    \;=\; \sum_{e \,\mathrm{out\,of}\, \kappa} \phi(e)\,c(e).
+  \]
+  \item The min-cut value is the measure of the cut:
+  \[
+    |C| \;=\; \mu_c(C) \;=\; \sum_{e \in C} c(e).
+  \]
+  \item Max-flow/min-cut duality (\cref{thm:flowcut}) is:
+  \[
+    \max_\phi \int_{\partial\kappa} \phi\, d\mu_c
+    \;=\;
+    \min_{C} \mu_c(C).
+  \]
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+(i) is conservation at $\kappa$: all flow leaving $\kappa$ is counted
+once, weighted by capacity. (ii) is the definition of $\mu_c$ restricted
+to $C$. (iii) is \cref{thm:flowcut} rewritten in the language of
+$\mu_c$.
+\end{proof}
+
+\begin{proposition}[Operators on $\mathcal{H}$]\label{prop:operators}
+The four calculus operations (\cref{sec:flow}) are operators on
+$\mathcal{H}$:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{\textsc{Slide}} $\sigma_e$: shift operator along edge
+  $e \in E$,
+  \[
+    (\sigma_e \phi)(e') \;=\; \phi(e') + \delta_{e,e'}.
+  \]
+  \item \textbf{\textsc{Compose}}: product of shifts along a path
+  $p = (e_1, \ldots, e_n)$,
+  \[
+    \sigma_p \;=\; \sigma_{e_n} \circ \cdots \circ \sigma_{e_1}.
+  \]
+  \item \textbf{\textsc{Cut}} $\partial_A$ for $A \subseteq E$:
+  orthogonal projection onto the closed subspace
+  $\mathcal{H}_A = \{\phi \in \mathcal{H} : \phi|_A = 0\}$,
+  \[
+    (\partial_A \phi)(e) \;=\;
+    \begin{cases} 0 & e \in A, \\ \phi(e) & e \notin A. \end{cases}
+  \]
+  Cutting a bypass edge $e$ is the projection $\partial_{\{e\}}$.
+  \item \textbf{\textsc{Phase}} $\varphi_{c'}$: change of measure
+  $c \mapsto c'$, inducing
+  \[
+    \mathcal{H} = L^2(E,\mu_c)
+    \;\xrightarrow{\;\varphi_{c'}\;}
+    \mathcal{H}' = L^2(E,\mu_{c'}).
+  \]
+  A phase transition changes the Hilbert space itself, not merely a
+  vector in a fixed space.
+\end{enumerate}
+\end{proposition}
+
+For the neural execution graph (\cref{def:neural-exgraph}), the inner
+product specialises to
+$\langle \phi_1, \phi_2 \rangle_c
+= \sum_{i=1}^{L} \phi_1(e_i)\,\phi_2(e_i)\,\|W_i\|_F$,
+a capacity-weighted $\ell^2$ norm on layer activations. The
+\textsc{Cut} operator $\partial_A$ is Frobenius-norm pruning; the
+\textsc{Phase} operator $\varphi_{c'}$ is a change of architecture.
+The Hilbert-space structure makes these operations precise: projection,
+not approximation.
+
+\paragraph{Spectral theory.}
+The inner product $\langle \cdot, \cdot \rangle_c$ opens the agentic
+space to spectral analysis.
+
+\begin{definition}[Graph Laplacian]\label{def:laplacian}
+The \emph{graph Laplacian} $\Delta \colon L^2(V) \to L^2(V)$ of the
+execution graph $G = (V, E, c)$ (\cref{def:exgraph}) is
+\[
+  (\Delta f)(v)
+  \;=\;
+  \sum_{(v,w)\in E} c(v,w)\bigl[f(v) - f(w)\bigr].
+\]
+$\Delta$ is positive semi-definite.
+Write its eigenvalues in non-decreasing order:
+$0 = \lambda_0 \leq \lambda_1 \leq \cdots \leq \lambda_n$.
+The \emph{spectral gap} is $\lambda_1$.
+\end{definition}
+
+\begin{theorem}[Cheeger inequality --- agentic form]\label{thm:cheeger}
+Let $\mu_c(\partial S)$ denote the total capacity of edges
+crossing from $S \subset V$ to $V \setminus S$, and let
+$\mathrm{vol}(S) = \sum_{v \in S} \sum_{(v,w)\in E} c(v,w)$.
+The \emph{Cheeger constant} of $G$ is
+\[
+  h(G)
+  \;=\;
+  \min_{\substack{S \subset V \\ \kappa \in S}}
+  \frac{\mu_c(\partial S)}{\min\!\bigl(\mathrm{vol}(S),\,
+  \mathrm{vol}(V \setminus S)\bigr)}.
+\]
+Then~\cite{cheeger,mohar}
+\[
+  \frac{\lambda_1}{2}
+  \;\leq\;
+  h(G)
+  \;\leq\;
+  \sqrt{2\lambda_1}.
+\]
+\end{theorem}
+
+\begin{remark}\label{rem:cheeger}
+The Cheeger constant $h(G)$ is the \emph{normalised knife threshold}.
+The numerator $\mu_c(\partial S)$ is the capacity of the cut separating
+$S$ from $V \setminus S$ (\cref{thm:flowcut}); the denominator
+normalises by volume.
+\textcolor{knife}{The knife is the cut.}
+\textcolor{water}{The flow is the volume.}
+\textcolor{sword}{The Cheeger inequality bridges the two.}
+Spectral gap $\lambda_1$ and normalised min-cut $h(G)$ are within a
+factor of $2\sqrt{2}$ of each other: the same obstruction, measured
+twice.
+\end{remark}
+
+\begin{theorem}[Mass gap $=$ viability]\label{thm:massgap}
+The following are equivalent:
+\begin{enumerate}[label=\textup{(\roman*)}]
+  \item\label{mg:spectral} $\lambda_1 > 0$ \quad (spectral gap).
+  \item\label{mg:cheeger} $h(G) > 0$ \quad (positive Cheeger constant).
+  \item\label{mg:flow} $|\phi| > 0$ for some agentic flow $\phi$
+  \quad (viability axiom, \cref{ax:viability}).
+  \item\label{mg:connect} $\kappa$ can reach $\infty$ in $G$
+  \quad (connectivity).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\ref{mg:spectral}$\Leftrightarrow$\ref{mg:cheeger}:
+Cheeger's inequality (\cref{thm:cheeger}) gives
+$\lambda_1/2 \leq h(G) \leq \sqrt{2\lambda_1}$,
+so $\lambda_1 > 0$ if and only if $h(G) > 0$.
+
+\ref{mg:cheeger}$\Leftrightarrow$\ref{mg:flow}:
+$h(G) > 0$ means every $\kappa$--$\infty$ cut has strictly positive
+capacity. By \cref{thm:flowcut}, max-flow equals min-cut; hence
+$\max_\phi |\phi| > 0$.
+
+\ref{mg:flow}$\Leftrightarrow$\ref{mg:connect}:
+A flow $\phi$ with $|\phi| > 0$ exists if and only if there is a
+directed path from $\kappa$ to $\infty$ with positive capacity on
+every edge.
+\end{proof}
+
+\begin{remark}[一石三鸟]\label{rem:threebirds}
+The Hilbert space $\mathcal{H} = L^2(E, \mu_c)$ (\cref{def:hilbert})
+kills three birds with one stone:
+\begin{itemize}
+  \item \textbf{\textcolor{water}{Integration.}}
+  $\int_E f\,d\mu_c$ realises max-flow as boundary integral and
+  min-cut as measure. Flow-cut duality (\cref{thm:flowcut}) becomes
+  an identity of integrals.
+
+  \item \textbf{\textcolor{sword}{Analysis.}}
+  The graph Laplacian $\Delta$ (\cref{def:laplacian}) acts on
+  $L^2(V)$; the Cheeger inequality (\cref{thm:cheeger}) bridges
+  the combinatorial quantity $h(G)$ and the analytic quantity
+  $\lambda_1$.
+
+  \item \textbf{\textcolor{knife}{Physics.}}
+  $\lambda_1 > 0$ is the mass gap. \Cref{thm:massgap} says the
+  viability axiom IS the mass gap: the Hilbert space changes, the
+  equivalence does not.
+\end{itemize}
+\end{remark}
+
+\begin{remark}[Spectral gap and training]\label{rem:spectralgap}
+The spectral gap $\lambda_1$ is computable. For a neural network
+(\cref{def:neural-exgraph}), $\lambda_1$ of the execution graph
+measures the viability margin: how far the network is from the
+degenerate regime $|\phi| = 0$.
+
+Training (\cref{def:training-algo}) increases $\lambda_1$: backward
+\textsc{Slide}s increase capacities on edges that carry flow, widening
+the spectral gap. Convergence $\max|\phi| = \min|C|$
+(\cref{thm:training}) is the statement that $\lambda_1$ has reached
+the Cheeger bound.
+
+A trained network with $\lambda_1 > 0$ has a mass gap. It survives.
+\end{remark}
