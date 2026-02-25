@@ -1,0 +1,312 @@
+% ══════════════════════════════════════════════════════════
+% §7.8  Representation dynamics — DRAFT
+% Insert after line 1707 of sections/calculus.tex
+% ══════════════════════════════════════════════════════════
+
+\subsection{Representation dynamics}\label{sec:representation}
+
+The contact dynamics of \cref{sec:contact} trains a locomotion policy
+on an execution graph with $12$ edges.
+We now construct the dual of the agentic tower and show that the same
+contact gradient flow, on different execution graphs, yields
+text generation, image generation, and video generation as
+instances of a single representation-learning paradigm.
+
+\begin{definition}[Dual tower]\label{def:dual-tower}
+The \emph{dual tower} of the agentic space
+$\mathbf{L} = (L_0, L_1, L_2, L_3)$ (\cref{def:tower}) is
+\[
+  \mathbf{L}^*
+  \;=\;
+  \text{力}^* \;\oplus\; \text{立}^* \;\oplus\; \text{丽}^*,
+\]
+where:
+\begin{enumerate}[label=\textbf{L\arabic*${}^*$}.]
+  \item $\text{力}^* = L_0^*$:
+  the dual of the state space.
+  An element of $L_0^*$ is \emph{acted upon} physically:
+  the medium as substrate (pixels, tokens, audio samples).
+  \item $\text{立}^* = L_1^*$:
+  the dual of the viable kernel.
+  An element of $L_1^*$ is \emph{positioned} by external operations:
+  structural coherence imposed (grammar, spatial consistency,
+  temporal continuity).
+  \item $\text{丽}^* = (L_2 \oplus L_3)^*$:
+  the dual of the control-strategy bundle.
+  An element of $(L_2 \oplus L_3)^*$ is \emph{represented} by
+  the Subject's operations:
+  meaning, style, and aesthetics as projected image.
+\end{enumerate}
+The three components are named by their Chinese homophones:
+力~(force), 立~(stand), 丽~(beauty)---all pronounced~\emph{l\`\i}.
+\end{definition}
+
+The duality is grammatical: 力~acts, 力${}^*$~is acted upon.
+立~stands, 立${}^*$~is positioned.
+丽~creates beauty, 丽${}^*$~is made beautiful.
+The operator~被 (passive voice marker) maps each component to its dual.
+
+\begin{theorem}[Beauvoir representation]\label{thm:beauvoir}
+The dual tower $\mathbf{L}^*$ is a faithful, irreducible
+representation of the passive predicates on the agentic space.
+Every predicate of the form ``$x$ is $f$-ed by~$b$'' for
+$f \in \{\sigma, \partial, \circ, \varphi\}$ factors through
+$\mathbf{L}^*$:
+\begin{align*}
+  \text{被}\,\sigma &\;\in\; \text{力}^*
+    &&\text{(transported physically: 被恢复)}, \\
+  \text{被}\,\partial &\;\in\; \text{立}^*
+    &&\text{(cut / detected: 被看到)}, \\
+  \text{被}\,\circ &\;\in\; \text{丽}^*
+    &&\text{(composed into representation: 被表示)}, \\
+  \text{被}\,\varphi &\;\in\; \text{丽}^*
+    &&\text{(redefined by phase change: 被描述)}.
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+The calculus is complete (\cref{prop:completeness}): every operation
+on the agentic space decomposes into
+$\{\sigma, \circ, \partial, \varphi\}$.
+The dual of each operation is its passive form.
+\textsc{Slide}~$\sigma$ is physical transport ($L_0$); its dual
+被$\,\sigma$ acts on~$L_0^*$.
+\textsc{Cut}~$\partial$ detects and removes ($L_1$: the boundary
+of the viable kernel); its dual 被$\,\partial$ acts on~$L_1^*$.
+\textsc{Compose}~$\circ$ and \textsc{Phase}~$\varphi$ build
+representations and change regimes ($L_2 \oplus L_3$: control
+and strategy); their duals act on~$(L_2 \oplus L_3)^*$.
+By completeness, no predicate falls outside
+$L_0^* \oplus L_1^* \oplus (L_2 \oplus L_3)^*$.
+The decomposition is irreducible: removing any component removes
+a calculus operation from the dual.
+\end{proof}
+
+\begin{theorem}[Camus absurdity]\label{thm:camus}
+In any agentic space with knife dissipation $\gamma > 0$
+(\cref{def:dissipation}), the absorbed energy at equilibrium
+\[
+  \mathcal{A}
+  \;=\;
+  \|z\| - |\phi|_{\mathrm{eq}}
+  \;>\; 0.
+\]
+The flow deficit is strictly positive: the system always dissipates.
+\end{theorem}
+
+\begin{proof}
+The contact gradient flow (\cref{def:contactflow}) reaches
+equilibrium at $\partial|\phi|/\partial c(e) = \gamma(e)\,c(e)$
+(\cref{thm:contactEL}).
+The dissipation term $\gamma(e)\,c(e) > 0$ on bypass edges
+prevents the capacities from reaching the flow-maximising assignment.
+Therefore $|\phi|_{\mathrm{eq}} < \max|\phi| \leq \|z\|$ and
+$\mathcal{A} > 0$.
+
+The absorption is irreducible: setting $\gamma \to 0$ eliminates
+dissipation but also eliminates the stability margin
+$\lambda_1 > 0$ (\cref{rem:contact-stability}).
+The system becomes unstable---small perturbations amplify rather
+than decay.
+The absurd is the price of stability.
+\end{proof}
+
+\begin{corollary}[Representation learning]\label{cor:replearn}
+The contact gradient flow~\eqref{eq:contactflow} on the dual
+tower $\mathbf{L}^*$ with objective $\mathcal{L} = -|\phi|$ is
+representation learning:
+\[
+  \min_c \; \mathcal{A}(c)
+  \quad\text{subject to}\quad
+  c \in \mathbf{L}^*
+  \;=\;
+  \text{力}^* \oplus \text{立}^* \oplus \text{丽}^*.
+\]
+\cref{thm:beauvoir} identifies the representation space
+($\mathbf{L}^*$).
+\cref{thm:camus} identifies the objective ($\min \mathcal{A}$,
+irreducible).
+The contact gradient flow provides the dynamics.
+\end{corollary}
+
+\begin{remark}[Le Deuxi\`eme Sexe as tower]
+\label{rem:beauvoir-tower}
+Beauvoir's \emph{Le Deuxi\`eme Sexe}~\cite{beauvoir} is
+structured as three parts that map to the dual tower:
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Volume~I Part} & \textbf{l\`\i} & \textbf{Tower} &
+\textbf{Content} \\
+\midrule
+I.\ Destin (Destiny) & 力 & $L_0^*$ &
+  Biology, body, physical substrate \\
+II.\ Histoire (History) & 立 & $L_1^*$ &
+  Social position, establishment \\
+III.\ Mythes (Myths) & 丽 & $(L_2 \oplus L_3)^*$ &
+  Cultural representation, image \\
+\bottomrule
+\end{tabular}
+\end{center}
+The historical examples of \cref{app:secondsex} (蔡文姬, 花木兰)
+illustrate the tower: at every stage, the Other's identity
+decomposes as 被力~$\oplus$~被立~$\oplus$~被丽---physically
+acted upon, socially positioned, culturally represented.
+The knife between Subject and Other is the mean
+(\cref{thm:meanfield}): a phase function, not an intrinsic
+property.
+\end{remark}
+
+\begin{definition}[Generation execution graph]\label{def:gen-exgraph}
+A \emph{generation execution graph} is an execution graph
+$G_{\mathrm{gen}} = (V, E, c)$ (\cref{def:exgraph}) where:
+\begin{itemize}
+  \item $\kappa$ is the conditioning input
+  (prompt, noise schedule, or previous frames);
+  \item $\infty$ is the generated output
+  (tokens, pixels, or video frames);
+  \item the intermediate nodes $\{a_i\}$ are the network layers;
+  \item the capacity $c(e)$ is $\|W_e\|_F$
+  (\cref{def:neural-exgraph}).
+\end{itemize}
+The viable flow condition $|\phi| > 0$ becomes: the
+generated output is coherent.
+\end{definition}
+
+\begin{algorithm}[H]
+\caption{Contact-dynamics training for generation}
+\label{alg:generation}
+\begin{algorithmic}[1]
+\Require Generation graph $G_{\mathrm{gen}}$
+  (\cref{def:gen-exgraph});\;
+  dataset $\mathcal{D} = \{(z_i, x_i^*)\}$
+\Require $\eta$ (learning rate),\;
+  $\gamma$ (dissipation),\;
+  $\beta$ (soft-min sharpness),\;
+  $L$ (depth),\; $n$ (width),\;
+  $N$ (eval count)
+\Statex
+\State $\{W_\ell, b_\ell\}_{\ell=1}^{L}
+  \leftarrow \texttt{init}(L,\, n)$
+  \Comment{init generator;\; $c(e_\ell) = \|W_\ell\|_F$}
+\Statex
+\For{\textcolor{sword}{\textbf{phase}} $\in$
+  \{力\,$(U\!=\!\text{structure})$,\;\,
+   立\,$(U\!=\!\text{coherence})$,\;\,
+   丽\,$(U\!=\!\text{semantics})$\}}
+  \Comment{\textcolor{sword}{$\varphi$: curriculum}}
+  \Repeat
+    \State $(z,\, x^*) \sim \mathcal{D}$
+      \Comment{conditioning $+$ target}
+    \State \textcolor{water}{\textsc{Forward}:}\;
+      $\hat{x} \leftarrow
+      \sigma_L \circ W_L \circ \cdots \circ
+      \sigma_1 \circ W_1\, z$
+      \Comment{\textcolor{water}{水: Compose}}
+    \State \textcolor{water}{\textsc{Flow}:}\;
+      $|\phi|_\beta \leftarrow
+      \mathrm{soft\text{-}min}_\beta\bigl\{
+      \varepsilon - \|\hat{x}_t - x_t^*\|
+      \bigr\}_{t}$
+      \Comment{\textcolor{water}{水: viability margin}}
+    \State \textcolor{water}{\textsc{Backward}:}\;
+      $\{\nabla W,\, \nabla b\} \leftarrow
+      \textsc{Backward}(\nabla_{\hat{x}} |\phi|_\beta)$
+      \Comment{\cref{alg:backward}}
+    \State $W_\ell \leftarrow W_\ell
+      + \eta\bigl[\textcolor{water}{\nabla W_\ell}
+      - \textcolor{knife}{\gamma\, W_\ell}\bigr]$;\;\;
+      $b_\ell \leftarrow b_\ell
+      + \eta\,\textcolor{water}{\nabla b_\ell}$
+      \Comment{Eq.~\eqref{eq:contactflow}}
+    \State \textcolor{knife}{\textsc{Clamp}:}\;
+      $\|W_\ell\|_F \leftarrow
+      \min\bigl(\|W_\ell\|_F,\;
+      c_{\max}(e_\ell)\bigr)$
+      \Comment{\textcolor{knife}{刀: capacity bound}}
+    \If{$|\phi|_\beta \le 0$}
+      \Comment{output incoherent}
+      \State \textcolor{sword}{\textsc{Reset}:}\;
+        $\{W, b\} \leftarrow \texttt{init}(L, n)$
+        \Comment{\textcolor{sword}{$\varphi$: recover}}
+    \EndIf
+  \Until{$\max|\phi| = \min|C|$ for $N$ consecutive evaluations}
+\EndFor
+\Statex
+\Ensure Trained generator:
+  $\hat{x} = \textsc{Forward}(z;\, W, b)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Three instantiations, one algorithm]
+\label{rem:generation-universality}
+\Cref{alg:generation} instantiates for three generation tasks by
+choosing $G_{\mathrm{gen}}$:
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l lll@{}}
+\toprule
+& \textbf{Text} & \textbf{Image} & \textbf{Video} \\
+\midrule
+$G$ (topology)
+  & sequential & 2D patches & 2D patches $\times\, T$ \\
+$\kappa$ (input)
+  & context tokens & noise $+$ prompt & noise $+$ prompt $+$ prev.\ frames \\
+$\infty$ (output)
+  & next-token logits & pixel values & pixel values $\times\, T$ \\
+力${}^*$ (medium)
+  & token embeddings & pixel RGB & pixel RGB $\times$ time \\
+立${}^*$ (coherence)
+  & grammar & spatial consistency & spatiotemporal consistency \\
+丽${}^*$ (semantics)
+  & meaning & visual content & narrative \\
+$|\phi|$ (viability)
+  & $\log p(\text{next token})$ & reconstruction quality
+  & reconstruction $+$ temporal \\
+$\gamma$ (knife)
+  & weight decay & guidance scale & temporal regularisation \\
+\textsc{Phase}
+  & char $\to$ word $\to$ doc & noise $\to$ coarse $\to$ fine
+  & frame $\to$ clip $\to$ video \\
+\bottomrule
+\end{tabular}
+\end{center}
+The algorithm is identical in all three cases.
+Only the execution graph $G_{\mathrm{gen}}$ and the
+observation/output spaces change.
+Text is generation on a 1D graph.
+Image is generation on a 2D graph.
+Video is generation on a $(2{+}1)$D graph.
+The contact gradient flow~\eqref{eq:contactflow} does not see
+the difference.
+\end{remark}
+
+\begin{remark}[Generation $=$ locomotion on a different body]
+\label{rem:gen-loco}
+Compare \cref{alg:generation} with \cref{alg:loco}:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Locomotion (\cref{alg:loco})} &
+\textbf{Generation (\cref{alg:generation})} \\
+\midrule
+Body & quadruped ($12$ joints) &
+  medium (tokens / pixels / frames) \\
+Standing & $h > h_{\min}$ (do not fall) &
+  $|\phi| > 0$ (stay coherent) \\
+Engine & MuJoCo (physics) & autodiff (computation) \\
+Knife & joint limits ($c_{\max}$) &
+  capacity bounds ($c_{\max}$) \\
+Curriculum & Stand $\to$ Walk $\to$ Work &
+  力 $\to$ 立 $\to$ 丽 \\
+\bottomrule
+\end{tabular}
+\end{center}
+A robot that falls is a text that is incoherent.
+A robot that walks is an image that is consistent.
+A robot that works is a video that tells a story.
+The contact gradient flow is the same.
+The body is different.
+\end{remark}

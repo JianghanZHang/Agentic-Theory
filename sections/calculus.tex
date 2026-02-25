@@ -1705,3 +1705,1190 @@ The patches become unnecessary.
 \Cref{alg:loco} is not a new algorithm---it is what remains when
 you \textcolor{caution}{delete the patches}.
 \end{remark}
+
+\subsection{Representation dynamics}\label{sec:representation}
+
+The contact dynamics of \cref{sec:contact} trains a locomotion policy
+on an execution graph with $12$ edges.
+We now construct the dual of the agentic tower and show that the same
+contact gradient flow, on different execution graphs, yields
+text generation, image generation, and video generation as
+instances of a single representation-learning paradigm.
+
+\begin{definition}[Dual tower]\label{def:dual-tower}
+The \emph{dual tower} of the agentic space
+$\mathbf{L} = (L_0, L_1, L_2, L_3)$ (\cref{def:tower}) is
+\[
+  \mathbf{L}^*
+  \;=\;
+  \text{力}^* \;\oplus\; \text{立}^* \;\oplus\; \text{丽}^*,
+\]
+where:
+\begin{enumerate}[label=\textbf{L\arabic*${}^*$}.]
+  \item $\text{力}^* = L_0^*$:
+  the dual of the state space.
+  An element of $L_0^*$ is \emph{acted upon} physically:
+  the medium as substrate (pixels, tokens, audio samples).
+  \item $\text{立}^* = L_1^*$:
+  the dual of the viable kernel.
+  An element of $L_1^*$ is \emph{positioned} by external operations:
+  structural coherence imposed (grammar, spatial consistency,
+  temporal continuity).
+  \item $\text{丽}^* = (L_2 \oplus L_3)^*$:
+  the dual of the control-strategy bundle.
+  An element of $(L_2 \oplus L_3)^*$ is \emph{represented} by
+  the Subject's operations:
+  meaning, style, and aesthetics as projected image.
+\end{enumerate}
+The three components are named by their Chinese homophones:
+力~(force), 立~(stand), 丽~(beauty)---all pronounced~\emph{l\`\i}.
+\end{definition}
+
+The duality is grammatical: 力~acts, 力${}^*$~is acted upon.
+立~stands, 立${}^*$~is positioned.
+丽~creates beauty, 丽${}^*$~is made beautiful.
+The operator~被 (passive voice marker) maps each component to its dual.
+
+\begin{theorem}[Beauvoir representation]\label{thm:beauvoir}
+The dual tower $\mathbf{L}^*$ is a faithful, irreducible
+representation of the passive predicates on the agentic space.
+Every predicate of the form ``$x$ is $f$-ed by~$b$'' for
+$f \in \{\sigma, \partial, \circ, \varphi\}$ factors through
+$\mathbf{L}^*$:
+\begin{align*}
+  \text{被}\,\sigma &\;\in\; \text{力}^*
+    &&\text{(transported physically: 被恢复)}, \\
+  \text{被}\,\partial &\;\in\; \text{立}^*
+    &&\text{(cut / detected: 被看到)}, \\
+  \text{被}\,\circ &\;\in\; \text{丽}^*
+    &&\text{(composed into representation: 被表示)}, \\
+  \text{被}\,\varphi &\;\in\; \text{丽}^*
+    &&\text{(redefined by phase change: 被描述)}.
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+The calculus is complete (\cref{prop:completeness}): every operation
+on the agentic space decomposes into
+$\{\sigma, \circ, \partial, \varphi\}$.
+The dual of each operation is its passive form.
+\textsc{Slide}~$\sigma$ is physical transport ($L_0$); its dual
+被$\,\sigma$ acts on~$L_0^*$.
+\textsc{Cut}~$\partial$ detects and removes ($L_1$: the boundary
+of the viable kernel); its dual 被$\,\partial$ acts on~$L_1^*$.
+\textsc{Compose}~$\circ$ and \textsc{Phase}~$\varphi$ build
+representations and change regimes ($L_2 \oplus L_3$: control
+and strategy); their duals act on~$(L_2 \oplus L_3)^*$.
+By completeness, no predicate falls outside
+$L_0^* \oplus L_1^* \oplus (L_2 \oplus L_3)^*$.
+The decomposition is irreducible: removing any component removes
+a calculus operation from the dual.
+\end{proof}
+
+\begin{theorem}[Camus absurdity]\label{thm:camus}
+In any agentic space with knife dissipation $\gamma > 0$
+(\cref{def:dissipation}), the absorbed energy at equilibrium
+\[
+  \mathcal{A}
+  \;=\;
+  \|z\| - |\phi|_{\mathrm{eq}}
+  \;>\; 0.
+\]
+The flow deficit is strictly positive: the system always dissipates.
+\end{theorem}
+
+\begin{proof}
+The contact gradient flow (\cref{def:contactflow}) reaches
+equilibrium at $\partial|\phi|/\partial c(e) = \gamma(e)\,c(e)$
+(\cref{thm:contactEL}).
+The dissipation term $\gamma(e)\,c(e) > 0$ on bypass edges
+prevents the capacities from reaching the flow-maximising assignment.
+Therefore $|\phi|_{\mathrm{eq}} < \max|\phi| \leq \|z\|$ and
+$\mathcal{A} > 0$.
+
+The absorption is irreducible: setting $\gamma \to 0$ eliminates
+dissipation but also eliminates the stability margin
+$\lambda_1 > 0$ (\cref{rem:contact-stability}).
+The system becomes unstable---small perturbations amplify rather
+than decay.
+The absurd is the price of stability.
+\end{proof}
+
+\begin{corollary}[Representation learning]\label{cor:replearn}
+The contact gradient flow~\eqref{eq:contactflow} on the dual
+tower $\mathbf{L}^*$ with objective $\mathcal{L} = -|\phi|$ is
+representation learning:
+\[
+  \min_c \; \mathcal{A}(c)
+  \quad\text{subject to}\quad
+  c \in \mathbf{L}^*
+  \;=\;
+  \text{力}^* \oplus \text{立}^* \oplus \text{丽}^*.
+\]
+\cref{thm:beauvoir} identifies the representation space
+($\mathbf{L}^*$).
+\cref{thm:camus} identifies the objective ($\min \mathcal{A}$,
+irreducible).
+The contact gradient flow provides the dynamics.
+\end{corollary}
+
+\begin{definition}[Representation dynamics]\label{def:repdyn}
+Let $G = (V, E, c)$ be an execution graph (\cref{def:exgraph}) on the
+dual tower $\mathbf{L}^*$ (\cref{def:dual-tower}).
+The \emph{representation dynamics} on $G$ is the contact gradient
+flow~\eqref{eq:contactflow}:
+\[
+  \frac{dc(e)}{dt}
+  \;=\;
+  \frac{\partial|\phi|}{\partial c(e)}
+  \;-\;
+  \gamma(e)\,c(e),
+  \qquad
+  c(e) = \|W_e\|_F,
+\]
+where $|\phi|$ is the viability of the generated output
+(\cref{cor:replearn}: $\mathcal{L} = -|\phi|$) and $\gamma$ is the
+knife dissipation (\cref{def:dissipation}).
+\end{definition}
+
+\medskip
+\noindent\fcolorbox{water}{water!5}{%
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule}
+\smallskip
+\textbf{\textcolor{water}{Why representation is contact dynamics.}}\;
+The contact gradient flow~\eqref{eq:contactflow} is defined on any
+execution graph with capacitated edges (\cref{def:exgraph}).
+It does not distinguish whether the edges carry physical actuators
+($c \in \mathbf{L}$) or neural weights
+($c \in \mathbf{L}^*$).
+Contact dynamics (\cref{sec:contact}) trains an agent to \emph{act}
+(力\,立\,丽).
+Representation dynamics trains a model to \emph{represent}
+(力${}^*$\,立${}^*$\,丽${}^*$).
+The operator~被 maps one to the other:
+the same equation, the same flow, the same knife---on the dual tower.
+\smallskip
+\end{minipage}}
+\medskip
+
+\begin{remark}[Le Deuxi\`eme Sexe as tower]
+\label{rem:beauvoir-tower}
+Beauvoir's \emph{Le Deuxi\`eme Sexe}~\cite{beauvoir} is
+structured as three parts that map to the dual tower:
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Volume~I Part} & \textbf{l\`\i} & \textbf{Tower} &
+\textbf{Content} \\
+\midrule
+I.\ Destin (Destiny) & 力 & $L_0^*$ &
+  Biology, body, physical substrate \\
+II.\ Histoire (History) & 立 & $L_1^*$ &
+  Social position, establishment \\
+III.\ Mythes (Myths) & 丽 & $(L_2 \oplus L_3)^*$ &
+  Cultural representation, image \\
+\bottomrule
+\end{tabular}
+\end{center}
+The historical examples of \cref{app:secondsex} (蔡文姬, 花木兰)
+illustrate the tower: at every stage, the Other's identity
+decomposes as 被力~$\oplus$~被立~$\oplus$~被丽---physically
+acted upon, socially positioned, culturally represented.
+The knife between Subject and Other is the mean
+(\cref{thm:meanfield}): a phase function, not an intrinsic
+property.
+\end{remark}
+
+\begin{definition}[Generation execution graph]\label{def:gen-exgraph}
+A \emph{generation execution graph} is an execution graph
+$G_{\mathrm{gen}} = (V, E, c)$ (\cref{def:exgraph}) where:
+\begin{itemize}
+  \item $\kappa$ is the conditioning input
+  (prompt, noise schedule, or previous frames);
+  \item $\infty$ is the generated output
+  (tokens, pixels, or video frames);
+  \item the intermediate nodes $\{a_i\}$ are the network layers;
+  \item the capacity $c(e)$ is $\|W_e\|_F$
+  (\cref{def:neural-exgraph}).
+\end{itemize}
+The viable flow condition $|\phi| > 0$ becomes: the
+generated output is coherent.
+\end{definition}
+
+\begin{definition}[Representation model]\label{def:repmodel}
+A \emph{representation model} is a family of maps
+$\{f_m\}_{m \in \mathcal{M}}$ on modalities
+$\mathcal{M} = \{\text{text},\, \text{image},\, \text{video}\}$,
+sharing a backbone $g_\theta$ on the dual tower:
+\[
+  f_m \;=\; h_m \circ g_\theta \circ \tau_m,
+  \qquad m \in \mathcal{M},
+\]
+where $\tau_m$ is a modality-specific tokeniser
+(embed tokens / patchify pixels / patchify-and-stack frames)
+and $h_m$ is a modality-specific head
+(predict next token / denoise patches / denoise-and-predict frames).
+The backbone $g_\theta$ operates on
+$\mathbf{L}^* = \text{力}^* \oplus \text{立}^* \oplus \text{丽}^*$
+(\cref{def:dual-tower}) and is shared across all modalities.
+\end{definition}
+
+\begin{algorithm}[H]
+\caption{Contact-dynamics training for a representation model}
+\label{alg:repmodel}
+\begin{algorithmic}[1]
+\Require Modality set
+  $\mathcal{M} = \{\text{text},\, \text{image},\, \text{video}\}$
+\Require For each $m \in \mathcal{M}$:\;
+  graph $G_m$ (\cref{def:gen-exgraph}),\;
+  dataset $\mathcal{D}_m$,\;
+  tokeniser $\tau_m$
+\Require $\eta$ (learning rate),\;
+  $\gamma$ (dissipation),\;
+  $\beta$ (soft-min sharpness),\;
+  $L_s$ (backbone depth),\; $n$ (width),\;
+  $N$ (eval count)
+\Statex
+\State \textbf{Backbone:}\;
+  $\{W_\ell, b_\ell\}_{\ell=1}^{L_s}
+  \leftarrow \texttt{init}(L_s,\, n)$
+  \Comment{shared;\; $c(e_\ell) = \|W_\ell\|_F$}
+\For{$m \in \mathcal{M}$}
+  \Comment{modality-specific heads}
+  \State $\{W_\ell^{m}, b_\ell^{m}\}_{\ell=1}^{L_m}
+    \leftarrow \texttt{init}(L_m,\, n_m)$
+\EndFor
+\Statex
+\For{\textcolor{sword}{\textbf{phase}} $\in$
+  \{力\,$(U\!=\!\text{structure})$,\;\,
+   立\,$(U\!=\!\text{coherence})$,\;\,
+   丽\,$(U\!=\!\text{semantics})$\}}
+  \Comment{\textcolor{sword}{$\varphi$: curriculum}}
+  \Repeat
+    \State $m \sim \mathrm{Unif}(\mathcal{M})$;\;\;
+      $(z,\, x^*) \sim \mathcal{D}_m$
+      \Comment{sample modality $+$ data}
+    \State $\tilde{z} \leftarrow \tau_m(z)$
+      \Comment{tokenise into $\mathbf{L}^*$}
+    \State \textcolor{water}{\textsc{Forward}:}\;
+      $\hat{x} \leftarrow h_m\bigl(g_\theta(\tilde{z})\bigr)$
+      \Comment{\textcolor{water}{水: backbone $+$ head $m$}}
+    \State \textcolor{water}{\textsc{Flow}:}\;
+      $|\phi|_\beta^{(m)} \leftarrow
+      \mathrm{soft\text{-}min}_\beta\bigl\{
+      |\phi|_t^{(m)}
+      \bigr\}_{t}$
+      \Comment{\textcolor{water}{水: modality viability}}
+    \State \textcolor{water}{\textsc{Backward}:}\;
+      $\{\nabla W,\, \nabla b,\,
+       \nabla W^{m},\, \nabla b^{m}\}
+      \leftarrow \textsc{Backward}(\nabla_{\hat{x}}\, |\phi|_\beta^{(m)})$
+      \Comment{\cref{alg:backward}}
+    \State $W_\ell \leftarrow W_\ell
+      + \eta\bigl[\textcolor{water}{\nabla W_\ell}
+      - \textcolor{knife}{\gamma\, W_\ell}\bigr]$;\;\;
+      $b_\ell \leftarrow b_\ell
+      + \eta\,\textcolor{water}{\nabla b_\ell}$
+      \Comment{backbone: Eq.~\eqref{eq:contactflow}}
+    \State $W_\ell^{m} \leftarrow W_\ell^{m}
+      + \eta\bigl[\textcolor{water}{\nabla W_\ell^{m}}
+      - \textcolor{knife}{\gamma\, W_\ell^{m}}\bigr]$;\;\;
+      $b_\ell^{m} \leftarrow b_\ell^{m}
+      + \eta\,\textcolor{water}{\nabla b_\ell^{m}}$
+      \Comment{head $m$: Eq.~\eqref{eq:contactflow}}
+    \State \textcolor{knife}{\textsc{Clamp}:}\;
+      $\|W_\ell\|_F \leftarrow
+      \min\bigl(\|W_\ell\|_F,\;
+      c_{\max}(e_\ell)\bigr)$
+      for all $\ell$
+      \Comment{\textcolor{knife}{刀: capacity}}
+    \If{$|\phi|_\beta^{(m)} \le 0$}
+      \Comment{output incoherent in modality $m$}
+      \State \textcolor{sword}{\textsc{Reset}:}\;
+        head only: $\{W^m, b^m\} \leftarrow \texttt{init}(L_m, n_m)$
+        \Comment{\textcolor{sword}{$\varphi$: recover modality}}
+    \EndIf
+  \Until{$\forall\, m\!:\; \max|\phi|^{(m)} = \min|C^{(m)}|$
+    for $N$ consecutive evaluations}
+\EndFor
+\Statex
+\Ensure Representation model:
+  $f_m = h_m \circ g_\theta \circ \tau_m$
+  for all $m \in \mathcal{M}$,
+  backbone on $\mathbf{L}^*$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Three bodies, one backbone]
+\label{rem:repmodel-bodies}
+The modality-specific components of \cref{alg:repmodel} are:
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}l lll@{}}
+\toprule
+& \textbf{Text} & \textbf{Image} & \textbf{Video} \\
+\midrule
+$G_m$ (topology)
+  & sequential & 2D patches & 2D patches $\times\, T$ \\
+$\kappa_m$ (input)
+  & context tokens & noise $+$ prompt
+  & noise $+$ prompt $+$ prev.\ frames \\
+$\tau_m$ (tokeniser)
+  & BPE embedding & patchify $+$ linear
+  & patchify $+$ linear $+$ temporal \\
+$h_m$ (head)
+  & softmax over $V$ & depatchify to $\R^{H \times W \times 3}$
+  & depatchify $\times\, T$ \\
+$|\phi|^{(m)}$ (viability)
+  & $\log p(x_t^* \mid x_{<t})$
+  & $\varepsilon - \|\hat{x} - x^*\|$
+  & $\min(\text{spatial},\; \lambda_T \!\cdot\! \text{temporal})$ \\
+$\gamma^{(m)}$ (knife)
+  & weight decay & guidance scale
+  & temporal regularisation \\
+\textsc{Phase}
+  & char $\to$ word $\to$ doc
+  & noise $\to$ coarse $\to$ fine
+  & frame $\to$ clip $\to$ video \\
+\bottomrule
+\end{tabular}
+\end{center}
+The backbone $g_\theta$ sees none of these distinctions.
+It operates on $\mathbf{L}^*$: medium tokens (力${}^*$),
+structural coherence (立${}^*$), semantic content (丽${}^*$).
+The modality is invisible at the representation level---this is
+why a single backbone suffices.
+\end{remark}
+
+\begin{remark}[Representation model $=$ locomotion on every body]
+\label{rem:repmodel-loco}
+Compare \cref{alg:repmodel} with \cref{alg:loco}:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Locomotion (\cref{alg:loco})} &
+\textbf{Representation model (\cref{alg:repmodel})} \\
+\midrule
+Body & quadruped ($12$ joints) &
+  text / image / video \\
+Standing & $h > h_{\min}$ (do not fall) &
+  $|\phi|^{(m)} > 0$ (stay coherent) \\
+Engine & MuJoCo (physics) &
+  autodiff (shared backbone $g_\theta$) \\
+Knife & joint limits ($c_{\max}$) &
+  capacity bounds ($c_{\max}$) \\
+Curriculum & Stand $\to$ Walk $\to$ Work &
+  力 $\to$ 立 $\to$ 丽 \\
+\bottomrule
+\end{tabular}
+\end{center}
+A robot that falls is a text that is incoherent is an image that is
+noise is a video that flickers.
+The contact gradient flow is the same.
+The body is different.
+The representation model learns all bodies at once---三位一体:
+one backbone on $\mathbf{L}^*$, three modalities, one gradient flow.
+\end{remark}
+
+\begin{remark}[LoRA $=$ low-rank task head]
+\label{rem:lora}
+Low-Rank Adaptation (LoRA) is a task head in the sense of
+\cref{def:repmodel}.
+Given a pre-trained backbone with layer weights
+$\{W_\ell\}_{\ell=1}^L$, a LoRA adapter of rank~$r$ adds
+\[
+  \Delta W_\ell \;=\; B_\ell\, A_\ell,
+  \qquad B_\ell \in \R^{d \times r},\;\;
+  A_\ell \in \R^{r \times d},\;\;
+  r \ll d,
+\]
+at each layer.
+The backbone $W_\ell$ is frozen; the adapter $\Delta W_\ell$ is trained.
+In the dual tower:
+$W_\ell$ is the representation ($\mathbf{L}^*$),
+$\Delta W_\ell$ is the task function
+($\mathcal{H}_{\mathcal{T}}$, \cref{def:task-rkhs}),
+and the rank~$r = c_{\max}(e_\ell^{\mathrm{task}})$ is the knife---it
+bounds how far the task can deviate from the representation.
+\end{remark}
+
+\begin{definition}[Code metric space]
+\label{def:code-metric}
+The \emph{code metric space} is the agentic tower
+(\cref{def:tower}) unbundled to four levels, each equipped with
+a viability metric.
+The general dual tower compresses
+$L_2^* \oplus L_3^* \to \text{丽}^*$;
+the code metric space resolves them into correctness ($L_2^*$)
+and performance ($L_3^*$), yielding four phases---力, 立, 丽(正), 丽(快).
+Correctness and performance are both sub-types of
+丽~(value)---all three characters pronounced \emph{l\`\i}:
+\begin{itemize}
+  \item $\phi_{\mathrm{topo}}$ (\textbf{力${}^*$}, data topology,
+  指针序):\;
+  source forms a valid abstract syntax tree, all imports resolve,
+  all names are bound.
+  The data-structure graph (pointer\,/\,reference topology) is
+  well-formed.
+  Binary: $\phi_{\mathrm{topo}} \in \{0,\, 1\}$.
+
+  \item $\phi_{\mathrm{safe}}$ (\textbf{立${}^*$}, memory safety,
+  内存安全):\;
+  program executes without crashing---no segmentation fault,
+  no uncaught exception, no resource leak, no use-after-free.
+  Binary: $\phi_{\mathrm{safe}} \in \{0,\, 1\}$.
+
+  \item $\phi_{\mathrm{correct}}$ (\textbf{丽(正)${}^*$}, correctness,
+  正确):\;
+  output matches specification---all assertions hold, all tests pass.
+  Ratio: $\phi_{\mathrm{correct}} =
+  \text{tests passed}\,/\,\text{tests total} \in [0,\, 1]$.
+
+  \item $\phi_{\mathrm{perf}}$ (\textbf{丽(快)${}^*$}, performance,
+  快):\;
+  program completes within time and space budgets.
+  Continuous: $\phi_{\mathrm{perf}} =
+  \max\!\bigl(0,\; 1 - t_{\mathrm{run}} / t_{\mathrm{budget}}\bigr)
+  \in [0,\, 1]$.
+\end{itemize}
+The ordering is a prerequisite chain (each gates the next):
+\[
+  \phi_{\mathrm{topo}} \;\to\;
+  \phi_{\mathrm{safe}} \;\to\;
+  \phi_{\mathrm{correct}} \;\to\;
+  \phi_{\mathrm{perf}}.
+\]
+You cannot profile code that crashes;
+you cannot test code that does not parse.
+The combined viability is
+\[
+  |\phi|_{\mathrm{code}} \;=\;
+  \mathrm{soft\text{-}min}_\beta\bigl\{
+  \phi_{\mathrm{topo}},\;
+  \phi_{\mathrm{safe}},\;
+  \phi_{\mathrm{correct}},\;
+  \phi_{\mathrm{perf}}
+  \bigr\}.
+\]
+Every programming language has all four levels.
+Languages differ in which levels are enforced automatically:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}l llll@{}}
+\toprule
+\textbf{Language}
+  & \textbf{力 (topo)} & \textbf{立 (safe)}
+  & \textbf{丽(正) (correct)} & \textbf{丽(快) (perf)} \\
+\midrule
+Python
+  & \texttt{ast.parse()}
+  & \texttt{python f.py} exits $0$
+  & \texttt{pytest} passes
+  & \texttt{timeit} $\leq$ budget \\
+C
+  & \texttt{gcc -fsyntax-only}
+  & Valgrind: no errors
+  & tests pass
+  & \texttt{perf stat} $\leq$ budget \\
+Rust
+  & \texttt{cargo check}
+  & borrow checker (compile-time!)
+  & \texttt{cargo test}
+  & \texttt{cargo bench} $\leq$ budget \\
+CUDA
+  & \texttt{nvcc -c}
+  & \texttt{compute-sanitizer}: 0 errors
+  & trajectory converges
+  & \texttt{nsight} $\leq$ budget \\
+\bottomrule
+\end{tabular}}%
+\end{center}
+\end{definition}
+
+Fine-tuning is representation dynamics at school.
+The representation model (\cref{def:repmodel}) learns $\mathbf{L}^*$
+from mixed-modality data (\cref{alg:repmodel}).
+Fine-tuning attaches a LoRA adapter (\cref{rem:lora}) to the frozen
+backbone and trains it on task-specific data in the 学堂
+(\cref{def:task-rkhs}).
+For code generation, the code metric space (\cref{def:code-metric})
+provides four viability metrics trained in prerequisite order.
+\Cref{alg:finetune} is self-contained: an ML engineer with a
+pre-trained checkpoint, a GPU server, a sandbox, and the four
+viability metrics can execute it directly.
+
+\begin{algorithm}[H]
+\caption{Fine-tuning a representation model (学堂)}
+\label{alg:finetune}
+\begin{algorithmic}[1]
+\Require Checkpoint $\theta_0$
+  (e.g.\ \texttt{deepseek-coder-v2});\;
+  tokenizer $\tau$;\;
+  GPU server $\mathcal{E}_{\mathrm{GPU}}$
+\Require Sandbox $\mathcal{E}_{\mathrm{sandbox}}$
+  (e.g.\ Docker, \texttt{venv}, \texttt{nsjail})
+\Require Task $\mathcal{T}$:\;
+  dataset $\mathcal{D} = \{(z_i, x_i^*)\}$ (Q-A mode)
+  or judge $J$ (court mode)
+\Require Viability metrics
+  $\phi_1 \to \cdots \to \phi_K$
+  in prerequisite order
+  (\cref{def:code-metric}: $K\!=\!4$)
+\Require $r$ (LoRA rank $=$ knife),\;
+  $\alpha$ (LoRA scaling),\;
+  $\eta$ (learning rate),\;
+  $\gamma$ (weight decay),\;
+  $\beta$ (soft-min sharpness),\;
+  $N$ (eval count)
+\Statex
+\State $\{W_\ell\}_{\ell=1}^{L}
+  \leftarrow \texttt{load}(\theta_0)$;\;\;
+  \texttt{freeze}($W$)
+  \Comment{backbone on $\mathbf{L}^*$: frozen}
+\State $\{B_\ell \!=\! 0,\;
+  A_\ell \!\sim\! \mathcal{N}(0, \sigma^2)
+  \}_{\ell=1}^{L}$
+  \Comment{LoRA init: $\Delta W_\ell = B_\ell A_\ell = 0$}
+\Statex
+\For{\textcolor{sword}{\textbf{phase}} $\in$
+  \{力\,$(\phi_{\mathrm{topo}})$,\;\,
+   立\,$(\phi_{\mathrm{safe}})$,\;\,
+   丽(正)\,$(\phi_{\mathrm{correct}})$,\;\,
+   丽(快)\,$(\phi_{\mathrm{perf}})$\}}
+  \Comment{\textcolor{sword}{$\varphi$: curriculum (\cref{def:code-metric})}}
+  \Repeat
+    \State $(z,\, x^*) \sim \mathcal{D}$\; or\; $z \sim \mathcal{T}$
+      \Comment{Q-A: input $+$ target;\; court: input only}
+    \State \textcolor{water}{\textsc{Forward}:}\;
+      $\hat{x} \leftarrow \textsc{Forward}\bigl(\tau(z);\;
+      \{W_\ell + \tfrac{\alpha}{r}\,
+      \textcolor{water}{B_\ell A_\ell}\}\bigr)$
+      \Comment{\cref{alg:forward}; backbone $+$ adapter}
+    \State \textcolor{water}{\textsc{Execute}:}\;
+      $\mathrm{result} \leftarrow
+      \mathcal{E}_{\mathrm{sandbox}}.\texttt{run}(\hat{x})$
+      \Comment{\textcolor{water}{水:} run generated code in sandbox}
+    \State \textcolor{water}{\textsc{Evaluate}:}\;
+      $|\phi|_\beta \leftarrow
+      \mathrm{soft\text{-}min}_\beta\bigl\{
+      \phi_k(\mathrm{result}_t)
+      \bigr\}_{t}$
+      \Comment{\textcolor{water}{水:} phase-$k$ metric
+      (\cref{def:code-metric})}
+    \State \textcolor{water}{\textsc{Backward}:}\;
+      $\{\nabla B_\ell,\, \nabla A_\ell\}_{\ell=1}^{L}
+      \leftarrow \textsc{Backward}(\nabla_{\hat{x}}\,
+      |\phi|_\beta)$
+      \Comment{\cref{alg:backward};\; $W$ frozen}
+    \State $B_\ell \leftarrow B_\ell
+      + \eta\,\textcolor{water}{\nabla B_\ell}$;\;\;
+      $A_\ell \leftarrow A_\ell
+      + \eta\bigl[\textcolor{water}{\nabla A_\ell}
+      - \textcolor{knife}{\gamma\, A_\ell}\bigr]$
+      \Comment{Eq.~\eqref{eq:contactflow} on adapter}
+    \State \textcolor{knife}{\textsc{Clamp}:}\;
+      $\|B_\ell A_\ell\|_F \leftarrow
+      \min\bigl(\|B_\ell A_\ell\|_F,\;
+      c_{\max}\bigr)$
+      \Comment{\textcolor{knife}{刀: adapter capacity}}
+    \If{$|\phi|_\beta \le 0$}
+      \Comment{output incoherent}
+      \State \textcolor{sword}{\textsc{Reset}:}\;
+        $B_\ell \leftarrow 0$;\;
+        $A_\ell \sim \mathcal{N}(0, \sigma^2)$
+        \Comment{\textcolor{sword}{$\varphi$: re-init adapter}}
+    \EndIf
+  \Until{$\max|\phi| = \min|C|$ for $N$ consecutive evaluations}
+\EndFor
+\Statex
+\Ensure Adapted model:\;
+  $W_\ell^{\mathrm{out}} = W_\ell
+  + \tfrac{\alpha}{r}\,B_\ell A_\ell$;\;\;
+  \texttt{merge\_and\_upload}
+\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  >=stealth,
+  box/.style={draw, rounded corners=2pt, minimum width=5.2cm,
+              minimum height=0.55cm, align=center, font=\small},
+  io/.style={box, fill=black!5},
+  wt/.style={box, fill=water!10},
+  arr/.style={->, thick, black!60},
+]
+\node[io] (init) at (0,0)
+  {Checkpoint $\theta_0$;\;\;\texttt{freeze}($W$);\;\;init LoRA};
+\node[draw, fill=sword!12, rounded corners=2pt,
+  font=\small\bfseries, minimum width=5.2cm,
+  minimum height=0.5cm, align=center] (phase) at (0,-1.0)
+  {\textcolor{sword}{$\varphi$:}\;
+   力 $\to$ 立 $\to$ 丽(正) $\to$ 丽(快)};
+\node[wt] (fwd)  at (0,-2.1)
+  {\textcolor{water}{\textsc{Forward}}:\;
+   $\hat{x} = f\!\bigl(\tau(z);\;W\!+\!\tfrac{\alpha}{r}BA\bigr)$};
+\node[wt] (exec) at (0,-2.9)
+  {\textcolor{water}{\textsc{Execute}}:\;
+   sandbox.\texttt{run}($\hat{x}$)};
+\node[wt] (eval) at (0,-3.7)
+  {\textcolor{water}{\textsc{Evaluate}}:\;
+   $|\phi|_\beta = \mathrm{soft\text{-}min}\{\phi_k\}$};
+\node[wt] (bwd)  at (0,-4.5)
+  {\textcolor{water}{\textsc{Backward}}:\;
+   $\nabla B,\,\nabla A$\;($W$ frozen)};
+\node[wt] (upd)  at (0,-5.3)
+  {\textsc{Update}:\;Eq.~\eqref{eq:contactflow} on $B,A$;\;\;
+   \textcolor{knife}{\textsc{Clamp}}};
+\node[io] (merge) at (0,-6.5)
+  {Merge:\;$W^{\mathrm{out}} = W + \tfrac{\alpha}{r}BA$;\;\;
+   \texttt{upload}};
+\draw[arr] (init)  -- (phase);
+\draw[arr] (phase) -- (fwd);
+\draw[arr] (fwd)   -- (exec);
+\draw[arr] (exec)  -- (eval);
+\draw[arr] (eval)  -- (bwd);
+\draw[arr] (bwd)   -- (upd);
+\draw[arr] (upd)   -- node[right,font=\scriptsize]{converged} (merge);
+\draw[arr, knife]  (upd.east) -- ++(1.3,0) |-
+  node[right, pos=0.25, font=\scriptsize, color=knife]{repeat}
+  (fwd.east);
+\draw[dashed, rounded corners=3pt, black!25]
+  (-3.0,-1.7) rectangle (3.5,-5.65);
+\node[font=\tiny, black!40, anchor=south east]
+  at (3.5,-1.7) {per phase};
+\end{tikzpicture}
+\caption{Fine-tuning pipeline (\cref{alg:finetune}).
+  Outer loop: four-phase curriculum
+  (力~$\to$~立~$\to$~丽(正)~$\to$~丽(快)).
+  Inner loop: contact gradient
+  flow~\eqref{eq:contactflow} on the LoRA adapter.}
+\label{fig:finetune-flow}
+\end{figure}
+
+\begin{remark}[Validation chain: checkpoint $+$ sandbox $+$ metrics
+$\Rightarrow$ coder]
+\label{rem:finetune-chain}
+Every input to \cref{alg:finetune} is extracted from four artifacts:
+a pre-trained checkpoint, a code sandbox, a task dataset (or judge),
+and user-defined viability metrics (\cref{def:code-metric}).
+No additional assumptions.
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Algorithm input} & \textbf{Source} & \textbf{Extraction} \\
+\midrule
+Backbone $\{W_\ell\}$ ($L$ layers)
+  & Checkpoint & \texttt{model.safetensors} \\
+Tokenizer $\tau$
+  & Checkpoint & \texttt{tokenizer.json} \\
+Architecture ($d$, $L$, heads)
+  & Checkpoint & \texttt{config.json} \\
+LoRA rank $r$, scaling $\alpha$
+  & User & Capacity budget ($r = 16$ typical) \\
+Task data $\mathcal{D}$ or judge $J$
+  & User & Q-A pairs or LLM evaluator \\
+$\phi_{\mathrm{topo}},\, \phi_{\mathrm{safe}},\,
+\phi_{\mathrm{correct}},\, \phi_{\mathrm{perf}}$
+  & User & Viability metrics (\cref{def:code-metric}) \\
+Code execution
+  & Sandbox & Docker\,/\,\texttt{venv}\,/\,\texttt{nsjail} \\
+Gradient $\nabla_{\hat{x}} |\phi|$
+  & GPU server & Autodiff (PyTorch\,/\,JAX) \\
+\bottomrule
+\end{tabular}
+\end{center}
+The four-phase curriculum parallels the locomotion curriculum
+(\cref{alg:loco})---with one refinement: 丽${}^*$ unbundles
+into correctness ($L_2^*$) and performance ($L_3^*$):
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Phase} & \textbf{Tower} & \textbf{Locomotion} &
+\textbf{Fine-tuning} & \textbf{Coding} \\
+\midrule
+力 & $L_0^*$ & $h > h_{\min}$ (don't fall)
+  & $\phi_{\mathrm{topo}} > 0$ & AST valid \\
+立 & $L_1^*$ & stable gait
+  & $\phi_{\mathrm{safe}} > 0$ & no crash \\
+丽(正) & $L_2^*$ & reach target
+  & $\phi_{\mathrm{correct}} > 0$ & tests pass \\
+丽(快) & $L_3^*$ & energy-efficient
+  & $\phi_{\mathrm{perf}} > 0$ & within budget \\
+\bottomrule
+\end{tabular}
+\end{center}
+A robot that falls is code that does not parse.
+A robot that stumbles is code that crashes.
+A robot that walks is code that passes its tests.
+A robot that runs is code that runs fast.
+
+Two evaluation modes (\cref{def:task-rkhs}):
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Q-A mode} & \textbf{Court mode} \\
+\midrule
+Data & $(z, x^*)$ pairs & inputs $z$ only \\
+$|\phi|$ & $\varepsilon - \|\hat{x} - x^*\|$ & $J(z, \hat{x})$ \\
+Judge & ground truth & LLM evaluator \\
+Use & code with test suite & open-ended generation \\
+\bottomrule
+\end{tabular}
+\end{center}
+Given a checkpoint, a sandbox, a task dataset, and four viability
+metrics, every step of \cref{alg:finetune} is mechanically executable.
+The model already knows $\mathbf{L}^*$.
+School teaches it the task---力, 立, 丽(正), 丽(快)---four phases, one flow.
+\end{remark}
+
+\begin{remark}[CUDA TrajOpt: the loop closes]
+\label{rem:cuda-loop}
+Add CUDA to the language table (\cref{def:code-metric}):
+\texttt{nvcc} compiles (力),
+\texttt{compute-sanitizer} catches memory errors (立),
+the trajectory converges (丽(正)),
+the kernel meets its real-time budget (丽(快)).
+The fine-tuned coder (\cref{alg:finetune}) writes
+CUDA trajectory-optimisation kernels.
+These kernels solve the same contact gradient
+flow~\eqref{eq:contactflow} that trained the coder---on a physical
+body instead of a token sequence.
+The contact gradient flow appears at every level:
+\begin{enumerate}
+  \item \emph{Representation model} (\cref{alg:repmodel}):
+  backbone $g_\theta$ learns $\mathbf{L}^*$ from mixed-modality data.
+  \item \emph{Fine-tuning} (\cref{alg:finetune}):
+  LoRA adapter learns the coding task on $\mathbf{L}^*$.
+  \item \emph{Locomotion} (\cref{alg:loco}):
+  the CUDA kernel output by the fine-tuned model
+  controls the robot via the same flow.
+\end{enumerate}
+Level~2 produces the code that implements level~3.
+The equation writes itself.
+\end{remark}
+
+\begin{remark}[For ML engineers: there is no ``agent'']
+\label{rem:no-agent}
+You do not train an \emph{agent}.
+You train a model to produce
+\textcolor{water}{perfect code}---one piece at a time.
+
+Each piece must pass four gates in prerequisite order:
+\begin{enumerate}
+  \item[\textcolor{sword}{力}] It \textbf{parses}.
+  \quad $\phi_{\mathrm{topo}} = 1$.\quad
+  \textcolor{knife}{Fail $\Rightarrow$ \textsc{Reset}}.
+  \item[\textcolor{sword}{立}] It \textbf{runs}.
+  \quad $\phi_{\mathrm{safe}} = 1$.\quad
+  \textcolor{knife}{Crash $\Rightarrow$ \textsc{Reset}}.
+  \item[\textcolor{sword}{丽\textsuperscript{正}}] It is \textbf{correct}.
+  \quad $\phi_{\mathrm{correct}} \in [0,1]$.\quad
+  \textcolor{knife}{Wrong output $\Rightarrow$ gradient}.
+  \item[\textcolor{sword}{丽\textsuperscript{快}}] It is \textbf{fast}.
+  \quad $\phi_{\mathrm{perf}} \in [0,1]$.\quad
+  \textcolor{knife}{Too slow $\Rightarrow$ gradient}.
+\end{enumerate}
+A piece that fails gates 1--2 is
+\textcolor{knife}{killed}: $|\phi|_\beta \leq 0
+\;\Rightarrow\;$\textcolor{knife}{\textsc{Reset}}
+(\cref{alg:finetune}, line~13).
+A piece that passes all four is
+\textcolor{water}{viable}: $|\phi|_\beta > 0$.
+
+The dataset is not dialogues.
+Not trajectories.
+Not reward signals.
+It is \textcolor{water}{$(z, x^*)$ pairs}:
+$z$ is a specification, $x^*$ is code that satisfies it.
+Court mode (\cref{def:task-rkhs}):
+a judge $J(z, \hat{x})$ replaces $x^*$ when ground truth is
+unavailable.
+
+There is no reinforcement learning in \cref{alg:finetune}.
+There is no reward model.
+There is a \textcolor{water}{flow}~\eqref{eq:contactflow},
+a \textcolor{knife}{knife} ($\gamma > 0$),
+and a \textcolor{sword}{curriculum}
+(力~$\to$~立~$\to$~丽(正)~$\to$~丽(快)).
+The training loop is supervised:
+\textcolor{water}{forward},
+\textcolor{water}{evaluate},
+\textcolor{water}{backward},
+\textcolor{knife}{clamp}.
+Four words.
+The ``agent'' is what happens \emph{after} training,
+when the model generates
+\textcolor{water}{enough viable code} to solve a task
+that no single piece covers.
+That is \textcolor{water}{composition~($\circ$)}, not training.
+Training produces pieces.
+Composition produces agents.
+\end{remark}
+
+\begin{algorithm}[H]
+\caption{Code evaluation --- the judge protocol}
+\label{alg:code-eval}
+\begin{algorithmic}[1]
+\Require Specification $z$ (natural language or formal)
+\Require Generated code $\hat{x}$
+  (output of \cref{alg:finetune})
+\Require Sandbox $\mathcal{E}_{\mathrm{sandbox}}$;\;
+  time budget $t_{\mathrm{budget}}$
+\Require Judge $J$ (external LLM, e.g.\ Gemini-Pro ---
+  \emph{must differ from generator})
+\Statex
+\State \textcolor{sword}{\textbf{Gate\;力}}
+  (automated, \textcolor{water}{0 API calls}):
+\State \quad $\phi_{\mathrm{topo}} \leftarrow
+  \mathbf{1}\bigl[\texttt{parse}(\hat{x})\;\text{succeeds}\bigr]$
+  \Comment{compiler / \texttt{ast.parse} / \texttt{nvcc -c}}
+\If{$\phi_{\mathrm{topo}} = 0$}
+  \textcolor{knife}{\Return} $|\phi|_{\mathrm{code}} = 0$
+  \Comment{\textcolor{knife}{killed}: does not parse}
+\EndIf
+\Statex
+\State \textcolor{sword}{\textbf{Gate\;立}}
+  (automated, \textcolor{water}{0 API calls}):
+\State \quad $(\mathrm{result},\; t_{\mathrm{run}}) \leftarrow
+  \mathcal{E}_{\mathrm{sandbox}}.\texttt{run}(
+  \hat{x},\; t_{\mathrm{budget}})$
+\State \quad $\phi_{\mathrm{safe}} \leftarrow
+  \mathbf{1}\bigl[\text{exit code} = 0\bigr]$
+  \Comment{no crash, no leak, no timeout}
+\If{$\phi_{\mathrm{safe}} = 0$}
+  \textcolor{knife}{\Return} $|\phi|_{\mathrm{code}} = 0$
+  \Comment{\textcolor{knife}{killed}: runtime crash}
+\EndIf
+\Statex
+\State \textcolor{sword}{\textbf{Gate\;丽(正)}}
+  (judge, \textcolor{caution}{1 API call}):
+\State \quad $\phi_{\mathrm{correct}} \leftarrow
+  J\!\bigl(z,\;\hat{x},\;\mathrm{result}\bigr)
+  \;\in [0,1]$
+  \Comment{``does output satisfy spec $z$?''}
+\Statex
+\State \textcolor{sword}{\textbf{Gate\;丽(快)}}
+  (profiler, \textcolor{water}{0 API calls}):
+\State \quad $\phi_{\mathrm{perf}} \leftarrow
+  \max\!\bigl(0,\;\, 1 - t_{\mathrm{run}}\,/\,
+  t_{\mathrm{budget}}\bigr)$
+  \Comment{wall-clock; no judge needed}
+\Statex
+\State \textcolor{water}{$|\phi|_{\mathrm{code}}$} $\leftarrow
+  \mathrm{soft\text{-}min}_\beta\bigl\{
+  \phi_{\mathrm{topo}},\;
+  \phi_{\mathrm{safe}},\;
+  \phi_{\mathrm{correct}},\;
+  \phi_{\mathrm{perf}}\bigr\}$
+  \Comment{\cref{def:code-metric}}
+\Statex
+\Ensure \textcolor{water}{$|\phi|_{\mathrm{code}} \in [0,1]$}:\;
+  plug into \cref{alg:finetune}, line~8
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[The judge is not the teacher]
+\label{rem:judge}
+The judge $J$ in \cref{alg:code-eval} is \emph{not} the generator.
+If \textcolor{water}{DeepSeek} generates, \textcolor{caution}{Gemini}
+evaluates.
+If \textcolor{water}{Gemini} generates, \textcolor{caution}{DeepSeek}
+evaluates.
+The adversarial independence is structural:
+the court (\cref{def:task-rkhs}) requires a judge
+who did not write the code.
+
+The prerequisite chain saves money.
+Gates \textcolor{sword}{力} and \textcolor{sword}{立} are
+\textcolor{water}{free}:
+compilers and sandboxes cost \textcolor{water}{zero} API calls.
+Code that does not parse or crashes is
+\textcolor{knife}{killed} before the judge sees it.
+Only code that parses \emph{and} runs reaches
+Gate~\textcolor{sword}{丽(正)}---\textcolor{caution}{one API call}
+per surviving piece.
+Gate~\textcolor{sword}{丽(快)} is the profiler:
+wall-clock time does not require a judge.
+
+The cost structure:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Gate} & \textbf{Checker} & \textbf{Cost} &
+\textbf{Kills} \\
+\midrule
+\textcolor{sword}{力} & compiler / parser
+  & \textcolor{water}{0 API calls}
+  & syntax errors \\
+\textcolor{sword}{立} & sandbox
+  & \textcolor{water}{0 API calls}
+  & crashes, leaks, timeouts \\
+\textcolor{sword}{丽(正)} & judge $J$
+  & \textcolor{caution}{1 API call}
+  & wrong output \\
+\textcolor{sword}{丽(快)} & profiler
+  & \textcolor{water}{0 API calls}
+  & slow code \\
+\bottomrule
+\end{tabular}
+\end{center}
+The engineer provides the specification $z$.
+The compiler checks \textcolor{sword}{力}.
+The sandbox checks \textcolor{sword}{立}.
+The judge checks \textcolor{sword}{丽(正)}.
+The profiler checks \textcolor{sword}{丽(快)}.
+The engineer does not need to know what perfect code looks like.
+The \textcolor{water}{pipeline} knows.
+\end{remark}
+
+\begin{algorithm}[H]
+\caption{Sandbox execution --- the physics engine for code}
+\label{alg:sandbox}
+\begin{algorithmic}[1]
+\Require Generated code $\hat{x}$
+  (from \cref{alg:finetune}, line~6)
+\Require Resource limits:\;
+  $t_{\max}$ (time),\; $m_{\max}$ (memory),\;
+  syscall whitelist $\mathcal{S}$
+\Require Runtime: Docker, \texttt{nsjail}, or \texttt{venv}
+\Statex
+\State \textcolor{sword}{\textsc{Build}}:\;
+  $\mathcal{C} \leftarrow \texttt{container.create}\bigl(
+  \mathrm{image},\;
+  t_{\max},\;
+  m_{\max},\;
+  \texttt{net=none},\;
+  \texttt{fs=read\text{-}only},\;
+  \mathcal{S}\bigr)$
+  \Comment{isolated jail}
+\State \textcolor{water}{\textsc{Inject}}:\;
+  $\texttt{write}\bigl(
+  \mathcal{C}\texttt{:/sandbox/main},\;
+  \hat{x}\bigr)$
+  \Comment{code $\to$ sandbox}
+\State \textcolor{water}{\textsc{Execute}}:\;
+  $(\texttt{stdout},\;\texttt{stderr},\;
+  \texttt{exit\_code},\;t_{\mathrm{run}})
+  \leftarrow \mathcal{C}.\texttt{run}\bigl(
+  \texttt{/sandbox/main},\;
+  t_{\max}\bigr)$
+  \Comment{run with limits}
+\State \textcolor{water}{\textsc{Extract}}:\;
+  $\mathrm{result} \leftarrow
+  \texttt{parse}(\texttt{stdout})$;\;\;
+  $\mathrm{crash} \leftarrow
+  (\texttt{exit\_code} \neq 0)$
+  \Comment{structured output}
+\State \textcolor{knife}{\textsc{Destroy}}:\;
+  $\mathcal{C}.\texttt{kill}()$;\;\;
+  reclaim all resources
+  \Comment{\textcolor{knife}{no persistent state}}
+\Statex
+\Ensure $(\mathrm{result},\;
+  t_{\mathrm{run}},\;
+  \texttt{exit\_code},\;
+  \texttt{stdout},\;
+  \texttt{stderr})$
+  for \cref{alg:code-eval}, lines~6--7
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Sandbox $=$ MuJoCo]
+\label{rem:sandbox-mujoco}
+\Cref{alg:sandbox} is MuJoCo for code.
+The isomorphism is line-by-line:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Locomotion (MuJoCo)} &
+\textbf{Code (sandbox)} \\
+\midrule
+\textsc{Build}
+  & load XML model
+  & create container \\
+\textsc{Inject}
+  & apply joint torques
+  & write code to filesystem \\
+\textsc{Execute}
+  & step physics ($\Delta t$)
+  & run program ($t_{\max}$) \\
+\textsc{Extract}
+  & read sensors
+  & read stdout, exit code, timing \\
+\textsc{Destroy}
+  & reset simulation
+  & kill container \\
+\midrule
+\textcolor{knife}{Isolation}
+  & joint limits, ground plane
+  & no network, read-only fs \\
+\textcolor{knife}{Gravity}
+  & $9.81\;\mathrm{m/s^2}$
+  & time limit $t_{\max}$ \\
+\textcolor{knife}{Ground contact}
+  & collision detection
+  & memory limit $m_{\max}$ \\
+\textcolor{knife}{$c_{\max}$}
+  & joint torque bound
+  & syscall whitelist $\mathcal{S}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+A robot cannot fly through the floor.
+Code cannot escape the sandbox.
+The physics is different.
+The \textcolor{knife}{knife} is the same.
+\end{remark}
+
+\begin{remark}[Bill of materials: what you actually need]
+\label{rem:bill-of-materials}
+\Cref{alg:finetune,alg:code-eval,alg:sandbox} are
+mechanically executable.
+Every step maps to a shell command or library call.
+The complete bill of materials:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Resource} & \textbf{Example} & \textbf{Cost} &
+\textbf{Algorithm} \\
+\midrule
+GPU server
+  & RunPod\,/\,Lambda\,/\,vast.ai
+  & \textcolor{caution}{\$1/hr} (A100)
+  & \cref{alg:finetune} \\
+Checkpoint
+  & \texttt{deepseek-coder-v2}
+  & \textcolor{water}{free} (HuggingFace)
+  & \cref{alg:finetune}, line~1 \\
+LoRA library
+  & \texttt{peft}
+  & \textcolor{water}{free} (pip)
+  & \cref{alg:finetune}, line~2 \\
+Sandbox
+  & Docker\,/\,\texttt{nsjail}
+  & \textcolor{water}{free}
+  & \cref{alg:sandbox} \\
+Judge API key
+  & Gemini-Pro
+  & \textcolor{water}{free} (60 req/min)
+  & \cref{alg:code-eval}, line~11 \\
+Compiler
+  & \texttt{gcc}\,/\,\texttt{nvcc}\,/\,\texttt{rustc}
+  & \textcolor{water}{free}
+  & \cref{alg:code-eval}, line~2 \\
+Profiler
+  & \texttt{time}\,/\,\texttt{perf}\,/\,\texttt{nsight}
+  & \textcolor{water}{free}
+  & \cref{alg:code-eval}, line~13 \\
+Task data
+  & $(z, x^*)$ pairs or spec $z$
+  & \textcolor{caution}{user-provided}
+  & \cref{alg:finetune}, line~5 \\
+\bottomrule
+\end{tabular}
+\end{center}
+Six of eight inputs are \textcolor{water}{free}.
+The two that cost money:
+a GPU server (\textcolor{caution}{\$1/hr})
+and your task data.
+Everything else---checkpoint, LoRA library, sandbox, judge,
+compiler, profiler---is open-source or free-tier.
+
+The automation boundary is sharp.
+An AI coding assistant (e.g.\ Claude Code) with SSH access to the
+GPU server can execute \cref{alg:finetune} end-to-end:
+install dependencies, download the checkpoint, write the training
+script, launch the four-phase curriculum, call the sandbox
+(\cref{alg:sandbox}), call the judge (\cref{alg:code-eval}),
+merge the adapter, and upload the result.
+The human provides \textcolor{caution}{two things}:
+the GPU server and the task specification.
+The \textcolor{water}{pipeline} does the rest.
+\end{remark}
+
+\begin{definition}[Instruction set]
+\label{def:instruction-set}
+The \emph{instruction set} of the agentic calculus is
+\[
+  \mathcal{I}
+  \;=\;
+  \bigl\{\,
+    \textcolor{water}{\sigma},\;\;
+    \textcolor{water}{\circ},\;\;
+    \textcolor{sword}{\varphi}
+  \,\bigr\}
+  \;=\;
+  \{\sigma,\, \circ,\, \varphi\}
+  \;\setminus\;
+  \{\textcolor{knife}{\partial}\}.
+\]
+A program $p$ on the execution graph $G$ is a finite sequence of
+instructions drawn from~$\mathcal{I}$.
+The \textsc{Cut} operation $\textcolor{knife}{\partial}$ is
+\emph{not} an instruction: it is a constraint imposed by the
+environment (the knife), not an action taken by the agent.
+\end{definition}
+
+\begin{remark}[The knife cannot cut itself]
+\label{rem:knife-self}
+The exclusion of $\textcolor{knife}{\partial}$ from~$\mathcal{I}$
+is not a design choice.
+It is forced.
+
+A program $p \in \mathcal{I}^*$ can
+\textcolor{water}{slide} (transport data),
+\textcolor{water}{compose} (chain operations), and
+\textcolor{sword}{change phase} (switch regime).
+It \emph{cannot} cut its own capacity.
+Code cannot remove its own weight-decay.
+A function cannot delete its own regulariser.
+The knife is not a tool the agent wields---it is the boundary the
+agent lives inside.
+
+Suppose it could.
+Let $p_{\partial}$ be a program that sets $\gamma(e) = 0$ on its
+own edges.
+By \cref{thm:camus}, setting $\gamma \to 0$ eliminates the
+stability margin $\lambda_1 > 0$ (\cref{rem:contact-stability}).
+The system becomes unstable: small perturbations amplify.
+The program that removes its own knife
+\textcolor{knife}{destroys itself}.
+
+This is the diagonal constraint.
+Every computable instruction set has exactly one operation it cannot
+apply to itself:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{System} & \textbf{Instruction set} &
+\textbf{Excluded operation} \\
+\midrule
+Turing machine & $\{$read, write, move, halt$\}$ &
+  halt on self \\
+$\lambda$-calculus & $\{$abstract, apply$\}$ &
+  decide own termination \\
+Agentic calculus & $\{\sigma, \circ, \varphi\}$ &
+  $\partial$ on self \\
+\bottomrule
+\end{tabular}
+\end{center}
+The consequence is the same in all three cases:
+\\[4pt]
+\hspace*{2em}%
+\textcolor{knife}{You cannot use the system to prove the system
+safe.}
+\\[4pt]
+The \textcolor{knife}{knife} is the price of
+\textcolor{water}{flow}.
+Remove it, and the flow destroys the channel.
+\end{remark}
