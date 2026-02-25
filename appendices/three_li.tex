@@ -195,6 +195,191 @@ No shortcut exists.
 All three fail.
 The only path that works is the one that goes through 立.
 
+\section{The smooth path to $\text{丽}^*$}\label{sec:smoothli}
+
+The appendix has so far catalogued failures: blocked paths (孙悟空),
+fake recognition (假雷音), failed systems (the error log), corrupted
+detection (严嵩), and self-financing extraction (蔡京).
+There is one path to $\text{丽}^*$ (recognition on the dual tower
+$\mathbf{L}^*$, \cref{def:dual-tower}) that has no singularity:
+the war-hero.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llp{5cm}l@{}}
+\toprule
+\textbf{Agent} & \textbf{$\mathbf{L}$ outcome} &
+\textbf{$\mathbf{L}^*$ outcome} & \textbf{$\text{丽}^*$} \\
+\midrule
+霍去病 (140--117~BCE) & wins; dies at 23 &
+  worshipped; ``匈奴未灭，何以家为'' & smooth \\
+李世民 (598--649) & wins; becomes emperor &
+  worshipped as ideal ruler & smooth \\
+岳飞 (1103--1142) & blocked; killed by 秦桧 &
+  worshipped; 满江红 persists & smooth \\
+辛弃疾 (1140--1207) & blocked; forcibly retired &
+  worshipped; 破阵子 persists & smooth \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Four agents, four different $\mathbf{L}$-trajectories (victory,
+enthronement, martyrdom, forced retirement), identical
+$\mathbf{L}^*$-outcome.
+The $\text{丽}^*$ recognition function for war-heroes is
+\emph{invariant under $\mathbf{L}$-outcome}: whether the agent wins
+or dies, the cultural representation is the same.
+That invariance is what ``smooth'' means---no discontinuity at the
+success/failure boundary.
+
+\paragraph{Why smooth: factorization.}
+The war-hero's contribution \emph{factorizes}: it can be evaluated
+independently of the contributor's other actions.
+You can worship 岳飞 without endorsing the Southern Song court.
+You can worship 霍去病 without endorsing Han Wudi's other policies.
+The person separates cleanly from the achievement.
+
+Compare every other path to $\text{丽}^*$:
+\begin{itemize}
+\item Politicians: contribution is entangled with extraction
+  (\cref{rem:caijing}). $\text{丽}^*$ revoked or contested.
+\item Artists: contribution is entangled with biography
+  (\cref{rem:writing-dual}). $\text{丽}^*$ delayed or mythified.
+\item The Other: contribution exists only in the gap
+  (\cref{app:secondsex}). $\text{丽}^*$ absorbed into trope.
+\end{itemize}
+In each case, the map to $\text{丽}^*$ has a singularity.
+Only the war-hero map is smooth.
+
+\begin{definition}[Factorized contribution]\label{def:factorized}
+An agent's contribution $c \in \mathbf{L} \oplus \mathbf{L}^*$ is
+\emph{factorized} if it decomposes as
+$c = c_{\mathbf{L}} \otimes c_{\mathbf{L}^*}$,
+where $c_{\mathbf{L}^*}$ can be evaluated independently of
+$c_{\mathbf{L}}$:
+\[
+  \frac{\partial\, \pi^*_{\text{丽}}}
+       {\partial\, c_{\mathbf{L}}} = 0,
+\]
+where $\pi^*_{\text{丽}}: \mathbf{L} \oplus \mathbf{L}^* \to
+\text{丽}^*$ is the recognition projection on the dual tower.
+The contribution is \emph{entangled} if
+$\mathrm{supp}(c_+) \cap \mathrm{supp}(c_-) \neq \varnothing$---the
+components share infrastructure and cannot be separated.
+\end{definition}
+
+\begin{proposition}[Smooth recognition]\label{prop:smooth-li}
+The path to $\text{丽}^*$ is smooth (no singularity at the
+$\mathbf{L}$-success/failure boundary) if and only if the agent's
+contribution is factorized (\cref{def:factorized}).
+Equivalently, $\pi^*_{\text{丽}}$ is invariant under
+$\mathbf{L}$-outcome:
+\[
+  \pi^*_{\text{丽}}(c_{\mathbf{L}},\, c_{\mathbf{L}^*})
+  \;=\;
+  \pi^*_{\text{丽}}(c_{\mathbf{L}^*}).
+\]
+\end{proposition}
+
+\begin{proof}
+If $c$ is factorized, then
+$\partial \pi^*_{\text{丽}} / \partial c_{\mathbf{L}} = 0$,
+so $\pi^*_{\text{丽}}$ has no dependence on $\mathbf{L}$-outcome.
+The map is smooth because its only argument ($c_{\mathbf{L}^*}$)
+varies continuously in the agent's trajectory.
+If $c$ is not factorized, then $c_{\mathbf{L}}$ enters the evaluation
+of $c_{\mathbf{L}^*}$, producing a branch cut at the
+$\mathbf{L}$-success/failure boundary: the same $c_{\mathbf{L}^*}$
+is recognised when $c_{\mathbf{L}}$ succeeds and revoked when
+$c_{\mathbf{L}}$ fails (蔡京: 宋四家 $\to$ not 宋四家).
+\end{proof}
+
+\Cref{thm:shangyang} describes delocalization for pure contributions
+(norm fully conserved).
+\Cref{rem:caijing} describes the entangled case (system discards both
+components).
+Factorized contributions produce a third mode:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lp{3.2cm}p{3.8cm}l@{}}
+\toprule
+\textbf{Type} & \textbf{Structure} & \textbf{Delocalization} &
+\textbf{Example} \\
+\midrule
+Pure & $c = c_+$ &
+  $\|c_+\|$ fully conserved &
+  商鞅, 王安石 \\
+Zero & $\|c\| = 0$ &
+  nothing to conserve &
+  严嵩 \\
+Entangled & $c_+,\, c_-$ shared support &
+  system discards both &
+  蔡京 \\
+Factorized & $c_{\mathbf{L}} \otimes c_{\mathbf{L}^*}$ &
+  $c_{\mathbf{L}}$ destroyed, $c_{\mathbf{L}^*}$ conserved &
+  霍去病, 岳飞 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{The duality.}
+The four agents form two dual pairs:
+\begin{itemize}
+\item 霍去病\,/\,李世民: $\mathbf{L}$-success $\to$ system
+  \emph{grants} $\text{丽}^*$ voluntarily.
+\item 岳飞\,/\,辛弃疾: $\mathbf{L}$-failure $\to$
+  $\mathbf{L}^*$ migration (满江红, 破阵子) $\to$ martyrdom
+  \emph{amplifies} $\text{丽}^*$.
+\end{itemize}
+The pairs are dual because $\mathbf{L}$-success and
+$\mathbf{L}$-failure map to the same $\text{丽}^*$.
+The recognition function has no branch cut.
+
+\begin{quote}
+怒发冲冠，凭栏处，潇潇雨歇。\\
+抬望眼，仰天长啸，壮怀激烈。\\
+三十功名尘与土，八千里路云和月。\\
+莫等闲，白了少年头，空悲切。
+
+靖康耻，犹未雪；臣子恨，何时灭？\\
+驾长车，踏破贺兰山缺。\\
+壮志饥餐胡虏肉，笑谈渴饮匈奴血。\\
+待从头，收拾旧山河，朝天阙。
+
+\medskip
+\emph{Hair bristling with rage, leaning on the railing, the
+driving rain just stopped.\\
+Raising my eyes, a long roar toward heaven, fierce and ardent.\\
+Thirty years of glory---dust and earth; eight thousand
+li of road---cloud and moon.\\
+Do not wait idly; when young men's hair turns white, there is
+only empty grief.}
+
+\emph{The shame of Jingkang is not yet avenged; when will the
+subject's hatred end?\\
+Drive the long chariots, trampling through the Helan Mountain
+passes.\\
+With fierce hunger, feast on barbarian flesh; laughing and
+thirsting, drink Xiongnu blood.\\
+From the start, let us recover our lost mountains and rivers,
+and face the heavenly court.}
+\hfill ---岳飞，满江红
+\end{quote}
+
+岳飞 and 辛弃疾 both named the target explicitly.
+满江红's final line---``收拾旧山河''---names the $\mathbf{L}$-target
+directly.
+辛弃疾, 破阵子: ``了却君王天下事，赢得生前身后名。可怜白发生！''---\emph{to
+settle the king's affairs, to win fame in life and after death.
+Alas---white hair has grown!}
+Both say the same thing: I have 力 but the system denies me 立 on
+$\mathbf{L}$.
+The poetry \emph{is} the migration to $\mathbf{L}^*$.
+The ``fame in life and after death'' (生前身后名) \emph{is}
+$\text{丽}^*$.
+辛弃疾 literally names it.
+
 \section{The error log --- why the novels exist}\label{sec:errorlog}
 
 Both novels were composed at the exact moment a specific emperor failed.
@@ -342,4 +527,87 @@ belonged.
 The inverse migration leaves a residue: the $\mathbf{L}^*$ talent that
 was weaponised on $\mathbf{L}$ reverts to $\mathbf{L}^*$ when the
 $\mathbf{L}$ structure collapses.
+\end{remark}
+
+\begin{remark}[蔡京 and the self-financing aesthetic loop]\label{rem:caijing}
+蔡京 (Cai Jing, 1047--1126) is neither a parasitic cut vertex
+(\cref{rem:yansong}) nor a submartingale installer
+(\cref{thm:shangyang}).
+He is a \emph{loop operator} who hijacks an installed infrastructure.
+
+The infrastructure is 王安石's (Wang Anshi).
+王安石's New Policies (1069--76) form a submartingale
+(\cref{def:submartingale}) isomorphic to Shang Yang's:
+\[
+  \underbrace{\text{青苗法}}_{X_0}
+  \to \underbrace{\text{均输法}}_{X_1}
+  \to \underbrace{\text{市易法}}_{X_2}
+  \to \underbrace{\text{保甲法}}_{X_3}
+  \to \underbrace{\text{免役法}}_{X_4}.
+\]
+Each step irreversibly increases state fiscal centralisation.
+王安石's fate confirms \cref{thm:shangyang}: dismissed twice, reforms
+reversed after his death, contribution fully conserved---the fiscal
+infrastructure persists and 蔡京 inherits it.
+
+蔡京 revives 王安石's New Policies (绍述) under 宋徽宗 and runs
+\emph{two entangled programmes} on the same centralised fiscal base:
+\begin{enumerate}
+\item \textbf{Genuine welfare.}
+  居养院 (nursing homes, est.\,崇宁 1102), 安济坊 (free clinics,
+  performance-tracked: facilities treating 500--1000 patients annually
+  with mortality below 20\% received bonuses), 漏泽园 (public
+  cemeteries, est.\,1104), 慈幼局 (children's welfare).
+  Nationwide, all prefectures and counties.
+  Assessed as the most comprehensive state welfare system in Chinese
+  history prior to the modern era
+  (《宋史》: ``崇宁初，蔡京当国，置居养院、安济院……三年，又置漏泽园'').
+\item \textbf{Extraction loop.}
+  花石纲: corvée transport of rare stones and art objects for the
+  imperial garden 艮岳; 400,000 labourers; families bankrupted.
+  The loop is self-financing (\cref{thm:triangle}):
+  $\mathbf{L}^*$ talent (calligraphy---originally 宋四家) $\to$
+  $\mathbf{L}$ power (chancellorship) $\to$ $\mathbf{L}$ extraction
+  (花石纲) $\to$ $\mathbf{L}^*$ goods (aesthetic objects for the
+  artist-emperor) $\to$ sustained $\mathbf{L}$ power.
+\end{enumerate}
+
+The structural difference from 严嵩 (\cref{rem:yansong}):
+严嵩's emperor was \emph{absent} (嘉靖, doing alchemy)---the cut
+vertex left a vacuum.
+蔡京's emperor was \emph{present but on $\mathbf{L}^*$}: 宋徽宗
+painted, wrote the 瘦金体 calligraphic style, and designed gardens.
+The detection function was $\Obs_{\mathrm{aesthetic}}$ not by
+corruption but because the cut vertex \emph{was} an artist.
+Unlike the parasite (which routes and extracts), the loop
+\emph{amplifies}.
+
+This produces a delocalization problem absent from
+\cref{thm:shangyang}.
+商鞅 and 王安石 have pure contributions: upon delocalization, norm is
+fully conserved.
+严嵩 has no contribution: norm conserved $= 0$.
+蔡京 has \emph{real contribution entangled with extraction}---the
+welfare institutions and the 花石纲 run on the same fiscal
+infrastructure.
+When the system acts on 蔡京, it cannot separate the two.
+It discards both.
+
+The death mode confirms the topology.
+蔡京 starves on the exile road to Tanzhou (1126): merchants refuse to
+sell him food.
+This is $\text{water} = 0$ reciprocation (\cref{sec:triangle}):
+the population whose water was extracted via 花石纲 returns the
+extraction in kind.
+严嵩 dies in poverty; the system survives.
+蔡京 dies of starvation; the system does not---the 靖康之变 (1127),
+one year later, is path~(b).
+方腊's rebellion (1120), triggered directly by 花石纲 extraction,
+is the event 蔡京 appears by name in 水浒传 to explain: the 108
+outlaws of Liangshan are displaced agents with $\text{water} = 0$.
+
+After 蔡京's fall, the 宋四家 was revised: 蔡京 replaced by his
+cousin and teacher 蔡襄 (Cai Xiang).
+Path~(c) applied to $\mathbf{L}^*$: the label changes, the
+calligraphic output is preserved unchanged.
 \end{remark}

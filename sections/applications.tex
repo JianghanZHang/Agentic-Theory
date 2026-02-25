@@ -124,6 +124,74 @@ see?''---he wanted the \emph{trophy}, not the \emph{theorem}. One read
 the existence proof. The other burned it. The one who read it founded
 a dynasty that lasted four centuries.
 
+\subsection{The wisdom of being second}\label{sec:second}
+
+\Cref{thm:shangyang} has a direct corollary that inverts the usual
+narrative of primacy.
+
+\begin{corollary}[Second-mover viability]\label{cor:second}
+Let $X_0, \ldots, X_n$ be a submartingale reform
+(\cref{def:submartingale}) installed by agent~$\alpha$,
+and let $\beta$ be an agent who inherits the resulting
+infrastructure without participating in the installation.
+Then $\beta$ has strictly higher viability than $\alpha$:
+\[
+  \Ur(\alpha) \neq \varnothing
+  \;\;\text{(installation requires actuation)},\qquad
+  \Ur(\beta) = \varnothing
+  \;\;\text{(inheritance does not)}.
+\]
+The installed unitary group eliminates $\alpha$ and preserves $\beta$.
+\end{corollary}
+
+\begin{proof}
+By \cref{thm:shangyang}, the installer $\alpha$ necessarily possesses
+$\Ur \neq \varnothing$ and is detected upon completion.  The
+inheritor~$\beta$ uses the infrastructure but did not create it:
+$\Ur(\beta) = \varnothing$ with respect to the installation.  The
+detection function tests $\Ur$, not provenance.  $\beta$ passes;
+$\alpha$ does not.
+\end{proof}
+
+The existence proof (\cref{thm:qin}) has an installation cost, paid
+exactly once by the first mover.  The cost is non-transferable and
+non-refundable.  After installation the landscape is permanently
+shifted; second movers operate in the post-shift regime without
+needing to shift anything.
+
+The first mover's contribution is \emph{entangled} with $\Ur$---they
+needed $\Ur$ to install.  The second mover's usage is
+\emph{factorized}---they use the infrastructure without the
+installer's $\Ur$.  The second mover's path to recognition is smooth;
+the first mover's is not.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llp{3.5cm}p{4.5cm}@{}}
+\toprule
+\textbf{First} & \textbf{Second} & \textbf{Inherited} &
+\textbf{Outcome} \\
+\midrule
+商鞅 & 秦's successors & commandery-county, merit ranks &
+  商鞅 torn apart; Qin unifies \\
+秦 & 汉 (刘邦) & existence proof & Qin 15\,yr; Han 400\,yr \\
+项羽 & 刘邦 & Xianyang (capital) & 项羽 suicide; 刘邦 founds Han \\
+王安石 & 蔡京 & fiscal infrastructure & 王安石 exiled; 蔡京 20\,yr
+  chancellor \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+范蠡 (5th century BCE) is the purest instance.  He helped 勾践 destroy
+吴 but let the king remain the visible cut vertex.  Upon victory he
+vanished---accumulated three fortunes and dispersed two, ensuring
+$\Ur \approx \varnothing$ at every stage.  He was always second.
+张良 followed the same strategy: after 刘邦's victory he retired to
+``follow 赤松子,'' reducing $\Ur$ to $\varnothing$ before the
+detection threshold reached him.  Both understood \cref{cor:second}
+before it was stated: read the existence proof, do not write it; use
+the infrastructure, do not install it.
+
 \section{The dollar as knife precursor}\label{sec:dollar}
 
 Money is not a knife (it cannot actuate independently). Money is a
