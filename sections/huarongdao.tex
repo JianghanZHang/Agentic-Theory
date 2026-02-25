@@ -1,11 +1,11 @@
-\section{华容道: Complete Instantiation}\label{sec:huarongdao}
+\chapter{华容道: Complete Instantiation}\label{sec:huarongdao}
 
 The historical cases in \cref{sec:applications} each validate one
 concept. We now present a single finite object that instantiates the
 \emph{entire} framework simultaneously: the Chinese sliding block
 puzzle 华容道 (Huarong Pass).
 
-\subsection{The puzzle}
+\section{The puzzle}
 
 \begin{definition}[华容道]\label{def:huarongdao}
 A \emph{华容道 instance} is a tuple
@@ -97,7 +97,7 @@ Ten pieces ($4 + 2 + 4 \cdot 2 + 4 \cdot 1 = 18$ cells), two free
 cells, exit at bottom center (width~$2$). The minimum solution requires
 81~步 (steps; \cref{def:bu}).
 
-\subsection{The isomorphism}
+\section{The isomorphism}
 
 \begin{theorem}[华容道 $=$ viability maintenance]\label{thm:huarongdao}
 The standard 华容道 instance instantiates the viability framework:
@@ -180,7 +180,7 @@ the dynamics---刀 (boundary/cut) and 水 (flow/transport)---emerge from
 the $2 \times 2$ as the calculus operations of \cref{sec:calculus}.
 \end{remark}
 
-\subsection{The experiment}\label{sec:kpc}
+\section{The experiment}\label{sec:kpc}
 
 \Cref{thm:huarongdao} maps framework concepts to puzzle roles.
 We now make the mapping computational.
@@ -189,7 +189,7 @@ $|\mathcal{V}| = 25{,}955$ canonical states and is
 connected; every quantity below is \emph{exact}
 (self-contained solver: \texttt{solver/}).
 
-\subsubsection*{Water as agent}
+\subsection*{Water as agent}
 
 The proof of \cref{thm:huarongdao} observed that free cells
 flow opposite to piece movement.
@@ -237,7 +237,7 @@ The knife ($2 \times 1$) requires mode~H\@.
 In mode~S, only soldiers act---水 is diffuse.
 \end{definition}
 
-\subsubsection*{The counting: 81}
+\subsection*{The counting: 81}
 
 \begin{definition}[步 (step)]\label{def:bu}
 A \emph{step}~(步) is a maximal consecutive sequence of
@@ -378,7 +378,7 @@ This is the natural cost in agentic theory---the number
 of discrete choices, not the number of physical slides.
 \end{remark}
 
-\subsubsection*{Phase decomposition}
+\subsection*{Phase decomposition}
 
 \begin{proposition}[Phase decomposition: $9 + 72$]%
 \label{prop:phase-decomp}
@@ -421,7 +421,7 @@ the king is the least mobile agent, and 水 is
 the sole source of mobility.
 \end{remark}
 
-\subsubsection*{Saddle and mirror descent}
+\subsection*{Saddle and mirror descent}
 
 \begin{definition}[Primal--dual distances]%
 \label{def:primal-dual}
@@ -503,7 +503,7 @@ the backward pass computes gradients (dual),
 and the saddle is the phase transition of the loss.
 \end{remark}
 
-\subsubsection*{Mode distribution}
+\subsection*{Mode distribution}
 
 \begin{proposition}[Mode statistics]\label{prop:modes}
 Along the $81$-步 path, the 水-mode after each step is:
@@ -526,7 +526,7 @@ reposition---it is the ``reset'' phase.
 The king moves only in H or V mode, never in S\@.
 \end{proposition}
 
-\subsubsection*{The isomorphism, completed}
+\subsection*{The isomorphism, completed}
 
 \Cref{thm:huarongdao} identified the viability roles.
 \Cref{thm:eightyone} extends the isomorphism to the

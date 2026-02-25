@@ -1,4 +1,4 @@
-\documentclass[11pt]{article}
+\documentclass[11pt, openany]{report}
 
 % ── Packages ──────────────────────────────────────────────
 \usepackage[margin=1in]{geometry}
@@ -19,7 +19,7 @@
 
 % ── Theorem environments ──────────────────────────────────
 \theoremstyle{plain}
-\newtheorem{theorem}{Theorem}[section]
+\newtheorem{theorem}{Theorem}[chapter]
 \newtheorem{proposition}[theorem]{Proposition}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
@@ -47,17 +47,13 @@
 \definecolor{sword}{RGB}{0,150,150}      % 青冥 — cyan
 \definecolor{caution}{RGB}{220,120,0}    % warning — orange
 
-\title{The Knife Is the Mean:\\
-An Agentic Theory of Viability Maintenance}
-\author{Jianghan Zhang\\
-\texttt{Jianghan.Zhang.gr@dartmouth.edu}\\
-Dartmouth College}
-\date{February 2026}
-
 \begin{document}
-\maketitle
 
-\begin{center}
+% ── Title page ───────────────────────────────────────────
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
 \begin{tikzpicture}[scale=0.7]
   % ── 青冥宝剑 (Green Destiny) ──
   % Blade — straight jian, double-edged
@@ -93,17 +89,31 @@ Dartmouth College}
   \node[cyan!70!black, opacity=0.5, font=\tiny, rotate=90] at (0,3.2) {青冥};
 \end{tikzpicture}
 
-\bigskip
+\vspace{1.5cm}
+
+{\LARGE\bfseries The Knife Is the Mean}\\[8pt]
+{\Large An Agentic Theory of Viability Maintenance}
+
+\vspace{1.5cm}
 
 {\large 有志者事竟成，\textcolor{knife}{破釜沉舟}\textcolor{knife}{百二秦关}\textcolor{sword}{终属楚}；\\[3pt]
 苦心人天不负，\textcolor{water}{卧薪尝胆}\textcolor{water}{三千越甲}\textcolor{sword}{可吞吴}。}
 
 \medskip
 {\small\itshape ---蒲松龄}
-\end{center}
 
-\bigskip
+\vfill
 
+{\large Jianghan Zhang}\\[4pt]
+\texttt{Jianghan.Zhang.gr@dartmouth.edu}\\[8pt]
+Dartmouth College
+
+\vspace{1cm}
+
+February 2026
+\end{titlepage}
+
+% ── Abstract ─────────────────────────────────────────────
 \begin{abstract}
 We develop an agentic theory of viability maintenance in systems with a
 principal agent (the \emph{king}) whose survival is governed by a single
@@ -129,7 +139,10 @@ autonomous actuation level, making viability maintenance a mean-field
 phenomenon.
 \end{abstract}
 
-% ── Sections ──────────────────────────────────────────────
+% ── Table of contents ────────────────────────────────────
+\tableofcontents
+
+% ── Chapters ─────────────────────────────────────────────
 \input{sections/intro}
 \input{sections/framework}
 \input{sections/results}

@@ -1,4 +1,4 @@
-\section{Agentic Calculus}\label{sec:calculus}
+\chapter{Agentic Calculus}\label{sec:calculus}
 
 The preceding sections established the viability axiom, the knife
 criterion, and the mean-field interpretation. We now construct an
@@ -8,7 +8,7 @@ proposition and yields a complete training paradigm for neural networks.
 The central result: the knife is the min-cut, the viable path is the
 max-flow, and ``the knife is the mean'' is max-flow/min-cut duality.
 
-\subsection{The agentic space}\label{sec:tower}
+\section{The agentic space}\label{sec:tower}
 
 The framework's objects organize into a four-level tower, each level
 derived from the axioms of the preceding sections.
@@ -39,7 +39,7 @@ built from $L_2$ fibers concatenated over time. The viability axiom
 (\cref{ax:viability}) asserts $\Gamma \neq \varnothing$: the strategy
 space is non-empty.
 
-\subsection{The flow}\label{sec:flow}
+\section{The flow}\label{sec:flow}
 
 The agentic calculus is a \emph{flow calculus}. We define flows on
 the execution graph and show that every theorem in
@@ -169,7 +169,7 @@ mean, the colour of Phase, the colour that connects
 $\textcolor{knife}{\text{刀}}$ to $\textcolor{water}{\text{水}}$.
 \end{remark}
 
-\subsection{方圆 $\times$ 黑白: the type system}\label{sec:fangyuan}
+\section{方圆 $\times$ 黑白: the type system}\label{sec:fangyuan}
 
 The calculus has a type system: a $2 \times 2$ classification that
 partitions every element of the agentic space.
@@ -208,7 +208,7 @@ In 华容道 (\cref{sec:huarongdao}): 方 $=$ the board,
 水 $=$ free-cell flow (slides opposite to piece movement).
 The $2 \times 2$ is the type system of the puzzle's state space.
 
-\subsection{Completeness}\label{sec:completeness}
+\section{Completeness}\label{sec:completeness}
 
 Every theorem in this paper is a proposition in the agentic calculus.
 
@@ -254,7 +254,7 @@ the flow (\cref{def:flow}) provides the dynamics; the type system
 (\cref{def:fangyuan}) provides the classification; and flow-cut duality
 (\cref{thm:flowcut}) provides the central identity.
 
-\subsection{The training paradigm}\label{sec:training}
+\section{The training paradigm}\label{sec:training}
 
 The agentic calculus instantiates as a neural network training paradigm.
 The execution graph \emph{is} the computation graph. Training \emph{is}
@@ -546,7 +546,7 @@ annealing are applied---now made explicit and first-class in the
 calculus. The paradigm strictly subsumes gradient descent.
 \end{remark}
 
-\subsection{The Hilbert space}\label{sec:hilbert}
+\section{The Hilbert space}\label{sec:hilbert}
 
 The capacity measure gives the agentic space the structure of a Hilbert
 space. This single construction yields integration, spectral analysis,
@@ -768,7 +768,7 @@ the Cheeger bound.
 A trained network with $\lambda_1 > 0$ has a mass gap. It survives.
 \end{remark}
 
-\subsection{Contact dynamics}\label{sec:contact}
+\section{Contact dynamics}\label{sec:contact}
 
 The training paradigm (\cref{def:training-algo}) is not a gradient
 flow. It is a \emph{contact gradient flow}: gradient descent plus a
@@ -1029,6 +1029,60 @@ Small $\beta$ (warm): all timesteps contribute.
 Large $\beta$ (cold): only the worst timestep contributes.
 \end{definition}
 
+\begin{definition}[Mollifier policy]\label{def:mollifier}
+The policy $\pi_\theta$ outputs a \emph{truncated Student-$t$
+distribution} over joint torques:
+\begin{equation}\label{eq:mollifier}
+  \pi_\theta(\tau \mid o, u)
+  \;=\;
+  \prod_{i=1}^{12}
+  \frac{t_{\nu}(\tau_i;\, \mu_i, \sigma_i)}
+       {Z_i(\mu_i, \sigma_i, \nu)},
+\end{equation}
+where $(\mu, \log\sigma, \log\nu) = f_\theta(o, u)$ are three
+output heads of the network (\cref{def:computation-core}):
+$12$ means, $12$ log-scales, and $1$ shared
+log-degrees-of-freedom.
+The truncation $|\tau_i| \leq \bar{\tau}_i$ enforces joint torque
+limits (\cref{rem:standing}).
+
+The Student-$t$ density $t_\nu$ is $C^\infty$ with full support on
+$[-\bar\tau, \bar\tau]^{12}$.
+For any Lipschitz function $Q(\tau)$---including functions with
+jump discontinuities at contact-mode boundaries---the expected
+value
+\[
+  \bar{Q}(\theta)
+  \;=\;
+  \mathbb{E}_{\pi_\theta}\!\bigl[Q(\tau)\bigr]
+  \;=\;
+  \int Q(\tau)\,\pi_\theta(\tau \mid o, u)\, d\tau
+\]
+is smooth in $\theta$: the policy acts as a \emph{mollifier}.
+
+The degrees of freedom $\nu$ track the number of active contact
+modes:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Gait} & $\boldsymbol{\nu}$ &
+\textbf{Shape} \\
+\midrule
+Standing ($c = 1111$), one mode
+  & $\to \infty$ & Gaussian (peaked) \\
+Trotting, two alternating modes
+  & $\approx 2$--$5$ & moderate tails \\
+Bounding / flight, many transitions
+  & $\approx 1$--$2$ & heavy tails (exploratory) \\
+\bottomrule
+\end{tabular}
+\end{center}
+At $\nu \to \infty$ the Student-$t$ recovers the Gaussian
+(standard SAC).
+At finite $\nu$ the heavy tails absorb the multi-modality of the
+contact landscape.
+\end{definition}
+
 \begin{definition}[Computation core]\label{def:computation-core}
 The policy $\pi$ computes via three primitives at each
 layer $\ell = 1, \ldots, L$:
@@ -1168,7 +1222,7 @@ Contact or no contact, $\{0,1\}$ at every level.
   $\{y_\ell\}_{\ell=1}^{L-1}$ from \textsc{Forward}
 \Statex
 \Function{\textsc{Backward}}{$\delta\tau$}
-  \Comment{$\delta\tau = \nabla_\tau |\phi|_\beta$ from engine}
+  \Comment{$\delta\tau = \partial\mathcal{L}/\partial\hat{\tau}$, e.g.\ Score (\cref{alg:loco})}
   \State \textcolor{water}{\textsc{Output}${}^T$:}\;
     $\nabla W_L \leftarrow \delta\tau \cdot z_{L-1}^T$;\;\;
     $\nabla b_L \leftarrow \delta\tau$
@@ -1237,10 +1291,12 @@ shaping and no domain knowledge beyond the file itself.
       \State $o_t \leftarrow (o_{\mathrm{prop}},\,
         \varphi_{\mathrm{vis}}(I_t))$
         \Comment{\cref{def:observation}: $\R^{42+d}$}
-      \State $\tau_t \leftarrow \textsc{Forward}(o_t,\, u)$
-        \Comment{\cref{alg:forward}: $\R^{42+d} \to \R^{12}$}
+      \State $(\mu_t, \sigma_t) \leftarrow \textsc{Forward}(o_t,\, u)$
+        \Comment{\cref{alg:forward}: $\R^{42+d} \to \R^{24}$}
+      \State $\tau_t \sim \pi_\theta(\cdot \mid o_t, u)$
+        \Comment{\cref{def:mollifier}: Student-$t$}
       \State $q_{t+1} \leftarrow \mathcal{E}.\texttt{step}(q_t,\, \tau_t)$
-        \Comment{EL dynamics}
+        \Comment{EL dynamics (\textcolor{knife}{no $\nabla$})}
     \EndFor
     \State \textcolor{water}{\textsc{Evaluate}:}\;
       $|\phi|_\beta \leftarrow
@@ -1256,14 +1312,14 @@ shaping and no domain knowledge beyond the file itself.
       \bigr)_{t}$
       \Comment{imitation (\cref{def:task-rkhs});
       skip if $\mathcal{D}\!=\!\varnothing$}
-    \State \textcolor{water}{\textsc{Pullback}:}\;
-      $\delta\tau \leftarrow
-      \mathcal{E}.\texttt{grad}(|\phi|_\beta,\, \{\tau_t\})$
-      \Comment{\textcolor{water}{水: engine autodiff}}
+    \State \textcolor{water}{\textsc{Score}:}\;
+      $s_t \leftarrow
+      \nabla_\theta \log \pi_\theta(\tau_t \mid o_t, u)$
+      \Comment{\textcolor{water}{水: through $\pi$ only}}
     \State \textcolor{water}{\textsc{Backward}:}\;
       $\{\nabla W,\, \nabla b\} \leftarrow
-      \textsc{Backward}(\delta\tau)$
-      \Comment{\cref{alg:backward}: 水$\leftarrow$ to $\pi$}
+      |\phi|_\beta \cdot \sum_t s_t$
+      \Comment{\cref{alg:backward}; $\nabla$ stops at $\mathcal{E}$}
     \State $W_\ell \leftarrow W_\ell
       + \eta\bigl[\textcolor{water}{\nabla W_\ell}
       - \textcolor{knife}{\gamma\, W_\ell}\bigr]$;\;\;
@@ -1651,62 +1707,71 @@ Neither tier crosses into the other.
 
 \begin{remark}[\textcolor{caution}{No tricks needed}]
 \label{rem:no-tricks}
-\Cref{alg:loco} is gradient descent through a differentiable
-simulator.  That is all.  We collect no replay buffer, fit no
-value function, clip no surrogate objective, aggregate no
-datasets.  Specifically:
+\Cref{alg:loco} is a policy gradient through a mollifier.
+That is all.
+We collect no replay buffer, fit no value function, clip no
+surrogate objective, aggregate no datasets.
 
+\medskip\noindent
+\textbf{The engine is differentiable.}\;
+MJX (the JAX backend of MuJoCo) provides
+$\nabla_\tau \mathcal{E}.\texttt{step}$---the Jacobian of the
+physics step with respect to torques.
+This gradient is \emph{exact within a single contact mode}.
+But locomotion is mode switching: every gait cycle crosses
+$\geq 4$ contact boundaries (one per foot), and at each boundary
+the contact Jacobian $J_c$ changes rank.
+The engine gradient at a boundary is the left or right limit,
+\emph{not} the gradient of the expected value.
+
+\medskip\noindent
+\textbf{We do not use the engine gradient.}\;
+\Cref{alg:loco} treats $\mathcal{E}.\texttt{step}$ as a
+\textcolor{knife}{black box}: the gradient does not penetrate
+the physics.
+The \textsc{Score} step (line~14) differentiates through the
+policy $\pi_\theta$ only---never through $\mathcal{E}$.
+The engine could be MuJoCo~C (non-differentiable),
+MJX (differentiable), Brax, or real hardware.
+The algorithm does not care.
+
+\medskip\noindent
+\textbf{The mollifier provides the gradient.}\;
+The Student-$t$ policy (\cref{def:mollifier}) has full support
+on $[-\bar\tau, \bar\tau]^{12}$ and is $C^\infty$ in $\theta$.
+The expected viability
+$\bar\phi(\theta) =
+\mathbb{E}_{\pi_\theta}[|\phi|_\beta]$
+is smooth in $\theta$---even though $|\phi|_\beta(\tau)$ is
+non-smooth at contact boundaries---because integrating a
+Lipschitz function against a smooth kernel with full support
+produces a smooth function.
+The Student-$t$ absorbs the contact discontinuity.
+
+\medskip\noindent
+\textbf{The remaining patches are still unnecessary:}
 \begin{itemize}[leftmargin=*]
-\item \textcolor{caution}{\textbf{DAgger}} (Dataset Aggregation)
-  fixes distribution shift: the policy at training time sees
-  states it would not visit at test time.
-  Here there is no shift---every rollout in \cref{alg:loco}
-  starts from $\theta_0$ and runs the \emph{current} $\pi$
-  through the engine.
-  The training distribution \emph{is} the deployment
-  distribution at every iteration.
-  No aggregation needed.
-
-\item \textcolor{caution}{\textbf{PPO}} (Proximal Policy
-  Optimisation) is a sum of heuristics.
-  Strip them one by one:
-  \begin{enumerate}[label=(\roman*)]
-    \item \emph{Surrogate objective} $\to$ unnecessary:
-      MJX gives $\nabla_\tau |\phi|_\beta$ exactly
-      (\textsc{Pullback}, \cref{alg:loco}).
-      No need to approximate the gradient via a clipped ratio.
-    \item \emph{Value baseline} $\to$ unnecessary:
-      $|\phi|_\beta$ is computed per-rollout, not estimated
-      by a learned $V(s)$.
-    \item \emph{Clipping} $\to$ unnecessary:
-      exact gradients do not explode;
-      the capacity clamp (\textsc{Clamp}, \cref{alg:loco})
-      bounds $\|W_\ell\|_F$ directly.
-    \item \emph{Entropy bonus} $\to$ unnecessary:
-      command sampling $u \sim U$ provides exploration;
-      $\beta$-annealing (\cref{rem:rg-annealing}) controls
-      the sharpness schedule.
-  \end{enumerate}
-  What remains after stripping?
-  Gradient descent with dissipation ($\gamma\, W$).
-  That is \cref{alg:loco}.
-
-\item \textcolor{caution}{\textbf{REINFORCE}} / score-function
-  estimators: high variance because they differentiate through
-  $\log \pi$ instead of through the dynamics.
-  MJX differentiates through the dynamics.
-  Variance $\to$ zero (up to finite $N$).
+\item \textcolor{caution}{\textbf{DAgger}}: no distribution shift.
+  Every rollout runs the current $\pi_\theta$ through the engine.
+\item \textcolor{caution}{\textbf{PPO}}: no surrogate, no baseline,
+  no clipping, no entropy bonus.
+  The score function gives an unbiased gradient.
+  The capacity clamp (\textsc{Clamp}) bounds $\|W_\ell\|_F$.
+  Command sampling $u \sim U$ provides exploration.
+\item \textcolor{caution}{\textbf{Value function}}: $|\phi|_\beta$
+  is computed per-rollout, not estimated by a learned $V(s)$.
 \end{itemize}
 
 The pattern: every ``trick'' in model-free RL is a patch for a
 missing gradient.
-A differentiable engine provides the gradient.
+The Student-$t$ mollifier provides the gradient---through the
+policy, not through the engine.
 The patches become unnecessary.
 \Cref{alg:loco} is not a new algorithm---it is what remains when
 you \textcolor{caution}{delete the patches}.
 \end{remark}
 
-\subsection{Representation dynamics}\label{sec:representation}
+\section{Representation dynamics}\label{sec:representation}
 
 The contact dynamics of \cref{sec:contact} trains a locomotion policy
 on an execution graph with $12$ edges.
@@ -2891,4 +2956,100 @@ safe.}
 The \textcolor{knife}{knife} is the price of
 \textcolor{water}{flow}.
 Remove it, and the flow destroys the channel.
+\end{remark}
+
+\begin{definition}[Sandbox daemon]
+\label{def:sandbox-daemon}
+The \emph{sandbox daemon} is a persistent instance of
+\cref{alg:sandbox} that separates the one-time
+\textcolor{sword}{\textsc{Build}} and
+\textcolor{knife}{\textsc{Destroy}} from the per-evaluation
+loop:
+\[
+  \underbrace{%
+    \textcolor{sword}{\textsc{Build}}
+  }_{\text{once}}
+  \;\to\;
+  \underbrace{%
+    \bigl(\,
+      \textcolor{water}{\textsc{Inject}} \;\to\;
+      \textcolor{water}{\textsc{Execute}} \;\to\;
+      \textcolor{water}{\textsc{Extract}}
+    \,\bigr)^N
+  }_{\text{per evaluation}}
+  \;\to\;
+  \underbrace{%
+    \textcolor{knife}{\textsc{Destroy}}
+  }_{\text{once}}.
+\]
+The container $\mathcal{C}$ persists across all $N$ evaluations
+in \cref{alg:finetune}.
+The compilation cache, GPU context, and sanitiser hooks survive
+between calls.
+\end{definition}
+
+\begin{remark}[The daemon is the standing structure]
+\label{rem:daemon-standing}
+In locomotion (\cref{alg:loco}), the robot body persists across
+all rollouts.
+You do not rebuild the quadruped every step.
+The standing structure (\cref{rem:standing})---joints, torques,
+contact modes---is loaded once and reused.
+
+The sandbox daemon is the same pattern.
+The four engineering requirements for CUDA trajectory optimisation
+map to the four tower layers:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Gap} & \textbf{Tower} & \textbf{Daemon component} &
+\textbf{Persistence} \\
+\midrule
+Host-device wrapper
+  & \textcolor{water}{力${}^*$}
+  & \texttt{cudaMalloc}, grid config, launch
+  & GPU context survives \\
+Compilation bottleneck
+  & \textcolor{sword}{立${}^*$}
+  & \texttt{ccache}, hot \texttt{nvcc} daemon
+  & only recompile $\Delta$ \\
+Mathematical oracle
+  & \textcolor{caution}{丽(正)${}^*$}
+  & KKT residual $< \varepsilon$,
+    constraint violation $< \delta$
+  & validator loaded once \\
+GPU isolation
+  & \textcolor{knife}{刀}
+  & \texttt{--gpus all}, \texttt{compute-sanitizer}
+  & container $\mathcal{C}$ persists \\
+\bottomrule
+\end{tabular}
+\end{center}
+Without the daemon, \cref{alg:sandbox} creates and destroys a
+container per evaluation.
+With the daemon, the container is the body.
+\textsc{Build} is birth.
+\textsc{Destroy} is death.
+The training loop runs \emph{inside} a life.
+
+The isomorphism is exact:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Locomotion} & \textbf{CUDA sandbox daemon} \\
+\midrule
+Body & quadruped (MuJoCo) & container $\mathcal{C}$ (Docker) \\
+Standing & $h > h_{\min}$ & \texttt{nvcc} cache warm \\
+Joint limits & $c(e) \leq c_{\max}$ &
+  \texttt{compute-sanitizer}: 0 errors \\
+Rollout & simulate $\to$ reward & inject $\to$ compile $\to$ run \\
+Persistence & body across rollouts & $\mathcal{C}$ across evaluations \\
+\bottomrule
+\end{tabular}
+\end{center}
+You do not rebuild the robot every step.
+You do not rebuild the sandbox every evaluation.
+The daemon \emph{is} the standing structure for code.
 \end{remark}
