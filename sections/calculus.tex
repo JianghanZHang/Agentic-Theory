@@ -916,6 +916,9 @@ The support is the \emph{contact mode combinatoric} and the
   Torque: $[23.7,\; 23.7,\; 35.55]$\,Nm.
   Velocity: $21.0$\,rad/s per joint.
   Standing height: $0.312$\,m.
+  Sinking bound: $z_{\mathrm{contact}} \geq z_{\min} = -3$\,mm
+  (no contact point may penetrate below $z_{\min}$;
+  \cref{rem:sinking-bound}).
   These are the capacity bounds $c(e) \leq c_{\max}(e)$ of the
   execution graph.
 \end{itemize}
@@ -1020,13 +1023,19 @@ The \emph{soft viability margin} is
   \mathrm{soft\text{-}min}_\beta\,\bigl(
   \underbrace{h(q_t) - h_{\min}}_{\text{height margin}},\;\;
   \underbrace{\phi_{\max} - \|R_t - I\|_F}_
-  {\text{orientation margin}}
+  {\text{orientation margin}},\;\;
+  \underbrace{\min_j z_j(q_t) - z_{\min}}_
+  {\text{sinking margin}}
   \bigr)_{t=0}^{H}.
 \end{equation}
 The temperature $1/\beta$ controls how many timesteps share the
 gradient.
 Small $\beta$ (warm): all timesteps contribute.
 Large $\beta$ (cold): only the worst timestep contributes.
+The three thresholds $h_{\min}$, $\phi_{\max}$, $z_{\min}$ are
+read from the constraint list (\cref{rem:standing}); the sinking
+margin is not a heuristic but a categorical boundary
+(\cref{rem:sinking-bound}).
 \end{definition}
 
 \begin{definition}[Mollifier policy]\label{def:mollifier}
@@ -1302,7 +1311,8 @@ shaping and no domain knowledge beyond the file itself.
       $|\phi|_\beta \leftarrow
       \mathrm{soft\text{-}min}_\beta\bigl\{
       h(q_t)\!-\!h_{\min},\;\,
-      \phi_{\max}\!-\!\|R_t\!-\!I\|_F
+      \phi_{\max}\!-\!\|R_t\!-\!I\|_F,\;\,
+      \min_j z_j(q_t)\!-\!z_{\min}
       \bigr\}_{t=0}^{H}$
       \Comment{\textcolor{water}{水: margin} (\cref{def:soft-viability})}
     \State $|\phi|_\beta \leftarrow
@@ -1565,6 +1575,8 @@ extends~\eqref{eq:soft-viability}:
   \underbrace{h(q_t) - h_{\min}}_{\text{height}},\;\;
   \underbrace{\phi_{\max} - \|R_t - I\|_F}_
   {\text{orientation}},\;\;
+  \underbrace{\min_j z_j(q_t) - z_{\min}}_
+  {\text{sinking}},\;\;
   \underbrace{m_{\mathrm{task}}(t)}_
   {\text{imitation}}
   \bigr)_{t=0}^{H}.
@@ -2811,6 +2823,66 @@ A robot cannot fly through the floor.
 Code cannot escape the sandbox.
 The physics is different.
 The \textcolor{knife}{knife} is the same.
+\end{remark}
+
+\begin{remark}[Sinking bound: 地面不能变成水]
+\label{rem:sinking-bound}
+MuJoCo uses a \emph{soft contact} model: the ground exerts a
+spring-damper force $F = k\,\delta + b\,\dot\delta$ proportional
+to penetration depth $\delta$.
+For small $\delta$ (a few millimetres), this approximation is
+accurate.
+For large $\delta$, the model breaks: forces explode,
+bodies tunnel through the ground plane, and the simulation
+becomes physically meaningless.
+
+In the viability geometry (\cref{sec:viab-geom}), the ground
+plane is $\partial K$---the boundary of the viability kernel.
+The viability metric $g_V = V^{-2}\,g_S$
+(\cref{def:viab-metric}) has a \emph{pole} at $V = 0$:
+the boundary is at infinite $g_V$-distance, and
+\cref{prop:viab-complete} guarantees that no trajectory can
+reach it in finite time.
+This completeness theorem \emph{requires} that the boundary be
+a hard wall.
+
+A soft-contact spring is not a wall---it is a \emph{resource}
+that stores and releases energy.
+It can be depleted (penetrated past its valid range).
+If the ground becomes soft, $\partial K$ is no longer a
+constraint that holds; it becomes a medium that yields.
+\textcolor{water}{The ground becomes water.}
+
+The sinking bound prevents this:
+\[
+  z_{\mathrm{contact}}(t)
+  \;\geq\;
+  z_{\min}
+  \quad\text{for all contact points, all } t.
+\]
+This is not an optimisation heuristic.
+It is the \emph{categorical distinction} between $\partial K$
+(constraint, infinite barrier, pole of $g_V$) and $V$
+(resource, depletable, conformal factor).
+The ground is not water.
+地面不能变成水.
+
+It is the \emph{robot's} viability obligation to not break the
+contact physics of its own simulator.
+The sinking bound is not a limitation of MuJoCo that the
+engineer works around---it is a constraint the robot must
+actively maintain, just as the king must maintain the
+institutional structure he governs through
+(\cref{thm:paradox}).
+The robot lives inside the physics model; breaking it is
+breaking~$\partial K$ itself.
+
+In the isomorphism of \cref{rem:sandbox-mujoco}: the code
+sandbox's memory limit $m_{\max}$ plays the same role.
+If a program consumes memory beyond $m_{\max}$, the OS's
+virtual memory subsystem enters pathological behaviour
+(thrashing, OOM killer).
+The memory limit is the ground plane for code.
 \end{remark}
 
 \begin{remark}[Bill of materials: what you actually need]
