@@ -30,10 +30,78 @@ Qin's star graph (center $=$ Xianyang, $O(1)$ dispatch) vs.\ the six
 states' mesh graphs (multiple aristocratic centers, $O(n^2)$
 coordination cost).
 
+\begin{remark}[Temporal linearity]\label{rem:temporal}
+The mesh-to-star compression is not an efficiency optimisation.  It is
+a survival requirement forced by temporal linearity.
+
+Time is real and linear: no pause, no speedup, no frame drops
+(\cref{rem:deployment,rem:di-temporal}).  Every system that maintains
+viability must complete a full sense--compute--act cycle within one
+time step $\Delta t$:
+\[
+  \underbrace{|\phi| > 0}_{\text{do not fall}}
+  \quad\wedge\quad
+  \underbrace{t_{\pi} \leq \Delta t}_{\text{do not lag}}.
+\]
+The first condition is physical (the viability axiom).  The second is
+computational: the response function must fit inside $\Delta t$.
+Both must hold simultaneously.  Violating either kills the system
+by different mechanisms: the first is a fall, the second is a lag,
+and the outcome is the same.
+
+This binds computational complexity to survival.  A mesh topology
+dispatches in $O(n^2)$; a star topology in $O(1)$.  As the system
+grows (more territory, more agents), $\Delta t$ does not grow with
+it---time does not slow down for larger empires.  At critical $n$,
+mesh dispatch exceeds $\Delta t$ and the system can no longer respond
+in time.  商鞅's reform---mesh to star---is latency engineering:
+compressing $t_\pi$ to fit within a fixed $\Delta t$ at any scale.
+
+The isomorphism between robotic deployment and historical deployment
+is exact:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Deployment (robotics)} & \textbf{Deployment (history)} \\
+\midrule
+policy $\pi$ (neural network) & emperor (cut vertex) \\
+sensor reading $o_t$ & intelligence reports \\
+torque command $\tau_t$ & edicts, military orders \\
+$\Delta t = 20$\,ms & dynastic response window \\
+ReLU (piecewise linear, $O(n)$) & star graph ($O(1)$ dispatch) \\
+$|\phi| = 0$ (robot falls) & dynasty collapses \\
+$t_\pi > \Delta t$ (compute lags) & cut vertex non-functional \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Every structural choice in the framework---ReLU as activation
+function, star as topology, binary threshold as detection
+criterion---is forced by the requirement that computation fit inside
+real, linear, non-pausable time.  These are not design preferences;
+they are the only structures fast enough to survive.
+
+The two historical failure modes in \cref{sec:errorlog} are the two
+ways the computational constraint breaks:
+\begin{itemize}
+\item 嘉靖: cut vertex present but $t_\pi \to \infty$.
+  The emperor computes Daoist alchemy for twenty years while the
+  system requires real-time response.  Every year without a routing
+  decision is a dropped frame.  Gravity does not pause while the
+  processor runs an irrelevant subroutine.
+\item 元顺帝: cut vertex removed.  No processor.  Immediate crash
+  ($|\phi| = 0$).
+\end{itemize}
+Temporal linearity is not a property of one remark in one chapter.
+It is the medium in which the entire theory operates.
+\end{remark}
+
 Shang Yang's fate validates the framework's robustness: his reform
 network itself became an autonomous actuator ($\Ur \neq \varnothing$).
 The system eliminated its creator---not irony, but a robustness test.
-A knife-detection system that exempts its designer is not robust.
+A knife-detection system that exempts its designer is not robust
+(\cref{sec:second} formalises this as second-mover viability).
 
 \subsection{The submartingale-induced unitary group}
 

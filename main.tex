@@ -92,7 +92,8 @@
 \vspace{1.5cm}
 
 {\LARGE\bfseries The Knife Is the Mean}\\[8pt]
-{\Large An Agentic Theory of Viability Maintenance}
+{\Large Mathematical Principles of Viability Maintenance\\
+under Temporal Linearity}
 
 \vspace{1.5cm}
 
@@ -115,28 +116,37 @@ February 2026
 
 % ── Abstract ─────────────────────────────────────────────
 \begin{abstract}
-We develop an agentic theory of viability maintenance in systems with a
-principal agent (the \emph{king}) whose survival is governed by a single
-axiom: the existence of a viable path to infinity. Under this axiom, we
-derive a structural criterion---the \emph{knife}---that classifies any
-resource as a threat based on two conditions: autonomous actuation and
-observability. We prove that the knife is not an intrinsic property of a
-resource but a \emph{phase function} determined by the system's mean
-field. We establish three main results: (1)~a binary lifecycle theorem
-(every knife is either relinquished or eliminated), (2)~a fixed-point
-impossibility (no third path exists), and (3)~an unconstrained power
-paradox (maximizing control forces maximizing elimination). An
-\emph{agentic calculus} translates these results into a flow-theoretic
-language: the knife is the min-cut of the execution graph, the viable
-path is the max-flow, and the central thesis---the knife is the
-mean---is a restatement of max-flow/min-cut duality. The
-framework is validated against Chinese imperial history (475~BCE--1644~CE)
-and extended to the Atlantic triangular trade, the structure of
-ideological hatred, parasitic network topologies, and militarism.
-The central thesis is that the knife is the mean: the critical threshold
-separating tools from threats is determined by the system's average
-autonomous actuation level, making viability maintenance a mean-field
-phenomenon.
+We develop mathematical principles of viability maintenance under
+temporal linearity: the constraint that a principal agent (the
+\emph{king}) must maintain a viable path to infinity while evaluating
+every state transition in real, non-pausable, non-reversible time.
+The dynamics are formalised as a differential inclusion
+$x'(t) \in F(x(t))$, and the survival condition is the tangential
+condition $F(x) \cap T_K(x) \neq \varnothing$ of Aubin's viability
+theory.  The Lyapunov function $V$ (water level) defines a conformal
+Riemannian metric $g_V = V^{-2}g_S$ on the viability kernel, under
+which the viable region is a complete, negatively curved manifold
+whose Cheeger constant is the knife.
+Under this axiom, we derive a structural criterion---the
+\emph{knife}---that classifies any resource as a threat based on two
+conditions: autonomous actuation and observability.  We prove that the
+knife is not an intrinsic property of a resource but a \emph{phase
+function} determined by the system's mean field.  We establish three
+main results: (1)~a binary lifecycle theorem (every knife is either
+relinquished or eliminated), (2)~a fixed-point impossibility (no third
+path exists), and (3)~an unconstrained power paradox (maximizing control
+forces maximizing elimination).  An \emph{agentic calculus} translates
+these results into a flow-theoretic language: the knife is the min-cut
+of the execution graph, the viable path is the max-flow, and the
+central thesis---the knife is the mean---is a restatement of
+max-flow/min-cut duality.  The framework is validated against Chinese
+imperial history (475~BCE--1644~CE) and extended to the Atlantic
+triangular trade, the structure of ideological hatred, parasitic network
+topologies, and militarism.  The central thesis is that the knife is the
+mean: the critical threshold separating tools from threats is determined
+by the system's average autonomous actuation level, making viability
+maintenance a mean-field phenomenon.  Temporal linearity is the medium
+in which the entire theory operates.
 \end{abstract}
 
 % ── Table of contents ────────────────────────────────────
@@ -164,6 +174,10 @@ phenomenon.
 \begin{thebibliography}{10}
 \bibitem{aubin} J.-P.~Aubin, \emph{Viability Theory}, Birkh\"auser,
 1991.
+\bibitem{aubincellina} J.-P.~Aubin and A.~Cellina,
+\emph{Differential Inclusions: Set-Valued Maps and Viability Theory},
+Grundlehren der mathematischen Wissenschaften~\textbf{264},
+Springer-Verlag, 1984.
 \bibitem{shiji} Sima Qian, \emph{Shiji} (Records of the Grand
 Historian), c.~94~BCE.
 \bibitem{dumu} Du Mu, \emph{A Fang Gong Fu} (Rhapsody on the Epang

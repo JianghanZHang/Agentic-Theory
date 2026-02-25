@@ -41,6 +41,312 @@ criterion's discriminating power, not to claim the criterion exhausts
 history.
 \end{remark}
 
+\section{The differential inclusion}\label{sec:di}
+
+The viability axiom (\cref{ax:viability}) asserts the existence of a
+viable path.  We now make the dynamics precise using the differential
+inclusion framework of Aubin and Cellina~\cite{aubin,aubincellina}.
+
+\begin{definition}[Differential inclusion]\label{def:di}
+The state $x(t) \in S$ evolves under a \emph{differential inclusion}
+\[
+  x'(t) \;\in\; F\bigl(x(t)\bigr),
+\]
+where $F: S \rightrightarrows S$ is a set-valued map that associates
+to each state the set of feasible velocities.  A trajectory
+$x(\cdot)$ is an absolutely continuous function satisfying the
+inclusion for almost all $t \geq 0$.
+\end{definition}
+
+The set-valued map $F$ encodes the fact that the system's velocity is
+not uniquely determined by its state: multiple agents, each with their
+own actuation, contribute competing directions.  In a multi-agent
+system with agents $a_1, \ldots, a_n$, the aggregate velocity set is
+\[
+  F(x) \;=\; \Bigl\{\, \sum_{i} f_i(x, u_i) \;:\;
+  u_i \in U_i \,\Bigr\},
+\]
+where $f_i$ is agent $i$'s dynamics and $U_i$ its control set.
+
+\begin{definition}[Contingent cone]\label{def:contingent}
+The \emph{contingent cone} (Bouligand tangent cone) to $K$ at
+$x \in K$ is
+\[
+  T_K(x) \;:=\; \Bigl\{\, v \in S \;:\;
+  \liminf_{h \to 0^+} \frac{d_K(x + hv)}{h} = 0 \,\Bigr\},
+\]
+where $d_K$ denotes the distance to $K$.  Equivalently,
+$v \in T_K(x)$ if and only if there exist sequences $h_n \to 0^+$
+and $v_n \to v$ such that $x + h_n v_n \in K$ for all $n$.
+\end{definition}
+
+The contingent cone $T_K(x)$ is the set of directions at $x$ along
+which the state can move while remaining in $K$---the set of
+\emph{safe velocities}.  At interior points $T_K(x) = S$; at
+boundary points the cone narrows, restricting the feasible
+directions.
+
+\begin{theorem}[Viability theorem {\cite{aubin}}]\label{thm:viability-di}
+Let $K \subset S$ be locally compact and $F$ be upper semicontinuous
+with nonempty compact convex values.  The necessary and sufficient
+condition for the existence of a viable trajectory of
+$x' \in F(x)$ from every initial state $x_0 \in K$ is the
+\emph{tangential condition}:
+\[
+  \forall\, x \in K, \quad
+  F(x) \;\cap\; T_K(x) \;\neq\; \varnothing.
+\]
+\end{theorem}
+
+This is the differential content of \cref{ax:viability}: the king
+survives if and only if, at every state, the system's velocity set
+(\cref{def:di}) contains at least one direction tangent to the
+viability kernel (\cref{def:contingent}).
+The viability axiom is not a wish---it is the tangential condition.
+
+\begin{definition}[Feedback map]\label{def:feedback}
+Given the dynamics $x' = f(x, u)$ with control set $U$ (the king's
+controls), the \emph{feedback map} is
+\[
+  C(x) \;:=\; \bigl\{\, u \in U \;:\;
+  f(x, u) \in T_K(x) \,\bigr\}.
+\]
+A viable trajectory exists from $x$ if and only if $C(x) \neq
+\varnothing$.  The regulation problem is: does there exist a
+feedback law $u(t) \in C(x(t))$ such that $x(\cdot)$ remains in $K$?
+\end{definition}
+
+The feedback map is the king's strategy space at state $x$: the set
+of controls that keep the trajectory inside $K$.  When $C(x) \neq
+\varnothing$ for all $x \in K$, the king can regulate the system.
+When a knife $r$ executes independently, it contributes a velocity
+$f_r(x, a)$ that may push $x'(t)$ outside $T_K(x)$, and the
+feedback map shrinks---possibly to the empty set.
+
+\begin{definition}[Viability Lyapunov function]\label{def:lyapunov}
+A continuous function $V: K \to \R_{\geq 0}$ is a \emph{Lyapunov function}
+for the inclusion $x' \in F(x)$ with respect to a cost function
+$W: \mathrm{Graph}(F) \to \R_{\geq 0}$ if
+\[
+  \forall\, x \in K, \quad
+  \exists\, v \in F(x) \;\;\text{such that}\;\;
+  D^+ V(x)(v) \;+\; W(x, v) \;\leq\; 0,
+\]
+where $D^+ V(x)(v) := \liminf_{h \to 0^+,\, u \to v}
+\frac{V(x + hu) - V(x)}{h}$ is the upper contingent derivative.
+Trajectories satisfying this condition are \emph{monotone}: $V(x(t))$
+is non-increasing.
+\end{definition}
+
+In the language of \cref{sec:water}, the water level $w(t)$ is a
+Lyapunov function (\cref{def:lyapunov}) for the viability inclusion.
+The monotonicity condition $D^+ V(x)(v) + W(x,v) \leq 0$ says: along
+any viable trajectory, the water level cannot increase faster than the
+system's extraction cost $W$.  When $V(x(t)) \to 0$, the Lyapunov
+condition fails, the tangential condition is violated, and the system
+exits $K$---this is \cref{thm:dumu} (Du Mu's theorem) restated in DI
+language.
+
+\begin{remark}[Temporal linearity in the DI]\label{rem:di-temporal}
+The differential inclusion $x'(t) \in F(x(t))$ operates in real
+time: $t$ is the wall-clock parameter, and the inclusion must be
+satisfied at every instant.  The feedback map $C(x(t))$ must be
+evaluated within one time step $\Delta t$ (\cref{rem:temporal}).
+The tangential condition $F(x) \cap T_K(x) \neq \varnothing$
+is a \emph{pointwise} requirement: it must hold at every $x \in K$,
+which means at every instant.  There is no lookahead, no global
+optimisation over future trajectories---only the local tangent
+condition, checked in real time.  This is why Aubin calls the
+viable system's policy ``opportunism'': the system selects a
+feasible velocity from $F(x) \cap T_K(x)$ at each instant, without
+planning.
+\end{remark}
+
+\section{Viability geometry}\label{sec:viab-geom}
+
+The differential inclusion (\cref{sec:di}) provides the dynamics.
+We now give the viability kernel $K$ a Riemannian metric, making the
+survival problem geometric.  The key observation is that the Lyapunov
+function $V$ (\cref{def:lyapunov}) is not merely a scalar indicator of
+system health---it is a \emph{conformal factor} that defines the
+intrinsic geometry of the viable region.
+
+\begin{definition}[Viability metric]\label{def:viab-metric}
+Let $g_S$ denote the ambient metric on the state space $S$ and
+$V: K \to \R_{\geq 0}$ the Lyapunov function (\cref{def:lyapunov})
+with $V > 0$ on $K^\circ$ and $V = 0$ on $\partial K$.
+The \emph{viability metric} on $K^\circ$ is the conformal deformation
+\[
+  g_V \;:=\; \frac{1}{V(x)^2}\, g_S.
+\]
+The Riemannian manifold $(K^\circ, g_V)$ is called the
+\emph{viability manifold}.
+\end{definition}
+
+The conformal factor $V^{-2}$ inflates distances near the boundary
+($V \to 0$) and compresses distances in the interior ($V$ large).
+A trajectory approaching the boundary must cover infinite
+$g_V$-distance in finite ambient time---the boundary is ``at
+infinity'' in the viability metric.
+
+\begin{proposition}[Completeness]\label{prop:viab-complete}
+Suppose $V(x) \leq C \cdot d_K(x)$ for some $C > 0$
+and all $x$ near $\partial K$, where $d_K(x)$ is the ambient
+distance to $\partial K$.  Then $(K^\circ, g_V)$ is a complete
+Riemannian manifold.
+\end{proposition}
+
+\begin{proof}
+Let $\gamma: [0, T) \to K^\circ$ be a curve approaching $\partial K$
+as $t \to T$.  The $g_V$-length is
+\[
+  L_{g_V}(\gamma)
+  \;=\;
+  \int_0^T \frac{\|\gamma'(t)\|_{g_S}}{V(\gamma(t))}\, dt
+  \;\geq\;
+  \frac{1}{C}
+  \int_0^T \frac{\|\gamma'(t)\|_{g_S}}{d_K(\gamma(t))}\, dt.
+\]
+Since $\|\gamma'(t)\|_{g_S} \geq |d_K(\gamma(t))'|$ by the
+triangle inequality, the right-hand side is bounded below by
+$(1/C)\int_0^T |d_K'|/d_K\,dt$.  By substitution $u = d_K$,
+this becomes $(1/C)\int du/u$, which diverges logarithmically
+as $d_K \to 0$.
+Hence $\partial K$ is at infinite $g_V$-distance: the Hopf--Rinow
+theorem gives completeness.
+\end{proof}
+
+\begin{proposition}[Negative curvature]\label{prop:neg-curvature}
+Let $\dim S = 2$ and $g_S$ be flat.  If $V$ is superharmonic
+($\Delta V \leq 0$, the Lyapunov condition), the Gaussian curvature
+of $(K^\circ, g_V)$ satisfies
+\[
+  \kappa_V
+  \;=\;
+  V \,\Delta V \;-\; |\nabla V|^2
+  \;\leq\;
+  -\,|\nabla V|^2
+  \;<\; 0
+\]
+wherever $\nabla V \neq 0$.  In dimension $n \geq 3$, the Ricci
+curvature of $g_V = V^{-2} g_S$ satisfies
+$\mathrm{Ric}_{g_V} \leq -(n-1)\,|\nabla \log V|^2\, g_V$
+under the same superharmonicity condition.
+\end{proposition}
+
+\begin{proof}
+For a conformal change $\tilde{g} = e^{2\varphi}\, g$ with
+$\varphi = -\log V$, the Gaussian curvature in dimension~$2$
+transforms as
+$\tilde\kappa = e^{-2\varphi}(\kappa_S - \Delta\varphi)$,
+where $\kappa_S$ is the ambient curvature.
+On a flat background ($\kappa_S = 0$):
+\[
+  \kappa_V
+  \;=\;
+  V^2\!\left(-\,\Delta(-\log V)\right)
+  \;=\;
+  V^2\!\left(\frac{\Delta V}{V} - \frac{|\nabla V|^2}{V^2}\right)
+  \;=\;
+  V\,\Delta V \;-\; |\nabla V|^2.
+\]
+Since $\Delta V \leq 0$ (superharmonic) and $|\nabla V|^2 > 0$,
+we have $\kappa_V < 0$.  The higher-dimensional statement follows
+from the conformal Ricci formula
+$\mathrm{Ric}_{\tilde g} = \mathrm{Ric}_g - (n-2)\,
+\nabla^2\varphi - [\Delta\varphi + (n-2)\,|\nabla\varphi|^2]\,g$.
+\end{proof}
+
+\begin{definition}[Cheeger constant of the viability manifold]
+\label{def:cheeger-viab}
+The \emph{Cheeger constant} of $(K^\circ, g_V)$ is
+\[
+  h(K)
+  \;:=\;
+  \inf_{S}
+  \frac{|\partial S|_{g_V}}
+  {\min\!\bigl(\mathrm{vol}_{g_V}(A),\,
+  \mathrm{vol}_{g_V}(B)\bigr)},
+\]
+where the infimum is over hypersurfaces $\partial S$ that divide
+$K^\circ$ into two open subsets $A$ and $B$, and $|\partial S|_{g_V}$
+denotes the $(n-1)$-dimensional volume of $\partial S$ in the
+viability metric.
+\end{definition}
+
+\begin{theorem}[Cheeger inequality]\label{thm:cheeger-viab}
+Let $\lambda_1(K)$ denote the first nonzero eigenvalue of the
+Laplace--Beltrami operator on $(K^\circ, g_V)$.  Then
+\[
+  \lambda_1(K) \;\geq\; \frac{h(K)^2}{4}.
+\]
+\end{theorem}
+
+\begin{proof}
+This is the Riemannian Cheeger inequality~\cite{cheeger}.
+The discrete version on the execution graph appears in
+\cref{thm:cheeger}.
+\end{proof}
+
+\begin{remark}[Poincar\'e half-plane]\label{rem:poincare}
+When $K = \{x \in \R^2 : x_2 > 0\}$ (the upper half-plane) and
+$V(x) = x_2$ (height above the boundary), the viability metric
+$g_V = x_2^{-2}(dx_1^2 + dx_2^2)$ is the Poincar\'e half-plane
+model of hyperbolic geometry.  The constant curvature is
+$\kappa_V = -1$.  The viability kernel of a dynasty on a flat
+state space with water level $V = $ distance to collapse is, in its
+intrinsic geometry, \emph{the hyperbolic plane}.
+\end{remark}
+
+\begin{remark}[Unique cheapest viable path]\label{rem:cartan-hadamard}
+\Cref{prop:neg-curvature} gives $\kappa_V \leq 0$ everywhere.
+If $K$ is convex (or more generally, if $K^\circ$ is simply
+connected), then by the Cartan--Hadamard theorem $(K^\circ, g_V)$
+is a Hadamard manifold: the exponential map
+$\exp_x: T_x K^\circ \to K^\circ$ is a diffeomorphism.
+In particular, between any two interior states there exists a
+\emph{unique geodesic}---a unique cheapest viable path.
+There is no ambiguity in the optimal route; the geometry forces it.
+Convexity of $K$ is natural: the viability kernel is defined as
+the set of states from which a viable path exists
+(\cref{ax:viability}), and viability kernels of upper semicontinuous
+differential inclusions are closed under convex combinations when
+$F$ has convex values (\cref{thm:viability-di}).
+\end{remark}
+
+\begin{remark}[Why viability maintenance is hard]
+\label{rem:viab-divergence}
+Negative curvature means nearby geodesics diverge exponentially:
+two trajectories that start $\epsilon$-close separate as
+$\sim \epsilon\, e^{\sqrt{|\kappa_V|}\, t}$.  A small perturbation
+in the king's initial state produces exponentially different
+outcomes.  This is the geometric content of sensitive dependence:
+the viability manifold is hyperbolic, so maintaining viability
+requires continuous correction at every instant
+(\cref{rem:di-temporal}).  The harder the Lyapunov function
+decreases ($|\nabla V|$ large), the more negative the curvature,
+and the faster trajectories diverge.  Near the boundary
+($V \to 0$), the curvature diverges: the last moments before
+collapse are the most chaotic.
+\end{remark}
+
+\begin{remark}[The water is the metric]\label{rem:water-metric}
+The Lyapunov function $V$ (\cref{def:lyapunov})---the water level
+of \cref{sec:water}---plays three roles simultaneously:
+\begin{enumerate}[label=(\roman*)]
+  \item \emph{Scalar}: $V(x)$ measures distance from collapse.
+  \item \emph{Conformal factor}: $g_V = V^{-2} g_S$ defines the
+  intrinsic geometry of the viability kernel.
+  \item \emph{Curvature source}: $\Delta V \leq 0$ forces
+  $\kappa_V < 0$, making the geometry hyperbolic.
+\end{enumerate}
+Du Mu's theorem (\cref{thm:dumu})---$V \to 0$ implies system
+death---is a \emph{completeness theorem}: a trajectory reaching
+$V = 0$ would traverse infinite $g_V$-distance in finite time,
+violating \cref{prop:viab-complete}.  The system must exit $K$
+before $V$ reaches zero.  Du Mu is Hopf--Rinow.
+\end{remark}
+
 \section{The knife}\label{sec:knife}
 
 \begin{definition}[Knife]\label{def:knife}
@@ -70,6 +376,47 @@ The classification is exhaustive:
   $=$ indefensible $=$ system noise.)
   \item Both satisfied: \textbf{knife}.
 \end{itemize}
+
+\begin{remark}[DI restatement of the knife]\label{rem:knife-di}
+In the language of \cref{sec:di}, a resource $r$ is a knife if and
+only if its velocity set $F_r(x)$ can generate directions outside
+the contingent cone:
+\[
+  r \text{ is a knife}
+  \quad\iff\quad
+  \exists\, x \in K \;\;\text{such that}\;\;
+  F_r(x) \not\subset T_K(x).
+\]
+That is, $r$ can push the system's state toward the boundary of $K$
+along directions that are \emph{not tangent} to the viability
+kernel.  The king's feedback map $C(x)$ (\cref{def:feedback}) can
+compensate only if the king's velocity set $F_{\mathrm{king}}(x)$
+contains a counteracting direction in $T_K(x)$.  When $r$ executes
+independently---bypassing $C(x)$---no compensation is possible,
+and the tangential condition (\cref{thm:viability-di}) is violated.
+\end{remark}
+
+\begin{remark}[Geometric restatement of the knife]
+\label{rem:knife-geom}
+In the viability manifold $(K^\circ, g_V)$ (\cref{def:viab-metric}),
+the knife has a curvature interpretation.  A knife
+(\cref{def:knife}) must satisfy both autonomous actuation
+\emph{and} observability; the geometric content lies in
+condition~(1).  When a resource $r$ actuates autonomously, its
+velocity field $f_r$ has a component along $-\nabla V$ (pointing
+toward the boundary).  The magnitude
+$|\langle f_r, -\nabla V \rangle|$ contributes directly to the
+curvature (\cref{prop:neg-curvature}): the knife increases
+$|\nabla V|$, making $\kappa_V$ more negative, and the
+viable region more hyperbolic.  More knives $\Rightarrow$ more
+negative curvature $\Rightarrow$ faster divergence of nearby
+trajectories $\Rightarrow$ harder viability maintenance.
+The Cheeger constant $h(K)$ (\cref{def:cheeger-viab}) measures
+the worst-case cut: the knife is the hypersurface that minimises the
+isoperimetric ratio of the viability manifold.
+(Condition~(2)---observability---determines whether the king
+\emph{knows} where the cut is, not whether it exists.)
+\end{remark}
 
 \begin{remark}[Intent is irrelevant]\label{rem:intent}
 The criterion tests \emph{capability}, not \emph{intention}. The king
