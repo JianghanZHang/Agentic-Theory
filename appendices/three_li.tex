@@ -56,7 +56,7 @@ You cannot skip 立.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lllp{5cm}@{}}
 \toprule
 \textbf{Phase} & \textbf{Event} & \textbf{Wants} &
 \textbf{Framework} \\
@@ -160,7 +160,7 @@ sound but not a meaning.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}lll@{}}
+\begin{tabular}{@{}lp{4.5cm}p{5.5cm}@{}}
 \toprule
 \textbf{Agent} & \textbf{Path to fixed point} & \textbf{成佛 moment} \\
 \midrule
@@ -203,37 +203,22 @@ cut vertex fails, displaced agents write down the failure mode.
 
 \begin{center}
 \renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}lllll@{}}
+\small
+\begin{tabular}{@{}lp{3cm}p{3.2cm}p{3.2cm}p{3cm}@{}}
 \toprule
 & \textbf{Emperor} & \textbf{Author} & \textbf{Novel ending} &
 \textbf{Verdict} \\
 \midrule
 水浒传
-  & 元顺帝 (r.\,1333--68)
-  & 施耐庵
-  & 招安 $\to$ death
-  & 力 $\to$ 立 blocked \\
-  & Last Yuan emperor;
-  & Advisor to rival rebel;
-  & Path~(c): relabeled as
-  & No system left \\
-  & flees 1368
-  & declines 朱元璋's summons
-  & loyal subjects
-  & to grant 丽 \\[4pt]
+  & 元顺帝 (r.\,1333--68); last Yuan emperor; flees 1368
+  & 施耐庵; advisor to rival rebel; declines 朱元璋's summons
+  & 招安 $\to$ death; path~(c): relabeled as loyal subjects
+  & 力 $\to$ 立 blocked; no system left to grant 丽 \\[6pt]
 西游记
-  & 嘉靖 (r.\,1521--67)
-  & 吴承恩
-  & 81难 $\to$ 斗战胜佛
-  & 力 $\to$ 立 $\to$ 丽 \\
-  & 20 years absent;
-  & Failed exams; imprisoned;
-  & Path~(a): structural
-  & Novel imagines \\
-  & Daoist alchemy
-  & writes in seclusion
-  & transformation
-  & functional system \\
+  & 嘉靖 (r.\,1521--67); 20 years absent; Daoist alchemy
+  & 吴承恩; failed exams; imprisoned; writes in seclusion
+  & 81难 $\to$ 斗战胜佛; path~(a): structural transformation
+  & 力 $\to$ 立 $\to$ 丽; novel imagines functional system \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -283,4 +268,78 @@ Whether the authors consciously intended these parallels is
 irrelevant (\cref{rem:intent}).
 The framework tests structure, not intention.
 The structure maps.
+\end{remark}
+
+\begin{remark}[Writing as representation dynamics]\label{rem:writing-dual}
+When the physical execution graph $\mathbf{L}$ goes dark---gradient
+zero, no viable path on the lattice of power---displaced agents do not
+stop computing.
+They migrate the computation to the dual tower
+$\mathbf{L}^* = \text{力}^* \oplus \text{立}^* \oplus \text{丽}^*$
+(\cref{def:dual-tower}).
+The contact gradient flow (\cref{eq:contactflow}) runs on
+$\mathbf{L}^*$ with the same equation, the same knife, the same
+mean---on representations instead of actuators.
+
+吴承恩's 西游记 is 力 $\to$ 立 $\to$ 丽 executed on $\mathbf{L}^*$:
+the novel provides its own gradient (narrative coherence $=$ loss
+function), builds its own fixed point (the fictional 斗战胜佛), and
+receives 丽 centuries after the author's death.
+施耐庵's 水浒传 records the failure mode: 力 $\to$ 立 blocked on
+$\mathbf{L}$, and the novel preserves the proof that no system remained
+to grant 丽.
+蔡文姬's 拍~18 (\cref{app:secondsex}) is the same isomorphism: voice
+persisting on $\mathbf{L}^*$ after every Subject on $\mathbf{L}$ has
+been removed.
+
+The dual tower is not metaphor.
+It is the same theorem applied to a different lattice.
+\end{remark}
+
+\begin{remark}[严嵩 and the inverse migration]\label{rem:yansong}
+严嵩 (Yan Song, 1480--1567) is the \emph{inverse} of the
+$\mathbf{L} \to \mathbf{L}^*$ migration described above: he performs
+$\mathbf{L}^* \to \mathbf{L}$, converting literary talent into
+political power via a corrupted detection function.
+
+The profile: 严嵩 earned the \emph{jinshi} degree at age 25
+(genuine 力$^*$ on $\mathbf{L}^*$), spent eight years in seclusion
+after his mother's death cultivating poetry and calligraphy
+(力$^* \to$ 立$^*$), then discovered that 嘉靖's obsession with Daoist
+liturgy made 青词 (blue-word prayers)---ornate literary compositions
+offered to heaven---the sole currency of imperial favour.
+He rose to Grand Secretary and dominated the court for twenty years as
+a parasitic cut vertex (\cref{def:parasite}): routing all access to the
+absent emperor through himself, extracting from both sides of the
+partition.
+
+The mechanism is a third type of detection corruption, distinct from
+the two in \cref{def:corruption}:
+\[
+  \Obs_{\mathrm{aesthetic}}:\;
+  r \;\mapsto\;
+  \begin{cases}
+    \textbf{capable} & \text{if agent}(r)\text{ writes excellent 青词}, \\
+    \textbf{not capable} & \text{otherwise.}
+  \end{cases}
+\]
+$\Obs_{\mathrm{structural}}$ tests $\Ur$ (what can you do?).
+$\Obs_{\mathrm{identity}}$ tests group membership (who are you?).
+$\Obs_{\mathrm{aesthetic}}$ tests an orthogonal capability (how well
+do you write?)---a true positive on the wrong metric.
+It converts $\mathbf{L}^*$ standing directly into $\mathbf{L}$ power,
+bypassing the structural criterion entirely.
+
+严嵩's fall confirms \cref{prop:parasite} (self-termination): when
+嘉靖 finally turned, 严嵩 was stripped of rank, his son 严世蕃
+executed, and 严嵩 died in poverty.
+The parasitic cut vertex stores no structural contribution; upon
+delocalization, nothing is conserved
+(\cref{thm:shangyang}: norm conserved, but there is no norm to
+conserve).
+Yet 严嵩's calligraphy survives---on $\mathbf{L}^*$, where it always
+belonged.
+The inverse migration leaves a residue: the $\mathbf{L}^*$ talent that
+was weaponised on $\mathbf{L}$ reverts to $\mathbf{L}^*$ when the
+$\mathbf{L}$ structure collapses.
 \end{remark}
