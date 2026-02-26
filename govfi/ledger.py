@@ -44,6 +44,18 @@ class Ledger:
 
     # ── Append operations ──
 
+    def issue(self, t: float, amount: float, desc: str) -> Transaction:
+        """Record a bond issuance (money raised from markets)."""
+        txn = Transaction(
+            time=t,
+            amount=amount,
+            from_layer=-1,
+            to_layer=0,
+            description=desc,
+        )
+        self._txns.append(txn)
+        return txn
+
     def disburse(
         self,
         t: float,
@@ -78,12 +90,22 @@ class Ledger:
 
     # ── Queries ──
 
+    def total_issued(self, t: float | None = None) -> float:
+        """B_raised(t): total bond proceeds received by Gov."""
+        return sum(
+            txn.amount
+            for txn in self._txns
+            if txn.from_layer == -1 and (t is None or txn.time <= t)
+        )
+
     def total_disbursed(self, t: float | None = None) -> float:
         """B_disbursed(t): total money disbursed up to time t."""
         return sum(
             txn.amount
             for txn in self._txns
-            if not txn.verified and (t is None or txn.time <= t)
+            if not txn.verified
+            and txn.from_layer >= 0
+            and (t is None or txn.time <= t)
         )
 
     def total_verified(self, t: float | None = None) -> float:

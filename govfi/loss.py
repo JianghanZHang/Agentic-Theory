@@ -34,6 +34,32 @@ class BreakpointEvent:
     loss_ratio: float
 
 
+@dataclass
+class LayerDamping:
+    """Proportional damping rates for the three-layer system.
+
+    Each kᵢ is a proportional damping rate: dᵢ(Lᵢ) = kᵢ · Lᵢ.
+    The layer dynamics are Lᵢ' = (r - kᵢ) · Lᵢ.
+    Lyapunov stability requires kᵢ > r for all i.
+    """
+
+    k0: float  # Layer 0: market damping (bonds public → fast)
+    k1: float  # Layer 1: GovFi verification (engineered)
+    k2: float  # Layer 2: physics constraint (slow but inevitable)
+
+    def certified(self, r: float) -> bool:
+        """Lyapunov stability: all kᵢ > r?"""
+        return all(k > r for k in (self.k0, self.k1, self.k2))
+
+    def margins(self, r: float) -> tuple[float, float, float]:
+        """Grace margins εᵢ = kᵢ - r.  Positive = stable at layer i."""
+        return (self.k0 - r, self.k1 - r, self.k2 - r)
+
+    def beta(self, r: float) -> tuple[float, float, float]:
+        """RG beta function βᵢ = r - kᵢ.  Negative = irrelevant."""
+        return (r - self.k0, r - self.k1, r - self.k2)
+
+
 class LossField:
     """Real-time loss field computation with breakpoints.
 
@@ -60,12 +86,58 @@ class LossField:
             0.0,
         )
 
+    def L_bond(self, t: float | None = None) -> float:
+        """L_bond(t) = max(B_issued(t) - B_disbursed(t), 0).
+        Layer 0 loss: money raised but never disbursed."""
+        return max(
+            self.ledger.total_issued(t) - self.ledger.total_disbursed(t),
+            0.0,
+        )
+
+    def L_total(self, t: float | None = None) -> float:
+        """L_total = L_bond + L = B_issued - C_verified.
+        Total loss across all layers."""
+        return self.L_bond(t) + self.L(t)
+
     def L_ratio(self, t: float | None = None) -> float:
         """L(t) / B — loss as fraction of total budget."""
         B = self.ledger.project.budget
         if B <= 0:
             return 0.0
         return self.L(t) / B
+
+    # ── Three-layer Lyapunov analysis ──
+
+    @staticmethod
+    def lyapunov_V(L: tuple[float, float, float]) -> float:
+        """V(L) = ½||L||² = ½(L₀² + L₁² + L₂²).
+
+        The gradient ∇V = L gives the steepest-descent direction.
+        With damping K = diag(k₀,k₁,k₂), the dynamics L' = -(K-rI)L
+        are gradient flow on V when K > rI.
+        """
+        return 0.5 * sum(x**2 for x in L)
+
+    @staticmethod
+    def lyapunov_Vdot(
+        L: tuple[float, float, float],
+        r: float,
+        damping: LayerDamping,
+    ) -> float:
+        """V̇ = Σᵢ (r - kᵢ) Lᵢ².  Negative definite iff all kᵢ > r."""
+        k = (damping.k0, damping.k1, damping.k2)
+        return sum((r - ki) * Li**2 for ki, Li in zip(k, L))
+
+    @staticmethod
+    def damping_half_life(ki: float, r: float) -> float:
+        """Half-life of Lᵢ under damping: ln2 / (kᵢ - r).
+
+        Returns inf if kᵢ ≤ r (layer not stable).
+        """
+        margin = ki - r
+        if margin <= 0:
+            return float("inf")
+        return math.log(2) / margin
 
     # ── Breakpoint checking ──
 

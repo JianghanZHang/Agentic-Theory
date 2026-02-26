@@ -18,6 +18,246 @@ ledger (GovFi) converts this choice from an uncontrolled
 collapse into a computed optimisation.
 
 % ================================================================
+\paragraph{Notation / 符号表.}
+% ================================================================
+The following symbols are used throughout this appendix.
+\textcolor{water}{Blue} = flow/structure,
+\textcolor{knife}{red} = corruption/attack,
+\textcolor{sword}{cyan} = GovFi detection,
+\textcolor{caution}{orange} = breakpoint warnings.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{5.5cm}p{5.5cm}@{}}
+\toprule
+\textbf{Symbol} & \textbf{English} & \textbf{中文} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Fiscal state}} \\
+$B$               & Total bond issuance (budget)
+                  & 债券总额 (预算) \\
+$B_{\textup{raised}}(t)$  & Bond proceeds received by Gov
+                  & 政府收到的债券资金 \\
+$B_{\textup{disbursed}}(t)$ & Funds disbursed to companies
+                  & 拨付给公司的资金 \\
+$C_{\textup{verified}}(t)$ & Verified construction value
+                  & 验收确认的工程价值 \\
+$r$               & Bond interest rate
+                  & 债券利率 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Loss field / 损耗场}} \\
+$\mathcal{L}(t)$  & Execution loss $= B_{\textup{disb}} - C_{\textup{ver}}$
+                  & 执行损耗 \\
+$\mathcal{L}_{\textup{bond}}(t)$ & Bond loss $= B_{\textup{raised}} - B_{\textup{disb}}$
+                  & 债券损耗 (Layer 0) \\
+$\mathcal{L}_{\textup{total}}(t)$ & Total loss $= B_{\textup{raised}} - C_{\textup{ver}}$
+                  & 总损耗 \\
+$\mathcal{L}_i$   & Loss at layer $i$ ($i = 0,1,2$)
+                  & 第 $i$ 层损耗 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Breakpoints / 断点}} \\
+$\theta_j$        & Breakpoint threshold ($j = 1,2,3$)
+                  & 断点阈值 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{DIDE dynamics}} \\
+$\bar{a}$         & Absorption rate (correction speed)
+                  & 吸收率 (纠错速率) \\
+$\delta_{\textup{lag}}$ & Political delay before correction
+                  & 政治延迟 \\
+$\sigma$          & Revenue volatility
+                  & 收入波动率 \\
+$T^*$             & Absorption time (loss → 0)
+                  & 吸收时间 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Lyapunov / 李雅普诺夫}} \\
+$V$               & Lyapunov function $= \tfrac{1}{2}\|\boldsymbol{\mathcal{L}}\|^2$
+                  & 李雅普诺夫函数 \\
+$k_i$             & Damping rate at layer $i$
+                  & 第 $i$ 层阻尼率 \\
+$\epsilon_i$      & Grace margin $= k_i - r$
+                  & 恩典裕度 \\
+$\beta_i$         & RG $\beta$ function $= r - k_i$
+                  & 重正化群 $\beta$ 函数 \\
+$K$               & Damping matrix $= \operatorname{diag}(k_0, k_1, k_2)$
+                  & 阻尼矩阵 \\
+$M$               & Stability matrix $= K - rI$
+                  & 稳定矩阵 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Three-layer graph / 三层图}} \\
+Layer 0           & \textcolor{water}{政府 (Gov)} --- source, issues bonds
+                  & 源节点, 发行债券 \\
+Layer 1           & \textcolor{knife}{公司 (Companies)} --- min-cut
+                  & 最小割, 路由资金+信息 \\
+Layer 2           & \textcolor{water}{建设者\,=\,纳税人 (Builders\,=\,People)} --- sink, physics
+                  & 汇节点, 物理施工 (主体自身) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ================================================================
+\section{Primal--dual formulation}\label{sec:gf-duality}
+% ================================================================
+
+The GovFi framework rests on a single duality:
+the People's welfare problem and the Government's
+budget problem are \emph{the same problem viewed from
+two sides}.
+\textcolor{knife}{Corruption} is the
+\textcolor{knife}{duality gap}.
+\textcolor{sword}{Transparency} is
+\textcolor{sword}{strong duality}.
+
+\begin{definition}[Fiscal primal--dual pair / 财政原对偶]
+\label{def:fiscal-pd}
+\mbox{}
+
+\smallskip\noindent
+\textbf{\textcolor{water}{Primal}\; (人民 / People).}\;
+Maximise social welfare from public infrastructure:
+\begin{equation}\label{eq:gf-primal}
+  P^* \;:=\; \max_{C}\; W(C)
+  \qquad\text{s.t.}\quad
+  C \leq C_{\textup{phys}},\quad
+  C \geq C_{\min},\quad
+  \textstyle\int_0^T\! C(s)\,ds \leq B.
+\end{equation}
+$W(C)$ is social welfare from verified construction~$C$;\;
+$C_{\textup{phys}}$ is the physical construction rate;\;
+$C_{\min}$ is the viability floor
+(大坝必须蓄水 --- the dam must hold water);\;
+$B$ is the bond budget.
+The People are the \textcolor{water}{\emph{primal}}
+because their need
+--- infrastructure that exists in physical space,
+not merely on a ledger --- is the fundamental reality
+(\textcolor{water}{人民是主体}).
+
+\smallskip\noindent
+\textbf{\textcolor{water}{Dual}\; (政府 / Government).}\;
+Minimise fiscal cost while meeting every primal
+constraint:
+\begin{equation}\label{eq:gf-dual}
+  D^* \;:=\; \min_{\lambda \geq 0}\;
+  \sup_{C}\;\bigl\{
+    W(C) - \textstyle\sum_i
+    \lambda_i\,g_i(C)
+  \bigr\},
+\end{equation}
+where $\lambda_i \geq 0$ are the \emph{shadow prices}
+of the primal constraints $g_i(C) \leq 0$, and
+$\lambda$ is the budget allocation vector.
+The Government is the \textcolor{water}{\emph{dual}}
+because it is the
+instrument: $\lambda$ prices the People's constraints
+(\textcolor{water}{政府是工具},
+预算~$\lambda$ 是需求的价格).
+\end{definition}
+
+\begin{proposition}[Strong duality $=$ transparency
+  / 强对偶 $=$ 透明]
+\label{prop:strong-duality}
+Under Slater's condition (a strictly feasible point
+exists), strong duality holds:
+\begin{equation}\label{eq:strong-duality}
+  \textcolor{sword}{P^* \;=\; D^*}.
+\end{equation}
+Every yuan the Government allocates produces a yuan
+of welfare.  The complementary slackness conditions
+\begin{equation}\label{eq:cs}
+  \lambda_i^*\;\cdot\;
+  g_i(C^*) \;=\; 0
+  \qquad \forall\; i
+\end{equation}
+enforce fiscal discipline:
+\begin{enumerate}[label=(\roman*)]
+  \item if a need is real (constraint binding,
+    $g_i = 0$),
+    it receives budget ($\lambda_i > 0$);
+  \item if budget is allocated ($\lambda_i > 0$),
+    it addresses a real need ($g_i = 0$).
+\end{enumerate}
+\textcolor{sword}{Strong duality} is the mathematical
+form of fiscal \textcolor{sword}{transparency}:
+\textcolor{sword}{花的每一分钱都产生了一分钱的福利}
+--- no gap.
+\end{proposition}
+
+\begin{proof}
+Standard convex duality: the primal is a concave
+maximisation over a convex feasible set; Slater's
+condition guarantees zero duality gap and attainment
+of the dual infimum.
+Complementary slackness follows from the KKT conditions:
+$\lambda_i^* > 0$ only if $g_i(C^*) = 0$, i.e.\
+budget flows only to binding needs.
+\end{proof}
+
+\begin{corollary}[Duality gap $=$ loss field
+  / 对偶间隙 $=$ 损耗场]
+\label{cor:fiscal-duality-gap}
+When the mapping $\lambda \mapsto C$ is
+\textcolor{knife}{corrupted}
+at \textcolor{knife}{Layer~1} (\cref{ex:three-layer}),
+complementary slackness fails
+and a \textcolor{knife}{\emph{duality gap}} opens:
+\begin{equation}\label{eq:fiscal-duality-gap}
+  \underbrace{B_{\textup{disbursed}}}_{\text{dual cost}}
+  \;-\;
+  \underbrace{C_{\textup{verified}}}_{\text{primal value}}
+  \;=\;
+  \mathcal{L}(t)
+  \;\geq\; 0.
+\end{equation}
+The loss field $\textcolor{knife}{\mathcal{L}(t)}$
+\emph{is} the \textcolor{knife}{duality gap}.
+\textcolor{sword}{GovFi} restores
+\textcolor{sword}{strong duality} by making both sides
+independently observable (\cref{def:govfi-ledger}).
+\end{corollary}
+
+\begin{remark}[Three-layer duality / 三层对偶]
+\label{rem:pd-layers}
+The primal--dual pair maps onto the fiscal flow graph:
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Layer} & \textbf{Party / 参与方}
+  & \textbf{Variable}
+  & \textbf{Side} \\
+\midrule
+\textcolor{water}{0}
+  & \textcolor{water}{政府 (Gov)}
+  & Budget allocation $\lambda$
+  & \textcolor{water}{Dual} \\
+\textcolor{knife}{1}
+  & \textcolor{knife}{公司 (Companies)}
+  & Mapping $\lambda \mapsto C$
+  & \textcolor{knife}{Coupling} \\
+\textcolor{water}{2}
+  & \textcolor{water}{人民/建设者 (People/Builders)}
+  & Construction $C$
+  & \textcolor{water}{Primal} \\
+\bottomrule
+\end{tabular}
+\end{center}
+The Primal party (People) appears on \emph{both} sides of the
+fiscal cycle: as taxpayers funding Layer~0 and as builders
+receiving welfare at Layer~2 (建设者就是纳税人).
+Layer~1 is the unique bottleneck because it controls
+the primal--dual coupling: both the information
+(what Gov sees) and the value (what People receive).
+The min-cut theorem (\cref{ex:three-layer}) is a
+consequence: cutting the coupling severs both the
+primal and dual channels simultaneously.
+
+\medskip\noindent
+\emph{\textcolor{knife}{Corruption $=$ duality gap $> 0$.}\quad
+\textcolor{sword}{Transparency $=$ strong duality.}\quad
+\textcolor{sword}{GovFi} $=$ the mechanism that
+\textcolor{sword}{closes the gap}.}
+\end{remark}
+
+% ================================================================
 \section{Sovereign debt as knife}\label{sec:gf-knife}
 % ================================================================
 
@@ -1015,8 +1255,395 @@ a single observable system, and the tangential condition
 the ledger data.
 \end{remark}
 
+\begin{example}[三层排除法 --- Proof by elimination]
+\label{ex:three-layer}
+The fiscal execution graph of a construction project has three layers.
+Corruption can concentrate at any layer.  We show by elimination that
+only Layer~1 is structurally sustainable, making the min-cut argument a
+theorem rather than an assertion.
+
+\paragraph{三层条件 / Three-layer conditions.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clll@{}}
+\toprule
+\textbf{Layer} & \textbf{参与方 / Party}
+  & \textbf{腐败模式 / Corruption mode}
+  & \textbf{检测 / Detection} \\
+\midrule
+\textcolor{water}{0} & \textcolor{water}{政府 (Gov)}
+  & 截留: raise $B$, disburse $<B$
+  & \textcolor{water}{Market signals} (CDS, yields) \\
+\textcolor{knife}{1} & \textcolor{knife}{公司 (Companies)}
+  & \textcolor{knife}{截留}: receive $B$, pass $<B$ to builders
+  & \textcolor{sword}{Requires independent verification} \\
+\textcolor{water}{2} & \textcolor{water}{建设者 (Builders)}
+  & 豆腐渣: receive full pay, build $<100\%$
+  & \textcolor{water}{Physics} (structural failure) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{扩展损耗场 / Extended loss field.}
+The original loss field $\mathcal{L}(t) = B_{\textup{disbursed}}(t) - C_{\textup{verified}}(t)$
+(\cref{cor:fiscal-duality-gap}: this is the duality gap)
+is blind to Layer~0 corruption (Gov retaining bond proceeds).
+Extend it:
+\begin{equation}\label{eq:loss-total}
+  \mathcal{L}_{\textup{total}}(t)
+  \;=\;
+  \underbrace{B_{\textup{raised}}(t) - B_{\textup{disbursed}}(t)}_{
+    \mathcal{L}_{\textup{bond}}(t)\;\text{(Layer 0)}}
+  \;+\;
+  \underbrace{B_{\textup{disbursed}}(t) - C_{\textup{verified}}(t)}_{
+    \mathcal{L}(t)\;\text{(Layers 1--2)}}
+  \;=\;
+  B_{\textup{raised}}(t) - C_{\textup{verified}}(t).
+\end{equation}
+
+\paragraph{检测签名 / Detection signatures.}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}crrll@{}}
+\toprule
+\textbf{Layer}
+  & $\mathcal{L}_{\textup{bond}}$
+  & $\mathcal{L}$
+  & \textbf{Without GovFi}
+  & \textbf{With GovFi} \\
+\midrule
+\textcolor{water}{L0 政府}  & \textcolor{sword}{30亿} & 0亿
+  & \textcolor{water}{Market detects} (CDS, yields)
+  & \textcolor{sword}{On-chain bond record} \\
+\textcolor{knife}{L1 公司}  & 0亿  & \textcolor{knife}{10亿}
+  & \textcolor{knife}{Gamed}: $\mathcal{L} = 0$
+  & \textcolor{sword}{Independent $C_{\textup{ver}}$} \\
+\textcolor{water}{L2 建设}  & 0亿  & \textcolor{sword}{30亿}
+  & \textcolor{knife}{Gamed}: $\mathcal{L} = 0$
+  & \textcolor{sword}{IoT + satellite} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{排除法 / Proof by elimination.}
+\begin{enumerate}[label=(\roman*)]
+  \item \textcolor{water}{\textbf{Layer~0 fails:}}
+    债券是公开市场产品---CDS spreads, yield curves, and rating
+    agencies expose the gap between $B_{\textup{raised}}$ and
+    $B_{\textup{disbursed}}$ even without GovFi.
+    Moreover, Gov corrupting itself is 王自毁
+    (the king absorbing its own capacity;
+    \cref{prop:fiscal-dumu}): the source node diverts
+    its own flow, violating Du~Mu's theorem.
+    \textcolor{water}{\textbf{行不通.}}
+
+  \item \textcolor{water}{\textbf{Layer~2 fails:}}
+    物理现实是终极验收---physics is the ultimate verification.
+    A dam that does not hold water (大坝不蓄水) reveals itself.
+    Layer~2 fraud is self-exposing over time: structural failure
+    is a verification mechanism that requires no ledger.
+    \textcolor{water}{\textbf{行不通.}}
+
+  \item \textcolor{knife}{\textbf{Layer~1 survives:}}
+    Companies control \emph{both} information (what Gov sees)
+    and money (what Builders receive).  This is the dual-ring
+    structure (\cref{def:dual-ring}): the formal contract (合同)
+    is the inner ring; the actual payment chain (实际资金链) is
+    the outer ring.  Without independent verification,
+    $\mathcal{L}$ can be gamed to zero indefinitely.
+    \textcolor{knife}{\textbf{唯一可持续攻击面.}}
+\end{enumerate}
+
+\noindent
+\textbf{Conclusion.}
+Corruption concentrates at the \textcolor{knife}{min-cut (Layer~1)} by structural
+necessity: it is the unique layer where both information and money
+channels can be simultaneously controlled.
+
+\paragraph{为什么 Layer~1 是 min-cut / Why Layer~1 is the min-cut.}
+The flow graph $0 \to 1 \to 2$ has a unique minimum vertex cut at the
+intermediate node.  Layer~1 has dual control:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Information channel:} Layer~1 determines what
+    Layer~0 observes (reporting $C_{\textup{ver}}$ upward).
+  \item \textbf{Money channel:} Layer~1 determines what
+    Layer~2 receives (disbursing payments downward).
+\end{enumerate}
+This is precisely the dual-ring structure: the inner ring (formal
+contract) and the outer ring (actual payment chain) diverge at
+Layer~1, creating the gap in which corruption hides.
+
+\paragraph{Numerical results
+(\texttt{govfi/simulate.py::run\_layer\_analysis}).}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clrrlll@{}}
+\toprule
+\textbf{Layer}
+  & \textbf{腐败模式}
+  & $\mathcal{L}_{\textup{bond}}$
+  & $\mathcal{L}$
+  & \textbf{可持续?}
+  & \textbf{GovFi检测}
+  & \textbf{Verdict} \\
+\midrule
+\textcolor{water}{L0} & 截留 (self-div)
+  & \textcolor{sword}{30亿} & 0亿
+  & \textcolor{water}{No (市场信号)}
+  & \textcolor{sword}{Bond chain}
+  & \textcolor{water}{\textbf{行不通}} \\
+\textcolor{knife}{L1} & \textcolor{knife}{截留 (diversion)}
+  & 0亿 & \textcolor{knife}{10亿}
+  & \textcolor{knife}{Yes (min-cut)}
+  & \textcolor{sword}{独立验收}
+  & \textcolor{knife}{\textbf{Unique attack}} \\
+\textcolor{water}{L2} & 豆腐渣 (fraud)
+  & 0亿 & \textcolor{sword}{30亿}
+  & \textcolor{water}{No (物理约束)}
+  & \textcolor{sword}{IoT + satellite}
+  & \textcolor{water}{\textbf{行不通}} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The min-cut theorem is a structural result:
+\textcolor{knife}{Layer~1 is the unique sustainable attack surface} because
+it is the only layer that controls both the
+\textcolor{knife}{information} and
+\textcolor{knife}{money} channels of the fiscal flow graph.
+\end{example}
+
+\begin{proposition}[Lyapunov stability with layer damping]
+\label{prop:layer-lyapunov}
+Decompose the loss field into layer components
+$\boldsymbol{\mathcal{L}} = (\mathcal{L}_0,\, \mathcal{L}_1,\,
+\mathcal{L}_2)$ and introduce proportional damping
+$d_i(\mathcal{L}_i) = k_i\,\mathcal{L}_i$ at each layer, where
+$k_i > 0$ is the damping rate at layer~$i$.
+The layer dynamics are
+\begin{equation}\label{eq:layer-dynamics}
+  \mathcal{L}_i'(t) \;=\; (r - k_i)\,\mathcal{L}_i(t),
+  \qquad i = 0, 1, 2.
+\end{equation}
+Define the Lyapunov function
+$V(\boldsymbol{\mathcal{L}}) = \tfrac{1}{2}\,
+\|\boldsymbol{\mathcal{L}}\|^2 =
+\tfrac{1}{2}\sum_i \mathcal{L}_i^2$.
+\begin{enumerate}[label=(\alph*)]
+  \item \textcolor{sword}{\textbf{Certification.}}
+    $\dot{V} = \sum_i (r - k_i)\,\mathcal{L}_i^2$.
+    If $k_i > r$ for all~$i$, then
+    \textcolor{sword}{$\dot{V} < 0$} for
+    $\boldsymbol{\mathcal{L}} \neq 0$: the system is
+    globally asymptotically stable.
+  \item \textcolor{water}{\textbf{Grace margins.}}
+    The margin at layer~$i$ is
+    $\epsilon_i := k_i - r > 0$.
+    The decay rate of~$V$ satisfies
+    $\dot{V} \leq -2\,\epsilon_{\min}\, V$
+    where $\epsilon_{\min} = \min_i \epsilon_i$.
+    The half-life of~$V$ is
+    $\ln 2\,/\,(2\epsilon_{\min})$.
+  \item \textcolor{knife}{\textbf{Failure without GovFi.}}
+    If \textcolor{knife}{$k_1 = 0$} (no verification at the min-cut), then
+    $\dot{V}$ contains the \textcolor{knife}{positive} term
+    \textcolor{knife}{$r\,\mathcal{L}_1^2$}: the Lyapunov condition fails.
+    Even as $\mathcal{L}_0$ and $\mathcal{L}_2$ decay,
+    $\mathcal{L}_1$ grows at rate~$r$, and $V$ eventually
+    diverges---the extend-and-pretend pattern
+    (\cref{rem:deferral}).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\textbf{(a)}
+$\dot{V} = \sum_i \mathcal{L}_i\,\mathcal{L}_i'
+= \sum_i (r - k_i)\,\mathcal{L}_i^2$.
+When $k_i > r$ for all~$i$, each term is negative for
+$\mathcal{L}_i \neq 0$, so
+$\dot{V} < 0$ on $\R^3_{\geq 0} \setminus \{0\}$.
+
+\textbf{(b)}
+$\dot{V} = \sum_i (r - k_i)\,\mathcal{L}_i^2
+\leq -\epsilon_{\min} \sum_i \mathcal{L}_i^2
+= -2\,\epsilon_{\min}\, V$.
+Integrating: $V(t) \leq V(0)\, e^{-2\epsilon_{\min} t}$.
+
+\textbf{(c)}
+$\dot{V} = -(k_0 - r)\mathcal{L}_0^2
++ r\,\mathcal{L}_1^2
+- (k_2 - r)\mathcal{L}_2^2$.
+Since $\mathcal{L}_1(t) = \mathcal{L}_1(0)\,e^{rt}$
+grows exponentially, the positive term eventually
+dominates: $\dot{V} > 0$ for $t$ large enough, and
+$V \to \infty$.
+\end{proof}
+
+\begin{remark}[恩典 --- Grace as bounded dissipation]
+\label{rem:grace}
+The grace margins $\epsilon_i$ are not abstract.
+Each layer's threshold bounds contain legitimate costs
+that are not corruption:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clp{6.5cm}@{}}
+\toprule
+\textbf{Layer} & \textbf{Grace costs / 恩典耗散}
+  & \textbf{Examples} \\
+\midrule
+\textcolor{water}{0} & \textcolor{water}{政府运营 (Gov operations)}
+  & 公款吃喝 (official dining), 招待费, 差旅费
+    --- \textcolor{sword}{reimbursable on-chain} \\
+\textcolor{knife}{1} & \textcolor{sword}{合理利润 (legitimate overhead)}
+  & 管理费 (management fees), market-rate
+    profit margin \\
+\textcolor{water}{2} & \textcolor{water}{建设成本 (construction variance)}
+  & 工伤赔偿 (workplace injury),
+    材料损耗 (wastage), 天气延误 (weather) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The dissipated are not destroyed but \emph{stored}:
+absorbed losses feed back to the government funding pool,
+which redirects them to social programmes
+(希望工程 / Project Hope, education, infrastructure
+maintenance).  The absorption conservation law
+(\cref{thm:absorption-conservation}) still holds:
+the loss is conserved, but its allocation is chosen
+deliberately rather than suffered passively.
+
+Within the grace bounds, the system runs softly:
+continuous damping, no breakpoints, no drama.
+Beyond them, breakpoints fire and hard correction begins.
+The grace is the system's tolerance for the human cost
+of governance, commerce, and construction.
+
+\paragraph{中县干部 instantiation.}
+The three layers map directly to the graded cadre lattice
+of \cref{app:zhongxian}:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}cllp{4.5cm}@{}}
+\toprule
+\textbf{Layer} & \textbf{Cadre level}
+  & \textbf{Fiscal role}
+  & \textbf{Grace dissipation} \\
+\midrule
+\textcolor{water}{0} & \textcolor{water}{正处/副处 (county)}
+  & Issues bonds, decides projects
+  & 公款吃喝, 招待费 \\
+\textcolor{knife}{1} & \textcolor{knife}{正科级 (section)}
+  & \textcolor{knife}{Runs SOEs, controls min-cut}
+  & 管理费, 合理利润 \\
+\textcolor{water}{2} & \textcolor{water}{副科级 + implementers}
+  & Builds infrastructure
+  & 工伤, 材料损耗 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The 正科级 cadres who manage county-owned enterprises
+(\cref{ex:zx-data}) are the Layer~1 min-cut:
+they control both the information flow (reporting
+$C_{\textup{ver}}$ to the county leadership) and the money
+flow (disbursing to builders).  This is exactly the dual-ring
+structure (\cref{def:dual-ring}) instantiated at the fiscal
+level: the inner ring (formal procurement rules) and the
+outer ring (实际资金链 / actual payment chain) diverge at the
+section-chief level.  The grace costs---公款吃喝 at Layer~0,
+合理利润 at Layer~1, 工伤赔偿 at Layer~2---are documented
+realities of county governance, not hypotheticals.
+\end{remark}
+
+\begin{remark}[来自杨振宁与希尔伯特的礼物 --- Gradient flow in
+gauged space]\label{rem:yang-hilbert}
+The dynamics \eqref{eq:layer-dynamics} admit a dual reading.
+
+\paragraph{来自希尔伯特的礼物 / Hilbert's gift: the gradient.}
+The Lyapunov function $V = \tfrac{1}{2}\|\boldsymbol{\mathcal{L}}\|^2$
+has gradient $\nabla V = \boldsymbol{\mathcal{L}}$.
+With the damping matrix $M = K - rI = \operatorname{diag}(\epsilon_0,
+\epsilon_1, \epsilon_2)$, the dynamics become
+\[
+  \boldsymbol{\mathcal{L}}'
+  \;=\; -M\,\nabla V
+  \;=\; -M\,\boldsymbol{\mathcal{L}}.
+\]
+This is \emph{gradient descent} on $V$ with metric~$M$:
+the loss vector flows downhill, and the inner product of $L^2(\R^3)$
+defines ``downhill.''
+The gradient is Hilbert's gift: it determines the
+steepest-descent direction.
+
+\paragraph{来自杨振宁的礼物 / Yang's gift: intrinsic directionality.}
+In Yang--Mills theory, the substitution
+$\partial_\mu \to D_\mu = \partial_\mu + ig A_\mu$ (flat derivative
+to gauge-covariant derivative) introduces \emph{intrinsic}
+directionality: the field curves space so that parallel transport
+is path-dependent.
+
+In the fiscal system, the analogous substitution is
+$\mathcal{L}' = r\mathcal{L} \;\to\;
+\mathcal{L}_i' = (r - k_i)\,\mathcal{L}_i$:
+the damping rates $k_i$ bend the flow from exponential growth
+to exponential decay.  The flow direction is not a choice but
+a geometric property of the damped system---intrinsic
+directionality.
+
+The mass gap of the gauge theory corresponds to the stability
+margin $\epsilon_{\min} > 0$: both assert that the lowest
+excitation above the ground state has positive energy.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Yang--Mills} & \textbf{Fiscal system}
+  & \textbf{Role} \\
+\midrule
+\textcolor{sword}{$\partial \to D = \partial + igA$}
+  & \textcolor{sword}{$rL \to (r - k_i)L$}
+  & Intrinsic directionality \\
+Gauge potential $A_\mu$
+  & \textcolor{sword}{Damping rate $k_i$}
+  & Connection / force \\
+$F_{\mu\nu}$ (curvature)
+  & \textcolor{water}{Loss field gradient $\nabla V$}
+  & Where flow concentrates \\
+Mass gap $m^* > 0$
+  & \textcolor{sword}{$\epsilon_{\min} = \min(k_i - r) > 0$}
+  & Stability margin \\
+RG $\beta$ function
+  & $\beta_i = r - k_i$
+  & Relevance at scale $i$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Together: the fiscal system with three dampers is gradient flow
+in a gauged space.  The gradient (Hilbert) determines the direction;
+the gauge connection (Yang) determines the force.
+The soft RG flow carries corruption at every scale toward
+the trivial fixed point $\boldsymbol{\mathcal{L}} = 0$---not by
+punishment, but by the geometry of the damped system.
+\end{remark}
+
+%
 \begin{example}[水电站 --- GovFi worked example]
 \label{ex:dam}
+This example models corruption at Layer~1 only (公司截留).
+See \cref{ex:three-layer} for the full three-layer analysis.
+
 A provincial government issues bonds to build a
 hydroelectric power station (水电站).
 The total bond issuance is~$B$; the physical
@@ -1026,39 +1653,46 @@ The fiscal execution graph has three layers
 and three interested parties.
 
 \paragraph{三方 (Three parties).}
+The fiscal graph is a \emph{cycle}, not a line:
+the builders who receive wages are the same taxpayers
+who fund the bonds
+(建设者就是纳税人).
 
 \begin{center}
 \renewcommand{\arraystretch}{1.25}
-\begin{tabular}{@{}clp{5.5cm}@{}}
+\begin{tabular}{@{}clp{5.8cm}@{}}
 \toprule
-\textbf{Layer} & \textbf{Party}
-  & \textbf{Role in flow graph} \\
+\textbf{Layer} & \textbf{Party / 参与方}
+  & \textbf{Duality role} \\
 \midrule
+--- & \textcolor{water}{\textbf{人民 (People)}}
+  & \textcolor{water}{Primal} (主体):
+    taxpayer $+$ beneficiary.
+    Appears on both sides of the duality \\
 0 & 政府 (Government)
-  & Source: issues bonds, disburses funds \\
-1 & 公司 (Companies)
-  & Routing: general contractor, subcontractors,
-    suppliers \\
-2 & 建设者 (Builders)
-  & Sink: construction workers, engineers,
-    equipment operators \\
+  & \textcolor{water}{Dual} (工具):
+    issues bonds, allocates $\lambda$ \\
+1 & \textcolor{knife}{公司 (Companies)}
+  & \textcolor{knife}{Coupling} (min-cut):
+    maps $\lambda \mapsto C$ \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\begin{center}
+\begin{figure}[H]
+\centering
 \begin{tikzpicture}[
   % ── styles ──
   wbox/.style={rectangle, rounded corners=4pt,
     draw=water, thick, fill=water!8,
-    minimum width=6.0cm, minimum height=1.0cm,
+    minimum height=1.0cm,
     align=center, font=\small},
   gfbox/.style={rectangle, rounded corners=6pt,
     draw=sword, thick, fill=sword!5,
     minimum height=1.0cm, align=center, font=\small},
   leak/.style={rectangle, rounded corners=4pt,
     draw=knife, thick, dashed, fill=knife!6,
-    minimum width=2.6cm, minimum height=0.9cm,
+    minimum width=2.4cm, minimum height=0.8cm,
     align=center, font=\small},
   brk/.style={rectangle, rounded corners=3pt,
     draw=caution, thick, fill=caution!8,
@@ -1069,153 +1703,215 @@ and three interested parties.
   lbl/.style={font=\scriptsize, fill=white, inner sep=2pt},
 ]
   % ════════════════════════════════════════════
-  %   PART 1 — Money flow (three layers)
+  %   PART 1 — Triangular money cycle
   % ════════════════════════════════════════════
 
-  % ── Layer 0: Government ──
-  \node[wbox] (gov) at (0, 0)
-    {\textcolor{water}{\textbf{Layer 0}}
-     \;---\; 政府 (Gov): issues bonds $B$};
+  % ── People (top) — THE PRIMAL ──
+  \node[wbox, minimum width=7.0cm,
+    draw=water, line width=1.4pt]
+    (people) at (0, 0)
+    {\textcolor{water}{\textbf{人民 / People}}\\[-2pt]
+     {\scriptsize taxpayer $+$ beneficiary $=$
+     \textbf{Primal} (主体)}};
 
-  % ── Layer 1: Companies — trumpet shape ──
-  %    Anchor coordinates for the horn
-  \coordinate (horn-top-L)  at (-1.2, -2.1);
-  \coordinate (horn-top-R)  at ( 1.2, -2.1);
-  \coordinate (horn-bot-L)  at (-3.6, -4.0);
-  \coordinate (horn-bot-R)  at ( 3.6, -4.0);
-  \coordinate (horn-center) at ( 0.0, -3.1);
-  \coordinate (horn-top)    at ( 0.0, -2.1);
-  \coordinate (horn-bot)    at ( 0.0, -4.0);
-  \coordinate (horn-east)   at ( 2.8, -3.1);
+  % ── Gov (bottom-left) — THE DUAL ──
+  \node[wbox, minimum width=4.8cm]
+    (gov) at (-3.8, -4.0)
+    {\textcolor{water}{\textbf{Layer 0 --- 政府}}\\[-2pt]
+     {\scriptsize Gov: bonds $B$, allocates
+      $\lambda$ --- \textbf{Dual} (工具)}};
 
-  % Fill
-  \fill[black!5]
-    (horn-top-L)
-    .. controls ++(0,-0.8) and ++(0,0.8) ..
-    (horn-bot-L)
-    -- (horn-bot-R)
-    .. controls ++(0,0.8) and ++(0,-0.8) ..
-    (horn-top-R)
-    -- cycle;
-  % Outline
-  \draw[black!40, thick]
-    (horn-top-L)
-    .. controls ++(0,-0.8) and ++(0,0.8) ..
-    (horn-bot-L)
-    -- (horn-bot-R)
-    .. controls ++(0,0.8) and ++(0,-0.8) ..
-    (horn-top-R)
-    -- (horn-top-L);
-  % Label
-  \node[font=\small, anchor=center] at (horn-center)
-    {\textbf{Layer 1} \;---\;
-     公司 (Companies)};
-  \node[font=\scriptsize, anchor=north]
-    at ([yshift=-0.1cm]horn-center)
-    {amplifiers \;/\; 喇叭};
+  % ── Companies (bottom-right) — MIN-CUT / COUPLING ──
+  \node[rectangle, rounded corners=4pt,
+    draw=knife, thick, fill=knife!6,
+    minimum width=4.8cm, minimum height=1.0cm,
+    align=center, font=\small]
+    (company) at (3.8, -4.0)
+    {\textcolor{knife}{\textbf{Layer 1 --- 公司}}\\[-2pt]
+     {\scriptsize Companies: $\lambda \!\mapsto\! C$
+      --- \textbf{Coupling}}};
 
-  % ── Layer 2: Builders ──
-  \node[wbox] (build) at (0, -5.6)
-    {\textcolor{water}{\textbf{Layer 2}}
-     \;---\; 建设者 (Builders): construction $C$};
+  % ── Min-cut marker ──
+  \draw[knife, very thick, densely dashed,
+    rounded corners=8pt]
+    ([shift={(-0.3, 0.35)}]company.north west)
+    rectangle
+    ([shift={( 0.3,-0.35)}]company.south east);
+  \node[font=\scriptsize\bfseries, text=knife,
+    anchor=south]
+    at ([yshift=0.4cm]company.north)
+    {min-cut / 最小割};
 
-  % ── Money arrows ──
+  % ── Money arrows (clockwise cycle) ──
+  % People → Gov (taxes, down-left)
   \draw[arr, water, line width=1.4pt]
-    (gov.south) -- node[lbl, right=3pt]
-    {$B_{\textup{disbursed}}$} (horn-top);
+    ([xshift=-1.0cm]people.south) --
+    node[lbl, left=2pt]
+    {taxes $\tau$ / 税收}
+    ([xshift=0.5cm]gov.north);
+
+  % Gov → Companies (B_disbursed, across bottom)
   \draw[arr, water, line width=1.4pt]
-    (horn-bot) -- node[lbl, right=3pt]
-    {wages, materials} (build.north);
+    (gov.east) --
+    node[lbl, below=2pt]
+    {$B_{\textup{disbursed}}$ / 拨款}
+    (company.west);
 
-  % ── Min-cut (between Layer 0 and horn) ──
-  \draw[knife, very thick, densely dashed]
-    (-5.0, -1.5) -- (5.0, -1.5)
-    node[anchor=west, font=\scriptsize\bfseries,
-         text=knife] {\;min-cut};
+  % Companies → People (welfare, up-right)
+  \draw[arr, water, line width=1.4pt]
+    ([xshift=-0.5cm]company.north) --
+    node[lbl, right=2pt]
+    {$C_{\textup{verified}}$ / 福利}
+    ([xshift=1.0cm]people.south);
 
-  % ── Hidden leak (right of horn) ──
-  \node[leak, anchor=west] (corrupt) at (4.4, -3.1)
+  % ── Duality equation inside triangle ──
+  \node[font=\small, anchor=center]
+    at (0, -2.5)
+    {$\textcolor{sword}{P^* = D^*}
+     \;\Longleftrightarrow\;
+     \textcolor{sword}{\mathcal{L}(t) = 0}$};
+
+  % ── Hidden leak (below-right of Companies) ──
+  \node[leak] (corrupt) at (3.8, -6.2)
     {\textcolor{knife}{隐性流失}\\[-2pt]
      \textcolor{knife}{\scriptsize hidden leak}};
   \draw[darr, line width=1.0pt]
-    (horn-east) -- node[lbl, above] {层层转包}
-    (corrupt.west);
+    (company.south) --
+    node[lbl, right=2pt] {\scriptsize 层层转包}
+    (corrupt.north);
 
   % ════════════════════════════════════════════
   %   PART 2 — GovFi observability layer
   % ════════════════════════════════════════════
 
   % ── Wide GovFi ledger ──
-  \node[gfbox, minimum width=13.0cm]
-    (ledger) at (0, -7.6)
+  \node[gfbox, minimum width=12.0cm]
+    (ledger) at (0, -8.0)
     {\textcolor{sword}{\textbf{GovFi ledger}}\;:\;
      $\Obs = \mathcal{F}$
      \qquad{\scriptsize on-chain, immutable,
      publicly queryable}};
 
-  % ── On-chain arrows (left-side routing from ledger to layers) ──
-  % Arrow → Layer 0 (Gov) — outermost vertical run
+  % ── On-chain arrows ──
+  % Left route → People (outermost)
   \draw[oarr, line width=1.2pt]
-    ([yshift=0.15cm]ledger.west) -- (-7.6, -7.45)
-    -- (-7.6, 0) -- (gov.west);
-  % Arrow → Layer 1 (Companies) — middle vertical run
+    ([yshift=0.15cm]ledger.west) -- (-7.0, -7.85)
+    -- (-7.0, 0) -- (people.west);
+  % Interior route → Gov (left-to-right, between on-chain rails)
+  \draw[oarr, line width=1.2pt]
+    ([xshift=-5.5cm]ledger.north) -- (-5.5, -5.2)
+    -- (gov.south);
+  % Right route → Companies
   \draw[oarr]
-    (ledger.west) -- (-7.3, -7.6)
-    -- (-7.3, -2.1) -- (horn-top-L);
-  % Arrow → Layer 2 (Builders) — innermost vertical run
-  \draw[oarr]
-    ([yshift=-0.15cm]ledger.west) -- (-7.0, -7.75)
-    -- (-7.0, -5.6) -- (build.west);
-
-  % ── Label ──
+    ([yshift=0.15cm]ledger.east) -- (6.7, -7.85)
+    -- (6.7, -4.0) -- (company.east);
+  % Labels
   \node[font=\scriptsize, sword, anchor=east]
-    at (-7.7, -4.8) {on-chain};
+    at (-7.8, -5.0) {on-chain};
+  \node[font=\scriptsize, sword, anchor=west]
+    at (6.8, -5.0) {on-chain};
 
-  % ── Corruption exposed ──
-  \draw[oarr]
-    ([xshift=5.0cm]ledger.north) -- ++(0,0.5)
-    -- ++(0,2.0) -| (corrupt.south);
-  \node[font=\scriptsize, sword,
-    anchor=north west]
-    at ([yshift=-0.1cm]corrupt.south east)
-    {exposed};
-  \node[font=\scriptsize, sword,
-    anchor=north west]
-    at ([yshift=-0.45cm]corrupt.south east)
-    {$\Rightarrow$ eliminated};
+  % ── Newspaper → exposed → dissolved ──
+  \node[rectangle, rounded corners=3pt,
+    draw=black!60, thick, fill=white,
+    minimum width=1.6cm, minimum height=0.7cm,
+    align=center, font=\scriptsize]
+    (newspaper) at (6.3, -6.2)
+    {报纸\\[-2pt]newspaper};
+  \draw[black!60, thin]
+    (corrupt.east) -- (newspaper.west);
+  \draw[-{Stealth[length=4pt]}, black!60, thin]
+    (newspaper.south) -- ++(0, -0.5)
+    node[below, font=\scriptsize, align=center]
+    {exposed $\to$ dissolved};
 
-  % ── Loss field ──
-  \node[gfbox, minimum width=9.0cm]
-    (loss) at (0, -9.2)
+  % ════════════════════════════════════════════
+  %   PART 3 — Loss field + Lyapunov
+  % ════════════════════════════════════════════
+
+  % ── Loss field = duality gap ──
+  \node[gfbox, minimum width=9.5cm]
+    (loss) at (0, -9.6)
     {$\mathcal{L}(t) \;=\;
      B_{\textup{disbursed}}(t)
-     \;-\; C_{\textup{verified}}(t)$};
+     \;-\; C_{\textup{verified}}(t)$
+     \quad{\scriptsize $=$ duality gap / 对偶间隙}};
   \draw[arr, sword, line width=1.0pt]
     (ledger.south) -- node[lbl, right=2pt]
     {computes} (loss.north);
 
   % ── Breakpoints ──
   \node[brk, minimum width=7.0cm]
-    (bp) at (0, -10.6)
+    (bp) at (0, -11.0)
     {\textcolor{caution}{$\theta_1 = 5\%$\qquad
      $\theta_2 = 10\%$\qquad $\theta_3 = 15\%$}};
   \draw[arr, caution, line width=1.0pt]
     (loss.south) -- node[lbl, right=2pt]
     {\scriptsize auto-audit triggers} (bp.north);
+
+  % ── Lyapunov V certification ──
+  \node[gfbox, minimum width=10.0cm,
+    fill=green!5, draw=green!50!black]
+    (lyap) at (0, -12.4)
+    {$V = \tfrac{1}{2}\|\boldsymbol{\mathcal{L}}\|^2$
+     \quad $\dot{V} < 0$ iff all $k_i > r$
+     \quad\textcolor{sword}{\textbf{certified}
+     $\checkmark$}};
+  \draw[arr, green!50!black, line width=1.0pt]
+    (bp.south) -- node[lbl, right=2pt]
+    {\scriptsize Lyapunov} (lyap.north);
+
+  % ── Grace feedback: Lyapunov → Gov fiscal pool ──
+  %    (left route, outside on-chain rails → gov.west)
+  \draw[arr, water!60, line width=0.8pt,
+    rounded corners=6pt]
+    (lyap.west) -- (-7.5, -12.4)
+    -- (-7.5, -4.0) -- (gov.west)
+    node[pos=0.45, lbl, left=2pt, align=right]
+    {\scriptsize absorbed $\to$ 政府财政池};
 \end{tikzpicture}
-\end{center}
+
+\caption{%
+\textbf{Fiscal execution graph: the three-party cycle.}\;
+Money flows in a cycle:
+People $\xrightarrow{\;\tau\;}$ Gov
+$\xrightarrow{\;B\;}$ Companies
+$\xrightarrow{\;C\;}$ People.
+The \textcolor{knife}{min-cut} is at Layer~1 (Companies),
+which controls both the information channel
+($C_{\textup{ver}}$ reported upward) and the money channel
+($B_{\textup{disb}}$ passed downward)---the dual-ring structure.
+The \textcolor{sword}{GovFi ledger} makes the entire cycle
+on-chain, collapsing the dual ring.
+隐性流失 once exposed by public disclosure (报纸),
+dissolves: the duality gap closes ($P^* = D^*$).%
+}
+\label{fig:fiscal-triangle}
+\end{figure}
 
 \noindent
-Money flows $0 \to 1 \to 2$.
-The min-cut of this three-layer graph is at
+Money flows in a cycle:
+People $\xrightarrow{\;\tau\;}$ Gov
+$\xrightarrow{\;B\;}$ Companies
+$\xrightarrow{\;C\;}$ People.
+The builders who receive wages are the same taxpayers
+who fund the bonds (建设者就是纳税人);
+the People are both source and sink of the fiscal
+flow, making the primal--dual duality
+(\cref{def:fiscal-pd}) a self-duality.
+The min-cut of this cycle is at
 Layer~1: companies control both the information
-(what the government sees) and the money (what the
-builders receive).  This is the dual-ring structure
+(what the government sees) and the value (what the
+People receive).  This is the dual-ring structure
 (\cref{def:dual-ring}): the inner ring is the contract
 (合同); the outer ring is the actual payment chain
 (实际资金链).  Corruption is flow diversion at the
 min-cut---a hidden edge from Layer~1 to an
 off-graph recipient.
+When the duality gap closes
+(\cref{prop:strong-duality}: $P^* = D^*$),
+every yuan the People pay in taxes returns as a yuan
+of verified welfare.
 
 \paragraph{公示清单 (Disclosure ledger).}
 The GovFi ledger requires every item below to be
@@ -1539,9 +2235,173 @@ Without GovFi, the same diversion produces
 $\mathcal{L}(10) = 16.5$\,亿 and growing.
 \end{example}
 
+% ── MPC convergence figure ──────────────────────────────────
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[
+  x=0.85cm, y=0.30cm,
+  >=Stealth,
+  every node/.style={font=\small},
+]
+
+% ── Axes ──
+\draw[->, thick] (-0.3,0) -- (15.5,0)
+  node[right] {$t$ / yr};
+\draw[->, thick] (0,-0.5) -- (0,26)
+  node[above] {$c(t)$ \quad 亿元/yr};
+
+% ── Y-axis ticks ──
+\foreach \y/\lab in {5/5, 10/10, 15/15, 20/20} {
+  \draw (0,\y) -- (-0.15,\y) node[left] {\lab};
+}
+% ── X-axis ticks ──
+\foreach \x/\lab in {2.5/2.5, 5/5, 7.5/7.5, 10/10, 12.5/12.5} {
+  \draw (\x,0) -- (\x,-0.4) node[below] {\lab};
+}
+
+% ════════════════════════════════════════════════
+% Fills first (both), then curves on top (both)
+% so neither fill obscures the other's line.
+% ════════════════════════════════════════════════
+
+% Fill 1: WITH GovFi  (concentrated, fast)
+\fill[sword!15]
+  (0,0)
+  -- (0,0) .. controls (0.3,18) and (0.8,20) .. (1,20)
+  -- (1,20) -- (4.5,20)
+  .. controls (5.2,19) and (5.5,16) .. (6,14)
+  .. controls (6.8,10) and (8,5) .. (9.5,2)
+  .. controls (10.2,0.8) and (10.8,0.2) .. (11,0)
+  -- cycle;
+
+% Fill 2: WITHOUT GovFi  (spread, slow)
+\fill[knife!12]
+  (0,0)
+  -- (0,0) .. controls (0.3,12) and (0.8,14) .. (1,14)
+  -- (4.5,14)
+  .. controls (5.5,13) and (6.5,11) .. (7.5,9)
+  .. controls (9,6.5) and (10.5,4.5) .. (12,3)
+  .. controls (13,2.2) and (14,1.5) .. (15,1.1)
+  -- (15,0)
+  -- cycle;
+
+% Curve 1: WITH GovFi  (solid, on top of both fills)
+\draw[sword, very thick]
+  (0,0) .. controls (0.3,18) and (0.8,20) .. (1,20)
+  -- (4.5,20)
+  .. controls (5.2,19) and (5.5,16) .. (6,14)
+  .. controls (6.8,10) and (8,5) .. (9.5,2)
+  .. controls (10.2,0.8) and (10.8,0.2) .. (11,0);
+
+% Curve 2: WITHOUT GovFi  (dashed, on top of both fills)
+\draw[knife, very thick, dashed]
+  (0,0) .. controls (0.3,12) and (0.8,14) .. (1,14)
+  -- (4.5,14)
+  .. controls (5.5,13) and (6.5,11) .. (7.5,9)
+  .. controls (9,6.5) and (10.5,4.5) .. (12,3)
+  .. controls (13,2.2) and (14,1.5) .. (15,1.1);
+
+% ── Fixed integral annotation ──
+\node[anchor=west] at (11.5, 22)
+  {$\displaystyle\int_0^\infty \!\! c(t)\,dt \;=\; B$};
+\node[anchor=west, font=\footnotesize] at (11.5, 19.5)
+  {(fixed / 守恒)};
+
+% ── Breakpoint vertical lines ──
+\draw[caution, dashed, thin] (2.5, 0) -- (2.5, 22.5);
+\node[caution, font=\footnotesize, anchor=south west] at (2.6, 22.5)
+  {$\theta_1$};
+
+\draw[caution, dashed, thin] (5, 0) -- (5, 22.5);
+\node[caution, font=\footnotesize, anchor=south west] at (5.1, 22.5)
+  {$\theta_2$};
+
+% ── MPC observation markers ──
+\fill[sword] (2.5, 20) circle (2.5pt);
+\fill[sword] (5, 18.7) circle (2.5pt);
+
+% ── MPC prediction horizon arrow ──
+\draw[sword, thick, decorate,
+  decoration={brace, amplitude=4pt, mirror}]
+  (2.5, -2.5) -- (11, -2.5)
+  node[midway, below=5pt, font=\footnotesize]
+  {MPC prediction horizon $H \to \infty$};
+
+% ── Curve labels ──
+\node[sword, anchor=west, font=\footnotesize\bfseries]
+  at (7, 13) {With GovFi};
+\node[sword, anchor=west, font=\footnotesize]
+  at (7, 11) {(closed-loop)};
+
+\node[knife, anchor=west, font=\footnotesize\bfseries]
+  at (11, 7.5) {Without GovFi};
+\node[knife, anchor=west, font=\footnotesize]
+  at (11, 5.8) {(open-loop)};
+
+% ── Completion markers ──
+\draw[sword, thick, ->] (11, 0) -- (11, -0.3);
+\node[sword, font=\footnotesize, anchor=north] at (11, -0.8)
+  {水电站建成};
+
+\node[knife, font=\footnotesize, anchor=south] at (15, 1.5)
+  {$t \to\,$?};
+
+% ── RSS-style annotations ──
+\node[font=\scriptsize, anchor=south east, text width=2.8cm, align=right]
+  at (2.3, 20.5)
+  {观测$_1$:\\[1pt]$\mathcal{L}/B = 5\%$\\[-1pt]启动吸收};
+
+\node[font=\scriptsize, anchor=south west, text width=3cm]
+  at (5.2, 18.5)
+  {观测$_2$: $\mathcal{L}/B = 10\%$\\[-1pt]
+   predict $T^* \le 4.6$\,yr};
+
+\end{tikzpicture}
+
+\caption{%
+\textbf{GovFi as receding horizon MPC.}\;
+The verified construction rate $c(t)$ is the min-cut flow of the fiscal graph.
+Both curves have the \emph{same} integral
+$\int c(t)\,dt = B$ (same money, same dam)---the
+only question is \emph{when}.
+\textcolor{sword}{With GovFi} (solid): the MPC controller
+observes $\mathcal{L}(t)$ at each breakpoint $\theta_j$,
+predicts the absorption trajectory over infinite horizon,
+and activates control $\bar{a} > 0$.
+The flow concentrates; the dam completes.
+\textcolor{knife}{Without GovFi} (dashed): open-loop,
+no observation, no control.
+The flow spreads; completion recedes.
+同一座坝, 同一笔钱---问题只是何时.%
+}
+\label{fig:mpc-convergence}
+\end{figure}
+
+\begin{remark}[国家机器的唯一作用 --- The sole purpose of the state machine]
+\label{rem:sole-purpose}
+The state exists for one reason: to support its people toward a
+better future.  For example, to actually build a hydroelectric dam
+so that we do not burn coal and still have electricity.
+
+国家机器的唯一作用就是 support 它的人民走向更美好的未来
+---比如真的修一座水电站, so that 我们不用烧煤也有电用。
+
+Everything in this appendix---the loss field, the breakpoints,
+the three-layer damping, the MPC controller---exists to ensure
+that when the government says ``build a dam,'' a dam gets built.
+Not a ledger entry.  Not a press release.  A dam.
+
+换句话说: 这个世界不存在什么帝王术。
+In other words: there is no such thing as an Emperor's technique.
+
+\hfill --- 张江涵\,/\,Zhang Jianghan
+\end{remark}
+
 %
 \begin{example}[地狱公司结构 --- GovFi under monopoly]
 \label{ex:monopoly}
+Layer assumption: corruption at Layer~1 (公司截留/monopoly diversion).
+
 Suppose Layer~1 is a \emph{monopoly} (垄断): a single
 entity controls the min-cut, routing both information
 and money.  The monopolist diverts $30\%$ of every
@@ -1818,6 +2678,25 @@ of the mean the system sits.
 
 The losses are conserved.  The only freedom is the
 choice of exit face.
+\end{remark}
+
+\begin{remark}[There is no narrative]
+\label{rem:no-narrative}
+There is no narrative in this appendix.  None.
+
+陈胜 and 吴广 were the first to deploy this technique---viability
+maintenance under temporal linearity, executed at the min-cut of
+the Qin fiscal network---at Daze Township, 209~BCE.
+One could say they invented it.
+
+I transcribe it with math and words.
+
+\medskip
+这篇附录没有任何叙事。
+陈胜和吴广第一次使用过这个技术，我猜你可以说，他们发明了它。
+我只是用数学和文字把它 transcribe 下来。
+
+\hfill --- 张江涵\,/\,Zhang Jianghan
 \end{remark}
 
 % ================================================================
