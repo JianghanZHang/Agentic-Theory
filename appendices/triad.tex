@@ -1,0 +1,491 @@
+\chapter{三足之鼎 --- The Cooperative Triad}\label{app:triad}
+
+The preceding appendices applied the framework to individual agents
+within a fixed system.  This appendix applies it to the system
+itself: a nation-state whose viability depends on the simultaneous
+health of three coupled variables.  The mathematical object is a
+\emph{cooperative triad}---a three-dimensional differential
+inclusion with positive cross-coupling---and the central result
+is that the viability of such a system is a \emph{transient fixed
+point}: structurally possible, stable while it lasts, and destroyed
+abruptly when any single coupling channel weakens below threshold.
+
+Two structural corollaries follow.  First, one variable of the
+triad ($x_3$: human capital flux) is not independent but is itself
+a function of the other two, making the triad \emph{reducible} and
+its fragility worse than the product form suggests.  Second, a
+system with no cut vertex (\cref{def:cutvertex})---a distributed
+mesh---is immune to external elimination; its only death mode is
+internal phase transition.
+
+\section{The coupled system}\label{sec:triad-system}
+
+\begin{definition}[Cooperative triad]\label{def:triad}
+A \emph{cooperative triad} is a dynamical system on
+$S = \R^3_{\geq 0}$ with mean-field dynamics
+\begin{equation}\label{eq:triad}
+  x'_i \;=\; \alpha_i\, x_i
+  \;+\; \sum_{j \neq i} \beta_{ij}\, x_j
+  \;-\; \gamma_i\, x_i^2,
+  \qquad i = 1, 2, 3,
+\end{equation}
+where the coefficients satisfy:
+\begin{enumerate}[label=(\roman*)]
+  \item $\beta_{ij} > 0$ for all $i \neq j$
+    \quad (\emph{cooperative}: cross-feeding is positive);
+  \item $\gamma_i > 0$ for all $i$
+    \quad (\emph{dissipative}: growth saturates);
+  \item $\alpha_i \geq 0$ for all $i$
+    \quad (\emph{self-reinforcing}: each variable sustains itself
+    at rate $\alpha_i$).
+\end{enumerate}
+The full set-valued dynamics (\cref{def:di}) are
+$x'_i(t) \in F_i(x(t))$ where
+$F_i(x) = \{f_i(x) + \eta : |\eta| \leq \delta_i\}$ for a
+noise bound $\delta_i \geq 0$.
+\end{definition}
+
+The three terms in \eqref{eq:triad} encode:
+$\alpha_i x_i$ is self-reinforcement proportional to current level;
+$\sum_{j \neq i} \beta_{ij} x_j$ is cross-feeding from the other
+two variables; and $-\gamma_i x_i^2$ is saturation (diminishing
+returns, bureaucratic overhead, depletion).
+
+\begin{definition}[Triad viability kernel]\label{def:triad-kernel}
+For thresholds $\epsilon = (\epsilon_1, \epsilon_2, \epsilon_3)
+\in \R^3_{> 0}$, the \emph{triad viability kernel} is
+\[
+  K_\epsilon \;:=\;
+  \bigl\{\, x \in \R^3_{\geq 0} \;:\;
+  x_i \geq \epsilon_i \;\;\text{for all } i \,\bigr\}.
+\]
+The threshold $\epsilon_i$ is the critical value below which the
+$i$-th variable's contribution to the cross-feeding reverses sign:
+below $\epsilon_i$, the $i$-th leg drags the others down rather
+than lifting them.
+\end{definition}
+
+\section{The tangential condition}\label{sec:triad-tangential}
+
+\begin{proposition}[Boundary rescue]\label{prop:boundary-rescue}
+At the boundary face $\partial_i K_\epsilon :=
+\{x \in K_\epsilon : x_i = \epsilon_i\}$, the tangential
+condition (\cref{thm:viability-di}) reduces to
+\begin{equation}\label{eq:rescue}
+  \sum_{j \neq i} \beta_{ij}\, x_j
+  \;\geq\;
+  \gamma_i\, \epsilon_i^2 \;-\; \alpha_i\, \epsilon_i
+  \;=:\; \theta_i.
+\end{equation}
+When $\alpha_i \geq \gamma_i \epsilon_i$, the threshold
+$\theta_i \leq 0$ and the condition is automatically satisfied:
+self-reinforcement alone prevents exit.  When
+$\alpha_i < \gamma_i \epsilon_i$, the cross-feeding from the
+other two variables must compensate.
+\end{proposition}
+
+\begin{proof}
+The contingent cone to $K_\epsilon$ at $x$ with $x_i = \epsilon_i$
+is $T_{K_\epsilon}(x) = \{v \in \R^3 : v_i \geq 0\}$
+(\cref{def:contingent}).  The tangential condition
+$f(x) \in T_{K_\epsilon}(x)$ requires $f_i(x) \geq 0$:
+\[
+  \alpha_i \epsilon_i + \sum_{j \neq i} \beta_{ij} x_j
+  - \gamma_i \epsilon_i^2 \geq 0,
+\]
+which rearranges to \eqref{eq:rescue}.
+\end{proof}
+
+\begin{remark}[The rescue is mutual]\label{rem:mutual-rescue}
+The inequality \eqref{eq:rescue} is the viability condition at
+the $i$-th face: when variable~$i$ is at its minimum, the
+\emph{other two} must be strong enough to pull it back.
+By the cooperative structure ($\beta_{ij} > 0$), this pull is
+guaranteed as long as $x_j$ is large.  The failure mode is
+cascade: if $x_j$ drops, the rescue of $x_i$ weakens, which
+reduces the rescue of $x_k$, which further weakens $x_j$.
+Positive feedback amplifies both growth and decline.
+\end{remark}
+
+\section{Stability and bifurcation}\label{sec:triad-bifurcation}
+
+\begin{theorem}[Existence, stability, and coupling threshold]
+\label{thm:triad}
+\hfill
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Existence.}  The system \eqref{eq:triad} has a
+    positive fixed point $x^* \in \R^3_{> 0}$.
+  \item \textbf{Stability.}  All eigenvalues of the Jacobian
+    $J = Df|_{x^*}$ have strictly negative real part:
+    $x^*$ is locally asymptotically stable.
+  \item \textbf{Coupling threshold.}  $x^* \in K_\epsilon^\circ$
+    if and only if, for every $i \in \{1,2,3\}$,
+    \begin{equation}\label{eq:coupling-threshold}
+      \sum_{j \neq i} \beta_{ij}\, x_j^*
+      \;>\;
+      \theta_i
+      \;=\;
+      \gamma_i \epsilon_i^2 - \alpha_i \epsilon_i.
+    \end{equation}
+    There exists a critical coupling matrix
+    $B^* = (\beta_{ij}^*)$ such that
+    $x^* \in K_\epsilon^\circ$ when $\beta_{ij} > \beta_{ij}^*$,
+    and $x^*$ exits $K_\epsilon$ through face
+    $\partial_k K_\epsilon$ when $\beta_{kj}$ drops below
+    $\beta_{kj}^*$ for some $j \neq k$.
+  \item \textbf{Stable until gone.}  At the bifurcation
+    ($\beta_{kj} = \beta_{kj}^*$, so that $x_k^* = \epsilon_k$),
+    all eigenvalues of $J$ remain strictly negative.  The system
+    does not lose resilience gradually: it is stable until the
+    fixed point exits $K_\epsilon$, at which point viability is
+    lost abruptly.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)}  Define the map $T: \R^3_{\geq 0} \to \R^3_{> 0}$
+by $T_i(x) = (\alpha_i + \sqrt{\alpha_i^2 + 4\gamma_i
+\sum_{j \neq i}\beta_{ij} x_j})\, /\, (2\gamma_i)$,
+the positive root of
+$\gamma_i z^2 - \alpha_i z - \sum_{j \neq i}\beta_{ij} x_j = 0$.
+$T$ is continuous, monotone increasing, and maps $[0, M]^3$ to
+itself for $M$ sufficiently large (since $T_i$ grows as
+$O(\sqrt{M})$ while $M$ grows linearly).  By Brouwer's
+fixed-point theorem, $T$ has a fixed point $x^* \in [0,M]^3$.
+Positivity: $T_i(x) > 0$ for all $x \geq 0$.
+
+\textbf{(b)}  The Jacobian at $x^*$ has entries
+$J_{ii} = \alpha_i - 2\gamma_i x_i^*$ (negative, since the
+fixed-point equation gives
+$\gamma_i x_i^* > \alpha_i$) and
+$J_{ij} = \beta_{ij} > 0$ for $i \neq j$.
+The matrix $-J$ is a $Z$-matrix (non-positive off-diagonal).
+We show $-J$ is a nonsingular $M$-matrix by exhibiting a positive
+vector $w > 0$ with $(-J)w > 0$.  Take $w = x^*$.
+The $i$-th component of $(-J)x^*$ is
+\begin{align*}
+  \bigl((-J)\,x^*\bigr)_i
+  &= (2\gamma_i x_i^* - \alpha_i)\,x_i^*
+     - \sum_{j \neq i} \beta_{ij}\, x_j^* \\
+  &= 2\gamma_i (x_i^*)^2 - \alpha_i x_i^*
+     - \sum_{j \neq i} \beta_{ij}\, x_j^* \\
+  &= 2\gamma_i (x_i^*)^2
+     - \underbrace{\bigl(\alpha_i x_i^*
+       + \textstyle\sum_{j \neq i} \beta_{ij}\, x_j^*\bigr)}
+       _{= \gamma_i (x_i^*)^2 \text{ by the FP equation}} \\
+  &= \gamma_i (x_i^*)^2 \;>\; 0.
+\end{align*}
+By the $M$-matrix characterisation ($Z$-matrix + $\exists\, w > 0$
+with $Aw > 0$ $\Rightarrow$ nonsingular $M$-matrix), all
+eigenvalues of $-J$ have positive real part, hence all eigenvalues
+of $J$ have negative real part.
+
+\textbf{(c)}  At the fixed point,
+$\sum_{j \neq i} \beta_{ij} x_j^* =
+\gamma_i (x_i^*)^2 - \alpha_i x_i^*$.
+Since $g(z) = \gamma_i z^2 - \alpha_i z$ is strictly increasing
+for $z > \alpha_i/(2\gamma_i)$ and $x_i^* > \alpha_i/\gamma_i >
+\alpha_i/(2\gamma_i)$, requiring $x_i^* \geq \epsilon_i$ is
+equivalent to \eqref{eq:coupling-threshold}.
+The critical coupling $B^*$ is defined implicitly by the binding
+constraint $x_k^*(B^*) = \epsilon_k$; by the implicit function
+theorem (the Jacobian $J$ is nonsingular by~(b)), $x^*$ depends
+continuously on $B$, and the transition is a bifurcation.
+
+\textbf{(d)}  At the bifurcation $x_k^* = \epsilon_k$, the
+proof of~(b) still applies: $(-J)x^*_i = \gamma_i(x_i^*)^2 > 0$
+for all $i$ (since $x_i^* \geq \epsilon_i > 0$).
+All eigenvalues of $J$ remain strictly negative.
+\end{proof}
+
+Part~(d) is the mathematical surprise: the system does not
+announce its impending collapse through loss of resilience or
+critical slowing down.  It is stable until the coupling drops
+below threshold, at which point the fixed point exits
+$K_\epsilon$ and viability is lost in a single bifurcation.
+The perception of gradual decline is an artefact: what drifts
+gradually are the coupling parameters $\beta_{ij}(t)$, not the
+system's stability.
+
+\section{Product fragility}\label{sec:triad-fragility}
+
+\begin{definition}[Product Lyapunov function]\label{def:product-lyapunov}
+The \emph{product Lyapunov function} for the triad kernel
+$K_\epsilon$ is
+\[
+  V_\Pi(x) \;:=\; \prod_{i=1}^3 (x_i - \epsilon_i).
+\]
+$V_\Pi$ vanishes on $\partial K_\epsilon$ and is positive on
+$K_\epsilon^\circ$.  The viability metric
+$g_{V_\Pi} = V_\Pi^{-2}\, g_S$ (\cref{def:viab-metric}) makes
+$(K_\epsilon^\circ,\, g_{V_\Pi})$ a complete Riemannian manifold
+(\cref{prop:viab-complete}).
+\end{definition}
+
+\begin{proposition}[Single-coordinate collapse]\label{prop:single-collapse}
+If any single coordinate satisfies
+$x_k(t) \to \epsilon_k$ as $t \to T$, then
+$V_\Pi(x(t)) \to 0$ regardless of the other coordinates.
+The $g_{V_\Pi}$-distance from any interior point to the face
+$\partial_k K_\epsilon$ is infinite:
+\[
+  d_{g_{V_\Pi}}(x,\, \partial_k K_\epsilon) \;=\; +\infty.
+\]
+\end{proposition}
+
+\begin{proof}
+$V_\Pi = (x_k - \epsilon_k) \prod_{j \neq k}(x_j - \epsilon_j)
+\leq M^2 (x_k - \epsilon_k) \to 0$, where
+$M = \max_{j \neq k} \sup_t (x_j(t) - \epsilon_j)$ is finite
+by dissipativity.
+For the distance estimate, parametrise a curve
+$\gamma(s)$ with only the $k$-th coordinate varying.
+Its $g_{V_\Pi}$-length is
+\[
+  L_{g_{V_\Pi}}(\gamma)
+  = \int \frac{|\gamma'(s)|}{V_\Pi(\gamma(s))}\, ds
+  \geq \frac{1}{M^2}
+  \int \frac{|x_k'(s)|}{x_k(s) - \epsilon_k}\, ds,
+\]
+which diverges as
+$\int du/u = -\log(x_k - \epsilon_k) \to \infty$
+when $x_k \to \epsilon_k$.
+\end{proof}
+
+\begin{remark}[The dependent variable]\label{rem:dependent}
+The third variable of the triad ($x_3$: human capital flux) is
+not structurally independent.  Immigration selection presupposes
+institutional permission ($x_1$ controls who may arrive), and
+retention requires resource reward ($x_2$ controls who stays).
+The autonomous component of $x_3$ is therefore
+\[
+  x_3 \;=\; h(x_1, x_2) \;+\; \eta_3,
+\]
+where $h$ captures the coupling ($h$ increasing in both arguments)
+and $\eta_3$ is the genuinely exogenous component (the pool of
+potential emigrants in source countries).  In the triad dynamics
+\eqref{eq:triad}, this dependence is already encoded in the
+coupling terms $\beta_{31} x_1 + \beta_{32} x_2$, but the
+structural implication is sharper: $x_3$ cannot be rescued
+independently.  When $x_1$ weakens (institutions restrict
+permission) or $x_2$ weakens (resources stop rewarding), $x_3$
+declines \emph{even without a direct shock to $x_3$ itself}.
+The rescue condition \eqref{eq:rescue} at the $x_3$-face
+requires precisely the variables that $x_3$ depends on.
+
+This makes $x_3$ the most fragile coordinate of the triad:
+it is the only one that cannot self-rescue
+($\theta_3 = \gamma_3 \epsilon_3^2 - \alpha_3 \epsilon_3$
+is large when $\alpha_3$ is small, meaning weak
+self-reinforcement), and its cross-feeding comes from the
+variables it structurally depends on.  The product Lyapunov
+function $V_\Pi$ inherits this fragility: $x_3$ is generically
+the first coordinate to hit its threshold, and by
+\cref{prop:single-collapse}, this suffices to collapse
+$V_\Pi$ to zero.
+\end{remark}
+
+\section{The mesh immunity theorem}\label{sec:mesh}
+
+The triad describes a system whose viability depends on
+maintaining three coupled variables above threshold.
+A separate structural question is: can such a system be
+\emph{destroyed from outside}?
+
+\begin{definition}[Mesh graph]\label{def:mesh}
+An execution graph $G = (V, E)$ (\cref{def:exgraph}) is a
+\emph{mesh} if it contains no cut vertex
+(\cref{def:cutvertex}): for every $v \in V$,
+$G \setminus \{v\}$ is connected.
+Equivalently, $G$ is $2$-connected.
+\end{definition}
+
+\begin{theorem}[Mesh immunity]\label{thm:mesh-immunity}
+Let $G$ be a mesh.  Then:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{No targeted elimination.}  For every $v \in V$,
+    $G \setminus \{v\}$ is connected: removing any single node
+    does not disconnect the execution graph.
+    The elimination strategy of \cref{thm:cutvertex} (make
+    yourself the cut vertex, then remove the knife) requires
+    a cut vertex to exist.  In a mesh, no such vertex exists.
+  \item \textbf{The only death is phase transition.}  The
+    mean actuation field $\bar{U}$ (\cref{thm:meanfield}) is
+    computed over all nodes.  In a mesh, the mean is a
+    \emph{bulk} quantity: no single node's removal changes
+    $\bar{U}$ by more than $O(1/|V|)$.  The system's knife
+    threshold $\bar{U} + \tau(\Obs)$ is therefore stable under
+    single-node perturbation.  The only mechanism that moves
+    $\bar{U}$ below the viability threshold is a
+    \emph{collective} shift: a phase transition in which the
+    coupling constants (ideology, coercion, reward) drop below
+    threshold simultaneously across the mesh.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)} is the definition of $2$-connectivity
+(\cref{def:mesh}).
+
+\textbf{(b)}  Let $\bar{U} = \frac{1}{n}\sum_{i=1}^n \|U_i\|$
+be the mean actuation.  Removing node $k$ changes the mean to
+$\bar{U}' = \frac{1}{n-1}\sum_{i \neq k} \|U_i\|$.
+Then $|\bar{U}' - \bar{U}| = |\bar{U} - \|U_k\||/(n-1)$, which
+is $O(1/n)$ since both $\bar{U}$ and $\|U_k\|$ are bounded.  For the knife threshold
+$\bar{U} + \tau(\Obs)$ to cross a critical value, the shift must
+be $\Omega(1)$, requiring $\Omega(n)$ nodes to change
+simultaneously---a phase transition.
+\end{proof}
+
+\begin{remark}[Historical instantiation of mesh immunity]
+\label{rem:mesh-history}
+No communist party in history has been eliminated by external
+targeted removal.  The structural reason is
+\cref{thm:mesh-immunity}(a): a Leninist party is organised as a
+distributed execution mesh (democratic centralism $=$ every node
+both routes and executes), and removing any single node
+(leader, cadre, cell) does not disconnect the graph.
+Every historical end of a communist party is an internal phase
+transition (\cref{thm:mesh-immunity}(b)): the Soviet Union
+(1991), the Eastern Bloc (1989--91), the Kuomintang's
+one-party state in Taiwan (1987--2000).  In each case, the
+mean actuation field $\bar{U}$ (ideological commitment $\times$
+coercive capacity) dropped below the viability threshold
+\emph{from within}, not by external excision.
+The same immunity holds for any $2$-connected organisation:
+religious orders, insurgent networks, distributed autonomous
+organisations.  The topology, not the ideology, determines
+the death mode.
+\end{remark}
+
+\section{Instantiation: the American republic}\label{sec:america}
+
+The cooperative triad \eqref{eq:triad} admits a canonical
+instantiation:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clp{6.5cm}@{}}
+\toprule
+\textbf{Variable} & \textbf{Name} & \textbf{Content} \\
+\midrule
+$x_1$ & Institutional capacity &
+  Constitutional architecture, rule of law,
+  separation of powers, peaceful transfer \\
+$x_2$ & Resource base &
+  Continental landmass, two-ocean buffer,
+  navigable rivers, energy reserves \\
+$x_3$ & Human capital flux &
+  Immigration selection, meritocratic mobility,
+  civic identity untied to ethnicity \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The six coupling channels:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}ccp{7cm}@{}}
+\toprule
+$\beta_{ij}$ & \textbf{Channel} & \textbf{Mechanism} \\
+\midrule
+$\beta_{12}$ & $x_2 \to x_1$ &
+  Resource abundance funds institutional capacity \\
+$\beta_{21}$ & $x_1 \to x_2$ &
+  Property rights enable resource development \\
+$\beta_{13}$ & $x_3 \to x_1$ &
+  Talented populace creates and reforms institutions \\
+$\beta_{31}$ & $x_1 \to x_3$ &
+  Civic identity and rule of law attract talent \\
+$\beta_{23}$ & $x_3 \to x_2$ &
+  Talent develops and exploits resources \\
+$\beta_{32}$ & $x_2 \to x_3$ &
+  Abundance rewards effort, retaining talent \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{proposition}[The American fixed point]\label{prop:american-fp}
+Under this instantiation, the cooperative fixed point $x^*$
+satisfies $x^* \in K_\epsilon^\circ$ during the epoch
+$\sim$1865--1965 (post--Civil War consolidation through peak
+institutional and demographic expansion).
+The coupling threshold
+(\cref{thm:triad}(c)) was maintained by:
+\begin{enumerate}[label=(\roman*)]
+  \item $\beta_{21}$ large: the Homestead Act (1862) and
+    patent law converted institutional protection directly into
+    resource development;
+  \item $\beta_{31}$ large: the civic-identity model
+    (``American'' $=$ allegiance to a document, not a bloodline)
+    sustained the immigration selection filter;
+  \item $\beta_{13}$ large: successive waves of immigrants
+    built, staffed, and reformed institutions (public schools,
+    universities, civil service).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Verification]
+Each coupling channel is independently checkable against
+historical data.  The proposition is structural, not causal:
+it asserts that the three variables were simultaneously above
+threshold and mutually reinforcing, which is verified by the
+simultaneous presence of (i)~institutional stability (no
+constitutional crisis between 1865 and 1965), (ii)~resource
+expansion (continental infrastructure, energy production), and
+(iii)~demographic growth driven by immigration
+(waves of 1880--1924, post-1945).
+The tangential condition \eqref{eq:rescue} held at each face:
+when any single variable weakened (e.g.\ institutional stress
+during Reconstruction), the other two provided sufficient
+cross-feeding to prevent exit from $K_\epsilon$.
+\end{proof}
+
+\begin{remark}[Phase transition and the knife]
+\label{rem:triad-knife}
+The word ``once'' in ``once considered great'' is the detection
+of a weakening coupling.  In the framework of \cref{prop:phase},
+each variable $x_i$ of the triad is an autonomous actuator
+(\cref{def:knife}, condition~(1)): its dynamics $f_i$ can drive
+the state independently.  When the cross-feeding is strong
+($\beta_{ij} > \beta_{ij}^*$), each variable is a
+\emph{tool}---its autonomous actuation reinforces the others.
+When the coupling weakens below threshold, the same autonomous
+dynamics become a \emph{knife}: a variable in decline drags the
+others down through the positive feedback channel.
+
+By \cref{thm:triad}(d) (stable until gone), the transition is
+not gradual.  The coupling parameters $\beta_{ij}(t)$ may drift
+slowly, but the system remains at a stable fixed point until the
+bifurcation.  Then the fixed point exits $K_\epsilon$ and
+viability collapses.  ``Greatness'' was a transient fixed point
+(\cref{thm:triad}), not an identity.  The product Lyapunov
+function $V_\Pi = \prod_i (x_i - \epsilon_i)$
+(\cref{def:product-lyapunov}) ensures that the collapse is
+\emph{multiplicative}: a decline in any single variable degrades
+the entire system's viability measure, regardless of the other
+two (\cref{prop:single-collapse}).
+
+By \cref{rem:dependent}, $x_3$ (human capital) is the most
+fragile coordinate: it depends on both $x_1$ (institutional
+permission to arrive) and $x_2$ (resource reward for staying).
+One does not ``select'' immigrants; one creates conditions
+($x_1, x_2$) under which immigration self-selects.  When either
+condition weakens, the selection filter breaks---not because
+the immigrants changed, but because the triad's internal
+coupling dropped below the rescue threshold
+\eqref{eq:rescue}.
+\end{remark}
+
+\begin{remark}[The triad is not American]\label{rem:not-american}
+Nothing in \cref{def:triad} is specific to any nation.
+The cooperative triad is a structural motif that appears wherever
+three coupled variables with positive feedback sustain a system
+above threshold.  The American republic is one instantiation.
+The framework predicts the same transient-viability dynamics for
+any system whose health depends on three mutually reinforcing
+components.
+
+The mathematics is the theorem; the nation is the example.
+\end{remark}
