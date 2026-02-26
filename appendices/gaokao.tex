@@ -1,0 +1,662 @@
+\chapter{Gaokao Reform --- Equal Probability Admission}\label{app:gaokao}
+
+The preceding appendix applied the framework to the fiscal substrate
+of sovereign debt (\cref{app:govfi}).  This appendix applies it to
+the \emph{human capital substrate}---the university admission system
+that determines which agents enter the viability kernel of higher
+education.  The central result is a \emph{disparity conservation law}:
+total university capacity is conserved; only its distribution across
+provinces is free.  The policy implication is that the current allocation
+system is a \emph{knife}---a structural separator that assigns students
+different viability probabilities based solely on their province of
+registration---and that a population-proportional allocation
+removes this knife entirely.
+
+% ================================================================
+\paragraph{Notation / 符号表.}
+% ================================================================
+The following symbols are used throughout this appendix.
+\textcolor{water}{Blue} = structure/flow,
+\textcolor{knife}{red} = disparity/inequality,
+\textcolor{sword}{cyan} = reform/detection,
+\textcolor{caution}{orange} = threshold warnings.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}lp{5.5cm}p{5.5cm}@{}}
+\toprule
+\textbf{Symbol} & \textbf{English} & \textbf{中文} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Provincial state}} \\
+$N_i$             & Exam takers in province $i$
+                  & 第 $i$ 省报名人数 \\
+$n$               & Number of provinces ($= 31$)
+                  & 省份数 \\
+$C$               & Total national 985 capacity
+                  & 985 总招生容量 \\
+$s_i$             & Slots allocated to province $i$
+                  & 第 $i$ 省招生名额 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Rates / 录取率}} \\
+$R_i$             & Admission rate $= s_i / N_i$
+                  & 录取率 \\
+$\bar{R}$         & National avg $= C / \sum N_i$
+                  & 全国平均录取率 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Disparity / 不平等}} \\
+$D$               & Disparity ratio $= \max R_i / \min R_i$
+                  & 最大最小比 \\
+$G$               & Gini coefficient of $\{R_i\}$
+                  & 基尼系数 \\
+$\sigma_R$        & Std.\ dev.\ of rates across provinces
+                  & 录取率标准差 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Reform models}} \\
+$w_i$             & Province weight (equal: $w_i = 1$)
+                  & 省份权重 \\
+$\Delta$          & Score band width (points)
+                  & 分数段宽度 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ================================================================
+\section{The Current System / 现行制度}\label{sec:gaokao-current}
+% ================================================================
+
+China's national college entrance examination (高考) is taken by
+approximately $N = \sum_{i=1}^{31} N_i \approx 12{,}350{,}000$
+students annually (2024 data).  Each university allocates a
+\emph{fixed quota} $s_i$ to each province, set by historical
+precedent and political negotiation rather than by population
+proportion.  The admission rate for province~$i$ is
+\begin{equation}\label{eq:gaokao-rate}
+  R_i = \frac{s_i}{N_i}.
+\end{equation}
+
+\begin{definition}[Disparity index / 不平等指数]\label{def:disparity}
+The \emph{disparity ratio} is $D = \max_i R_i \;/\; \min_i R_i$.
+The \emph{Gini coefficient} of the rate vector $\mathbf{R}
+= (R_1, \ldots, R_n)$ is
+\[
+  G = \frac{1}{2n^2 \tilde{R}} \sum_{i,j} |R_i - R_j|,
+  \qquad \tilde{R} = \frac{1}{n}\sum_i R_i.
+\]
+Perfect equality: $G = 0$, $D = 1$.
+Maximum inequality: $G \to 1$, $D \to \infty$.
+\end{definition}
+
+\paragraph{2024 data / 2024年数据.}
+Using publicly available data from Chinese education statistics
+sources\footnote{%
+  Sources: 中国教育在线 (eol.cn), 聚汇数据 (gotohui.com),
+  知乎 (zhihu.com), 高考直通车 (gaokaozhitongche.com),
+  网易 (163.com), 搜狐 (sohu.com).
+  All figures are approximate; see \texttt{gaokao/data.py} for
+  per-source annotations and confidence levels.},
+the 2024 985-university admission rates are:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}llrr@{}}
+\toprule
+\textbf{Province / 省份} & & \textbf{Exam takers / 考生}
+  & \textbf{985 rate / 录取率} \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Top 5 — highest rate / 录取率最高}} \\
+天津 & Tianjin   &   70{,}800 & 5.81\% \\
+北京 & Beijing   &   67{,}000 & 5.30\% \\
+上海 & Shanghai  &   54{,}000 & 4.40\% \\
+吉林 & Jilin     &  130{,}100 & 3.56\% \\
+青海 & Qinghai   &   65{,}600 & 3.36\% \\
+\midrule
+\multicolumn{4}{@{}l}{\emph{Bottom 5 — lowest rate / 录取率最低}} \\
+云南 & Yunnan    &  395{,}000 & 1.00\% \\
+广东 & Guangdong &  768{,}000 & 0.98\% \\
+贵州 & Guizhou   &  472{,}500 & 0.98\% \\
+河北 & Hebei     &  928{,}000 & 0.96\% \\
+河南 & Henan     & 1{,}360{,}000 & 0.84\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{proposition}[2024 disparity / 2024年不平等]\label{prop:gaokao-disparity}
+For 985-university admission rates across 31 provinces (2024):
+\[
+  D = 6.9\times, \qquad G = 0.310, \qquad
+  \bar{R}_{\textup{weighted}} = 1.33\%.
+\]
+天津 (Tianjin, $N = 70{,}800$) has a 985 rate of $5.81\%$;
+河南 (Henan, $N = 1{,}360{,}000$) has $0.84\%$.
+河南 has $19\times$ more exam takers but $6.9\times$ worse
+admission probability.
+\end{proposition}
+
+\begin{remark}[The knife is the quota / 刀就是名额]
+\label{rem:gaokao-knife}
+The admission quota $s_i$ is the knife.  It satisfies both conditions
+from \cref{def:knife}: (1)~autonomous actuation---each university
+sets its own quotas without external constraint; (2)~observability
+failure---students in province $i$ cannot observe or influence the
+quota-setting process.  The disparity $D = 6.9\times$ is not a
+natural phenomenon; it is an artefact of the quota allocation,
+which is neither population-proportional nor merit-based.
+\end{remark}
+
+% ================================================================
+\section{Reform Models / 改革模型}\label{sec:gaokao-reform}
+% ================================================================
+
+We consider two alternative allocation rules, holding total
+capacity $C = \sum_i s_i \approx 164{,}203$ fixed.
+
+\begin{definition}[Equal-weight allocation / 等权分配]
+\label{def:equal-weight}
+Set $w_i = 1$ for all $i$.  Then
+\[
+  s_i^{\textup{eq}} = \frac{C}{n}
+  \approx 5{,}297 \;\text{per province}.
+\]
+\end{definition}
+
+\begin{definition}[Population-proportional allocation / 人口比例分配]
+\label{def:pop-prop}
+Set $w_i = N_i$.  Then
+\[
+  s_i^{\textup{pp}} = C \cdot \frac{N_i}{\sum_j N_j},
+  \qquad
+  R_i^{\textup{pp}} = \frac{s_i^{\textup{pp}}}{N_i}
+  = \frac{C}{\sum_j N_j} = \bar{R}
+  \;\;\text{(constant for all $i$)}.
+\]
+\end{definition}
+
+\begin{proposition}[Reform comparison / 改革对比]
+\label{prop:gaokao-reform}
+Under the three allocation models:
+\begin{center}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Model / 模型} & \textbf{Gini ($G$)} & \textbf{$D$ (max/min)}
+  & \textbf{Direction} \\
+\midrule
+Current / 现行制度  & $0.310$ & $6.9\times$ & --- \\
+Equal-weight / 等权 & $0.514$ & $37.8\times$
+  & \textcolor{knife}{$\uparrow$ worse} \\
+Pop-proportional / 人口比例 & $0.0001$ & $1.0\times$
+  & \textcolor{sword}{$\downarrow$ optimal} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{proposition}
+
+\begin{remark}[等权 $\neq$ 等概率 / Equal weight $\neq$ equal probability]
+\label{rem:eq-neq-eqprob}
+The na\"ive intuition that ``equal provincial weight'' produces
+equality is \textbf{wrong}.  Equal absolute slots ($C/n$) distributed
+to provinces of vastly different population sizes produces
+\emph{worse} per-capita disparity: 西藏 ($N = 36{,}000$) would receive
+a $14.7\%$ rate while 河南 ($N = 1{,}360{,}000$) would receive $0.39\%$.
+The disparity ratio rises from $6.9\times$ to $37.8\times$.
+
+The correct reform is population-proportional allocation:
+$s_i \propto N_i$.  This gives every student the same probability
+$R_i = \bar{R} \approx 1.33\%$ regardless of province.
+\end{remark}
+
+\begin{theorem}[Proportional allocation eliminates the knife]
+\label{thm:gaokao-knife-removal}
+Under population-proportional allocation $s_i = C \cdot N_i / N$
+where $N = \sum_j N_j$:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $R_i = C/N = \bar{R}$ for all $i$ (uniform rate);
+\item $G = 0$ and $D = 1$ (perfect equality);
+\item The quota $s_i$ ceases to be a knife: it no longer separates
+  viability classes by province.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(a) is immediate from the definition.  (b) follows since all rates are
+equal.  For~(c), the knife conditions (\cref{def:knife}) fail:
+the allocation is now a deterministic function of the publicly
+observable population $N_i$, so observability holds and no autonomous
+actuation remains.
+\end{proof}
+
+% ================================================================
+\section{Within-Band Randomization / 分数段内随机化}
+\label{sec:gaokao-band}
+% ================================================================
+
+The current system ranks students by exact score within each province.
+A difference of one point (满分750, so $\Delta s = 1/750 \approx 0.13\%$
+of the total range) can determine admission or rejection.  This creates
+a ``one-point-one-fate'' (一分定终身) phenomenon.
+
+\begin{definition}[Band randomization / 分数段随机化]
+\label{def:band-random}
+Fix a band width $\Delta > 0$ (e.g., $\Delta = 5$ points).
+Partition the score range $[0, 750]$ into bands
+$B_k = [k\Delta, (k+1)\Delta)$.
+Within each band $B_k$, students are ranked by
+\emph{uniform random permutation} rather than exact score.
+\end{definition}
+
+The effect: students whose scores differ by less than $\Delta$ have
+equal probability of admission.  This converts a deterministic
+(and fragile) ranking into a probabilistic one, eliminating the
+incentive for one-point gaming while preserving the overall
+meritocratic ordering at the $\Delta$-scale.
+
+\begin{remark}[Band width choice / 分数段宽度选择]
+\label{rem:band-width}
+The choice $\Delta = 5$ is illustrative.  The optimal $\Delta$
+balances two competing effects:
+\begin{itemize}
+\item Too small ($\Delta = 1$): equivalent to exact ranking,
+  no randomization benefit.
+\item Too large ($\Delta = 50$): too much noise, weakens
+  the meritocratic signal.
+\end{itemize}
+The right $\Delta$ is an empirical question requiring the
+fine-grained score distribution (一分一段表) to calibrate.
+Score distributions for 2024 are publicly available for 29 of 31
+provinces from provincial education examination authorities.
+\end{remark}
+
+% ================================================================
+\section{Grace Period / 恩典期}\label{sec:gaokao-grace}
+% ================================================================
+
+The within-band randomization (\cref{sec:gaokao-band}) assigns each
+student a \emph{tentative} school placement.  This initial assignment
+is random within the score band.  The grace period converts this
+random assignment into a \emph{chosen} one.
+
+\begin{definition}[Grace period / 恩典期]\label{def:grace-period}
+After the initial random-within-band assignment, a grace window
+$[t_0, t_0 + \tau]$ opens during which students may \emph{swap}
+placements with any other student in the same score band and the
+same region, subject to the constraint that both students remain
+within the same admission tier (budget).
+\end{definition}
+
+The mechanism has three phases:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item \textbf{Random seed / 随机初始.}
+  Within-band randomization produces an initial assignment.
+  No student chose this placement; it is the system's first offer.
+\item \textbf{Grace window / 恩典窗口.}
+  Students examine their assignment and may swap with willing
+  partners in the same band and region.  You keep your tier
+  but choose your specific school.  This is the time for the
+  考生 to think: where do I actually want to go?
+\item \textbf{Lock / 锁定.}
+  After $\tau$, assignments become final.  No further swaps.
+\end{enumerate}
+
+\begin{remark}[Grace as bounded dissipation / 恩典即有界耗散]
+\label{rem:gaokao-grace}
+This is the same structure as the GovFi grace margins
+(\cref{app:govfi}): bounded freedom within thresholds.
+In GovFi, each layer $i$ has a grace margin $\epsilon_i = k_i - r$
+within which losses are tolerated as legitimate costs.
+In Gaokao, each student has a grace margin: freedom to swap
+within the same tier without affecting the system's aggregate
+allocation.
+
+The grace period restores agency without restoring the knife.
+The initial randomization removes one-point-one-fate (一分定终身);
+the grace period gives back the student's choice of \emph{where},
+while the population-proportional allocation determines \emph{how many}.
+The constraint is the tier, not the specific school.
+
+What is consumed during the grace period---the dissipated---is
+information: students learn about their options, negotiate swaps,
+discover preferences.  This is bounded dissipation in information
+space, exactly analogous to the fiscal grace in \cref{app:govfi}.
+\end{remark}
+
+% ================================================================
+\section{The Mean-Field Connection / 平均场联系}
+\label{sec:gaokao-meanfield}
+% ================================================================
+
+The Gaokao disparity is a mean-field phenomenon in the sense of
+\cref{sec:meanfield}.
+
+\begin{proposition}[Knife = quota, mean = population share]
+\label{prop:gaokao-meanfield}
+Let $\bar{R} = C/N$ be the population-weighted national average.
+Then:
+\begin{enumerate}[label=\textup{(\alph*)}]
+\item $13$ provinces (containing $67\%$ of all exam takers)
+  have $R_i < \bar{R}$.
+\item $18$ provinces (containing $33\%$ of all exam takers)
+  have $R_i \geq \bar{R}$.
+\item The unweighted arithmetic mean
+  $\tilde{R} = \frac{1}{n}\sum R_i = 1.94\%$ exceeds $\bar{R} = 1.33\%$,
+  showing that \emph{the majority of provinces have above-average rates
+  when measured per province, but the majority of students have
+  below-average rates when measured per capita}.
+\end{enumerate}
+\end{proposition}
+
+This is the knife-is-the-mean phenomenon: the average computed
+per province (unweighted, $\tilde{R}$) differs from the average
+computed per student (weighted, $\bar{R}$), and this discrepancy
+is itself the knife.  Most provinces appear ``above average'' while
+most students are below it.
+
+\begin{remark}[Importance sampling / 重要性抽样]
+\label{rem:importance-sampling}
+Why do the two averages disagree?  Because the current system
+assigns importance weights in two levels:
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item \textbf{Level 1: equally to each province.}
+  Every province gets the same voice---Tibet (3.6 万考生)
+  counts the same as Henan (136 万考生), a 38:1 population
+  ratio compressed to 1:1.
+\item \textbf{Level 2: equally to each student within that province.}
+  Within each province, students share their province's voice
+  equally.
+\end{enumerate}
+The result: a student in Tibet inherits $1/36{,}000$ of a
+full provincial vote, while a student in Henan inherits
+$1/1{,}360{,}000$ of the same-sized vote.  Tibet's student
+is 38 times louder than Henan's.  The importance weights
+are the seed you plant---and the current system plants
+unequal seeds.
+
+In statistics, the fix is called \textbf{importance sampling}
+(重要性抽样): if your sampling distribution $q$ differs from
+the true distribution $p$, you multiply each sample by a
+\emph{correction weight} $w(x) = p(x)/q(x)$:
+\[
+  \mathbb{E}_p[f(x)]
+  \;=\;
+  \mathbb{E}_q\!\Bigl[f(x)\,\cdot\,\frac{p(x)}{q(x)}\Bigr].
+\]
+Here $p$ is the per-student distribution (province $i$ has weight
+$N_i/N$), $q$ is the per-province distribution (each province has
+weight $1/n$), and $f$ is the admission rate.  The importance
+weight is:
+\[
+  w_i \;=\; \frac{p_i}{q_i}
+  \;=\; \frac{N_i/N}{1/n}
+  \;=\; \frac{n\,N_i}{N}.
+\]
+Large provinces get large weights (Henan: $w \approx 3.4$),
+small provinces get small ones (Tibet: $w \approx 0.09$).
+The weighted average $\bar{R} = \sum w_i R_i / \sum w_i = 1.33\%$
+is the true per-student mean.  The unweighted average
+$\tilde{R} = 1.94\%$ is the \emph{biased} estimate that
+ignores population---it over-counts small privileged provinces
+and under-counts large disadvantaged ones.
+
+In plain language (大白话): the unweighted mean is biased because
+it lets 3.6 万 people in Tibet speak as loudly as 136 万 in Henan.
+Importance sampling says: if you insist on giving every province
+one vote, at least \emph{weight} those votes by how many students
+each province actually has.  Once you do, $\tilde{R}$ collapses
+to $\bar{R}$, and the illusion that ``most provinces are above
+average'' disappears.
+\end{remark}
+
+\begin{remark}[Renormalization / 重整化]
+\label{rem:gaokao-rg}
+The importance weight assignment is a
+\textcolor{knife}{renormalization group (RG) flow} compressed
+into a single exam paper.  The current system has two scales:
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Scale & \textcolor{knife}{Current (bare)} & \textcolor{sword}{Reform (fixed point)} \\
+\midrule
+\textbf{Province} (coarse) & weight $= 1/n$ each
+  & weight $= N_i/N$ \\
+\textbf{Student} (fine) & weight $= 1/(n N_i)$
+  & weight $= 1/N$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Under the \textcolor{knife}{current system}, the per-student
+weight \emph{runs} with the province size $N_i$: a Tibet student
+carries weight $1/(31 \times 36{,}000)$ while a Henan student
+carries $1/(31 \times 1{,}360{,}000)$---a factor of 38.
+The ``coupling constant'' (per-student admission probability)
+\textcolor{knife}{depends on the scale at which you observe it}.
+This is the signature of a system away from its RG fixed point.
+
+Under \textcolor{sword}{population-proportional allocation}, every
+student carries weight $1/N$ regardless of province.
+The coarse-grained answer (per province: $s_i/N_i = C/N$)
+and the fine-grained answer (per student: $C/N$) \emph{agree}.
+The coupling no longer runs.
+\textcolor{sword}{This is the RG fixed point}:
+the admission probability is \emph{scale-invariant}---it does
+not matter whether you measure at the province level or the
+student level.
+
+The current system's \textcolor{knife}{knife} is precisely the
+RG anomaly: the bare parameter (per-province allocation) and
+the physical observable (per-student probability) disagree.
+Population-proportional allocation eliminates the anomaly by
+making the bare parameter equal to the physical observable
+at every scale.
+\end{remark}
+
+\begin{remark}[Temporal linearity / 时间线性]
+\label{rem:gaokao-temporal}
+The Gaokao happens every June.  It is non-pausable (you cannot stop the
+exam mid-administration) and non-reversible (scores, once published,
+determine that year's admissions permanently).  Each cohort passes
+through the system exactly once.  This is temporal linearity: the
+knife operates in real, non-replayable time.
+
+The viability kernel $K$ is the set of provinces where a student's
+probability of admission is at least $\bar{R}$.  Under the current
+system, 13 provinces (67\% of students) are outside $K$.  Under
+population-proportional allocation, $K$ expands to all provinces.
+\end{remark}
+
+% ================================================================
+\section{Numerical Results / 数值结果}\label{sec:gaokao-numerics}
+% ================================================================
+
+The analysis is implemented in \texttt{gaokao/} (Python, stdlib only)
+and reproduces the numbers in this appendix exactly.
+
+\paragraph{Usage.}
+\begin{verbatim}
+  python -m gaokao.simulate
+\end{verbatim}
+
+\paragraph{Key outputs.}
+\begin{center}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+& \textbf{Current} & \textbf{Equal-wt} & \textbf{Pop-prop} \\
+\midrule
+Gini coefficient        & 0.310  & 0.514  & 0.0001 \\
+Disparity ratio ($D$)   & 6.9$\times$ & 37.8$\times$ & 1.0$\times$ \\
+Max rate (province)     & 5.81\% (天津)  & 14.71\% (西藏)  & 1.33\% (all) \\
+Min rate (province)     & 0.84\% (河南)  & 0.39\% (河南)   & 1.33\% (all) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Under population-proportional allocation, the top five gainers
+by rate increase are: 河南 ($+0.49\%$), 河北 ($+0.37\%$),
+广东 ($+0.35\%$), 贵州 ($+0.35\%$), 云南 ($+0.33\%$)---all
+large-population provinces currently disadvantaged.
+The biggest losers are the small, currently privileged provinces:
+天津 ($-4.48\%$), 北京 ($-3.97\%$), 上海 ($-3.07\%$).
+
+\begin{remark}[Data limitations / 数据局限]
+\label{rem:gaokao-data}
+The 985 admission rates used here are compiled from secondary sources
+(media reports, data aggregators) rather than primary government
+statistical yearbooks.  Some figures---particularly for mid-tier
+provinces---are estimates based on ranges reported across multiple
+sources.  The qualitative conclusions (6--7$\times$ disparity,
+population-proportional reform eliminates it) are robust to
+reasonable variations in the data.
+Fine-grained score distributions (一分一段表) are available for
+29 provinces in image format from provincial education examination
+authority websites.  Text-format extraction would enable
+within-band randomization calibration.
+\end{remark}
+
+\bigskip
+\noindent
+\fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{%
+\smallskip
+\textit{Author's note / 作者自述.}
+
+\smallskip
+\noindent
+I took the Gaokao in Beijing in 2019 and scored 636.
+Before that, I was a ``体育特长生'' (athletic recruit)---B-tier,
+men's football---preparing for Tsinghua.
+\textcolor{knife}{I failed.}  Not just at Tsinghua: at every university I tried.
+So I took the Gaokao.
+
+我在2019年在北京市参加了高考，考了636分。
+在那之前，我是一个准备凭借高水平运动队招生（B类：男子足球）
+考取清华大学的体育特长生。\textcolor{knife}{但我失败了}——不止在清华，
+在我尝试过的每一所大学都失败了。然后，我就开始准备高考了。
+
+\smallskip
+I enrolled at Beijing University of Posts and Telecommunications,
+majoring in Internet of Things Engineering.
+I always thought I didn't like that school.
+But I cannot deny: \textcolor{water}{I learned more there than I ever expected.}
+
+我在北京邮电大学学习了两年，专业是物联网工程。
+虽然我一直觉得我不喜欢这个学校，
+但不可否认的是，\textcolor{water}{我在这里学到了很多——比我想象的更多。}
+
+\smallskip
+Two years later I transferred to New York University,
+where I enrolled in Mechanical Engineering.
+I graduated with a B.S.\ in Mechanical Engineering
+and minors in Robotics and Mathematics.
+\textcolor{water}{I liked learning math at the Courant Institute}---I took ODE
+and combinatorics there, and that was about it.
+I never took a functional analysis course.
+
+之后我转学到了纽约大学，进入了机械工程专业。
+我以机械工程学士学位毕业，辅修了机器人学和数学。
+\textcolor{water}{我喜欢在Courant数学研究所学数学}——在那里修了常微分方程和组合数学，
+仅此而已。我从来没有上过泛函分析的课。
+
+\smallskip
+In my second semester at NYU, I took Professor Ludovic Righetti's
+\textit{Robotics: Locomotion and Manipulation}.
+The course was not quite what the title promised (货不对板),
+but I learned a great deal---most importantly, a question:
+\textcolor{sword}{how should you think about AI?}
+After that course I joined his Machines in Motion lab,
+where Armand Jordana mentored me.
+\textcolor{water}{He taught me how you should actually do math---and,
+more importantly, how you should approach research.}
+
+在纽约大学的第二个学期，我修了Ludovic Righetti教授的
+\textit{Robotics: Locomotion and Manipulation}。
+虽然货不对板，但我真的学到了很多——
+最重要的，是一个问题：\textcolor{sword}{你该怎么看待AI。}
+之后我加入了他的Machines in Motion实验室，
+Armand Jordana在那里指导了我。
+\textcolor{water}{他教会了我你到底应该怎么做数学——更重要的是，
+你到底应该以怎样的态度做科研。}
+
+\smallskip
+When I applied to PhD programs, I was \textcolor{knife}{``全聚德'd''
+again---rejected everywhere}.  Before that, I thought
+I could get into MIT.
+But the nice thing was: my advisor asked me if I wanted
+to join his lab, and I said---\textcolor{sword}{of course!  Because this
+happened to be exactly what I wanted.}
+
+我在博士申请中再次被\textcolor{knife}{「全聚德」}了。在那之前，我以为我能上MIT来着。
+但好在：我的导师问我愿不愿意加入他的实验室，
+我说——\textcolor{sword}{当然！因为这恰恰正是我想做的事情。}
+\smallskip
+}}
+
+\clearpage
+
+\noindent
+\fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{%
+\noindent
+My advisor is Brian Plancher.  I believe he is the best GPU
+programmer in the world---during his PhD \textcolor{water}{he hand-wrote a rigid
+body dynamics library for robotics on GPU, from scratch.}
+I picked up small tricks from him that actually worked,
+and then I realized: maybe they are not tricks?
+\textcolor{sword}{Maybe there is actually some math about it.
+Then hence, Q.E.D.}
+
+我的导师叫Brian Plancher，我认为他就是这个世界上最会写GPU代码的人——
+因为他在博士期间，\textcolor{water}{自己手写了一个GPU上的刚体动力学仿真库。}
+我从他那里学到了一些真正管用的小trick，然后我发现：
+也许它们不是trick？\textcolor{sword}{Maybe there is actually some math about it.
+Then hence, Q.E.D.}
+
+\smallskip
+Now I am a PhD student at Dartmouth College.  I live in a small
+town called Lebanon.  My girlfriend visits often, and I am
+genuinely fond of my colleagues---I think they are \textcolor{water}{real
+scientists}, though they probably would not say so themselves.
+They would say: \textcolor{water}{I just want to put my screws in the right place,}
+so that when you need to assemble a robot, there are actually
+screws to use.
+
+现在我在Dartmouth College读博士，住在一个叫Lebanon的小镇。
+我的女友时常来看我，我很喜欢我的同事们——
+\textcolor{water}{我觉得他们就是真正的科学家}，虽然他们可能不这么想。
+她们会说：\textcolor{water}{我只是想把我的螺丝放好，}
+这样当你想组装一个机器人的时候，真的有螺丝用。
+
+\smallskip
+One thing I can tell you for sure: \textcolor{water}{hand-crafting a robot
+is really, really hard.}  This I know.
+
+有一件事我可以肯定地告诉你：\textcolor{water}{手工造一个机器人，真的很难。}
+这一点，我知道。
+
+\smallskip
+About one year later, \textcolor{sword}{I wrote this thesis.}
+
+\medskip
+\centerline{\textcolor{sword}{\textit{So, you just never know.  That is temporal linearity.}}}
+\centerline{\textcolor{sword}{所以说，你永远不知道。这就是时间线性。}}
+
+\smallskip
+\centerline{\textcolor{sword}{这就是穿墙术。}}
+\centerline{\textcolor{sword}{\textit{Follow some light, and try to even get a point.}}}
+\centerline{\textcolor{sword}{\textit{A point of mass is all you need.}}}
+\smallskip
+}}
+
+\bigskip
+\begin{center}
+% ── 甲骨文「中」── oracle bone script: a banner-pole through a ring
+\begin{tikzpicture}[line width=1.2pt, line cap=round, line join=round]
+  % Pole (vertical shaft)
+  \draw (0,-0.9) -- (0,1.1);
+  % Ring / target (slightly irregular, as in oracle bone style)
+  \draw (0,0.15) ellipse (0.38 and 0.32);
+  % Banner streamers (left and right, fluttering)
+  \draw (-0.38,0.15) .. controls (-0.55,-0.15) .. (-0.42,-0.45);
+  \draw ( 0.38,0.15) .. controls ( 0.55,-0.15) .. ( 0.42,-0.45);
+\end{tikzpicture}
+
+\smallskip
+{\small\itshape zhǒng\,\raisebox{0.5ex}{\tiny$\checkmark$}}
+\end{center}
