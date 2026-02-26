@@ -827,7 +827,193 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
     .. (2, -1.35) .. controls (4, -1.28) and (5.5, -1.12) .. (6.5, -0.98);
 
   % ── Label ──
-  \node[font=\scriptsize, text=sword!60] at (0, -1.7) {古筝 $\cdot$ 二十一弦};
+  \node[font=\scriptsize, text=sword!60] at (0, -2.0) {古筝 $\cdot$ 二十一弦};
+
+  % ═══════════════════════════════════════════════
+  % 广陵散 · 开指  (神奇秘谱, 朱权, 1425)
+  % 指法 = motion primitives, not postures
+  % Each diagram: string cross-section + fingertip trajectory
+  %   approach (ghost) → contact → follow-through (bold arrow)
+  % The arrow IS the primitive.  The string displacement is the effect.
+  % ═══════════════════════════════════════════════
+
+  \node[font=\small, text=sword!70] at (0, -2.9) {广陵散 $\cdot$ 开指};
+  \node[font=\tiny, text=black!30] at (0, -3.25)
+    {右手指法 --- 《神奇秘谱》（朱权，1425）};
+
+  % ── Key: cross-section view (side view of 3 strings) ──
+  % Player at BOTTOM of guzheng diagram (东方不败 plays from below)
+  % Bottom = player side (近身);  Top = away from player (远身)
+  % 向内 (inward, toward player) = ↓ downward
+  % 向外 (outward, away from player) = ↑ upward
+  % Each cell: 3 string dots (cross-section) + trajectory arrow
+
+  % ── Biomechanical angles (right hand, palm-down, cross-section) ──
+  % Player at bottom.  Thumb = inner/left, fingers = outer/right.
+  % 大指 (thumb):  ~40° from vertical, tilted LEFT  (inner side of hand)
+  % 食指 (index):  ~45° from vertical, tilted RIGHT (next to thumb)
+  % 中指 (middle): ~80° from vertical, nearly STRAIGHT DOWN (longest finger)
+  % Each 向内/向外 pair shares approach angle, reverses direction.
+
+  % 托 — 大指向外 (thumb pushes outward ↑, from lower-LEFT at ~40°)
+  \begin{scope}[shift={(-5.2, -4.8)}]
+    \fill[sword!30] (-0.22, 0) circle (0.045);
+    \fill[sword!50] (0, 0) circle (0.055);
+    \fill[sword!30] (0.22, 0) circle (0.045);
+    % Thumb approaches from lower-left (inner side of hand)
+    \draw[line width=0.15pt, black!15, dashed]
+      (-0.35, -0.48) -- (-0.12, -0.1);
+    \fill[sword!55] (-0.08, -0.04) circle (0.035);
+    \draw[-{Stealth[length=2.5pt]}, line width=0.7pt, sword!75]
+      (-0.08, -0.04) -- (0.18, 0.48);          % sweeps up-right at ~40°
+    % String bends up-right
+    \draw[line width=0.3pt, sword!35]
+      (-0.28, 0) .. controls (-0.1, 0.16) and (0.14, 0.14) .. (0.28, 0);
+  \end{scope}
+
+  % 抹 — 食指向内 (index pulls inward ↓, from upper-RIGHT at ~45°)
+  \begin{scope}[shift={(-3.1, -4.8)}]
+    \fill[sword!30] (-0.22, 0) circle (0.045);
+    \fill[sword!50] (0, 0) circle (0.055);
+    \fill[sword!30] (0.22, 0) circle (0.045);
+    % Index approaches from upper-right, pulls down-left
+    \draw[line width=0.15pt, black!15, dashed]
+      (0.28, 0.48) -- (0.1, 0.12);
+    \fill[sword!55] (0.06, 0.06) circle (0.035);
+    \draw[-{Stealth[length=2.5pt]}, line width=0.7pt, sword!75]
+      (0.06, 0.06) -- (-0.2, -0.46);           % pulls down-left at ~45°
+    % String bends down-left
+    \draw[line width=0.3pt, sword!35]
+      (-0.28, 0) .. controls (-0.14, -0.14) and (0.1, -0.16) .. (0.28, 0);
+  \end{scope}
+
+  % 勾 — 中指向内 (middle pulls inward ↓, nearly VERTICAL from above)
+  \begin{scope}[shift={(-1.0, -4.8)}]
+    \fill[sword!30] (-0.22, 0) circle (0.045);
+    \fill[sword!50] (0, 0) circle (0.055);
+    \fill[sword!30] (0.22, 0) circle (0.045);
+    % Middle finger: longest, approaches almost straight down
+    \draw[line width=0.15pt, black!15, dashed]
+      (0.04, 0.52) -- (0.02, 0.14);
+    \fill[sword!55] (0.02, 0.08) circle (0.035);
+    \draw[-{Stealth[length=2.5pt]}, line width=0.7pt, sword!75]
+      (0.02, 0.08) -- (-0.02, -0.48);          % nearly vertical ↓
+    % String bends straight down
+    \draw[line width=0.3pt, sword!35]
+      (-0.28, 0) .. controls (-0.12, -0.16) and (0.12, -0.16) .. (0.28, 0);
+  \end{scope}
+
+  % 剔 — 中指向外 (middle pushes outward ↑, nearly VERTICAL from below)
+  \begin{scope}[shift={(1.1, -4.8)}]
+    \fill[sword!30] (-0.22, 0) circle (0.045);
+    \fill[sword!50] (0, 0) circle (0.055);
+    \fill[sword!30] (0.22, 0) circle (0.045);
+    % Middle finger: nearly vertical upward
+    \draw[line width=0.15pt, black!15, dashed]
+      (-0.04, -0.52) -- (-0.02, -0.14);
+    \fill[sword!55] (-0.02, -0.08) circle (0.035);
+    \draw[-{Stealth[length=2.5pt]}, line width=0.7pt, sword!75]
+      (-0.02, -0.08) -- (0.02, 0.48);          % nearly vertical ↑
+    % String bends straight up
+    \draw[line width=0.3pt, sword!35]
+      (-0.28, 0) .. controls (-0.12, 0.16) and (0.12, 0.16) .. (0.28, 0);
+  \end{scope}
+
+  % 挑 — 食指向外 (index pushes outward ↑, from lower-RIGHT at ~45°)
+  \begin{scope}[shift={(3.2, -4.8)}]
+    \fill[sword!30] (-0.22, 0) circle (0.045);
+    \fill[sword!50] (0, 0) circle (0.055);
+    \fill[sword!30] (0.22, 0) circle (0.045);
+    % Index approaches from lower-right, pushes up-left
+    \draw[line width=0.15pt, black!15, dashed]
+      (0.28, -0.48) -- (0.1, -0.12);
+    \fill[sword!55] (0.06, -0.06) circle (0.035);
+    \draw[-{Stealth[length=2.5pt]}, line width=0.7pt, sword!75]
+      (0.06, -0.06) -- (-0.2, 0.46);           % pushes up-left at ~45°
+    % String bends up-left
+    \draw[line width=0.3pt, sword!35]
+      (-0.28, 0) .. controls (-0.14, 0.14) and (0.1, 0.16) .. (0.28, 0);
+  \end{scope}
+
+  % 撮 — 大指托↑ + 中指勾↓ simultaneous (pinch on two strings)
+  \begin{scope}[shift={(5.3, -4.8)}]
+    \fill[sword!50] (-0.22, 0) circle (0.055);  % string (thumb target)
+    \fill[sword!25] (0, 0) circle (0.04);
+    \fill[sword!50] (0.22, 0) circle (0.055);   % string (middle target)
+    % Thumb: from lower-left, sweeps up-right at ~40° on left string
+    \draw[line width=0.15pt, black!15, dashed]
+      (-0.42, -0.4) -- (-0.28, -0.1);
+    \fill[sword!55] (-0.24, -0.04) circle (0.03);
+    \draw[-{Stealth[length=2pt]}, line width=0.6pt, sword!70]
+      (-0.24, -0.04) -- (-0.08, 0.36);
+    % Middle: from above, nearly vertical ↓ on right string
+    \draw[line width=0.15pt, black!15, dashed]
+      (0.24, 0.42) -- (0.22, 0.12);
+    \fill[sword!55] (0.22, 0.06) circle (0.03);
+    \draw[-{Stealth[length=2pt]}, line width=0.6pt, sword!70]
+      (0.22, 0.06) -- (0.2, -0.36);
+    % Strings displace in opposite directions
+    \draw[line width=0.25pt, sword!30]
+      (-0.38, 0) .. controls (-0.28, 0.12) .. (-0.08, 0);
+    \draw[line width=0.25pt, sword!30]
+      (0.08, 0) .. controls (0.16, -0.12) .. (0.38, 0);
+  \end{scope}
+
+  % ── Technique labels ──
+  \node[font=\scriptsize, text=sword!65] at (-5.2, -5.6) {托};
+  \node[font=\tiny, text=black!35] at (-5.2, -5.83)
+    {大指$\uparrow$外};
+  \node[font=\scriptsize, text=sword!65] at (-3.1, -5.6) {抹};
+  \node[font=\tiny, text=black!35] at (-3.1, -5.83)
+    {食指$\downarrow$内};
+  \node[font=\scriptsize, text=sword!65] at (-1.0, -5.6) {勾};
+  \node[font=\tiny, text=black!35] at (-1.0, -5.83)
+    {中指$\downarrow$内};
+  \node[font=\scriptsize, text=sword!65] at (1.1, -5.6) {剔};
+  \node[font=\tiny, text=black!35] at (1.1, -5.83)
+    {中指$\uparrow$外};
+  \node[font=\scriptsize, text=sword!65] at (3.2, -5.6) {挑};
+  \node[font=\tiny, text=black!35] at (3.2, -5.83)
+    {食指$\uparrow$外};
+  \node[font=\scriptsize, text=sword!65] at (5.3, -5.6) {撮};
+  \node[font=\tiny, text=black!35] at (5.3, -5.83)
+    {大$\uparrow$中$\downarrow$};
+
+  % ═══════════════════════════════════════════════
+  % 绣花针 (embroidery needle — silver, with red thread)
+  % 东方不败's weapon: the finest manipulation primitive
+  % ═══════════════════════════════════════════════
+
+  % Needle shaft (silver — long, thin, tapering)
+  \draw[line width=0.6pt, black!25]
+    (-2.2, -11.75) -- (2.5, -11.75);            % body
+  \draw[line width=0.35pt, black!18]
+    (2.5, -11.75) -- (3.2, -11.75);             % taper toward tip
+  \draw[line width=0.12pt, black!35]
+    (3.2, -11.75) -- (3.6, -11.75);             % tip (fine, sharp)
+  % Tip point
+  \fill[black!40] (3.6, -11.75) circle (0.015);
+  % Needle eye (small oval at blunt end)
+  \draw[line width=0.25pt, black!30]
+    (-2.2, -11.75) ellipse (0.04 and 0.06);
+  % Highlight (silver sheen — thin white line along shaft)
+  \draw[line width=0.15pt, white]
+    (-1.8, -11.72) -- (2.0, -11.72);
+
+  % Red thread (trailing from eye — flowing, alive)
+  \draw[line width=0.35pt, knife!65]
+    (-2.24, -11.75)
+    .. controls (-2.8, -11.55) and (-3.2, -11.85) .. (-3.6, -11.5)
+    .. controls (-4.0, -11.15) and (-4.3, -11.6) .. (-4.6, -11.25)
+    .. controls (-4.85, -10.95) and (-5.1, -11.3) .. (-5.3, -11.1);
+  % Thread thins at the trailing end
+  \draw[line width=0.2pt, knife!45]
+    (-5.3, -11.1)
+    .. controls (-5.5, -10.9) and (-5.7, -11.15) .. (-5.85, -11.0);
+  \draw[line width=0.1pt, knife!28]
+    (-5.85, -11.0)
+    .. controls (-6.0, -10.85) and (-6.1, -11.05) .. (-6.2, -10.95);
+
 \end{tikzpicture}
 \end{center}
 
