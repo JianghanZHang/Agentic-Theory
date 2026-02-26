@@ -694,415 +694,140 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
 {\small --- 黄霑，\textit{笑傲江湖之东方不败}（徐克）}
 \end{center}
 
-% ── 东方不败 · 自在坐 (gesture sketch: 水月观音 royal ease pose) ──
-% Rough bone skeleton — pose first, detail later
+% ── 古筝 (standard 21-string guzheng — top-down view) ──
+% Archived: 东方不败 sketch → appendices/archive_dongfang_bubai.tex
+% Colours: sword (青冥) for strings/bridges, warm wood for body
 \bigskip
 \begin{center}
-\begin{tikzpicture}[line cap=round, line join=round]
-  % ── Gesture line (line of action — the S-curve of 自在) ──
-  \draw[line width=0.3pt, black!12, dashed]
-    (0.5, 7.9) .. controls (0.3, 6.5) and (0.0, 5.5) .. (-0.15, 4.3)
-    .. controls (-0.3, 3.2) and (-0.5, 2.3) .. (-0.6, 1.5);
-
+\definecolor{wood}{RGB}{160,110,60}         % 桐木 — paulownia warm brown
+\definecolor{wooddark}{RGB}{120,78,40}      % 深木 — darker grain
+\begin{tikzpicture}[line cap=round, line join=round, scale=0.9]
   % ═══════════════════════════════════════════════
-  % Skeleton (骨骼 — bone lines + joint nodes)
-  % ═══════════════════════════════════════════════
-
-  % ── Head (tilted slightly — 自在) ──
-  \draw[line width=0.4pt, black!38] (0.5, 7.3) circle (0.42);
-  % Face construction cross
-  \draw[line width=0.12pt, black!10] (0.5, 6.88) -- (0.5, 7.72);
-  \draw[line width=0.12pt, black!10] (0.12, 7.3) -- (0.88, 7.3);
-
-  % ── Spine (C7 → thoracic → lumbar → sacrum) ──
-  \draw[line width=0.5pt, black!42]
-    (0.35, 6.75) .. controls (0.2, 6.2) and (0.05, 5.6) .. (-0.05, 5.0)
-    .. controls (-0.1, 4.7) and (-0.15, 4.5) .. (-0.15, 4.3);
-
-  % ── Ribcage mass ──
-  \draw[line width=0.3pt, black!22]
-    (0.05, 5.65) ellipse (0.72 and 0.85);
-
-  % ── Pelvis mass ──
-  \draw[line width=0.3pt, black!22]
-    (-0.15, 4.3) ellipse (0.55 and 0.32);
-
-  % ── Clavicles ──
-  \draw[line width=0.38pt, black!35]
-    (-0.45, 6.4) -- (0.25, 6.55) -- (1.0, 6.3);
-
-  % ═══════════════════════════════════════════════
-  % Right leg (raised knee — the 翘脚 of royal ease)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.5pt, black!48]
-    (0.2, 4.3) -- (1.25, 5.45);          % femur
-  \draw[line width=0.45pt, black!42]
-    (1.25, 5.45) -- (0.5, 3.95);         % tibia
-  \draw[line width=0.3pt, black!32]
-    (0.5, 3.95) -- (0.72, 3.82);         % foot
-  % Joints
-  \fill[black!35] (0.2, 4.3) circle (0.06);
-  \fill[black!42] (1.25, 5.45) circle (0.07);
-  \fill[black!28] (0.5, 3.95) circle (0.05);
-
-  % ═══════════════════════════════════════════════
-  % Left leg (pendant — hanging down from rock)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.42pt, black!40]
-    (-0.4, 4.3) -- (-0.65, 2.8);         % femur
-  \draw[line width=0.38pt, black!35]
-    (-0.65, 2.8) -- (-0.55, 1.5);        % tibia
-  \draw[line width=0.28pt, black!28]
-    (-0.55, 1.5) -- (-0.35, 1.25);       % foot
-  % Joints
-  \fill[black!32] (-0.4, 4.3) circle (0.06);
-  \fill[black!35] (-0.65, 2.8) circle (0.06);
-  \fill[black!25] (-0.55, 1.5) circle (0.05);
-
-  % ═══════════════════════════════════════════════
-  % Right arm (draped on raised knee — hand dangles)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.42pt, black!42]
-    (1.0, 6.3) -- (1.55, 5.85);          % humerus
-  \draw[line width=0.38pt, black!38]
-    (1.55, 5.85) -- (1.3, 5.45);         % forearm → wrist on knee
-  \draw[line width=0.3pt, black!32]
-    (1.3, 5.45) .. controls (1.25, 5.2) and (1.2, 5.0) .. (1.22, 4.75);
-                                           % fingers dangling
-  % Joints
-  \fill[black!38] (1.0, 6.3) circle (0.06);
-  \fill[black!35] (1.55, 5.85) circle (0.06);
-  \fill[black!32] (1.3, 5.45) circle (0.05);
-  % 绣花针 (embroidery needle — dangling from fingertips)
-  \draw[line width=0.15pt, black!45]
-    (1.22, 4.75) -- (1.25, 4.1);
-  \fill[black!30] (1.25, 4.1) circle (0.02);
-
-  % ═══════════════════════════════════════════════
-  % Left arm (propping weight behind — 支撑)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.38pt, black!38]
-    (-0.45, 6.4) -- (-0.95, 5.4);        % humerus
-  \draw[line width=0.35pt, black!35]
-    (-0.95, 5.4) -- (-1.25, 4.35);       % forearm
-  \draw[line width=0.28pt, black!28]
-    (-1.25, 4.35) -- (-1.35, 3.95);      % hand on rock
-  % Joints
-  \fill[black!35] (-0.45, 6.4) circle (0.06);
-  \fill[black!32] (-0.95, 5.4) circle (0.06);
-  \fill[black!28] (-1.25, 4.35) circle (0.05);
-
-  % ═══════════════════════════════════════════════
-  % Rock / seat (rough mass)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.28pt, black!18]
-    (-1.8, 3.8) .. controls (-1.3, 4.15) and (-0.3, 4.05) .. (0.35, 3.8)
-    .. controls (0.85, 3.6) and (1.1, 3.5) .. (1.35, 3.55)
-    .. controls (1.5, 3.6) and (1.35, 3.15) .. (0.8, 2.95)
-    .. controls (0.1, 2.75) and (-0.9, 2.85) .. (-1.4, 3.15)
-    .. controls (-1.65, 3.35) and (-1.8, 3.6) .. (-1.8, 3.8);
-
-  % ═══════════════════════════════════════════════
-  % Hair flow lines (direction only — not rendered)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.5pt, black!42]
-    (0.15, 7.6) .. controls (-0.4, 6.8) and (-0.6, 5.8) .. (-0.7, 4.3);
-  \draw[line width=0.4pt, black!35]
-    (0.7, 7.6) .. controls (1.0, 6.8) and (1.05, 5.8) .. (0.95, 4.5);
-  \draw[line width=0.3pt, black!28]
-    (0.3, 7.7) .. controls (-0.3, 6.6) and (-0.7, 5.2) .. (-0.85, 3.6);
-  % Topknot
-  \draw[line width=0.4pt, black!40]
-    (0.35, 7.7) .. controls (0.3, 8.15) and (0.6, 8.2) .. (0.65, 7.75);
-  % Ornament pins (light indication)
-  \draw[line width=0.35pt, orange!50!black]
-    (0.4, 8.0) .. controls (0.1, 8.2) .. (-0.2, 8.1);
-  \draw[line width=0.35pt, orange!50!black]
-    (0.55, 8.0) .. controls (0.85, 8.25) .. (1.15, 8.15);
-
-  % ═══════════════════════════════════════════════
-  % Robe drape lines (flow indication)
-  % ═══════════════════════════════════════════════
-  \draw[line width=0.22pt, knife!25]
-    (-0.2, 6.0) .. controls (-0.6, 5.0) and (-1.0, 3.8) .. (-1.3, 2.5);
-  \draw[line width=0.22pt, knife!22]
-    (0.6, 5.8) .. controls (0.9, 5.0) and (1.0, 4.2) .. (0.85, 3.6);
-  % Collar V
-  \draw[line width=0.3pt, knife!35]
-    (-0.2, 6.3) .. controls (0.0, 6.0) and (0.05, 5.6) .. (0.0, 5.2);
-  \draw[line width=0.3pt, knife!35]
-    (0.6, 6.2) .. controls (0.35, 5.9) and (0.15, 5.5) .. (0.0, 5.2);
-
-  % ═══════════════════════════════════════════════
-  % Pass 1: Skull wireframe (骨骼 — Gemini analysis)
-  % Head center (0.5, 7.3), r=0.42
-  % T-zone dominance + angular planes + depth mapping
-  % Right=near (bold), Left=far (light)
+  % Body outline (扁长方形, arched top face)
+  % Left = 筝尾 (凤尾, narrow), Right = 筝首 (wide)
+  % Height extended (~1.8 total spread vs original ~1.1)
   % ═══════════════════════════════════════════════
 
-  % ── T-Zone: brow ridge + nasal bridge (侵略性 center) ──
-  % Brow ridge (heavy horizontal — 林青霞's defining structure)
-  \draw[line width=0.55pt, black!52]
-    (0.16, 7.32) .. controls (0.3, 7.38) .. (0.5, 7.37)
-    .. controls (0.7, 7.38) .. (0.84, 7.32);
-  % Secondary brow contour (topographic density — near the first)
-  \draw[line width=0.2pt, black!20]
-    (0.2, 7.35) .. controls (0.35, 7.4) .. (0.5, 7.39)
-    .. controls (0.65, 7.4) .. (0.8, 7.35);
-  % Nasal bridge (vertical stem of the T — strong)
-  \draw[line width=0.42pt, black!42]
-    (0.5, 7.37) -- (0.49, 7.2) -- (0.48, 7.05);
-  % Bridge depth contour (secondary)
-  \draw[line width=0.15pt, black!15]
-    (0.47, 7.35) -- (0.465, 7.2) -- (0.455, 7.07);
-  % Nose wings (angular, not round — sharp departure from bridge)
-  \draw[line width=0.2pt, black!22]
-    (0.48, 7.05) -- (0.37, 7.07);
-  \draw[line width=0.28pt, black!30]
-    (0.48, 7.05) -- (0.61, 7.07);
+  % Soundboard fill (warm wood)
+  \fill[wood!18]
+    (-6.5, 0.85) .. controls (-4, 1.15) and (-1, 1.28)
+    .. (2, 1.25) .. controls (4, 1.18) and (5.5, 1.02) .. (6.5, 0.85)
+    -- (6.5, -0.9)
+    .. controls (5.5, -1.05) and (4, -1.2) .. (2, -1.25)
+    .. controls (-1, -1.22) and (-4, -1.08) .. (-6.5, -0.85)
+    -- cycle;
 
-  % ── Orbital sockets (angular — piecewise linear, not ellipse) ──
-  % Left orbit (far side — lighter, compressed)
-  \draw[line width=0.18pt, black!20]
-    (0.18, 7.32) -- (0.18, 7.2) -- (0.36, 7.16) -- (0.44, 7.22);
-  % Right orbit (near side — bolder, wider)
-  \draw[line width=0.3pt, black!35]
-    (0.56, 7.34) -- (0.56, 7.18) -- (0.77, 7.14) -- (0.84, 7.22);
+  % Top edge (player-facing — gentle arc)
+  \draw[line width=0.8pt, wooddark]
+    (-6.5, 0.85) .. controls (-4, 1.15) and (-1, 1.28)
+    .. (2, 1.25) .. controls (4, 1.18) and (5.5, 1.02) .. (6.5, 0.85);
 
-  % ── Cheekbone planes (sharp fold — 颧骨 angular authority) ──
-  % Left cheekbone (far)
-  \draw[line width=0.2pt, black!18]
-    (0.1, 7.28) -- (0.14, 7.12)    % temple → apex
-    -- (0.3, 7.02);                 % apex → midface
-  % Right cheekbone (near — sharp line, dominant)
-  \draw[line width=0.4pt, black!42]
-    (0.9, 7.25) -- (0.86, 7.1)     % temple → apex
-    -- (0.7, 6.99);                 % apex → midface
+  % Bottom edge (back)
+  \draw[line width=0.8pt, wooddark]
+    (-6.5, -0.85) .. controls (-4, -1.08) and (-1, -1.22)
+    .. (2, -1.25) .. controls (4, -1.2) and (5.5, -1.05) .. (6.5, -0.9);
 
-  % ── Jaw (刀锋 — knife-edge piecewise lines) ──
-  % Left jaw (far — light, receding)
-  \draw[line width=0.18pt, black!16]
-    (0.14, 7.12) -- (0.22, 6.95)   % cheekbone → jaw angle
-    -- (0.44, 6.88);               % jaw angle → chin
-  % Right jaw (near — sharp, defining)
-  \draw[line width=0.48pt, black!50]
-    (0.86, 7.1) -- (0.78, 6.94)    % cheekbone → jaw angle
-    -- (0.56, 6.88);               % jaw angle → chin
-  % Chin point (mental protuberance)
-  \draw[line width=0.28pt, black!32]
-    (0.44, 6.88) -- (0.5, 6.84) -- (0.56, 6.88);
-  % Jaw angle nodes (骨节 — the sharp fold points)
-  \fill[black!12] (0.22, 6.95) circle (0.025);
-  \fill[black!22] (0.78, 6.94) circle (0.03);
+  % Left end — 筝尾 / 凤尾 (narrow)
+  \draw[line width=0.8pt, wooddark]
+    (-6.5, 0.85) -- (-6.5, -0.85);
 
-  % ── Face plane topology (curvature contour lines on skull) ──
-  \draw[line width=0.1pt, black!8]
-    (0.18, 7.5) .. controls (0.5, 7.53) .. (0.82, 7.48);
-  \draw[line width=0.1pt, black!8]
-    (0.15, 7.42) .. controls (0.5, 7.44) .. (0.85, 7.4);
-  \draw[line width=0.1pt, black!8]
-    (0.2, 7.14) .. controls (0.4, 7.1) and (0.6, 7.1) .. (0.82, 7.13);
-
-  % ── Neck musculature (胸锁乳突肌 — sternocleidomastoid) ──
-  % Right SCM (stretch side — visible, near)
-  \draw[line width=0.3pt, black!30]
-    (0.72, 6.96) .. controls (0.58, 6.82) and (0.42, 6.68) .. (0.32, 6.52);
-  % Left SCM (compressed side — lighter)
-  \draw[line width=0.18pt, black!15]
-    (0.28, 6.96) .. controls (0.26, 6.82) and (0.22, 6.68) .. (0.2, 6.55);
-  % Neck center line
-  \draw[line width=0.1pt, black!8]
-    (0.5, 6.84) -- (0.42, 6.65) -- (0.35, 6.5);
+  % Right end — 筝首 (wider)
+  \draw[line width=0.8pt, wooddark]
+    (6.5, 0.85) -- (6.5, -0.9);
 
   % ═══════════════════════════════════════════════
-  % Pass 2: Features (林青霞 × 陈晓楚 — on skull)
-  % Bone-following lines — features sit IN the wireframe
+  % Sound holes (two rosettes near the ends)
   % ═══════════════════════════════════════════════
-
-  % Eyebrows (riding on brow ridge — 林青霞 bold arches)
-  % Left brow (far — lighter)
-  \draw[line width=0.45pt, black!60]
-    (0.2, 7.3) .. controls (0.28, 7.35) and (0.36, 7.34) .. (0.42, 7.3);
-  % Right brow (near — boldest feature line)
-  \draw[line width=0.6pt, black!72]
-    (0.58, 7.32) .. controls (0.66, 7.38) and (0.75, 7.37) .. (0.82, 7.32);
-
-  % Eyes (in orbital sockets — almond, intense)
-  % Left eye (far)
-  \draw[line width=0.2pt, black!35]
-    (0.22, 7.22) .. controls (0.3, 7.26) and (0.38, 7.26) .. (0.42, 7.22);
-  \draw[line width=0.12pt, black!22]
-    (0.22, 7.22) .. controls (0.3, 7.19) and (0.38, 7.19) .. (0.42, 7.22);
-  \fill[black!55] (0.32, 7.22) circle (0.016);
-  % Right eye (near — bolder, wider)
-  \draw[line width=0.3pt, black!50]
-    (0.58, 7.22) .. controls (0.66, 7.27) and (0.74, 7.27) .. (0.8, 7.22);
-  \draw[line width=0.2pt, black!35]
-    (0.58, 7.22) .. controls (0.66, 7.18) and (0.74, 7.18) .. (0.8, 7.22);
-  \fill[black!65] (0.69, 7.22) circle (0.02);
-  \fill[white] (0.685, 7.228) circle (0.005);
-
-  % Lips (陈晓楚's red lips — the single colour accent)
-  \draw[line width=0.22pt, knife!45]
-    (0.4, 6.92) .. controls (0.48, 6.89) .. (0.5, 6.905)
-    .. controls (0.52, 6.89) .. (0.6, 6.92);
-  \draw[line width=0.15pt, knife!30]
-    (0.4, 6.92) .. controls (0.48, 6.95) and (0.52, 6.95) .. (0.6, 6.92);
+  \draw[line width=0.35pt, wooddark!50] (-5.5, 0) circle (0.28);
+  \draw[line width=0.2pt, wooddark!30] (-5.5, 0) circle (0.16);
+  \draw[line width=0.35pt, wooddark!50] (5.6, 0) circle (0.28);
+  \draw[line width=0.2pt, wooddark!30] (5.6, 0) circle (0.16);
 
   % ═══════════════════════════════════════════════
-  % Pass 3: Hair strands (加密发丝 — from flow to fibre)
-  % Right=near (thick), Left=far (thin, atmospheric)
+  % Wood grain lines (subtle, on soundboard)
   % ═══════════════════════════════════════════════
-
-  % Crown strands (sweeping from hairline over skull)
-  \draw[line width=0.6pt, black!58]
-    (0.35, 7.55) .. controls (0.0, 7.4) and (-0.3, 7.0) .. (-0.55, 6.4);
-  \draw[line width=0.52pt, black!50]
-    (0.45, 7.6) .. controls (0.1, 7.5) and (-0.2, 7.1) .. (-0.6, 6.2);
-  \draw[line width=0.45pt, black!45]
-    (0.55, 7.6) .. controls (0.2, 7.55) and (-0.1, 7.15) .. (-0.48, 6.5);
-  \draw[line width=0.65pt, black!62]
-    (0.62, 7.55) .. controls (0.88, 7.32) and (0.95, 6.85) .. (0.95, 6.4);
-  \draw[line width=0.55pt, black!55]
-    (0.72, 7.48) .. controls (0.92, 7.25) and (1.0, 6.75) .. (0.98, 6.2);
-  % Left cascade (far — thin, atmospheric perspective)
-  \draw[line width=0.38pt, black!38]
-    (-0.55, 6.4) .. controls (-0.65, 5.7) and (-0.68, 4.8) .. (-0.62, 4.0)
-    .. controls (-0.58, 3.3) and (-0.52, 2.6) .. (-0.42, 2.0);
-  \draw[line width=0.3pt, black!30]
-    (-0.6, 6.2) .. controls (-0.68, 5.4) and (-0.7, 4.4) .. (-0.65, 3.5)
-    .. controls (-0.58, 2.7) and (-0.5, 2.1) .. (-0.38, 1.5);
-  \draw[line width=0.22pt, black!22]
-    (-0.48, 6.5) .. controls (-0.55, 5.7) and (-0.56, 4.6) .. (-0.5, 3.7)
-    .. controls (-0.45, 2.9) and (-0.38, 2.2) .. (-0.28, 1.6);
-  \draw[line width=0.15pt, black!15]
-    (-0.42, 2.0) .. controls (-0.5, 1.6) and (-0.55, 1.1) .. (-0.52, 0.7);
-  % Right cascade (near — thick, dark)
-  \draw[line width=0.58pt, black!58]
-    (0.95, 6.4) .. controls (0.98, 5.6) and (0.95, 4.6) .. (0.88, 3.8)
-    .. controls (0.8, 3.1) and (0.72, 2.5) .. (0.62, 1.9);
-  \draw[line width=0.48pt, black!50]
-    (0.98, 6.2) .. controls (1.02, 5.3) and (0.98, 4.3) .. (0.9, 3.5)
-    .. controls (0.82, 2.8) and (0.74, 2.2) .. (0.64, 1.5);
-  \draw[line width=0.38pt, black!40]
-    (0.92, 6.4) .. controls (0.9, 5.6) and (0.85, 4.6) .. (0.78, 3.8)
-    .. controls (0.7, 3.0) and (0.6, 2.3) .. (0.52, 1.7);
-  % Strand draping over right knee
-  \draw[line width=0.3pt, black!32]
-    (0.92, 5.7) .. controls (1.05, 5.55) and (1.15, 5.38) .. (1.18, 5.1);
-  % Stray wind strands (飘逸)
-  \draw[line width=0.18pt, black!18]
-    (0.62, 1.9) .. controls (0.68, 1.5) and (0.7, 1.0) .. (0.65, 0.6);
-  \draw[line width=0.12pt, black!12]
-    (-0.38, 1.5) .. controls (-0.45, 1.0) and (-0.42, 0.6) .. (-0.35, 0.3);
+  \draw[line width=0.1pt, wood!30]
+    (-4, 0.3) .. controls (-1, 0.35) and (2, 0.3) .. (4.5, 0.25);
+  \draw[line width=0.1pt, wood!30]
+    (-4, -0.2) .. controls (-1, -0.25) and (2, -0.28) .. (4.5, -0.3);
+  \draw[line width=0.08pt, wood!22]
+    (-3.5, 0.6) .. controls (0, 0.65) and (3, 0.6) .. (4.8, 0.55);
+  \draw[line width=0.08pt, wood!22]
+    (-3.5, -0.55) .. controls (0, -0.6) and (3, -0.62) .. (4.8, -0.58);
+  \draw[line width=0.06pt, wood!15]
+    (-4.2, 0.85) .. controls (-1, 0.92) and (2, 0.88) .. (4.8, 0.78);
+  \draw[line width=0.06pt, wood!15]
+    (-4.2, -0.78) .. controls (-1, -0.85) and (2, -0.88) .. (4.8, -0.82);
 
   % ═══════════════════════════════════════════════
-  % Pass 4: Hand + needle articulation (指骨 + 绣花针)
+  % 左岳山 (left bridge — S-shaped)
   % ═══════════════════════════════════════════════
-
-  % Right hand — finger bones (metacarpals → phalanges)
-  % Wrist at (1.3, 5.45), dangling past knee
-  \draw[line width=0.18pt, black!26]
-    (1.3, 5.45) .. controls (1.32, 5.28) and (1.3, 5.12) .. (1.26, 4.98);
-  \draw[line width=0.15pt, black!22]
-    (1.3, 5.45) .. controls (1.27, 5.26) and (1.23, 5.08) .. (1.2, 4.92);
-  \draw[line width=0.12pt, black!18]
-    (1.3, 5.45) .. controls (1.24, 5.28) and (1.18, 5.1) .. (1.14, 4.96);
-  % Thumb (pinch grip on needle)
-  \draw[line width=0.2pt, black!28]
-    (1.3, 5.45) .. controls (1.36, 5.32) and (1.34, 5.15) .. (1.28, 5.02);
-  % Needle shaft (between thumb and index — fine, dark)
-  \draw[line width=0.1pt, black!50]
-    (1.27, 5.0) -- (1.3, 4.25);
-  % Needle tip
-  \draw[line width=0.06pt, knife!30]
-    (1.3, 4.25) -- (1.31, 4.05);
-  % Thread trailing from eye of needle
-  \draw[line width=0.05pt, knife!20]
-    (1.27, 5.0) .. controls (1.36, 4.75) and (1.4, 4.45) .. (1.42, 4.15)
-    .. controls (1.43, 3.9) and (1.4, 3.65) .. (1.35, 3.4);
-
-  % Left hand — palm on rock (weight-bearing, fingers spread)
-  % Wrist at (-1.25, 4.35), palm at (-1.35, 3.95)
-  \draw[line width=0.18pt, black!20]
-    (-1.35, 3.95) -- (-1.24, 3.8);
-  \draw[line width=0.15pt, black!18]
-    (-1.35, 3.95) -- (-1.34, 3.76);
-  \draw[line width=0.12pt, black!15]
-    (-1.35, 3.95) -- (-1.42, 3.78);
-  \draw[line width=0.1pt, black!12]
-    (-1.35, 3.95) -- (-1.48, 3.82);
-  % Thumb bracing
-  \draw[line width=0.18pt, black!20]
-    (-1.25, 4.35) .. controls (-1.14, 4.18) and (-1.12, 4.02) .. (-1.15, 3.92);
+  \draw[line width=0.9pt, wooddark!80]
+    (-4.8, 0.72) .. controls (-4.74, 0.3) and (-4.86, -0.25) .. (-4.8, -0.72);
 
   % ═══════════════════════════════════════════════
-  % Pass 5: Robe folds (衣褶 — fluid around bone/礁石)
-  % Fabric = gravity + stress points + skeleton beneath
+  % 右岳山 (right bridge — straight)
   % ═══════════════════════════════════════════════
+  \draw[line width=0.9pt, wooddark!80]
+    (5.0, 0.72) -- (5.0, -0.78);
 
-  % Shoulder drape (left — far, light)
-  \draw[line width=0.12pt, black!10]
-    (-0.45, 6.4) .. controls (-0.55, 6.05) and (-0.56, 5.6) .. (-0.5, 5.2);
-  \draw[line width=0.1pt, black!8]
-    (-0.35, 6.3) .. controls (-0.42, 5.95) and (-0.43, 5.5) .. (-0.38, 5.1);
-  % Shoulder drape (right — near, bolder)
-  \draw[line width=0.2pt, black!18]
-    (1.0, 6.3) .. controls (0.95, 5.95) and (0.9, 5.6) .. (0.88, 5.3);
-  \draw[line width=0.15pt, black!14]
-    (0.88, 6.2) .. controls (0.84, 5.9) and (0.8, 5.55) .. (0.78, 5.25);
+  % ═══════════════════════════════════════════════
+  % 21 strings (一弦一音, D major pentatonic)
+  % 青冥 colour, thickening from high (1弦) to low (21弦)
+  % ═══════════════════════════════════════════════
+  \foreach \i in {1,...,21} {
+    \pgfmathsetmacro{\ypos}{0.65 - (\i-1)*0.065}
+    \pgfmathsetmacro{\lw}{0.08 + \i*0.02}
+    \pgfmathsetmacro{\opac}{25 + \i*2.2}
+    \draw[line width=\lw pt, sword!\opac]
+      (-4.8, \ypos) -- (5.0, \ypos);
+  }
 
-  % Torso folds (fabric wrapping ribcage → stress at waist)
-  \draw[line width=0.12pt, knife!12]
-    (-0.08, 5.75) .. controls (-0.18, 5.4) and (-0.22, 5.0) .. (-0.18, 4.7);
-  \draw[line width=0.1pt, knife!10]
-    (0.28, 5.65) .. controls (0.22, 5.3) and (0.18, 4.9) .. (0.2, 4.6);
+  % ═══════════════════════════════════════════════
+  % 雁柱 → 燕子 (bridges flipped to V — swallow silhouettes)
+  % Each bridge: body (V dip) + swept wings (Chinese ink style)
+  % ═══════════════════════════════════════════════
+  \foreach \i in {1,...,21} {
+    \pgfmathsetmacro{\ypos}{0.65 - (\i-1)*0.065}
+    % Bridge x-position: sweeps from right to left
+    \pgfmathsetmacro{\bx}{2.8 - (\i-1)*0.27}
+    % Swallow body — V shape (flipped: dip down, wings up)
+    \draw[line width=0.45pt, sword!65]
+      (\bx-0.08, \ypos+0.03) -- (\bx, \ypos-0.08) -- (\bx+0.08, \ypos+0.03);
+    % Left wing (swept back — ink brush flick)
+    \draw[line width=0.25pt, sword!45]
+      (\bx-0.08, \ypos+0.03)
+      .. controls (\bx-0.16, \ypos+0.06) .. (\bx-0.22, \ypos+0.04);
+    % Right wing (swept back — ink brush flick)
+    \draw[line width=0.25pt, sword!45]
+      (\bx+0.08, \ypos+0.03)
+      .. controls (\bx+0.16, \ypos+0.06) .. (\bx+0.22, \ypos+0.04);
+    % Tail fork (tiny V below body — the swallow's forked tail)
+    \draw[line width=0.15pt, sword!35]
+      (\bx-0.025, \ypos-0.12) -- (\bx, \ypos-0.08) -- (\bx+0.025, \ypos-0.12);
+  }
 
-  % Robe over raised right knee (horizontal tension folds)
-  \draw[line width=0.18pt, knife!18]
-    (0.68, 5.5) .. controls (0.88, 5.48) and (1.05, 5.42) .. (1.2, 5.32);
-  \draw[line width=0.14pt, knife!14]
-    (0.62, 5.32) .. controls (0.82, 5.3) and (0.98, 5.24) .. (1.12, 5.15);
-  \draw[line width=0.1pt, knife!10]
-    (0.58, 5.15) .. controls (0.78, 5.12) and (0.92, 5.05) .. (1.05, 4.98);
+  % ═══════════════════════════════════════════════
+  % 弦钉 (tuning pins — right side)
+  % ═══════════════════════════════════════════════
+  \foreach \i in {1,...,21} {
+    \pgfmathsetmacro{\ypos}{0.65 - (\i-1)*0.065}
+    \fill[wooddark!55] (5.8, \ypos) circle (0.035);
+  }
 
-  % Robe past pendant left leg (vertical gravity folds)
-  \draw[line width=0.15pt, knife!16]
-    (-0.28, 4.3) .. controls (-0.33, 3.4) and (-0.38, 2.5) .. (-0.4, 1.7);
-  \draw[line width=0.12pt, knife!12]
-    (-0.42, 4.25) .. controls (-0.48, 3.3) and (-0.5, 2.4) .. (-0.48, 1.5);
-  \draw[line width=0.1pt, knife!10]
-    (-0.55, 4.18) .. controls (-0.58, 3.2) and (-0.56, 2.3) .. (-0.52, 1.3);
+  % 弦钉 (string pegs — left side)
+  \foreach \i in {1,...,21} {
+    \pgfmathsetmacro{\ypos}{0.65 - (\i-1)*0.065}
+    \fill[wooddark!45] (-5.8, \ypos) circle (0.03);
+  }
 
-  % Robe pooling on rock (fabric meets surface → spreads)
-  \draw[line width=0.12pt, knife!12]
-    (-0.75, 3.95) .. controls (-0.45, 3.85) and (0.0, 3.8) .. (0.4, 3.75);
-  \draw[line width=0.08pt, knife!8]
-    (-0.65, 3.82) .. controls (-0.25, 3.72) and (0.15, 3.7) .. (0.5, 3.68);
-
-  % Robe off left edge of rock (flowing down like water)
-  \draw[line width=0.12pt, knife!14]
-    (-0.55, 4.15) .. controls (-0.72, 3.7) and (-0.85, 3.2) .. (-0.95, 2.6);
-  \draw[line width=0.1pt, knife!10]
-    (-0.65, 4.05) .. controls (-0.82, 3.55) and (-0.95, 3.0) .. (-1.05, 2.3);
-
-  % Right sleeve (arm reaching to knee)
-  \draw[line width=0.14pt, knife!14]
-    (1.02, 6.25) .. controls (1.18, 5.92) and (1.32, 5.6) .. (1.4, 5.4);
-  \draw[line width=0.1pt, knife!10]
-    (1.1, 6.15) .. controls (1.22, 5.85) and (1.35, 5.55) .. (1.42, 5.35);
-
-  % Left sleeve (arm propping behind)
-  \draw[line width=0.1pt, knife!10]
-    (-0.5, 6.3) .. controls (-0.62, 5.9) and (-0.75, 5.45) .. (-0.82, 5.15);
-  \draw[line width=0.08pt, knife!8]
-    (-0.55, 6.2) .. controls (-0.68, 5.8) and (-0.8, 5.35) .. (-0.88, 5.05);
+  % Side thickness indication (shadow)
+  \draw[line width=0.35pt, wooddark!20]
+    (-6.5, -0.85) .. controls (-4, -1.15) and (-1, -1.3)
+    .. (2, -1.35) .. controls (4, -1.28) and (5.5, -1.12) .. (6.5, -0.98);
 
   % ── Label ──
-  \node[font=\scriptsize, text=black!38] at (0, 0.5) {東方不敗 $\cdot$ 自在坐};
-  \node[font=\tiny, text=black!22] at (0, 0.05)
-    {(Pass 0--5: gesture $\to$ bone $\to$ features $\to$
-      hair $\to$ hands $\to$ robe)};
+  \node[font=\scriptsize, text=sword!60] at (0, -1.7) {古筝 $\cdot$ 二十一弦};
 \end{tikzpicture}
 \end{center}
 

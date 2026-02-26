@@ -12,7 +12,10 @@
 \usepackage{hyperref}
 \usepackage[capitalise,noabbrev]{cleveref}
 \usepackage{xeCJK}
-\setCJKmainfont{Songti SC}
+\usepackage{iftex}
+\IfFontExistsTF{Songti SC}
+  {\setCJKmainfont{Songti SC}}
+  {\setCJKmainfont{Noto Serif CJK SC}}
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc,
   decorations.pathreplacing}
