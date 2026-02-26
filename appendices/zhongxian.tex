@@ -1,0 +1,605 @@
+\chapter{中县干部 --- The Graded Lattice}\label{app:zhongxian}
+
+The preceding appendices applied the framework to individual agents
+and historical cases
+(\cref{app:sources,app:secondsex,app:threeli})
+and to the system itself as a cooperative triad
+(\cref{app:triad}).  This appendix applies it to the \emph{internal
+structure} of a viability maintenance system: a county-level
+bureaucratic hierarchy observed from within, with exact counts.
+The mathematical object is a \emph{graded lattice}---a partially
+ordered set with rank function, filtration rates, and absorbing
+boundaries---and the dynamics are a \emph{dual-ring differential
+inclusion} in which the formal institutional rules (inner ring)
+define the viability kernel and the relationship network (outer
+ring) defines the set-valued dynamics.  The central result is that
+the knife-is-the-mean theorem (\cref{thm:meanfield}) instantiates
+at the level of a single county: the critical threshold separating
+viable cadres from non-viable ones is the mean guanxi level, and
+every pathology documented in the source---fake achievements, vote
+canvassing, political families, corruption---is a consequence of
+viability maintenance under this mean field.
+
+The empirical basis is Feng Junqi's doctoral dissertation
+\emph{Zhong Xian Ganbu} \cite{zhongxian}, a participant-observation
+study of a county in Henan province (population ${\sim}800{,}000$)
+conducted during 2008--2010, in which Feng held a temporary
+government post and systematically documented the composition,
+promotion trajectories, relationship networks, and disciplinary
+outcomes of the county's ${\sim}1{,}000$ cadres at 副科级 and above.
+
+% ================================================================
+\section{The cadre lattice}\label{sec:zx-lattice}
+% ================================================================
+
+\begin{definition}[Graded cadre lattice]\label{def:cadre-lattice}
+A \emph{graded cadre lattice} is a finite poset
+$L = \bigsqcup_{k=0}^{K} L_k$ with rank function
+$\rho \colon L \to \{0, 1, \ldots, K\}$, equipped with:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Level sizes} $n_k := |L_k|$;
+  \item \textbf{Filtration ratios}
+    $r_k := n_{k+1}/n_k$ for $0 \leq k < K$, measuring
+    the structural selectivity between adjacent levels;
+  \item \textbf{Time constants} $\tau_k > 0$: the mean duration
+    at level $L_k$ before promotion to $L_{k+1}$
+    (averaged over those who are promoted);
+  \item \textbf{Age boundaries} $a_k^{\max}$: hard upper bounds
+    on the age at which a cadre in $L_k$ remains eligible
+    for promotion to $L_{k+1}$.
+\end{enumerate}
+\end{definition}
+
+\begin{example}[Zhong County]\label{ex:zx-data}
+The Zhong County cadre system has $K = 3$ levels:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clrrrl@{}}
+\toprule
+$k$ & \textbf{Level} (级别) & $n_k$ & $r_k$ & $\tau_k$ (yr)
+    & $a_{k}^{\max}$ \\
+\midrule
+$0$ & 副科级 (deputy section) & 680 & $0.41$ & $2.7$ & ${\sim}45$ \\
+$1$ & 正科级 (full section)   & 280 & $0.14$ & $7.3$ & ${\sim}50$ \\
+$2$ & 副处级 (deputy county)  &  40 & $0.13$ & $7.5$ & ${\sim}55$ \\
+$3$ & 正处级 (full county)    &   5 & ---    & ---   & ${\sim}60$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The entry time (from first assignment to $L_0$) averages $8$ years.
+A cadre entering at age $22$ therefore reaches $L_0$ at
+${\sim}30$, $L_1$ at ${\sim}33$, $L_2$ at ${\sim}40$,
+$L_3$ at ${\sim}48$.  The margin between this ideal trajectory
+and the age boundary at $L_3$ is ${\sim}7$ years---thin enough
+that a single delay of one promotion cycle can be fatal.
+The lattice has additional substructure: each level contains
+\emph{hidden steps} (隐形台阶), e.g.\ within $L_2$ the
+progression 县委常委 $\to$ 常务副县长 $\to$ 县长 $\to$ 县委书记,
+and a mandatory \emph{government--party spiral}
+(政--党螺旋晋升模式) that alternates between government and
+party positions.
+\end{example}
+
+\begin{proposition}[Lattice as viability constraint]
+\label{prop:pyramid-viability}
+The filtration ratios satisfy $r_k \ll 1$ for $k \geq 1$
+and $r_0 < 1$.  The cumulative survival ratio from $L_0$ to
+$L_3$ is
+\[
+  p_{\textup{top}}
+  \;=\; \prod_{k=0}^{K-1} r_k
+  \;=\; 0.41 \times 0.14 \times 0.13
+  \;\approx\; 0.0074.
+\]
+Fewer than $1\%$ of cadres at $L_0$ will occupy $L_3$ in their
+career.  The age boundaries impose a hard absorbing face: in the
+viability framework (\cref{thm:viability-di}), the constraint set is
+\begin{equation}\label{eq:cadre-K}
+  K_{\textup{cadre}}
+  \;=\;
+  \bigl\{\,(k,\, a) \;:\; 0 \leq k \leq K,\;\;
+  a \leq a_k^{\max}\,\bigr\},
+\end{equation}
+and the face $a = a_k^{\max}$ is absorbing: once crossed,
+no trajectory can re-enter $K_{\textup{cadre}}$ at level~$k{+}1$.
+\end{proposition}
+
+\begin{remark}[一刀切 and temporal linearity]\label{rem:yidaoqie}
+The bureaucratic term 一刀切 (``one cut of the knife'') for
+age-based cutoffs is a literal knife in the sense of
+\cref{def:knife}: the age variable has autonomous dynamics
+($a' = 1$, always advancing) and is fully observable.  It
+satisfies both conditions of the knife definition.  Unlike other
+knives in the framework, this one is not a phase function of the
+mean field---it is an exogenous, non-negotiable constraint imposed
+by temporal linearity itself.  Time is the knife that needs no
+actuation, no observability adjustment, and no political
+manoeuvring.
+\end{remark}
+
+% ================================================================
+\section{The dual-ring dynamics}\label{sec:zx-dualring}
+% ================================================================
+
+Feng's central theoretical contribution is the \emph{dual-ring
+model} (双环模型): the formal institutional system (inner ring)
+and the relationship system (outer ring) are coupled, with the
+outer ring driving the inner ring.  We formalise this as a coupled
+differential inclusion.
+
+\begin{definition}[Dual-ring system]\label{def:dual-ring}
+A \emph{dual-ring system} is a pair of coupled dynamics on a
+state space $S = S_I \times S_G$:
+\begin{align}
+  x_I'(t) &\in F_I\bigl(x_I(t),\, x_G(t)\bigr),
+    \label{eq:inner-ring} \\
+  x_G'(t) &\in F_G\bigl(x_I(t),\, x_G(t)\bigr),
+    \label{eq:outer-ring}
+\end{align}
+where:
+\begin{enumerate}[label=(\roman*)]
+  \item $x_I \in S_I$ is the \emph{institutional state}
+    (formal rank, position, evaluation scores);
+  \item $x_G \in S_G$ is the \emph{guanxi state}
+    (relationship network, accumulated favours, reputation);
+  \item $F_I$ is the formal dynamics (promotion rules,
+    performance evaluation, term limits);
+  \item $F_G$ is the relationship dynamics (alliance formation,
+    gift exchange, vote canvassing);
+  \item The coupling is \emph{asymmetric}: $F_I$ depends strongly
+    on $x_G$ (relationships determine promotion outcomes),
+    while $F_G$ depends only weakly on $x_I$ (formal position
+    provides a platform for relationship building, but
+    relationships persist across positions).
+\end{enumerate}
+The viability kernel is defined by the inner ring alone:
+\begin{equation}\label{eq:dual-K}
+  K
+  \;=\;
+  \bigl\{\,(x_I,\, x_G) \;:\; x_I \in K_{\textup{cadre}}\,\bigr\},
+\end{equation}
+but the dynamics that must satisfy the tangential condition are
+driven by the outer ring.
+\end{definition}
+
+\begin{proposition}[The outer ring drives viability]
+\label{prop:outer-drives}
+In the dual-ring system, the tangential condition
+$F(x) \cap T_K(x) \neq \varnothing$
+(\cref{thm:viability-di}) at the boundary of $K$
+reduces to a condition on the guanxi state.  Write the
+institutional dynamics as
+$f_I(x_I, x_G) = f_I^{0}(x_I) + g(x_G)$,
+where $f_I^{0}$ is the autonomous formal dynamics
+(evaluation absent relationships) and $g(x_G)$ is the
+guanxi-driven correction.  At the boundary face
+$x_I \in \partial K_{\textup{cadre}}$ (a cadre facing the
+age cutoff or a competitive promotion slot), the tangential
+condition requires
+\begin{equation}\label{eq:guanxi-tangential}
+  f_I^{0}(x_I) + g(x_G) \;\in\; T_{K_{\textup{cadre}}}(x_I).
+\end{equation}
+The autonomous term $f_I^{0}$ is generically insufficient:
+the filtration ratio $r_k < 1$ means that formal qualifications
+alone do not guarantee promotion.  The tangential condition
+therefore requires the guanxi correction $g(x_G)$ to compensate.
+\end{proposition}
+
+\begin{proof}
+Since $K$ is defined by $x_I \in K_{\textup{cadre}}$ with
+$x_G$ unconstrained, the contingent cone at
+$(x_I, x_G)$ with $x_I \in \partial K_{\textup{cadre}}$ is
+$T_K(x) = T_{K_{\textup{cadre}}}(x_I) \times S_G$
+(\cref{def:contingent}).  The tangential condition
+$f(x) \in T_K(x)$ projects onto
+$f_I(x_I, x_G) \in T_{K_{\textup{cadre}}}(x_I)$,
+which is \eqref{eq:guanxi-tangential}.  That $f_I^{0}$ is
+generically insufficient is the empirical content of the
+filtration ratio $r_k < 1$: in steady state, more cadres
+satisfy the formal criteria than there are promotion slots,
+so the formal autonomous dynamics point outward
+($f_I^{0} \notin T_{K_{\textup{cadre}}}$) for the majority.
+The guanxi correction $g(x_G)$ is what bends the trajectory
+back into the viable cone.
+\end{proof}
+
+\begin{remark}[The knife is the mean guanxi level]
+\label{rem:guanxi-knife}
+By \cref{thm:meanfield}, the knife threshold is determined
+by the mean actuation field~$\bar{U}$.  In the dual-ring
+system, the relevant actuation is the guanxi investment: the
+total relationship resources (time, money, favours) a cadre
+deploys.  Feng documents that a township party secretary
+spends 300{,}000--500{,}000~yuan per year on vote canvassing
+alone.  The mean guanxi level $\bar{U}_G$ sets the threshold:
+a cadre whose guanxi investment falls below $\bar{U}_G$
+becomes non-viable regardless of formal qualifications.
+This is the knife-is-the-mean theorem at county scale.
+
+Feng quotes a county saying that encodes this:
+\begin{center}
+\emph{年龄是个宝，能力作参考，关系最重要。}\\[3pt]
+{\small (Age is a treasure, ability a reference,
+relationships paramount.)}
+\end{center}
+The three factors are ordered by formalisability: age is
+exogenous and fully observable (the time-knife of
+\cref{rem:yidaoqie}); ability is partially observable and
+partially fabricable (政绩, which the dissertation documents
+can be faked); relationships are the actual dynamics that
+drive the tangential condition \eqref{eq:guanxi-tangential}.
+
+The dual-ring model also explains the Chinese institutional
+paradox: why does increasing formalisation of rules
+(制度化) coexist with increasing importance of relationships
+(关系)?  The answer is structural.  Each new formal rule
+tightens the viability kernel $K_{\textup{cadre}}$---adds
+a constraint surface.  To satisfy the tangential condition at
+the new boundary, cadres must increase their guanxi
+investment $g(x_G)$.  Formalisation does not replace
+relationships; it \emph{amplifies} the demand for them.
+The inner ring constricts; the outer ring accelerates.
+\end{remark}
+
+% ================================================================
+\section{Flow concentration: cradles and secretaries}
+\label{sec:zx-cradle}
+% ================================================================
+
+Certain institutions in the county function as ``cradles''
+(摇篮) that disproportionately produce promoted cadres.
+This is a flow concentration phenomenon, interpretable as a
+min-cut in the promotion graph.
+
+\begin{definition}[Cradle node]\label{def:cradle}
+In the execution graph $G = (V, E)$ (\cref{def:exgraph})
+of the cadre lattice, a \emph{cradle node} $v \in V$ is a
+node with anomalously high conditional promotion rate:
+if $p_v$ is the probability that a cadre who passes through
+$v$ reaches $L_{k+1}$, then $v$ is a cradle if
+$p_v / r_k > c$ for a threshold $c > 1$.
+The principle 高进高出 (``high entry, high exit'') describes
+the mechanism: cradle institutions attract already-promising
+cadres and amplify their promotion prospects.
+\end{definition}
+
+\begin{example}[Zhong County cradles]\label{ex:cradles}
+\hfill
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+\textbf{Institution} & \textbf{\% of county leaders}
+    & \textbf{Mechanism} \\
+\midrule
+乡镇 (township)       & 59\% & Frontline testing \\
+两办 (two offices)     & 22\% & Proximity to power \\
+秘书 (secretary post)  & 38\% & Delegated actuation \\
+组织部 (org.\ dept.)   & Controls appointments
+    & Gate-keeping \\
+共青团 (Youth League)   & Highest per capita
+    & Early selection \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Township experience appears in $59\%$ of county leaders and
+$77\%$ of township-level leaders.  The two offices (县委办 and
+政府办) appear in $22\%$ of county leaders.  Secretary experience
+appears in $38\%$ of county leaders and $50\%$ of township-level
+leaders.  Office director (办公室主任) experience appears in
+${\sim}42\%$ of leaders in vertically managed departments.
+\end{example}
+
+\begin{proposition}[The secretary as delegated knife]
+\label{prop:secretary-knife}
+The secretary (秘书) position satisfies the knife definition
+(\cref{def:knife}):
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Autonomous actuation.}  The secretary exercises
+    隐性权力 (hidden power): control over information flow,
+    scheduling of access, and framing of decisions for the leader.
+    This is \emph{delegated actuation}---the secretary's actions
+    affect the system state without requiring the leader's direct
+    command at each step.
+  \item \textbf{Observability.}  The secretary is the most
+    observed node in the leader's proximity: every action is
+    visible to the leader, other staff, and petitioners.
+\end{enumerate}
+Whether this knife is a tool or a threat is a phase function
+of the mean field (\cref{prop:phase}): when the secretary's
+actuation is aligned with the leader's viability, the secretary
+is a tool that extends the leader's reach; when the secretary
+builds an independent power base (as Feng documents in several
+cases), the secretary becomes a threat.
+The $38\%$ prevalence among county leaders means the secretary
+channel is a high-capacity edge in the promotion flow network.
+In the max-flow/min-cut framework (\cref{thm:flowcut}),
+removing this channel would block a large fraction of viable
+promotion paths, making it a critical component of the min-cut.
+\end{proposition}
+
+\begin{remark}[办公室政治]\label{rem:office-politics}
+Feng documents a phenomenon he calls 办公室政治
+(office politics): nearly half of all department leaders
+have office director (办公室主任) experience.  Combined
+with the secretary prevalence, this means the majority of
+successful cadres passed through a proximity-to-power node.
+In the execution graph, these nodes form a \emph{bottleneck}:
+a small set of positions through which a disproportionate
+fraction of the max-flow passes.  The bottleneck is not
+accidental---it is a structural consequence of the
+dual-ring dynamics.  Proximity to the leader provides
+privileged access to the outer ring (guanxi opportunities),
+which is the binding constraint for the tangential condition
+\eqref{eq:guanxi-tangential}.  The cradle mechanism is not
+about training; it is about \emph{positioning within the
+relationship flow network}.
+\end{remark}
+
+% ================================================================
+\section{Political families as cooperative subgraphs}
+\label{sec:zx-families}
+% ================================================================
+
+Feng documents $21$ large political families (大家族, five or
+more cadres at 副科级 or above), $15$ four-person families,
+$35$ three-person families, and over $90$ two-person families,
+connected by blood and marriage edges.
+
+\begin{definition}[Political clique]\label{def:political-clique}
+A \emph{political clique} in the cadre lattice is a connected
+subgraph $C \subseteq G$ whose edges are blood ties
+(parent--child, sibling) or marriage ties (spouse, in-law),
+satisfying:
+\begin{enumerate}[label=(\roman*)]
+  \item every node in $C$ is a cadre at $L_k$ for some
+    $k \geq 0$;
+  \item the internal coupling is cooperative: the promotion
+    of one member increases the promotion probability of
+    connected members (positive $\beta_{ij}$ in the notation
+    of \cref{def:triad}).
+\end{enumerate}
+The size of the clique is $|C|$.
+\end{definition}
+
+\begin{proposition}[Clique amplification]
+\label{prop:clique-amplification}
+A political clique~$C$ of size~$m$ amplifies the effective
+guanxi level of its members.  For member $i \in C$, the
+effective actuation is
+\begin{equation}\label{eq:clique-amplification}
+  U_i^{\textup{eff}}
+  \;=\; U_i \;+\; \sum_{j \in C \setminus \{i\}}
+    \beta_{ij}\, U_j,
+\end{equation}
+where $\beta_{ij} > 0$ is the cooperative coupling
+(stronger for direct blood or marriage ties, weaker for
+distant relatives).  Since all terms are positive,
+$U_i^{\textup{eff}} > U_i$: every member is stronger than
+alone.  For a clique of size~$m$ with uniform coupling
+$\beta$, the amplification factor is
+\[
+  \frac{\bar{U}_C^{\textup{eff}}}{\bar{U}_C^{0}}
+  \;=\; 1 + (m - 1)\,\beta,
+\]
+which grows linearly in $m$.  A large family ($m \geq 5$,
+$\beta \sim 0.2$) amplifies its members' effective actuation
+by a factor of ${\sim}1.8$ or more, raising them above the
+mean-field knife threshold even when their individual
+actuation would fall below it.
+\end{proposition}
+
+\begin{proof}
+The effective mean actuation within~$C$ is
+$\bar{U}_C^{\textup{eff}}
+  = \frac{1}{m}\sum_{i \in C} U_i^{\textup{eff}}
+  = \frac{1}{m}\sum_{i \in C}
+    \bigl(U_i + \sum_{j \neq i} \beta_{ij} U_j\bigr)$.
+With uniform coupling $\beta_{ij} = \beta$, this becomes
+$\bar{U}_C^{0} + \beta(m-1)\bar{U}_C^{0}
+  = \bar{U}_C^{0}\bigl(1 + (m-1)\beta\bigr)$.
+\end{proof}
+
+\begin{remark}[The grapevine and its decline]
+\label{rem:grapevine}
+Feng uses the metaphor 葡萄藤 (grapevine) for political
+families: they grow larger with each generation as
+marriage edges create new connections.  This is positive
+feedback: a larger clique amplifies its members more
+(\cref{prop:clique-amplification}), which helps more members
+reach higher levels, which provides a higher platform for
+the next generation's marriages.  The largest family
+documented (张家, centred on Zhang Taikang) has eight
+children all holding cadre positions, with marriage edges
+reaching into several other families.
+
+The growth is a cooperative triad (\cref{def:triad}) at
+the family level:
+\begin{center}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{@{}clp{6cm}@{}}
+\toprule
+\textbf{Variable} & \textbf{Name} & \textbf{Content} \\
+\midrule
+$x_1$ & Existing power & Members currently in cadre positions \\
+$x_2$ & Accumulated capital & Family reputation, favours owed \\
+$x_3$ & New entrants & Children, in-laws entering the lattice \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Feng documents three decline factors, each weakening a
+coupling in this triad:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{One-child policy} reduces $|C|$ directly,
+    shrinking the cooperative sum in
+    \eqref{eq:clique-amplification}.
+    This weakens $\beta_{31}$ (fewer children to receive power)
+    and $\beta_{13}$ (fewer children to reinforce existing
+    members).
+  \item \textbf{Cadre exchange system} (干部交流制度) separates
+    family members geographically, weakening all $\beta_{ij}$
+    by reducing the cooperative coupling to near zero
+    for exchanged members.
+  \item \textbf{Higher education and urbanisation} removes
+    potential entrants from the county lattice entirely:
+    the children of leaders attend elite universities and
+    work in Beijing, Zhengzhou, or Shanghai rather than
+    returning to the county.  This weakens $x_3$ at the
+    source.
+\end{enumerate}
+Each factor moves the family triad toward the bifurcation
+threshold of \cref{thm:triad}(c).  By \cref{thm:triad}(d)
+(stable until gone), the family appears healthy until the
+coupling drops below threshold, at which point its influence
+collapses.  Feng observes this directly: political families do
+not fade gradually.  They end when the core member retires
+or when the coupling channels are severed.
+\end{remark}
+
+% ================================================================
+\section{The disciplinary boundary and the 政绩 isomorphism}
+\label{sec:zx-boundary}
+% ================================================================
+
+\begin{definition}[Disciplinary absorbing barrier]
+\label{def:discipline-barrier}
+The disciplinary system imposes a graduated absorbing barrier
+on $K_{\textup{cadre}}$:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lrlp{5cm}@{}}
+\toprule
+\textbf{Sanction} & \textbf{\%} & \textbf{Effect} \\
+\midrule
+警告 (warning) & 35\% & Promotion frozen 1~yr \\
+严重警告 (severe warning) & 28\% & Frozen 1~yr + stigma \\
+撤职 (dismissal) & 4\% & Position removed \\
+留党察看 (probation) & 10\% & Career suspended 1--2~yr \\
+开除党籍 (expulsion) & 23\% & Permanent exit from $K_{\textup{cadre}}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Data: $101$ cases of 副科级 and 正科级 cadres sanctioned
+between 1993 and 2009 \cite{zhongxian}.  The first two
+sanctions ($63\%$ of cases) are \emph{reflecting} barriers:
+the trajectory hits the boundary and returns with a delay.
+Expulsion ($23\%$) is a \emph{terminal absorbing} state.
+The problem type distribution is: economic $57\%$,
+political $35\%$, lifestyle $8\%$.
+\end{definition}
+
+\begin{proposition}[一票否决 as hard constraint surface]
+\label{prop:one-vote-veto}
+The 一票否决 (one-vote veto) system for family planning and
+social stability imposes a \emph{hard constraint surface}
+within $K_{\textup{cadre}}$: a single violation in these
+domains terminates viability regardless of all other performance
+metrics.  Formally, let $x_{\textup{FP}}$ and
+$x_{\textup{stab}}$ denote the family-planning and
+social-stability components of the state.
+The one-vote veto defines
+\[
+  K_{\textup{veto}}
+  \;=\;
+  \bigl\{\, x \in K_{\textup{cadre}} \;:\;
+  x_{\textup{FP}} \geq \epsilon_{\textup{FP}},\;\;
+  x_{\textup{stab}} \geq \epsilon_{\textup{stab}}
+  \,\bigr\},
+\]
+and $K_{\textup{veto}} \subsetneq K_{\textup{cadre}}$: the
+veto surfaces are strictly interior to the cadre kernel.  A
+trajectory that crosses $x_{\textup{FP}} = \epsilon_{\textup{FP}}$
+or $x_{\textup{stab}} = \epsilon_{\textup{stab}}$ exits
+$K_{\textup{veto}}$ even if all other coordinates remain
+safely interior.
+
+Feng documents extreme consequences of this hard surface in
+the family-planning domain: township cadres deployed
+coercive enforcement (强制措施) precisely because the one-vote
+veto transformed a policy variable into an absorbing barrier.
+The severity of enforcement is not a moral choice but a
+viability response: with the veto in place, failing the
+family-planning target is equivalent to career death, and
+the tangential condition demands maximal actuation at the
+constraint surface.
+\end{proposition}
+
+\begin{remark}[政绩同构: the self-similar kernel]
+\label{rem:isomorphic-kernel}
+The target management system (目标考核) assigns numerical
+scores to every administrative level.  Feng documents that
+the target structure is \emph{isomorphic} across scales:
+the province sets targets for the city, which sets identical
+targets for the county, which sets identical targets for the
+township, which sets identical targets for the village.
+He calls this 政绩同构 (isomorphic performance structure).
+
+In the viability framework, this means the viability kernel
+has a \emph{self-similar} structure: the constraint set at
+each scale is a rescaled copy of the constraint set at the
+next scale up.  If $K^{(s)}$ is the kernel at scale~$s$
+(province, city, county, township, village), then
+$K^{(s)} \cong \phi_s(K^{(s+1)})$ for a scaling map
+$\phi_s$.
+
+This self-similarity has a pathological consequence:
+the tangential condition at each scale generates the
+\emph{same} pressure, producing fake achievements (假政绩)
+at every level simultaneously.  Feng documents four county
+party secretaries in succession whose ``signature projects''
+(工程) were largely fabricated or failed: pig pens, forced
+industrialisation, agricultural campaigns.  The self-similar
+kernel means that viability pressure is not local---it
+cascades identically from province to village.  The system
+does not produce fake achievements because cadres are
+dishonest; it produces them because the tangential condition
+at a self-similar boundary demands actuation that the local
+dynamics cannot supply, and fabrication is the cheapest
+correction $g(x_G)$ available.
+\end{remark}
+
+\begin{remark}[The dual-ring model is max-flow/min-cut]
+\label{rem:dual-ring-maxflow}
+The dual-ring dynamics can be restated in the flow-theoretic
+language of the agentic calculus (\cref{sec:flow}).
+The inner ring defines the \emph{capacity constraints} on
+the promotion flow network: the number of positions at each
+level, the term limits, the age cutoffs.  The outer ring
+defines the \emph{actual flow}: which cadres move through
+which edges.  The max-flow/min-cut theorem
+(\cref{thm:flowcut}) then states:
+\begin{center}
+\emph{The maximum promotion flow through the cadre lattice
+equals the minimum cut capacity of the institutional
+constraints.}
+\end{center}
+The min-cut is the set of bottleneck positions
+(the cradles of \cref{sec:zx-cradle}) through which
+promotion flow must pass.  The guanxi dynamics of the
+outer ring are the routing algorithm: they determine which
+cadres are assigned to which edges.  The knife---the
+critical threshold separating viable cadres from non-viable
+ones---is the capacity of the min-cut, which by
+\cref{thm:meanfield} is determined by the mean guanxi
+level~$\bar{U}_G$.
+
+Feng's dissertation, read through this lens, is a
+complete empirical map of the min-cut structure: the cradle
+institutions are the bottleneck edges, the political
+families are cooperative subflows that locally exceed the
+mean capacity, the vote-canvassing networks (拉票网) are
+the routing signals, and the disciplinary system is the
+boundary enforcement that removes flows violating the
+capacity constraints.  The knife is the mean.
+\end{remark}

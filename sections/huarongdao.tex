@@ -248,7 +248,7 @@ switching to a different piece costs one.
 \end{definition}
 
 In Chinese puzzle tradition, the standard counting of
-華容道 solutions uses~步, not unit moves.
+华容道 solutions uses~步, not unit moves.
 The difference is algorithmic:
 
 \begin{algorithm}[H]
@@ -406,7 +406,7 @@ separated by the $9$~king steps.
 \end{tabular}
 \end{center}
 Phase~1 is the longest: $25$~水-steps to clear the path.
-This \emph{is} 義釋曹操 (\cref{rem:guanyu}): 水 must
+This \emph{is} 义释曹操 (\cref{rem:guanyu}): 水 must
 rearrange $25$~times before the king can move once.
 \end{proposition}
 
@@ -467,7 +467,7 @@ The midpoint $\lfloor 81/2 \rfloor = 40$.
 \begin{theorem}[Saddle $=$ phase transition]\label{thm:saddle}
 At the saddle $\sigma^*$ (step~$40$):
 \begin{enumerate}[label=(\roman*)]
-  \item 関羽 (knife) is at position $(2, 0)$, far from
+  \item 关羽 (knife) is at position $(2, 0)$, far from
   the exit corridor---she has cleared.
   \item The 水-mode is H
   (horizontal pair at $\{(1,2), (2,2)\}$),
@@ -476,18 +476,18 @@ At the saddle $\sigma^*$ (step~$40$):
   (step~$26$) and back left once (step~$32$).
   The first descent begins at step~$41$.
 \end{enumerate}
-To cross the saddle is to perform 義釋曹操
+To cross the saddle is to perform 义释曹操
 (\cref{rem:guanyu}).
 \end{theorem}
 
 \begin{proof}
 By \cref{thm:flowcut}, the min-cut separates
-blocked configurations (関羽 covers exit corridor)
+blocked configurations (关羽 covers exit corridor)
 from open configurations (corridor cleared).
 On the optimal path the cut lies where
 $d^+ \approx d^-$, i.e., step~$40$.
 Direct inspection of the BFS solution confirms:
-at $\sigma^*$, 関羽 has exited the corridor.
+at $\sigma^*$, 关羽 has exited the corridor.
 \end{proof}
 
 \begin{remark}[Mirror descent]\label{rem:mirror}
@@ -534,12 +534,12 @@ The king moves only in H or V mode, never in S\@.
 
 \begin{table}[H]
 \centering\small
-\caption{Agentic calculus on 華容道: complete correspondence.}%
+\caption{Agentic calculus on 华容道: complete correspondence.}%
 \label{tab:kpc}
 \begin{tabular}{@{}lll@{}}
 \toprule
 \textbf{Calculus (\cref{sec:calculus})} &
-\textbf{華容道} &
+\textbf{华容道} &
 \textbf{Value} \\
 \midrule
 Execution graph (\cref{def:exgraph}) &
@@ -549,7 +549,7 @@ Agentic flow (\cref{def:flow}) &
   水-flow (free-cell agent) &
   $190/190$ ergodic \\
 Min-cut (\cref{thm:flowcut}) &
-  関羽 blocks corridor &
+  关羽 blocks corridor &
   Cleared at step~$40$ \\
 Max-flow &
   Optimal 步-path &
@@ -579,8 +579,8 @@ Phase decomposition &
   $9$~king $+ 72$~水 &
   $25$~步 to clear \\
 刀 dissipation (\cref{def:dissipation}) &
-  関羽 yields &
-  Phase~1: 義釋曹操 \\
+  关羽 yields &
+  Phase~1: 义释曹操 \\
 水 (\cref{def:water}) &
   Free-cell agent &
   $190/190$ ergodic \\

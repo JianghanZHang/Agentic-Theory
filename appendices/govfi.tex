@@ -1,0 +1,1843 @@
+\chapter{GovFi --- Transparent Controlled Absorption}\label{app:govfi}
+
+The preceding appendices applied the framework at successive scales:
+to individual agents and historical cases
+(\cref{app:sources,app:secondsex,app:threeli}),
+to the system itself as a cooperative triad (\cref{app:triad}),
+and to the internal structure of a bureaucratic hierarchy
+(\cref{app:zhongxian}).  This appendix applies it to the
+\emph{fiscal substrate}---the sovereign debt dynamics that
+underlie every agent's viability kernel.
+The central result is an \emph{absorption conservation law}:
+total losses from non-performing debt are conserved; only
+their distribution across agents is free.  The policy
+implication is that the only freedom in a debt crisis \cite{reinhartrogoff} is the
+\emph{choice of exit face}---the boundary through which the
+system leaves its viability kernel---and that a transparent
+ledger (GovFi) converts this choice from an uncontrolled
+collapse into a computed optimisation.
+
+% ================================================================
+\section{Sovereign debt as knife}\label{sec:gf-knife}
+% ================================================================
+
+\begin{definition}[Fiscal state space]\label{def:fiscal-state}
+A \emph{fiscal state space} is a tuple
+$(S_F,\, D,\, r,\, \tau,\, w_F)$ where:
+\begin{enumerate}[label=(\roman*)]
+  \item $S_F \subseteq \R^n$ is the macroeconomic state;
+  \item $D(t) \geq 0$ is the outstanding sovereign debt;
+  \item $r > 0$ is the effective interest rate on $D$;
+  \item $\tau(t) \geq 0$ is the fiscal revenue (tax and
+    non-tax) at time~$t$;
+  \item $w_F(t) \geq 0$ is the \emph{taxable capacity}
+    (the water level of the fiscal system;
+    see \cref{def:fiscal-water}).
+\end{enumerate}
+The debt dynamics are
+\begin{equation}\label{eq:debt-dynamics}
+  D'(t) \;=\; r\, D(t) \;+\; \delta(t) \;-\; \tau(t),
+\end{equation}
+where $\delta(t) \geq 0$ is the primary deficit
+(new borrowing net of non-interest expenditure).
+\end{definition}
+
+\begin{proposition}[Debt satisfies the knife definition]
+\label{prop:debt-knife}
+Sovereign debt $D(t)$ satisfying \eqref{eq:debt-dynamics}
+is a \textcolor{knife}{knife} in the sense of
+\cref{def:knife}:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Autonomous actuation.}  The interest term
+    $rD(t)$ drives the state without any agent's deliberate
+    action: debt compounds autonomously.  Even with
+    $\delta(t) = 0$ (no new borrowing), the dynamics
+    $D' = rD - \tau$ are self-actuating whenever $rD > \tau$.
+  \item \textbf{Observability.}  Sovereign debt is observable
+    through the bond market: yields, credit spreads, and CDS
+    prices provide continuous observation of the system's
+    fiscal state.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Condition~(i) follows from the structure of
+\eqref{eq:debt-dynamics}: the right-hand side contains the
+term $rD$ which depends on the state $D$ alone, providing
+autonomous actuation as a differential inclusion
+(\cref{rem:knife-di}).  Condition~(ii) is structural:
+sovereign bonds are traded instruments, and market prices
+encode the collective observation $\Obs(D)$ continuously.
+\end{proof}
+
+\begin{remark}[The self-financing loop]\label{rem:debt-loop}
+When $rD(t) > \tau(t)$, the government must borrow to
+service existing debt: $\delta(t) > 0$ is forced by the
+dynamics, not chosen.  This is a positive feedback loop:
+$D \uparrow \;\Rightarrow\; rD \uparrow \;\Rightarrow\;
+\delta \uparrow \;\Rightarrow\; D \uparrow$.
+In the language of \cref{thm:triangle}, debt in this regime
+is a self-reinforcing triangle: the knife actuates itself,
+generates the conditions for further actuation, and
+compounds without external input.
+\end{remark}
+
+\begin{corollary}[Knife lifecycle for debt]
+\label{cor:debt-lifecycle}
+By \cref{thm:lifecycle}, every knife admits exactly two
+resolution paths:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Controlled restructuring} (path~(a) of
+    \cref{thm:lifecycle}): the sovereign deliberately
+    reduces $D$ through haircuts, inflation, taxation, or
+    growth, relinquishing the knife before it becomes
+    lethal.
+  \item \textbf{Systemic collapse} (path~(b) of
+    \cref{thm:lifecycle}): the sovereign fails to act,
+    and autonomous dynamics ($rD \to \infty$ or
+    $w_F \to 0$) force a disorderly default.
+\end{enumerate}
+By \cref{thm:fixedpoint}, no third path exists:
+extend-and-pretend (relabelling non-performing loans,
+rolling over debt indefinitely) is not a resolution
+but a deferral that preserves the knife's autonomous
+actuation while degrading observability.
+\end{corollary}
+
+% ================================================================
+\section{Fiscal water dynamics}\label{sec:gf-water}
+% ================================================================
+
+\begin{definition}[Fiscal water]\label{def:fiscal-water}
+The \emph{fiscal water level} is
+$w_F(t) := \tau_{\max}(t) - rD(t)$,
+where $\tau_{\max}(t)$ is the maximum sustainable tax
+revenue (the Laffer ceiling) at time~$t$.  This is the
+fiscal instantiation of \cref{def:water}: $w_F$ measures
+the remaining capacity of the fiscal system to absorb shocks
+before the debt dynamics become unsustainable.
+The \emph{fiscal viability kernel} is
+\begin{equation}\label{eq:fiscal-kernel}
+  K_F \;=\; \bigl\{\,(w_F,\, D) \;:\;
+  w_F \geq \epsilon_w,\;\;
+  D \leq D_{\max}(w_F)\,\bigr\},
+\end{equation}
+where $\epsilon_w > 0$ is the minimum fiscal buffer and
+$D_{\max}(w_F) = (\tau_{\max} - \epsilon_w)/r$ is the
+maximum sustainable debt given the water level.
+\end{definition}
+
+\begin{proposition}[Du Mu's theorem for fiscal systems]
+\label{prop:fiscal-dumu}
+If the interest burden exceeds sustainable revenue,
+$rD(t) > \tau_{\max}(t)$,
+then $w_F(t) < 0$ and the fiscal state exits $K_F$.
+By \cref{thm:dumu} (Du Mu's theorem) applied to the
+fiscal system: the extraction rate ($rD$) exceeding the
+regeneration rate ($\tau_{\max}$) implies
+$w_F(t) \to -\infty$, and by \cref{prop:binary}, the
+outcome is binary---restructuring or collapse.
+\end{proposition}
+
+\begin{proof}
+From \cref{def:fiscal-water},
+$w_F' = \tau_{\max}' - rD' = \tau_{\max}' - r(rD + \delta - \tau)$.
+When $rD > \tau_{\max} \geq \tau$, the term $-r(rD - \tau) < 0$
+dominates, giving $w_F' < 0$ even under optimistic revenue
+growth $\tau_{\max}' > 0$.  The fiscal water level declines
+monotonically, exiting $K_F$ in finite time.
+\end{proof}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Framework} & \textbf{Fiscal domain}
+  & \textbf{Chinese case (城投)} \\
+\midrule
+Water (\cref{def:water})
+  & Taxable capacity $w_F$
+  & Local government revenue \\
+Extraction
+  & Interest burden $rD$
+  & Coupon payments on 城投债 \\
+Collapse
+  & $w_F \to 0$
+  & Revenue $<$ debt service \\
+Pawn $\to$ knife
+  & Fiscal tool $\to$ threat
+  & Infrastructure bond $\to$ NPL \\
+King absorbed
+  & Sovereign creditworthiness
+  & Central government guarantee \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ================================================================
+\section{The absorption conservation law}\label{sec:gf-conservation}
+% ================================================================
+
+This section establishes the central result: losses from
+non-performing debt are conserved.  They can be distributed
+across agents, deferred in time, or transformed in form,
+but they cannot be destroyed.
+
+\begin{definition}[Loss field]\label{def:loss-field}
+The \emph{loss field} at time~$t$ is
+\begin{equation}\label{eq:loss-field}
+  \mathcal{L}(t) \;:=\;
+  \max\bigl(D(t) - V_{\textup{rec}}(t),\; 0\bigr),
+\end{equation}
+where $V_{\textup{rec}}(t)$ is the present value of
+recoverable cash flows from the assets financed by $D$.
+The loss field measures the gap between the debt's face
+value and the economic value of its underlying assets.
+\end{definition}
+
+\begin{theorem}[Absorption conservation]\label{thm:absorption-conservation}
+Let $\mathcal{L}(t_0) > 0$ be the loss field at the time
+the debt is recognised as non-performing.  Assume the
+transversality (solvency) condition
+$\lim_{T \to \infty} D(T)\, e^{-rT} = 0$: infinite
+deferral is not feasible.  Let
+$\ell_1, \ldots, \ell_m$ be the losses ultimately absorbed
+by $m$ agents (creditors, taxpayers, depositors, debtors,
+currency holders).  Then
+\begin{equation}\label{eq:absorption-conservation}
+  \sum_{i=1}^{m} \ell_i \;=\; \mathcal{L}(t_0).
+\end{equation}
+Total losses are conserved; only the allocation vector
+$(\ell_1, \ldots, \ell_m)$ is free.
+\end{theorem}
+
+\begin{proof}
+Every unit of the non-recoverable debt $\mathcal{L}(t_0)$
+must ultimately be absorbed through one of three
+exhaustive channels:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Service from fiscal capacity.}
+    The sovereign services the debt from tax revenue:
+    $\ell_{\textup{tax}} = \int_{t_0}^{T}
+    (\tau(s) - \tau_0(s))\, e^{-r(s - t_0)}\, ds$,
+    where $\tau_0$ is the baseline (pre-crisis) revenue
+    and the excess $\tau - \tau_0$ is the additional burden
+    on taxpayers.
+  \item \textbf{Restructuring.}
+    Creditors accept a haircut: $\ell_{\textup{hair}} =
+    \alpha \cdot D(t_0)$ for haircut fraction $\alpha$.
+    Depositors absorb losses through bail-in.
+    Currency holders absorb losses through inflation:
+    $\ell_{\textup{inf}} = D(t_0)(1 - 1/P(T))$
+    where $P(T)$ is the cumulative price level.
+  \item \textbf{Deferral.}
+    The sovereign rolls over the non-performing debt:
+    $\mathcal{L}(t_0) \to \mathcal{L}(t_0) \cdot e^{r(T - t_0)}$
+    at a future date~$T$.  Deferral does not absorb the loss;
+    it compounds it (see \cref{rem:deferral}).
+\end{enumerate}
+Channels~(i) and~(ii) are absorptive: they reduce
+$\mathcal{L}$ by transferring the loss to a specific agent.
+Channel~(iii) is non-absorptive: it preserves
+$\mathcal{L}$ (in present-value terms) while compounding
+the nominal amount.
+Since every unit of $\mathcal{L}(t_0)$ must eventually
+pass through channel~(i) or~(ii)---infinite deferral via
+channel~(iii) is precluded by the transversality condition
+$\lim_{T \to \infty} D(T) e^{-rT} = 0$ required for
+fiscal solvency---the total absorbed losses equal
+$\mathcal{L}(t_0)$.
+\end{proof}
+
+\begin{remark}[Deferral is not avoidance]\label{rem:deferral}
+Channel~(iii) in the proof deserves emphasis.  Deferral
+preserves the loss field in discounted terms while
+\emph{compounding} it in nominal terms:
+$\mathcal{L}(T) = \mathcal{L}(t_0) \cdot e^{r(T - t_0)}$.
+This connects to \cref{def:dissipation}: the dissipation
+rate of the fiscal system is $d_F = r \cdot \mathcal{L}$,
+positive and increasing under deferral.  In the contact
+flow of \cref{eq:contactflow}, deferral means the
+system traverses the loss manifold without discharging;
+the contact form accumulates, and the eventual discharge
+is larger.
+Every extend-and-pretend policy is a bet that growth will
+raise $V_{\textup{rec}}$ faster than interest compounds
+$\mathcal{L}$.  The historical record (\cref{sec:gf-history})
+shows this bet fails more often than it succeeds.
+\end{remark}
+
+\begin{proposition}[The absorption simplex]\label{prop:loss-allocation}
+The set of feasible loss allocations is the simplex
+\begin{equation}\label{eq:absorption-simplex}
+  \Delta_{\mathcal{L}}
+  \;:=\;
+  \Bigl\{\,(\ell_1, \ldots, \ell_m) \in \R^m_{\geq 0}
+  \;:\; \sum_{i=1}^{m} \ell_i = \mathcal{L}(t_0)\,\Bigr\}.
+\end{equation}
+Every resolution of a debt crisis is a point on
+$\Delta_{\mathcal{L}}$.  Different resolutions
+(haircut, inflation, taxation, bail-in) correspond to
+different vertices or interior points of this simplex.
+The conservation law
+(\cref{thm:absorption-conservation}) states that
+the simplex is the \emph{entire} feasible set: no
+resolution can place the allocation outside
+$\Delta_{\mathcal{L}}$.
+\end{proposition}
+
+\begin{proposition}[Expected absorption time]
+\label{prop:absorption-time}
+Suppose the sovereign activates the feedback control
+$C(x)$ (\cref{def:feedback}) at time~$t_0$ and implements
+a restructuring schedule with absorption rate
+$a(t) \geq 0$ (the rate at which losses are discharged
+through channels~(i) and~(ii) of
+\cref{thm:absorption-conservation}).
+The residual loss field satisfies the
+\emph{delay integro-differential equation}
+\begin{equation}\label{eq:loss-dide}
+  \mathcal{L}'(t)
+  \;=\;
+  r\,\mathcal{L}(t)
+  \;-\; a\bigl(t - \delta_{\textup{lag}}\bigr),
+  \qquad t > t_0,
+\end{equation}
+where $\delta_{\textup{lag}} \geq 0$ is the political
+delay between recognising a loss and implementing its
+absorption (legislative process, legal restructuring,
+bond exchange).  The absorption time is
+$T^* = \inf\{t > t_0 : \mathcal{L}(t) = 0\}$.
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{With control.}  If $C(x)$ is active and
+    the mean absorption rate $\bar{a}$ after the lag period
+    satisfies $\bar{a} > r\,\mathcal{L}(t_0)\,
+    e^{r\delta_{\textup{lag}}}$ (absorption outpaces the
+    loss compounded through the lag), then
+    $T^*$ is finite and bounded by
+    \begin{equation}\label{eq:absorption-bound}
+      T^* - t_0
+      \;\leq\;
+      \delta_{\textup{lag}}
+      \;+\;
+      \frac{\mathcal{L}(t_0)\, e^{r\delta_{\textup{lag}}}}
+           {\bar{a} - r\,\mathcal{L}(t_0)\,
+           e^{r\delta_{\textup{lag}}}},
+    \end{equation}
+    where $\bar{a} := (T^* - t_0 -
+    \delta_{\textup{lag}})^{-1}\int_{t_0 +
+    \delta_{\textup{lag}}}^{T^*} a(s)\, ds$.
+  \item \textbf{Without control.}  If $C(x)$ is not
+    activated ($a(t) = 0$), then
+    $\mathcal{L}(t) = \mathcal{L}(t_0)\, e^{r(t - t_0)}$
+    and $T^* = +\infty$: the loss field grows
+    exponentially and absorption never occurs.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+\textbf{(a)}  During the lag period $[t_0, t_0 +
+\delta_{\textup{lag}}]$, $a = 0$ and
+$\mathcal{L}(t_0 + \delta_{\textup{lag}})
+= \mathcal{L}(t_0)\, e^{r\delta_{\textup{lag}}}$: the loss
+compounds unabsorbed.  After the lag, write
+$L(t) = \mathcal{L}(t_0 + \delta_{\textup{lag}} + t)$ for
+$t \geq 0$.  Then $L'(t) = rL(t) - a(t)$ with
+$a(t) > rL(t)$, so $L'(t) < 0$.  The time to reach $L = 0$
+from $L(0) = \mathcal{L}(t_0) e^{r\delta_{\textup{lag}}}$
+is bounded by $L(0)/(\bar{a} - rL(0))$ (linear comparison),
+giving \eqref{eq:absorption-bound}.
+
+\textbf{(b)}  With $a \equiv 0$, \eqref{eq:loss-dide}
+reduces to $\mathcal{L}' = r\mathcal{L}$, whose solution
+is $\mathcal{L}(t) = \mathcal{L}(t_0) e^{r(t-t_0)}$.
+Since $\mathcal{L}(t_0) > 0$ and $r > 0$, the loss field
+diverges: $T^* = +\infty$.
+\end{proof}
+
+\begin{remark}[Expectation is just expectation]
+\label{rem:expectation}
+The bound \eqref{eq:absorption-bound} is conditional on
+$C(x)$ being active: the absorption rate $a(t)$ requires
+a sovereign that has \emph{chosen} to restructure.
+The expected time to resolution is not a forecast; it is
+a \emph{conditional computation} that presupposes the
+political act of choosing an exit face
+(\cref{sec:gf-exitface}).  Without that act,
+\cref{prop:absorption-time}(b) applies and
+$T^* = +\infty$---not because the mathematics fails,
+but because the input to the equation ($a(t) = 0$) encodes
+the absence of action.
+
+An expected absorption time is just an expectation,
+until you actually do it.
+\end{remark}
+
+\begin{proposition}[Stochastic loss dynamics]
+\label{prop:stochastic-loss}
+Under stochastic fiscal revenue, the loss field satisfies
+the It\^o equation
+\begin{equation}\label{eq:stochastic-loss}
+  d\mathcal{L}(t)
+  \;=\;
+  \bigl(r\,\mathcal{L}(t) - a(t)\bigr)\,dt
+  \;+\; \sigma\,dW(t),
+\end{equation}
+where $\sigma > 0$ captures revenue volatility and
+$W(t)$ is a standard Wiener process.  With constant
+absorption rate $a > r\mathcal{L}_0$ under active
+control, the first-passage time
+$T^* = \inf\{t : \mathcal{L}(t) \leq 0\}$
+is approximately inverse Gaussian (the approximation
+treats the drift as constant at
+$\mu = -(a - r\mathcal{L}_0)$, valid when
+$a \gg r\mathcal{L}_0$):
+\begin{equation}\label{eq:first-passage-moments}
+  \mathbb{E}[T^*]
+  \;=\; \frac{\mathcal{L}_0}{a - r\mathcal{L}_0},
+  \qquad
+  \mathrm{Var}(T^*)
+  \;=\; \frac{\sigma^2\, \mathcal{L}_0}
+    {(a - r\mathcal{L}_0)^3}.
+\end{equation}
+The density $p(\ell, t)$ of $\mathcal{L}(t)$ satisfies
+the Fokker--Planck equation
+\begin{equation}\label{eq:fokker-planck}
+  \partial_t\, p
+  \;=\;
+  -\partial_\ell\bigl[(r\ell - a)\, p\bigr]
+  \;+\; \tfrac{\sigma^2}{2}\,\partial_{\ell\ell}\, p,
+\end{equation}
+with absorbing boundary $p(0, t) = 0$.
+The variance \eqref{eq:first-passage-moments} reveals a
+cubic amplification: weak absorption
+($a \approx r\mathcal{L}_0$) amplifies revenue noise as
+$(a - r\mathcal{L}_0)^{-3}$.  A system that compounds
+fast and absorbs slowly is maximally exposed to
+stochastic shocks.
+\end{proposition}
+
+\begin{proof}
+In the regime $a \gg r\mathcal{L}$, the drift of
+\eqref{eq:stochastic-loss} is approximately constant at
+$\mu := -(a - r\mathcal{L}_0) < 0$, reducing the process
+to Brownian motion with negative drift absorbed at the
+origin.  The first-passage time of such a process from
+level $\mathcal{L}_0$ to $0$ is inverse Gaussian with the
+stated moments.  The Fokker--Planck equation
+\eqref{eq:fokker-planck} is the forward Kolmogorov
+equation of \eqref{eq:stochastic-loss}.
+\end{proof}
+
+\begin{theorem}[Optimal restructuring trigger]
+\label{thm:optimal-trigger}
+Let $\kappa > 0$ be the total restructuring cost
+(political cost plus the minimised damage functional
+$\mathcal{D}^*$ of \cref{thm:exit-choice}), assumed
+constant, and let $\rho > 0$ be the sovereign's discount
+rate.  The sovereign minimises the total expected cost
+\[
+  J(\tau) \;=\;
+  \mathbb{E}\!\left[\int_{t_0}^{\tau}
+  e^{-\rho(t - t_0)}\, r\,\mathcal{L}(t)\, dt
+  \;+\; e^{-\rho(\tau - t_0)}\,\kappa\right]
+\]
+over stopping times $\tau$.  Then:
+\begin{enumerate}[label=(\alph*)]
+  \item The optimal trigger $\mathcal{L}^*$ is
+    \emph{strictly interior} to $K_F$:
+    $\mathcal{L}^* < \mathcal{L}_{\max}$.  Waiting
+    until the boundary $\partial K_F$ is suboptimal.
+  \item At $\mathcal{L}^*$, the value-matching and
+    smooth-pasting conditions hold:
+    $V(\mathcal{L}^*) = \kappa$ and
+    $V'(\mathcal{L}^*) = 0$,
+    where $V$ is the optimal continuation value.
+  \item Higher volatility $\sigma$ lowers the trigger:
+    $\partial \mathcal{L}^* / \partial \sigma < 0$.
+    More uncertain revenue demands earlier action.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)}  The carrying cost $r\mathcal{L}\,dt$
+accumulated per unit time grows with $\mathcal{L}$;
+the marginal benefit of delay (discounting the political
+cost $\kappa$) is bounded by $\rho\kappa\,dt$.  When
+$r\mathcal{L} > \rho\kappa$, delaying is strictly
+dominated.  This occurs at an interior point
+$\mathcal{L}^* \leq \rho\kappa/r < \mathcal{L}_{\max}$.
+
+\textbf{(b)}  Standard optimal stopping: the value
+function must be $C^1$ at the free boundary to prevent
+arbitrage between continuation and stopping.
+
+\textbf{(c)}  Higher $\sigma$ increases the probability
+that $\mathcal{L}$ jumps past $\mathcal{L}_{\max}$
+(forced default, cost $> \kappa$) before the sovereign
+can respond.  The option value of delay decreases, and
+the free boundary shifts inward.
+\end{proof}
+
+% ================================================================
+\section{Choice of exit face}\label{sec:gf-exitface}
+% ================================================================
+
+\begin{definition}[Exit face decomposition]\label{def:exit-face}
+The boundary $\partial K_F$ of the fiscal viability kernel
+\eqref{eq:fiscal-kernel} decomposes into faces, each
+corresponding to a distinct absorption channel:
+\begin{enumerate}[label=(\roman*)]
+  \item $\partial_{\textup{haircut}}$: creditor losses
+    (debt restructuring, write-downs, bail-in);
+  \item $\partial_{\textup{inflation}}$: currency-holder
+    losses (monetary expansion, real devaluation);
+  \item $\partial_{\textup{tax}}$: taxpayer losses
+    (fiscal austerity, increased taxation);
+  \item $\partial_{\textup{default}}$: disorderly failure
+    (uncontrolled capital flight, banking collapse,
+    social instability).
+\end{enumerate}
+Each face $\partial_k K_F$ corresponds to a vertex of the
+absorption simplex $\Delta_{\mathcal{L}}$ where agent
+class~$k$ absorbs the entirety of $\mathcal{L}(t_0)$.
+Interior points of $\Delta_{\mathcal{L}}$ correspond to
+mixed resolutions that distribute losses across faces.
+\end{definition}
+
+\begin{theorem}[Controlled vs.\ uncontrolled exit]
+\label{thm:exit-choice}
+Let $c_i > 0$ be the social cost coefficient of imposing
+loss $\ell_i$ on agent class~$i$.  Define the damage
+functional
+\begin{equation}\label{eq:damage-functional}
+  \mathcal{D}(\ell) \;:=\;
+  \sum_{i=1}^{m} c_i\, \ell_i^2.
+\end{equation}
+Then:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Controlled exit.}  If the sovereign
+    activates the feedback function $C(x)$
+    (\cref{def:feedback}) at the boundary $\partial K_F$,
+    the optimal allocation minimises $\mathcal{D}$ on
+    $\Delta_{\mathcal{L}}$:
+    \begin{equation}\label{eq:optimal-allocation}
+      \ell_i^* \;=\;
+      \frac{\mathcal{L}(t_0)}{c_i\,
+      \displaystyle\sum_{j=1}^{m} c_j^{-1}},
+    \end{equation}
+    distributing losses inversely proportional to social
+    cost.  The exit face is chosen deliberately, and
+    the trajectory satisfies the viability condition
+    (\cref{thm:viability-di}) throughout the restructuring.
+  \item \textbf{Uncontrolled exit.}  If the sovereign fails
+    to activate $C(x)$, the autonomous debt dynamics
+    ($D' = rD + \delta - \tau$ with $rD > \tau$) drive
+    the state toward $\partial_{\textup{default}}$, which
+    is generically the worst-case face: it maximises
+    $\mathcal{D}$ by concentrating losses on the most
+    vulnerable agents (depositors, small creditors,
+    the poor through inflation).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)}  Minimise $\mathcal{D}(\ell) =
+\sum_i c_i \ell_i^2$ subject to $\sum_i \ell_i =
+\mathcal{L}(t_0)$ and $\ell_i \geq 0$.
+The Lagrangian is
+$L = \sum_i c_i \ell_i^2 -
+\lambda(\sum_i \ell_i - \mathcal{L}(t_0))$.
+First-order conditions: $2 c_i \ell_i = \lambda$ for all~$i$,
+giving $\ell_i = \lambda / (2c_i)$.
+Substituting into the constraint:
+$\sum_i \lambda/(2c_i) = \mathcal{L}(t_0)$,
+so $\lambda = 2\mathcal{L}(t_0) / \sum_j c_j^{-1}$,
+yielding \eqref{eq:optimal-allocation}.
+The second-order condition ($\nabla^2 \mathcal{D}$
+positive definite on the constraint surface) is satisfied
+since $c_i > 0$.
+
+\textbf{(b)}  Without active control, the dynamics follow
+the autonomous differential inclusion.  The face
+$\partial_{\textup{default}}$ is the \emph{attractor} of
+the uncontrolled dynamics: when $rD > \tau$ and no
+restructuring occurs, $D$ grows exponentially and the
+system exits through disorderly default.  This face
+concentrates losses on agents with the least political
+power to resist (depositors lose savings, workers lose
+employment, currency holders lose purchasing power),
+which by the structure of the cost coefficients $c_i$
+corresponds to high-cost agents, maximising $\mathcal{D}$.
+\end{proof}
+
+\begin{remark}[Courage is the choice function]
+\label{rem:courage}
+The difference between Iceland (2008) and Japan (1990s)
+is not economics.  Iceland's GDP per capita was a fraction
+of Japan's; its financial system was less sophisticated;
+its policy toolkit was smaller.  The difference is the
+\emph{presence or absence of the choice function}
+$C(x)$ at the boundary.
+Iceland chose $\partial_{\textup{haircut}}$: creditors
+(including foreign depositors) absorbed losses.  Japan
+refused to choose, deferring via extend-and-pretend.
+In the framework, ``courage'' is not a moral quality but
+a mathematical one: it is the activation of $C(x)$---the
+feedback control---at the boundary $\partial K_F$.
+A sovereign that activates $C(x)$ can compute and
+implement \eqref{eq:optimal-allocation}.  A sovereign
+that does not is governed by autonomous dynamics, which
+by \cref{thm:exit-choice}(b) generically select the
+worst exit face.
+\end{remark}
+
+\begin{theorem}[Dynamic absorption path]\label{thm:dynamic-allocation}
+The sovereign chooses absorption rates
+$a_i(t) \geq 0$ for each channel
+$i \in \{1, \ldots, m\}$ to minimise the discounted
+quadratic cost
+\[
+  J \;=\; \int_0^{\infty}
+  e^{-\rho t}\sum_{i=1}^{m} c_i\, a_i(t)^2\, dt,
+\]
+subject to
+$\mathcal{L}'(t) = r\,\mathcal{L}(t) - \sum_i a_i(t)$
+with $\mathcal{L}(0) = \mathcal{L}_0$.
+Assume $\rho < r$ (the sovereign is more patient than
+the debt is aggressive).  Then:
+\begin{enumerate}[label=(\alph*)]
+  \item The value function is
+    $V(\mathcal{L}) = \frac{1}{2}\beta\,\mathcal{L}^2$
+    with $\beta = 2(2r - \rho)/H$, where
+    $H = \sum_{j=1}^m c_j^{-1}$.
+  \item The Hamilton--Jacobi--Bellman equation is
+    \begin{equation}\label{eq:hjb}
+      \rho\, V(\mathcal{L})
+      \;=\;
+      V'(\mathcal{L})\, r\,\mathcal{L}
+      \;-\; \frac{H}{4}\,\bigl(V'(\mathcal{L})\bigr)^2.
+    \end{equation}
+  \item The optimal absorption rate through channel~$i$
+    is
+    \begin{equation}\label{eq:optimal-rate}
+      a_i^*(t) \;=\; \frac{(2r - \rho)}{c_i\, H}\,
+      \mathcal{L}(t).
+    \end{equation}
+    The allocation ratio $a_i^*/a_j^* = c_j/c_i$ is
+    time-independent---the dynamic problem does not change
+    \emph{who} pays, only \emph{how fast}.
+  \item Under the optimal policy, the loss field decays
+    exponentially:
+    \begin{equation}\label{eq:optimal-decay}
+      \mathcal{L}(t) \;=\;
+      \mathcal{L}_0\, e^{-(r - \rho)\, t}.
+    \end{equation}
+    The decay rate $r - \rho$ is the net urgency:
+    compounding rate minus impatience.  A patient
+    sovereign ($\rho$ small) absorbs faster.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(b)}  The HJB equation for the
+infinite-horizon discounted problem with state dynamics
+$\mathcal{L}' = r\mathcal{L} - \sum a_i$ and running
+cost $\sum c_i a_i^2$ is
+$\rho V = \min_{a \geq 0}\bigl[\sum c_i a_i^2 +
+V'(r\mathcal{L} - \sum a_i)\bigr]$.
+First-order condition: $2c_i a_i = V'$, giving
+$a_i = V'/(2c_i)$.  Substituting into the HJB:
+\[
+  \rho V
+  = \sum_i \frac{(V')^2}{4c_i}
+    + V'\Bigl(r\mathcal{L}
+    - \frac{V'}{2}\sum_i c_i^{-1}\Bigr)
+  = V' r\mathcal{L} - \frac{H}{4}(V')^2.
+\]
+
+\textbf{(a)}  Substitute $V = \tfrac{1}{2}\beta
+\mathcal{L}^2$ into \eqref{eq:hjb}:
+$\tfrac{1}{2}\rho\beta\mathcal{L}^2 =
+\beta r \mathcal{L}^2 -
+\tfrac{H}{4}\beta^2\mathcal{L}^2$,
+giving $\rho/2 = r - H\beta/4$, hence
+$\beta = 2(2r - \rho)/H$.
+
+\textbf{(c)}  From $a_i = V'/(2c_i) =
+\beta\mathcal{L}/(2c_i)$, substituting~$\beta$.
+
+\textbf{(d)}  Total absorption rate
+$a^* = \beta H \mathcal{L}/2 = (2r - \rho)\mathcal{L}$.
+The dynamics become
+$\mathcal{L}' = r\mathcal{L} - (2r - \rho)\mathcal{L}
+= -(r - \rho)\mathcal{L}$, with solution
+$\mathcal{L}_0 e^{-(r - \rho)t}$.
+\end{proof}
+
+\begin{proposition}[Nash bargaining on the simplex]
+\label{prop:nash-bargaining}
+Suppose the $m$ agent classes negotiate the allocation
+$(\ell_1, \ldots, \ell_m) \in \Delta_{\mathcal{L}}$
+with bargaining powers $\alpha_i > 0$
+($\sum \alpha_i = 1$).  Let $d_i > 0$ be the loss
+agent~$i$ would suffer under uncontrolled default
+($\partial_{\textup{default}}$ of
+\cref{def:exit-face}), with
+$\sum_i d_i > \mathcal{L}_0$ (default is inefficient:
+it destroys more value than the actual loss).
+The Nash bargaining solution is
+\begin{equation}\label{eq:nash-bargaining}
+  \ell_i^{\textup{Nash}}
+  \;=\;
+  d_i \;-\; \alpha_i\, S,
+  \qquad
+  S \;:=\; \sum_{j=1}^{m} d_j \;-\; \mathcal{L}_0,
+\end{equation}
+where $S > 0$ is the \emph{surplus from agreement}---the
+total value saved by choosing a controlled exit face
+over default.  Each agent's loss equals their default
+loss minus their share of the surplus; stronger
+bargaining power $\alpha_i$ secures a larger share
+of~$S$.
+\end{proposition}
+
+\begin{proof}
+The Nash bargaining solution maximises
+$\prod_i (d_i - \ell_i)^{\alpha_i}$ subject to
+$\sum \ell_i = \mathcal{L}_0$ and $\ell_i \leq d_i$.
+Taking logarithms: maximise
+$\sum \alpha_i \ln(d_i - \ell_i)$ subject to
+$\sum \ell_i = \mathcal{L}_0$.
+First-order condition:
+$\alpha_i/(d_i - \ell_i) = \lambda$ for all~$i$,
+giving $d_i - \ell_i = \alpha_i/\lambda$.
+Summing: $S = 1/\lambda$, so
+$\ell_i = d_i - \alpha_i S$.
+\end{proof}
+
+% ================================================================
+\section{The guarantee network}\label{sec:gf-network}
+% ================================================================
+
+The preceding sections treat debt as a scalar $D(t)$.
+In practice, 城投 debt is a \emph{network}: thousands
+of local government financing vehicles connected by
+cross-guarantees, interbank exposure, and shadow banking
+channels.  The systemic risk is not the total $D$ but the
+\emph{topology} of how losses propagate.
+
+\begin{definition}[Guarantee graph]\label{def:guarantee-graph}
+The \emph{guarantee graph} is a weighted directed graph
+$G_{\textup{guar}} = (V, E, A)$ where:
+\begin{enumerate}[label=(\roman*)]
+  \item $V = \{1, \ldots, n\}$ is the set of fiscal
+    entities (LGFVs, banks, local governments);
+  \item $E \subseteq V \times V$ is the set of guarantee
+    relationships;
+  \item $A = (A_{ij})$ is the \emph{guarantee adjacency
+    matrix}: $A_{ij} \geq 0$ is the fraction of
+    entity~$j$'s debt guaranteed by entity~$i$.
+\end{enumerate}
+When entity $j$ defaults with loss $\ell_j$, entity~$i$
+absorbs $A_{ij}\, \ell_j$.  If this pushes $i$ into
+default, $i$'s loss propagates along the edges of
+$G_{\textup{guar}}$.
+\end{definition}
+
+\begin{theorem}[Spectral contagion threshold]
+\label{thm:spectral-contagion}
+Let $\alpha \in (0, 1]$ be the loss-given-default rate
+and $\rho(A)$ the spectral radius of the guarantee
+adjacency matrix~$A$.
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Subcritical}
+    ($\alpha\, \rho(A) < 1$).
+    The total systemic loss from an initial shock vector
+    $\ell^{(0)} \in \R^n_{\geq 0}$ is
+    \begin{equation}\label{eq:leontief}
+      \ell^{(\infty)}
+      \;=\;
+      (I - \alpha\, A)^{-1}\, \ell^{(0)},
+    \end{equation}
+    which is finite.  The amplification factor is
+    bounded by $1/(1 - \alpha\,\rho(A))$.
+  \item \textbf{Supercritical}
+    ($\alpha\, \rho(A) \geq 1$).
+    The matrix $(I - \alpha A)$ is singular or has a
+    non-positive eigenvalue: a finite initial shock
+    produces unbounded cascading losses.
+  \item \textbf{Connection to the mean field.}
+    By the Perron--Frobenius theorem, $\rho(A)$ is
+    bounded above by the maximum row sum
+    $\max_i \sum_j A_{ij}$.  The spectral contagion
+    threshold $\alpha\,\rho(A) = 1$ is the
+    knife-is-the-mean theorem (\cref{thm:meanfield})
+    applied to the guarantee network: the mean
+    guarantee exposure determines whether the network
+    is a tool (distributing losses) or a knife
+    (amplifying them to systemic scale).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)}  After $k$ rounds of contagion, the
+cumulative loss is
+$\ell^{(k)} = \sum_{j=0}^{k}(\alpha A)^j \ell^{(0)}$.
+The Neumann series converges iff
+$\rho(\alpha A) = \alpha\rho(A) < 1$, in which case
+the sum is $(I - \alpha A)^{-1}$ and
+$\|(I - \alpha A)^{-1}\| \leq 1/(1 - \alpha\rho(A))$.
+
+\textbf{(b)}  When $\alpha\rho(A) \geq 1$, the Neumann
+series diverges: repeated application amplifies shocks
+along the Perron eigenvector.
+
+\textbf{(c)}  By Perron--Frobenius (applied to the
+non-negative matrix~$A$),
+$\rho(A) \leq \max_i \sum_j A_{ij}$.
+\end{proof}
+
+\begin{proposition}[Percolation threshold]
+\label{prop:percolation-threshold}
+Model each guarantee edge in $G_{\textup{guar}}$ as
+\emph{active} (transmitting default) with probability
+$p$ and inactive with probability $1 - p$.  Let $d$
+be the mean degree of $G_{\textup{guar}}$.  There
+exists a critical probability
+\begin{equation}\label{eq:percolation-threshold}
+  p_c \;\approx\; \frac{1}{d}
+\end{equation}
+such that:
+\begin{enumerate}[label=(\alph*)]
+  \item for $p < p_c$, the expected cascade from a
+    single default is $O(\log n)$---contagion stays
+    local;
+  \item for $p > p_c$, the expected cascade is
+    $O(n)$---contagion is systemic with positive
+    probability.
+\end{enumerate}
+The percolation threshold is a second knife-is-the-mean
+result: the critical probability depends on the mean
+connectivity $d$ of the network, not on any individual
+node.
+\end{proposition}
+
+\begin{proof}
+By the theory of bond percolation on random graphs
+(Erd\H{o}s--R\'enyi), the giant component emerges when
+the mean number of active edges per node exceeds~$1$:
+$pd > 1$.  Below this threshold, connected components
+are $O(\log n)$ (subcritical).  Above it, a positive
+fraction of nodes belongs to a single giant component
+(supercritical).  The critical probability is
+$p_c = 1/d$.
+\end{proof}
+
+% ================================================================
+\section{The GovFi platform}\label{sec:gf-platform}
+% ================================================================
+
+\begin{definition}[GovFi ledger]\label{def:govfi-ledger}
+A \emph{GovFi ledger} is a fiscal execution graph
+(\cref{def:exgraph}) equipped with three properties:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Full observability.}
+    $\Obs = \mathcal{F}$: every fiscal flow (revenue,
+    expenditure, debt issuance, debt service, transfer) is
+    recorded on-ledger and publicly queryable.  No hidden
+    off-balance-sheet vehicles exist.
+  \item \textbf{Programmatic breakpoints.}
+    Smart contracts encode graduated restructuring
+    triggers: when $D/\tau_{\max}$ crosses predefined
+    thresholds $\theta_1 < \theta_2 < \cdots < \theta_n$,
+    the corresponding restructuring protocol activates
+    automatically (\cref{cor:breakpoint}).
+  \item \textbf{Real-time loss tracking.}
+    The loss field $\mathcal{L}(t)$
+    (\cref{def:loss-field}) is computed continuously from
+    on-ledger data and published as a public signal.
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[Full observability eliminates hidden knives]
+\label{prop:govfi-observability}
+Under full observability ($\Obs = \mathcal{F}$), no debt
+instrument can satisfy the knife definition
+(\cref{def:knife}) \emph{without detection}.  By
+\cref{prop:imperfect}, the gap between autonomous actuation
+and detected actuation is
+$\|U(x)\| - \|U(x) \cap \Obs(x)\|$.  Full observability
+closes this gap to zero: every knife is visible the moment
+it forms.
+
+In the 城投 context, the primary failure mode is
+\emph{hidden} debt---off-balance-sheet vehicles,
+implicit guarantees, shadow banking channels.  GovFi's
+full observability eliminates this failure mode by
+construction: if it is not on the ledger, it does not
+exist as a fiscal obligation.
+\end{proposition}
+
+\begin{remark}[Revelation and observability]
+\label{rem:revelation}
+Under standard mechanism design, if the sovereign
+allocates losses based on self-reported fiscal states
+$\hat{\mathcal{L}}_i$, every agent has incentive to
+underreport: claiming smaller losses shifts the burden
+to others.  The revelation principle guarantees that
+any incentive-compatible allocation can be implemented
+as a direct mechanism, but only with auditing or side
+payments that introduce their own costs.
+
+GovFi bypasses the revelation problem entirely.
+With $\Obs = \mathcal{F}$, the ledger observes each
+entity's $\mathcal{L}_i$ directly from on-chain data.
+Self-reporting is unnecessary; incentive compatibility
+is achieved not by mechanism design but by
+\emph{architectural design}---the same full
+observability that eliminates hidden knives
+also eliminates strategic misreporting.
+\end{remark}
+
+\begin{proposition}[Smart contracts as breakpoints]
+\label{prop:govfi-breakpoints}
+The programmatic breakpoints define a graduated
+restructuring schedule
+$\sigma \colon [0, 1] \to \Delta_{\mathcal{L}}$,
+mapping the debt stress level
+$s = D / D_{\max}$ to a point on the absorption simplex.
+At each threshold $\theta_k$:
+\begin{enumerate}[label=(\roman*)]
+  \item the restructuring protocol specifies which exit
+    face receives how much loss: $\sigma(\theta_k) =
+    (\ell_1^{(k)}, \ldots, \ell_m^{(k)})$;
+  \item the activation is automatic: no political decision
+    is required at the moment of crisis;
+  \item the graduated structure ensures that early
+    interventions ($\theta_1, \theta_2$) impose small,
+    distributed losses, preventing the accumulation that
+    would force a large, concentrated loss at
+    $\partial_{\textup{default}}$.
+\end{enumerate}
+By \cref{cor:breakpoint}, the breakpoints convert sovereign
+debt from a \textcolor{knife}{knife} (autonomous,
+uncontrolled actuation) to a \textcolor{water}{tool}
+(programmatic, controlled actuation): the autonomous
+dynamics are interrupted by pre-committed restructuring
+at each threshold.
+\end{proposition}
+
+\begin{proposition}[Critical political delay]\label{prop:delay-stability}
+Under proportional absorption control
+$a(t) = k\,\mathcal{L}(t - \delta_{\textup{lag}})$
+with gain $k > r$, the linearised delay differential
+equation
+\begin{equation}\label{eq:delay-characteristic}
+  \mathcal{L}'(t) \;=\;
+  r\,\mathcal{L}(t)
+  \;-\; k\,\mathcal{L}(t - \delta_{\textup{lag}})
+\end{equation}
+is stable if and only if
+\begin{equation}\label{eq:critical-delay}
+  \delta_{\textup{lag}}
+  \;<\;
+  \delta^*
+  \;:=\;
+  \frac{\arccos(r/k)}{\sqrt{k^2 - r^2}}.
+\end{equation}
+When $\delta_{\textup{lag}} > \delta^*$, a Hopf
+bifurcation occurs: the delayed political response
+overshoots the target, then undershoots, creating
+oscillatory instability in the loss field.
+\end{proposition}
+
+\begin{proof}
+The characteristic equation of
+\eqref{eq:delay-characteristic} is
+$\lambda = r - k\, e^{-\lambda\delta}$.
+At the stability boundary $\lambda = i\omega$.
+Separating real and imaginary parts:
+$0 = r - k\cos(\omega\delta)$ and
+$\omega = k\sin(\omega\delta)$.
+The first gives $\cos(\omega\delta) = r/k$; from
+$\cos^2 + \sin^2 = 1$:
+$\omega = \sqrt{k^2 - r^2}$.
+Then $\delta^* = \arccos(r/k)/\omega$, yielding
+\eqref{eq:critical-delay}.
+For $\delta < \delta^*$, all characteristic roots
+satisfy $\mathrm{Re}(\lambda) < 0$.
+\end{proof}
+
+\begin{remark}[Time consistency via smart contracts]
+\label{rem:time-consistency}
+The Kydland--Prescott problem applies to fiscal
+restructuring: a sovereign that can revise its
+breakpoint thresholds $\theta_k$ ex post has an
+incentive to defer.  At $t = 0$, the optimal plan says
+``restructure at $\theta_1$.''  When
+$D(t)/\tau_{\max}$ reaches $\theta_1$, the sovereign
+re-optimises and finds deferral preferable (the
+political cost is immediate; the compounding cost is
+diffuse).  Iterating, the sovereign never acts---the
+time-inconsistency trap.
+
+The GovFi breakpoints (\cref{prop:govfi-breakpoints})
+resolve this by encoding the restructuring schedule in
+immutable smart contracts.  The schedule cannot be
+revised at the moment of crisis because the code does
+not accept revision.  Time consistency is enforced not
+by reputation or institutional norms but by the
+\emph{architecture} of the ledger: the same
+immutability that provides observability also provides
+commitment.
+\end{remark}
+
+\begin{remark}[GovFi collapses the dual ring]
+\label{rem:govfi-dualring}
+The dual-ring system (\cref{def:dual-ring}) in the fiscal
+context has an inner ring (formal fiscal rules: balanced
+budget laws, debt ceilings, Maastricht criteria) and an
+outer ring (actual fiscal practice: off-budget spending,
+implicit guarantees, creative accounting).  The pathology
+documented in \cref{prop:outer-drives} applies: the outer
+ring drives the inner ring, and the formal rules become
+decoration.
+
+GovFi collapses the dual ring by making the outer ring
+observable.  When $\Obs = \mathcal{F}$, the distinction
+between formal rules and actual practice vanishes: every
+flow is on-ledger, and the ``outer ring'' of hidden
+transactions ceases to exist.  The dual-ring dynamics
+\eqref{eq:inner-ring}--\eqref{eq:outer-ring} reduce to
+a single observable system, and the tangential condition
+(\cref{thm:viability-di}) can be verified directly from
+the ledger data.
+\end{remark}
+
+\begin{example}[水电站 --- GovFi worked example]
+\label{ex:dam}
+A provincial government issues bonds to build a
+hydroelectric power station (水电站).
+The total bond issuance is~$B$; the physical
+construction cost is~$C < B$; the loss field is
+$\mathcal{L} = B - C$.
+The fiscal execution graph has three layers
+and three interested parties.
+
+\paragraph{三方 (Three parties).}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}clp{5.5cm}@{}}
+\toprule
+\textbf{Layer} & \textbf{Party}
+  & \textbf{Role in flow graph} \\
+\midrule
+0 & 政府 (Government)
+  & Source: issues bonds, disburses funds \\
+1 & 公司 (Companies)
+  & Routing: general contractor, subcontractors,
+    suppliers \\
+2 & 建设者 (Builders)
+  & Sink: construction workers, engineers,
+    equipment operators \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}[
+  % ── styles ──
+  wbox/.style={rectangle, rounded corners=4pt,
+    draw=water, thick, fill=water!8,
+    minimum width=6.0cm, minimum height=1.0cm,
+    align=center, font=\small},
+  gfbox/.style={rectangle, rounded corners=6pt,
+    draw=sword, thick, fill=sword!5,
+    minimum height=1.0cm, align=center, font=\small},
+  leak/.style={rectangle, rounded corners=4pt,
+    draw=knife, thick, dashed, fill=knife!6,
+    minimum width=2.6cm, minimum height=0.9cm,
+    align=center, font=\small},
+  brk/.style={rectangle, rounded corners=3pt,
+    draw=caution, thick, fill=caution!8,
+    minimum height=0.9cm, align=center, font=\small},
+  arr/.style={-{Stealth[length=6pt]}, thick},
+  darr/.style={-{Stealth[length=6pt]}, thick, dashed, knife},
+  oarr/.style={-{Stealth[length=6pt]}, thick, sword},
+  lbl/.style={font=\scriptsize, fill=white, inner sep=2pt},
+]
+  % ════════════════════════════════════════════
+  %   PART 1 — Money flow (three layers)
+  % ════════════════════════════════════════════
+
+  % ── Layer 0: Government ──
+  \node[wbox] (gov) at (0, 0)
+    {\textcolor{water}{\textbf{Layer 0}}
+     \;---\; 政府 (Gov): issues bonds $B$};
+
+  % ── Layer 1: Companies — trumpet shape ──
+  %    Anchor coordinates for the horn
+  \coordinate (horn-top-L)  at (-1.2, -2.1);
+  \coordinate (horn-top-R)  at ( 1.2, -2.1);
+  \coordinate (horn-bot-L)  at (-3.6, -4.0);
+  \coordinate (horn-bot-R)  at ( 3.6, -4.0);
+  \coordinate (horn-center) at ( 0.0, -3.1);
+  \coordinate (horn-top)    at ( 0.0, -2.1);
+  \coordinate (horn-bot)    at ( 0.0, -4.0);
+  \coordinate (horn-east)   at ( 2.8, -3.1);
+
+  % Fill
+  \fill[black!5]
+    (horn-top-L)
+    .. controls ++(0,-0.8) and ++(0,0.8) ..
+    (horn-bot-L)
+    -- (horn-bot-R)
+    .. controls ++(0,0.8) and ++(0,-0.8) ..
+    (horn-top-R)
+    -- cycle;
+  % Outline
+  \draw[black!40, thick]
+    (horn-top-L)
+    .. controls ++(0,-0.8) and ++(0,0.8) ..
+    (horn-bot-L)
+    -- (horn-bot-R)
+    .. controls ++(0,0.8) and ++(0,-0.8) ..
+    (horn-top-R)
+    -- (horn-top-L);
+  % Label
+  \node[font=\small, anchor=center] at (horn-center)
+    {\textbf{Layer 1} \;---\;
+     公司 (Companies)};
+  \node[font=\scriptsize, anchor=north]
+    at ([yshift=-0.1cm]horn-center)
+    {amplifiers \;/\; 喇叭};
+
+  % ── Layer 2: Builders ──
+  \node[wbox] (build) at (0, -5.6)
+    {\textcolor{water}{\textbf{Layer 2}}
+     \;---\; 建设者 (Builders): construction $C$};
+
+  % ── Money arrows ──
+  \draw[arr, water, line width=1.4pt]
+    (gov.south) -- node[lbl, right=3pt]
+    {$B_{\textup{disbursed}}$} (horn-top);
+  \draw[arr, water, line width=1.4pt]
+    (horn-bot) -- node[lbl, right=3pt]
+    {wages, materials} (build.north);
+
+  % ── Min-cut (between Layer 0 and horn) ──
+  \draw[knife, very thick, densely dashed]
+    (-5.0, -1.5) -- (5.0, -1.5)
+    node[anchor=west, font=\scriptsize\bfseries,
+         text=knife] {\;min-cut};
+
+  % ── Hidden leak (right of horn) ──
+  \node[leak, anchor=west] (corrupt) at (4.4, -3.1)
+    {\textcolor{knife}{隐性流失}\\[-2pt]
+     \textcolor{knife}{\scriptsize hidden leak}};
+  \draw[darr, line width=1.0pt]
+    (horn-east) -- node[lbl, above] {层层转包}
+    (corrupt.west);
+
+  % ════════════════════════════════════════════
+  %   PART 2 — GovFi observability layer
+  % ════════════════════════════════════════════
+
+  % ── Wide GovFi ledger ──
+  \node[gfbox, minimum width=13.0cm]
+    (ledger) at (0, -7.6)
+    {\textcolor{sword}{\textbf{GovFi ledger}}\;:\;
+     $\Obs = \mathcal{F}$
+     \qquad{\scriptsize on-chain, immutable,
+     publicly queryable}};
+
+  % ── On-chain arrows (left-side routing from ledger to layers) ──
+  % Arrow → Layer 0 (Gov) — outermost vertical run
+  \draw[oarr, line width=1.2pt]
+    ([yshift=0.15cm]ledger.west) -- (-7.6, -7.45)
+    -- (-7.6, 0) -- (gov.west);
+  % Arrow → Layer 1 (Companies) — middle vertical run
+  \draw[oarr]
+    (ledger.west) -- (-7.3, -7.6)
+    -- (-7.3, -2.1) -- (horn-top-L);
+  % Arrow → Layer 2 (Builders) — innermost vertical run
+  \draw[oarr]
+    ([yshift=-0.15cm]ledger.west) -- (-7.0, -7.75)
+    -- (-7.0, -5.6) -- (build.west);
+
+  % ── Label ──
+  \node[font=\scriptsize, sword, anchor=east]
+    at (-7.7, -4.8) {on-chain};
+
+  % ── Corruption exposed ──
+  \draw[oarr]
+    ([xshift=5.0cm]ledger.north) -- ++(0,0.5)
+    -- ++(0,2.0) -| (corrupt.south);
+  \node[font=\scriptsize, sword,
+    anchor=north west]
+    at ([yshift=-0.1cm]corrupt.south east)
+    {exposed};
+  \node[font=\scriptsize, sword,
+    anchor=north west]
+    at ([yshift=-0.45cm]corrupt.south east)
+    {$\Rightarrow$ eliminated};
+
+  % ── Loss field ──
+  \node[gfbox, minimum width=9.0cm]
+    (loss) at (0, -9.2)
+    {$\mathcal{L}(t) \;=\;
+     B_{\textup{disbursed}}(t)
+     \;-\; C_{\textup{verified}}(t)$};
+  \draw[arr, sword, line width=1.0pt]
+    (ledger.south) -- node[lbl, right=2pt]
+    {computes} (loss.north);
+
+  % ── Breakpoints ──
+  \node[brk, minimum width=7.0cm]
+    (bp) at (0, -10.6)
+    {\textcolor{caution}{$\theta_1 = 5\%$\qquad
+     $\theta_2 = 10\%$\qquad $\theta_3 = 15\%$}};
+  \draw[arr, caution, line width=1.0pt]
+    (loss.south) -- node[lbl, right=2pt]
+    {\scriptsize auto-audit triggers} (bp.north);
+\end{tikzpicture}
+\end{center}
+
+\noindent
+Money flows $0 \to 1 \to 2$.
+The min-cut of this three-layer graph is at
+Layer~1: companies control both the information
+(what the government sees) and the money (what the
+builders receive).  This is the dual-ring structure
+(\cref{def:dual-ring}): the inner ring is the contract
+(合同); the outer ring is the actual payment chain
+(实际资金链).  Corruption is flow diversion at the
+min-cut---a hidden edge from Layer~1 to an
+off-graph recipient.
+
+\paragraph{公示清单 (Disclosure ledger).}
+The GovFi ledger requires every item below to be
+on-chain, immutable, and publicly queryable.
+
+\medskip
+\noindent
+\textbf{Layer 0 --- 发债 (Bond issuance).}
+\begin{enumerate}[label=(\roman*)]
+  \item 债券总额 $B$, 利率 $r$, 期限 $T$
+    (bond total, interest rate, maturity);
+  \item 还款来源: 电费收入、财政转移支付
+    (repayment source: electricity revenue,
+    fiscal transfer);
+  \item 可行性研究报告、环境影响评价
+    (feasibility study, environmental impact
+    assessment)---the physical basis for
+    $V_{\textup{rec}}$;
+  \item 预算分项: 土建、设备、设计、监理、应急
+    (budget breakdown: civil works, equipment,
+    engineering, supervision, contingency)---defines
+    $C$ before construction starts.
+\end{enumerate}
+
+\noindent
+\textbf{Layer 1 --- 采购链 (Procurement chain).}
+This is the min-cut where corruption concentrates.
+\begin{enumerate}[label=(\roman*)]
+  \item 所有投标书: 投标人、报价、技术评分
+    (all bids received: bidder, price, technical
+    score)---if only the winner is published, rigged
+    bidding is undetectable;
+  \item 中标合同: 承包商、价格、范围、工期
+    (winning contract: contractor, price, scope,
+    timeline)---the edge in the execution graph;
+  \item 完整分包树: 每一级分包商、价格、范围
+    (full subcontractor tree: every tier, price,
+    scope)---层层转包 (layer-by-layer subcontracting)
+    is the primary hidden channel; each layer skims
+    $10$--$15\%$, and by the fourth layer half the
+    money is absorbed before reaching the builder;
+  \item 材料单价: 品名、数量、单价、市场基准价
+    (material unit prices vs.\ market benchmark)---inflated
+    material costs are the second channel;
+  \item 设备费用: 类型、来源、租购价、市场基准价
+    (equipment costs vs.\ market benchmark);
+  \item 变更签证: 范围变更、价格变更、理由
+    (change orders: scope change, price change,
+    justification)---post-contract inflation is the
+    third channel: ``发现岩层'' (we discovered rock)
+    $\Rightarrow$ hundreds of millions in extras.
+\end{enumerate}
+
+\noindent
+\textbf{Layer 2 --- 实际施工 (Execution).}
+\begin{enumerate}[label=(\roman*)]
+  \item 每笔付款: 日期、金额、收款人
+    (every payment to every worker and subcontractor:
+    date, amount, recipient)---the sink of the
+    flow graph;
+  \item 工程进度: 里程碑、完成率、独立验收报告
+    (physical progress: milestone, completion~\%,
+    independent inspection)---defines
+    $C_{\textup{verified}}(t)$;
+  \item 材料进场: 品名、数量、来源、验收记录
+    (material delivery: item, quantity, source,
+    acceptance record)---cross-check against
+    Layer~1 procurement prices;
+  \item 质量检验: 每阶段工程师签字、缺陷清单
+    (quality inspection: engineer sign-off, defect
+    list)---prevents 豆腐渣工程
+    (tofu-dreg construction).
+\end{enumerate}
+
+\paragraph{实时损耗场 (Real-time loss field).}
+The loss field
+\[
+  \mathcal{L}(t) \;=\;
+  B_{\textup{disbursed}}(t)
+  \;-\; C_{\textup{verified}}(t)
+\]
+is published daily and decomposes into three components:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Component} & \textbf{Chinese}
+  & \textbf{Acceptable?} \\
+\midrule
+Legitimate overhead
+  & 合理管理费用 (管理、保险、许可)
+  & Yes, bounded \\
+Profit margins
+  & 合理利润 (市场利润率)
+  & Yes, market rate \\
+Unexplained gap
+  & 不明差额 $= \mathcal{L} -
+    \text{overhead} - \text{margins}$
+  & \textbf{No: corruption signal} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+When the unexplained gap exceeds the breakpoint
+threshold~$\theta_k$
+(\cref{prop:govfi-breakpoints}), an automatic audit
+triggers.  The graduated schedule:
+$\theta_1 = 5\%$ (internal review),
+$\theta_2 = 10\%$ (independent audit),
+$\theta_3 = 15\%$ (public investigation, contract
+suspension).
+
+\paragraph{传统公示 vs.\ GovFi (Traditional disclosure
+vs.\ GovFi).}
+Traditional 公示 is a PDF on a government website:
+it publishes the contract summary (Layer~1 top-level)
+and the completion report (Layer~2 final).  It misses:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Item} & \textbf{传统公示}
+  & \textbf{GovFi} \\
+\midrule
+分包树 (subcontractor tree) & Hidden & On-chain \\
+材料单价 (material unit prices) & Hidden & On-chain \\
+变更签证 (change orders) & Delayed/partial & Real-time \\
+工人工资 (worker payments) & Hidden & On-chain \\
+$\mathcal{L}(t)$ 实时 (real-time loss) & Not computed
+  & Published daily \\
+自动审计触发 (auto audit trigger)
+  & None & Breakpoints \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The difference is not what information exists but
+what \emph{architecture} delivers it.  A PDF can be
+delayed, redacted, or revised.  A ledger is immutable,
+machine-readable, and queryable by any citizen.
+The dual ring (\cref{def:dual-ring}) collapses because
+the outer ring (actual payments) is identical to the
+inner ring (on-chain records): there is no gap in which
+corruption can hide.
+
+\paragraph{Numerical instantiation
+(\texttt{govfi/simulate.py}).}
+The simulation concretises the symbolic framework with
+the following parameters:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Rationale} \\
+\midrule
+Budget $B$ & $100$\,亿元 & provincial 城投 bond scale \\
+Bond rate $r$ & $5\%$ & typical LGFV coupon \\
+Construction schedule & 5\,years & medium hydro project \\
+Political delay $\delta_{\textup{lag}}$ & 0.5\,years
+  & legislative cycle \\
+Revenue volatility $\sigma$ & 2\,亿/yr
+  & electricity demand variation \\
+Breakpoints $(\theta_1, \theta_2, \theta_3)$
+  & $(5\%, 10\%, 15\%)$
+  & \cref{prop:govfi-breakpoints} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Three scenarios test convergence of the loss field under
+the DIDE dynamics (\cref{prop:absorption-time}) with
+constant absorption rate~$\bar{a}$ (the step-function
+approximation
+$a(t) = \bar{a}\,\mathbf{1}_{t > \delta_{\textup{lag}}}$):
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Scenario} & $\mathcal{L}_0$
+  & $\bar{a}$ & \textbf{Conv.?}
+  & $T^*$ \textbf{bound}
+  & $\mathbb{E}[T^*]$ \\
+\midrule
+Clean ($\bar{a} = 5.0$)
+  & 0.5 & 5.0 & Yes
+  & 0.6\,yr & 0.1\,yr \\
+Moderate corruption + GovFi
+  & 10.0 & 3.0 & Yes
+  & 4.6\,yr & 4.0\,yr \\
+No control ($\bar{a} = 0$)
+  & 10.0 & 0 & No
+  & $+\infty$ & $+\infty$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Observations.}
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Clean baseline.}
+  With full verification flow ($\bar{a} = 5.0$), the
+  residual gap $\mathcal{L}_0 = 0.5$\,亿 (normal
+  disbursement lead) absorbs in under one year.
+  $\operatorname{Var}(T^*) \approx 0.02$\,yr$^2$:
+  volatility is irrelevant when absorption dominates.
+
+\item \textbf{Moderate corruption with GovFi.}
+  A $10\%$ diversion at Layer~1 creates
+  $\mathcal{L}_0 = 10$\,亿.  Breakpoints $\theta_1$
+  and $\theta_2$ fire immediately ($t < 0.1$).
+  With activated absorption $\bar{a} = 3.0$ the
+  convergence condition
+  $\bar{a} > r\,\mathcal{L}_0\,e^{r\delta_{\textup{lag}}}
+  = 0.51$ holds, and the loss field reaches zero
+  within $T^* \le 4.6$\,years
+  ($\mathbb{E}[T^*] = 4.0$,
+  $\operatorname{Var}(T^*) = 2.56$\,yr$^2$).
+  The variance is non-trivial: stochastic revenue
+  ($\sigma = 2$) amplified through the cubic factor
+  $(a - r\mathcal{L}_0)^{-3}$
+  (\cref{prop:stochastic-loss}).
+
+\item \textbf{Unchecked corruption ($\bar{a} = 0$).}
+  Without GovFi, no absorption is activated, and the
+  loss field grows exponentially:
+  $\mathcal{L}(5) = 10\,e^{0.25} = 12.8$\,亿,\;
+  $\mathcal{L}(10) = 10\,e^{0.50} = 16.5$\,亿.
+  The breakpoint $\theta_3 = 15\%$ fires at
+  $t \approx 8.1$\,years, but with no control mechanism
+  the signal goes unanswered.
+  Project fails; money gone.
+
+\item \textbf{Convergence gap.}
+  The ratio
+  $\bar{a}\, / \,(r\,\mathcal{L}_0\,
+  e^{r\delta_{\textup{lag}}})$
+  separates success from failure.
+  In Scenario~2 this ratio is $3.0/0.51 \approx 5.9$:
+  absorption outpaces compounding by nearly~$6\times$.
+  In Scenario~3 the ratio is zero.
+  GovFi's contribution is activating $\bar{a} > 0$;
+  the magnitude of~$\bar{a}$ depends on political will,
+  but the architecture ensures the signal reaches the
+  sovereign before~$\theta_3$.
+\end{enumerate}
+
+\paragraph{Validation chain
+(\texttt{govfi/simulate.py::run\_validation\_chain}).}
+The simulation traces the full audit path for Scenario~2
+(moderate corruption with GovFi), period by period.
+Each link in the chain is recorded on the ledger;
+every claim is machine-verifiable.
+
+\smallskip\noindent
+\emph{Step~0: Bond issuance.}
+省政府 issues bonds: $B = 100$\,亿元, $r = 5\%$,
+maturity $T = 5$\,yr.
+GovFi ledger initialised; $\Obs = \mathcal{F}$.
+
+\smallskip\noindent
+\emph{Periods 1--4 ($t = 0.5$--$2.0$\,yr).}
+Each period: 10\,亿 disbursed (Gov $\to$ Companies),
+9\,亿 verified (10\% diverted at Layer~1).
+Loss field grows linearly:
+$\mathcal{L}(0.5) = 1.0$,\;
+$\mathcal{L}(1.0) = 2.0$,\;
+$\mathcal{L}(1.5) = 3.0$,\;
+$\mathcal{L}(2.0) = 4.0$\,亿.
+All below $\theta_1 = 5\%$.
+
+\smallskip\noindent
+\emph{Period~5 ($t = 2.5$\,yr).}
+$\mathcal{L}(2.5) = 5.0$\,亿 $= 5.0\%$ of budget.
+\textbf{Breakpoint $\theta_1$ fires.}
+GovFi activates restructuring protocol:
+absorption rate $\bar{a} = 3.0$ begins after
+$\delta_{\textup{lag}} = 0.5$\,yr (legislative cycle).
+
+\smallskip\noindent
+\emph{Periods 6--10 ($t = 3.0$--$5.0$\,yr).}
+Loss field continues to $\mathcal{L}(5.0) = 10.0$\,亿
+($10\%$ of budget; $\theta_2$ fires at $t = 5.0$).
+The convergence bound below is forward-looking from
+this activation point.
+
+\smallskip\noindent
+\emph{Convergence proof.}
+At the activation point
+$\mathcal{L}_0 = 10.0$\,亿, the convergence condition
+(\cref{prop:absorption-time}a) is verified:
+\[
+  \bar{a} = 3.0 \;>\;
+  r\,\mathcal{L}_0\,e^{r\delta_{\textup{lag}}}
+  = 0.05 \times 10.0 \times e^{0.025}
+  = 0.5127.  \quad\checkmark
+\]
+The absorption bound gives
+$T^* \le 0.5 + 10.25 / (3.0 - 0.51)
+= 4.6$\,yr, with stochastic moments
+$\mathbb{E}[T^*] = 4.0$\,yr,\;
+$\operatorname{Var}(T^*) = 2.56$\,yr$^2$.
+The ledger records 20~transactions (10~disbursements
++ 10~verifications), each publicly queryable.
+
+\smallskip\noindent
+\textbf{Verdict.}
+The dam completes.  GovFi works.  Every link in the
+chain---bond issuance, disbursement, verification,
+loss computation, breakpoint trigger, absorption
+activation, convergence proof---is auditable on-chain.
+The 10\% diversion at Layer~1 is \emph{detected}
+at $t = 2.5$\,yr (not at project completion)
+and \emph{absorbed} within the construction horizon.
+Without GovFi, the same diversion produces
+$\mathcal{L}(10) = 16.5$\,亿 and growing.
+\end{example}
+
+%
+\begin{example}[地狱公司结构 --- GovFi under monopoly]
+\label{ex:monopoly}
+Suppose Layer~1 is a \emph{monopoly} (垄断): a single
+entity controls the min-cut, routing both information
+and money.  The monopolist diverts $30\%$ of every
+disbursement.  Does GovFi still work?
+
+\paragraph{Without GovFi.}
+The monopolist self-reports verification, inflating
+$C_{\textup{verified}}$ to match $B_{\textup{disbursed}}$.
+The ledger shows
+$\mathcal{L}(t) = 0$ throughout construction.
+All three breakpoints sleep.
+In reality, actual construction covers only $70\%$ of
+the budget; $30$\,亿 is gone.
+The loss field is \emph{gamed}: the observability
+gap $\|\Obs\| > 0$ hides the knife
+(\cref{def:knife}, condition~(2)).
+
+\paragraph{With GovFi ($\Obs = \mathcal{F}$).}
+Independent on-chain verification (IoT sensors,
+satellite imagery, certified inspectors) creates
+$C_{\textup{verified}}$ that the monopolist cannot
+inflate.  The loss field reveals the $30\%$ gap
+in real time:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+$t$ (yr) & $B_{\textup{disb}}$ & $C_{\textup{ver}}$
+  & $\mathcal{L}/B$ \\
+\midrule
+0.5 & 10 & 7 & 3.0\% \\
+1.0 & 20 & 14 & 6.0\%
+  \;$\Leftarrow \theta_1$ \textbf{fires} \\
+2.0 & 40 & 28 & 12.0\%
+  \;$\Leftarrow \theta_2$ \textbf{fires} \\
+2.5 & 50 & 35 & 15.0\%
+  \;$\Leftarrow \theta_3$ \textbf{fires} \\
+5.0 & 100 & 70 & 30.0\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Detection occurs at $t = 1.0$\,yr (versus \emph{never}
+without GovFi).  But detection alone is insufficient:
+the \emph{absorption rate}~$\bar{a}$ determines whether
+the loss field converges.
+
+\paragraph{Absorption under monopoly.}
+Two cases:
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Monopolist resists} ($\bar{a} = 2.0$).
+  The convergence condition
+  $\bar{a} > r\,\mathcal{L}_0\,e^{r\delta_{\textup{lag}}}
+  = 1.54$ holds, but barely.
+  $T^* \le 67.1$\,yr,\;
+  $\mathbb{E}[T^*] = 60$\,yr.
+  Detection without political action is
+  \emph{cosmetic}: the signal exists, but
+  nobody acts on it.
+
+\item \textbf{$\theta_3$ breaks the monopoly}
+  ($\bar{a} = 5.0$).
+  The breakpoint at $\theta_3 = 15\%$
+  ($t = 2.5$\,yr) triggers contract suspension
+  and open re-bidding.
+  The monopoly is dissolved; new contractors enter.
+  Absorption strengthens:
+  $T^* \le 9.4$\,yr,\;
+  $\mathbb{E}[T^*] = 8.6$\,yr,\;
+  $\operatorname{Var}(T^*) = 2.80$\,yr$^2$.
+  The dam still completes---late, but it completes.
+\end{enumerate}
+
+\noindent
+The ratio $\bar{a}\,/\,(r\,\mathcal{L}_0\,
+e^{r\delta_{\textup{lag}}})$ is $2.0/1.54 = 1.3$ in
+case~(a) and $5.0/1.54 = 3.2$ in case~(b):
+breaking the monopoly more than doubles the convergence margin.
+
+\paragraph{The Qin structure.}
+The monopoly at Layer~1 is structurally identical to
+the 秦-system (\cref{sec:qin}): a single node
+concentrates all actuation ($U$), all information flow
+($\Obs$), and resists external restructuring.
+GovFi's contribution is collapsing the dual ring
+(\cref{def:dual-ring}) so that $\Obs = \mathcal{F}$
+regardless of Layer~1's market structure.
+The loss field $\mathcal{L}(t)$ becomes a \emph{public}
+signal; the breakpoints $\theta_k$ convert that signal
+into automatic restructuring triggers.
+Observability is necessary; political will
+(activating $\bar{a}$) is sufficient.
+\end{example}
+
+% ================================================================
+\section{Historical instantiation}\label{sec:gf-history}
+% ================================================================
+
+\begin{example}[Iceland 2008]\label{ex:iceland}
+Iceland's banking system collapsed in October 2008 with
+total banking assets at ${\sim}10\times$ GDP.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llp{5.5cm}@{}}
+\toprule
+\textbf{Framework} & \textbf{Value} & \textbf{Outcome} \\
+\midrule
+Exit face chosen
+  & $\partial_{\textup{haircut}}$
+  & Foreign creditors absorbed ${\sim}60\%$ of losses \\
+$C(x)$ activated
+  & Yes
+  & Parliament refused to honour Icesave guarantees \\
+Time to recovery
+  & 3--4 years
+  & GDP regained pre-crisis level by 2012 \\
+Path
+  & (a) of \cref{thm:lifecycle}
+  & Controlled restructuring \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Iceland chose the exit face.  The choice was politically
+costly (international condemnation, diplomatic pressure)
+but mathematically optimal: by
+\cref{thm:exit-choice}(a), distributing losses to the
+agent class with the largest loss-absorption capacity
+(foreign institutional creditors) minimises the damage
+functional $\mathcal{D}$.
+\end{example}
+
+\begin{example}[Japan 1990s]\label{ex:japan}
+Japan's asset bubble collapsed in 1991.  Non-performing
+loans in the banking system reached ${\sim}35\%$ of GDP.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llp{5.5cm}@{}}
+\toprule
+\textbf{Framework} & \textbf{Value} & \textbf{Outcome} \\
+\midrule
+Exit face chosen
+  & None (deferred)
+  & Extend-and-pretend for ${\sim}12$ years \\
+$C(x)$ activated
+  & No
+  & MOF forbearance policy 1992--2003 \\
+Time to resolution
+  & $>$ 15 years
+  & ``Lost decades'' (1991--2010+) \\
+Path attempted
+  & (c)---non-existent
+  & Relabelled NPLs, rolled over zombie loans \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Japan attempted path~(c): neither restructure nor
+collapse, but indefinite deferral.  By
+\cref{thm:fixedpoint}, this path does not exist.
+The loss field $\mathcal{L}(t_0)$ was conserved
+(\cref{thm:absorption-conservation}); deferral only
+compounded it (\cref{rem:deferral}).  The losses were
+eventually absorbed by taxpayers (bank recapitalisation),
+depositors (near-zero interest rates for two decades),
+and the entire economy (forgone growth).
+\end{example}
+
+\begin{proposition}[Extend-and-pretend violates the
+fixed-point theorem]\label{prop:zombie}
+The extend-and-pretend strategy (forbearance,
+reclassification of NPLs, rollover of zombie loans)
+is an attempt to modify the \emph{detection output}
+$\Obs(D)$ without modifying the physical state~$D$.
+In the framework:
+\begin{enumerate}[label=(\roman*)]
+  \item Relabelling an NPL changes the classification
+    signal but not the loss field: $\mathcal{L}(t)$ is
+    unchanged because $D(t)$ and $V_{\textup{rec}}(t)$
+    are physical quantities independent of accounting
+    labels.
+  \item Rolling over a zombie loan sets $\delta(t) > 0$
+    (new lending to service old debt), which by
+    \eqref{eq:debt-dynamics} increases $D'(t)$: the
+    loss field grows.
+  \item Forbearance reduces $\Obs(D)$ by suppressing
+    the observation signal, creating a gap
+    $\|U\| - \|U \cap \Obs\| > 0$---exactly the
+    condition of \cref{prop:imperfect} under which
+    knives become hidden.
+\end{enumerate}
+By \cref{thm:fixedpoint}, there is no fixed point of
+the system in which $\mathcal{L} > 0$ and no agent
+absorbs loss: the absorption conservation law
+\eqref{eq:absorption-conservation} has no solution
+with $\ell_i = 0$ for all~$i$ when
+$\mathcal{L}(t_0) > 0$.  Extend-and-pretend is not
+a strategy; it is a violation of conservation.
+\end{proposition}
+
+\begin{remark}[The 城投 knife]\label{rem:chengtou}
+China's local government financing vehicles
+(地方政府融资平台, commonly called 城投) are the
+current instantiation of the fiscal knife.  The
+structure maps directly:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Autonomous actuation}: 城投 debt
+    compounds at coupon rates of $5$--$8\%$ while
+    underlying asset returns (land sales, toll roads,
+    industrial parks) have declined below the cost of
+    capital.  The self-financing loop
+    (\cref{rem:debt-loop}) is active.
+  \item \textbf{Hidden observability}: much 城投
+    debt is off-balance-sheet, held through trust
+    products, wealth management products, and
+    interbank channels.  The dual-ring structure
+    (\cref{def:dual-ring}) applies: the formal fiscal
+    rules (inner ring) prohibit local government
+    borrowing, while the actual practice (outer ring)
+    operates through 城投 vehicles.
+  \item \textbf{Conservation applies}: by
+    \cref{thm:absorption-conservation}, the losses
+    embedded in non-performing 城投 debt are conserved.
+    The current policy of rolling over (化债) is
+    channel~(iii) of the proof: deferral, not
+    absorption.
+\end{enumerate}
+GovFi addresses the 城投 problem through all three
+mechanisms: on-ledger recording eliminates the
+hidden outer ring (\cref{rem:govfi-dualring}),
+programmatic breakpoints prevent accumulation
+to crisis levels (\cref{prop:govfi-breakpoints}),
+and published $\mathcal{L}(t)$ ensures that the
+conservation law is visible to all agents
+(\cref{prop:govfi-observability}).
+The knife is real.  The losses are real.  The only
+question is the exit face.
+\end{remark}
+
+% ================================================================
+\section*{Closing remark: the fiscal flow}
+% ================================================================
+
+\begin{remark}[Flow-theoretic restatement]\label{rem:govfi-flow}
+In the language of the agentic calculus (\cref{sec:flow}),
+the entire appendix restates as follows.
+Debt restructuring is \emph{flow rerouting}: redirecting
+fiscal flows from the default channel to a chosen
+absorption channel.
+The absorption conservation law
+(\cref{thm:absorption-conservation}) is \emph{flow
+conservation}: the total flow of losses through the
+fiscal network is invariant; only the routing changes.
+The GovFi ledger (\cref{def:govfi-ledger}) makes the
+fiscal execution graph $G_F$ fully observable, so that
+the sovereign can compute the \emph{min-cut}
+(\cref{thm:flowcut}): the minimum-cost set of edges
+whose removal (restructuring) restores the system to
+$K_F$.
+The knife-is-the-mean theorem (\cref{thm:meanfield})
+applied to the fiscal domain states: the same debt
+level $D$ is sustainable or unsustainable depending
+on the system's mean fiscal capacity $\bar{w}_F$.
+Growth raises $\bar{w}_F$; the same nominal debt becomes
+a tool (financing productive investment) or a knife
+(compounding toward default) depending on which side
+of the mean the system sits.
+
+The losses are conserved.  The only freedom is the
+choice of exit face.
+\end{remark}
+
+% ================================================================
+\section*{Epilogue}
+% ================================================================
+
+\begin{quote}
+\itshape
+然而我正对一本历史书\\
+西望夕阳里的咸阳古道\\
+我等到了一匹快马的蹄声
+
+\medskip
+\upshape
+---卞之琳，《音尘》
+\end{quote}
+
+\bigskip
+
+\begin{center}
+\itshape
+献给我最爱的女人：陈晓楚
+\end{center}
