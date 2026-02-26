@@ -106,6 +106,35 @@ class LossField:
             return 0.0
         return self.L(t) / B
 
+    # ── Conservation check (log gas leakage) ──
+
+    def check_conservation(self, t=None, atol=1e-9) -> dict:
+        """Log gas leakage check: verify flow conservation law.
+
+        The loss identity: L_total = B_iss - C_ver (telescoping).
+        """
+        B_iss = self.ledger.total_issued(t)
+        B_dis = self.ledger.total_disbursed(t)
+        C_ver = self.ledger.total_verified(t)
+        L_bond = self.L_bond(t)
+        L_exec = self.L(t)
+        L_total = self.L_total(t)
+
+        checks = {
+            "monotone_flow": B_iss >= B_dis >= C_ver,
+            "non_negative": all(x >= 0 for x in (B_iss, B_dis, C_ver)),
+            "loss_decomposition": abs(L_total - (L_bond + L_exec)) < atol,
+            "loss_identity": abs(L_total - (B_iss - C_ver)) < atol,
+        }
+        leak = L_total - (B_iss - C_ver)
+        checks["leak"] = leak
+        checks["passed"] = all(v for k, v in checks.items() if k != "leak")
+        checks["snapshot"] = {
+            "B_iss": B_iss, "B_dis": B_dis, "C_ver": C_ver,
+            "L_bond": L_bond, "L_exec": L_exec, "L_total": L_total,
+        }
+        return checks
+
     # ── Three-layer Lyapunov analysis ──
 
     @staticmethod

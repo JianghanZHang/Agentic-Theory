@@ -280,3 +280,27 @@ class ReformModel:
                 "min_province": self.provinces[ref.index(min(ref))].name_zh,
             },
         }
+
+    # ── Conservation check (log gas leakage) ──
+
+    def check_conservation(self, method: str = "equal") -> dict:
+        """Log gas leakage check: verify slot conservation law.
+
+        Conservation law: sum(slots_i) = C (total 985 capacity preserved).
+        Returns dict with check name, pass/fail, and leak value.
+        """
+        slots = (self.equal_weight_slots() if method == "equal"
+                 else self.population_proportional_slots())
+        checks = {
+            "slot_conservation": sum(slots) == self.C,
+            "non_negative": all(s >= 0 for s in slots),
+            "capacity_bound": all(s <= p.exam_takers
+                                  for s, p in zip(slots, self.provinces)),
+            "rate_bounds": all(0 <= s / p.exam_takers <= 1
+                               for s, p in zip(slots, self.provinces)
+                               if p.exam_takers > 0),
+        }
+        leak = sum(slots) - self.C
+        checks["leak"] = leak
+        checks["passed"] = all(v for k, v in checks.items() if k != "leak")
+        return checks

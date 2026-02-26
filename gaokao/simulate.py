@@ -266,6 +266,35 @@ def run_viability_connection() -> None:
     print(f"  {_C}└──────────────────────────────────────────────────────────┘{_0}")
 
 
+def run_conservation_check() -> None:
+    """Log gas leakage: verify slot conservation law."""
+    print("\n" + "═" * 65)
+    print(f"  {_W}Conservation Check / 守恒验证 (Log Gas Leakage){_0}")
+    print("═" * 65)
+
+    model = ReformModel()
+
+    print(f"\n  {'Method':<14} {'∑ slots':>10} {'C':>10} {'Leak':>6} {'Status':>8}")
+    print(f"  {'─'*14} {'─'*10} {'─'*10} {'─'*6} {'─'*8}")
+
+    for method, label in [("equal", "Equal-wt"), ("proportional", "Pop-prop")]:
+        chk = model.check_conservation(method)
+        status = f"{_G}✓ PASS{_0}" if chk["passed"] else f"{_R}✗ FAIL{_0}"
+        total = model.C + chk["leak"]  # sum(slots) = C + leak
+        print(f"  {label:<14} {total:>10,} {model.C:>10,} {chk['leak']:>6} {status}")
+
+    # Additional checks (from equal-weight, representative)
+    chk = model.check_conservation("equal")
+    extras = []
+    for key in ("non_negative", "capacity_bound", "rate_bounds"):
+        mark = f"{_G}✓{_0}" if chk[key] else f"{_R}✗{_0}"
+        extras.append(f"{key} {mark}")
+    print(f"\n  Additional:  {'  '.join(extras)}")
+
+    print(f"\n  Conservation law: ∑ sᵢ = C (total 985 capacity preserved)")
+    print(f"  守恒定律: ∑ sᵢ = C（985总容量守恒）")
+
+
 def main() -> None:
     print("═" * 65)
     print(f"  {_W}Gaokao Reform Analysis / 高考改革分析{_0}")
@@ -276,6 +305,7 @@ def main() -> None:
     run_reform_comparison()
     run_province_detail()
     run_viability_connection()
+    run_conservation_check()
 
 
 if __name__ == "__main__":

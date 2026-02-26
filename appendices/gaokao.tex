@@ -512,6 +512,36 @@ authority websites.  Text-format extraction would enable
 within-band randomization calibration.
 \end{remark}
 
+\begin{remark}[Conservation law / 守恒定律 --- Log gas leakage]
+\label{rem:gaokao-conservation}
+Let $s_i$ denote the number of 985~slots allocated to province~$i$
+under any method, and $C$ the total national 985~capacity.
+The \textbf{slot conservation law} is
+\[
+  \sum_{i=1}^{n} s_i \;=\; C.
+\]
+The code checks four properties at each run:
+\begin{enumerate}
+  \item \emph{Slot conservation}: $\sum s_i = C$ (no slots created or destroyed).
+  \item \emph{Non-negativity}: $s_i \ge 0$ for all~$i$.
+  \item \emph{Capacity bound}: $s_i \le N_i$ (no province gets more slots
+        than exam takers).
+  \item \emph{Rate bounds}: $0 \le s_i / N_i \le 1$ (admission rate
+        in $[0,1]$).
+\end{enumerate}
+The ``leak'' is $\ell = \sum s_i - C$.  A non-zero leak would indicate
+an allocation error: slots appearing from, or disappearing into,
+nowhere.  Both the equal-weight and population-proportional methods
+pass with $\ell = 0$ (verified by \texttt{python -m gaokao.simulate}).
+
+\textcolor{sword}{%
+This is the same structure as the fiscal flow conservation check
+(\cref{rem:govfi-conservation}):
+$\text{leak} = \sum\text{inflow} - \sum\text{outflow}$.
+Students flow through provinces the way money flows through
+fiscal layers---conservation holds in both.}
+\end{remark}
+
 \bigskip
 \noindent
 \fbox{\parbox{\dimexpr\textwidth-2\fboxsep-2\fboxrule}{%

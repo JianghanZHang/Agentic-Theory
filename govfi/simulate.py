@@ -879,6 +879,61 @@ def run_soft_damping() -> None:
     print(f"  {_G}└──────────────────────────────────────────────────────────┘{_0}")
 
 
+def run_conservation_check() -> None:
+    """Log gas leakage: verify flow conservation law."""
+    print("\n" + "═" * 60)
+    print(f"  {_W}Conservation Check / 守恒验证 (Log Gas Leakage){_0}")
+    print("═" * 60)
+
+    # Build a ledger with bond issuance + disbursements + verifications
+    project = DAM
+    ledger = Ledger(project)
+    ledger.issue(t=0.0, amount=project.budget, desc="Bond issuance")
+    diversion_rate = 0.10
+    n_periods = 20
+    dt = T_CONSTRUCTION / n_periods
+    per_period = project.budget / n_periods
+
+    for i in range(n_periods):
+        t = (i + 1) * dt
+        ledger.disburse(t=t, amount=per_period, from_layer=0, to_layer=1,
+                        desc=f"P{i+1}")
+        ledger.verify(t=t, amount=per_period * (1.0 - diversion_rate),
+                      desc=f"P{i+1} verified")
+
+    lf = LossField(ledger)
+    chk = lf.check_conservation()
+    snap = chk["snapshot"]
+
+    print(f"\n  B_iss = {snap['B_iss']:.2f}亿   B_dis = {snap['B_dis']:.2f}亿"
+          f"   C_ver = {snap['C_ver']:.2f}亿")
+    print(f"  L_bond = {snap['L_bond']:.2f}亿   L_exec = {snap['L_exec']:.2f}亿"
+          f"  L_total = {snap['L_total']:.2f}亿")
+
+    print(f"\n  {'Check':<22} {'Value':>8} {'Status':>8}")
+    print(f"  {'─'*22} {'─'*8} {'─'*8}")
+
+    check_labels = {
+        "monotone_flow": "Monotone flow",
+        "non_negative": "Non-negativity",
+        "loss_decomposition": "Loss decomposition",
+        "loss_identity": "Loss identity",
+    }
+    for key, label in check_labels.items():
+        val = chk[key]
+        if key == "loss_identity":
+            detail = f"leak={chk['leak']:.0g}"
+            status = f"{_G}PASS{_0}" if val else f"{_R}FAIL{_0}"
+            print(f"  {label:<22} {detail:>8} {status}")
+        else:
+            mark = f"{_G}✓{_0}" if val else f"{_R}✗{_0}"
+            status = f"{_G}PASS{_0}" if val else f"{_R}FAIL{_0}"
+            print(f"  {label:<22} {mark:>8} {status}")
+
+    print(f"\n  Conservation law: L_total = B_iss - C_ver (telescoping identity)")
+    print(f"  守恒定律: L_total = B_iss - C_ver（望远镜恒等式）")
+
+
 def main() -> None:
     print("═" * 55)
     print("  Cyber 水電站: Convergence Analysis")
@@ -951,6 +1006,9 @@ def main() -> None:
 
     # ── Soft damping + Lyapunov ──
     run_soft_damping()
+
+    # ── Conservation check ──
+    run_conservation_check()
 
 
 if __name__ == "__main__":

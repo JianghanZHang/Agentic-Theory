@@ -1564,6 +1564,40 @@ section-chief level.  The grace costs---公款吃喝 at Layer~0,
 realities of county governance, not hypotheticals.
 \end{remark}
 
+\begin{remark}[Conservation law / 守恒定律 --- Log gas leakage]
+\label{rem:govfi-conservation}
+The \textbf{loss identity} (telescoping through the three layers) is
+\[
+  \mathcal{L}_{\textup{total}}
+  \;=\; B_{\textup{iss}} - C_{\textup{ver}}.
+\]
+This is conservation: every yuan either reaches verified construction
+or is accounted for as loss.  The code checks four properties:
+\begin{enumerate}
+  \item \emph{Monotone flow}: $B_{\textup{iss}} \ge B_{\textup{dis}}
+        \ge C_{\textup{ver}}$ (money flows downhill).
+  \item \emph{Non-negativity}: all quantities $\ge 0$.
+  \item \emph{Loss decomposition}:
+        $\mathcal{L}_{\textup{total}} = \mathcal{L}_{\textup{bond}}
+        + \mathcal{L}_{\textup{exec}}$ (loss splits into two layers).
+  \item \emph{Loss identity}:
+        $\mathcal{L}_{\textup{total}} = B_{\textup{iss}} - C_{\textup{ver}}$
+        (the telescoping sum).
+\end{enumerate}
+The ``leak'' is
+$\ell = \mathcal{L}_{\textup{total}} - (B_{\textup{iss}} - C_{\textup{ver}})$.
+A non-zero~$\ell$ would indicate a bookkeeping error in the ledger.
+The simulation passes with $\ell = 0$
+(verified by \texttt{python -m govfi.simulate}).
+
+\textcolor{sword}{%
+This is the same structure as the student allocation check
+(\cref{rem:gaokao-conservation}):
+$\text{leak} = \sum\text{inflow} - \sum\text{outflow}$.
+Money flows through fiscal layers the way students flow through
+provinces---conservation holds in both.}
+\end{remark}
+
 \begin{remark}[来自杨振宁与希尔伯特的礼物 --- Gradient flow in
 gauged space]\label{rem:yang-hilbert}
 The dynamics \eqref{eq:layer-dynamics} admit a dual reading.
