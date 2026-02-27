@@ -11,10 +11,10 @@ in which the king retains supreme authority:
 \]
 
 \begin{axiom}[Viability]\label{ax:viability}
-For every state $s \in S$, there exists a viable path
+For every state $s \in K$, there exists a viable path
 $\gamma: [0, \infty) \to K$ with $\gamma(0) = s$:
 \[
-  \forall\, s \in S,\quad
+  \forall\, s \in K,\quad
   \exists\;\gamma: s \to \infty
   \quad\text{such that}\quad
   \gamma(t) \in \Viab(K) \;\;\forall\, t \geq 0.
@@ -119,9 +119,10 @@ feedback law $u(t) \in C(x(t))$ such that $x(\cdot)$ remains in $K$?
 The feedback map is the king's strategy space at state $x$: the set
 of controls that keep the trajectory inside $K$.  When $C(x) \neq
 \varnothing$ for all $x \in K$, the king can regulate the system.
-When a knife $r$ executes independently, it contributes a velocity
-$f_r(x, a)$ that may push $x'(t)$ outside $T_K(x)$, and the
-feedback map shrinks---possibly to the empty set.
+When a knife $r$ executes independently, its \emph{execution function}
+$f_r: S \times \Ur \to TS$ maps a state--action pair to a velocity
+vector.  The velocity $f_r(x, a)$ may push $x'(t)$ outside $T_K(x)$,
+and the feedback map shrinks---possibly to the empty set.
 
 \begin{definition}[Viability Lyapunov function]\label{def:lyapunov}
 A continuous function $V: K \to \R_{\geq 0}$ is a \emph{Lyapunov function}
@@ -159,7 +160,11 @@ optimisation over future trajectories---only the local tangent
 condition, checked in real time.  This is why Aubin calls the
 viable system's policy ``opportunism'': the system selects a
 feasible velocity from $F(x) \cap T_K(x)$ at each instant, without
-planning.
+planning.  The tangential condition admits regulation maps with
+memory; we restrict to memoryless feedback (the king reacts to
+current state only) as a modeling choice that matches the historical
+evidence.  This restriction is sufficient for the results that
+follow; it is not forced by the differential inclusion itself.
 \end{remark}
 
 \section{Viability geometry}\label{sec:viab-geom}

@@ -122,15 +122,27 @@ The viable path (\cref{ax:viability}) is the max-flow.
 \end{theorem}
 
 \begin{proof}
+Assign edge capacities by the mean-field deviation:
+for each agent~$r$ with bypass edge $e_r$, set
+\[
+  c(e_r) \;:=\; \max\bigl(\|U_r\| - \bar{U},\; 0\bigr).
+\]
+Under this assignment, only agents whose actuation exceeds the mean
+carry positive bypass capacity; agents at or below the mean have
+$c(e_r) = 0$ and are invisible to the cut.
+
 By the max-flow/min-cut theorem~\cite{diestel}, the maximum flow from
 $\kappa$ to $\infty$ equals the minimum capacity of any
-$\kappa$--$\infty$ cut. The knife criterion (\cref{def:knife})
-identifies bypass edges---edges with positive capacity that do not pass
-through $\kappa$. The king's viability maintenance (cutting knives) is
-the operation $c(e) \to 0$ for bypass edges $e$. The residual max-flow
-after all bypass edges are cut is the flow through the king (the cut
-vertex flow). The min-cut value $=$ the total bypass capacity $=$ the
-knife threshold $=$ the mean field's deviation measure.
+$\kappa$--$\infty$ cut.  The knife criterion (\cref{def:knife})
+identifies bypass edges---edges with $c(e_r) > 0$ that do not pass
+through $\kappa$.  The min-cut is the set of bypass edges whose
+removal disconnects the graph; its value is
+$\sum_{r \in C} c(e_r) = \sum_{r \in C} (\|U_r\| - \bar{U})$.
+The detection threshold $\tau(\Obs)$ (\cref{thm:meanfield}) restricts
+the king to edges with $c(e_r) > \tau$, so the operational min-cut
+is the subset of bypass edges exceeding the detection threshold.
+The knife threshold is therefore the min-cut value under the
+mean-field capacity assignment.
 \end{proof}
 
 \begin{remark}[Flow interpretation of theorems]\label{rem:flowthms}

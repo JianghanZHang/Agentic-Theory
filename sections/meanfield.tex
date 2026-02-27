@@ -7,7 +7,11 @@ fundamentally a \emph{mean-field} phenomenon.
 \section{The mean actuation field}
 
 Consider $n$ agents with autonomous actuation levels
-$\|U_1\|, \ldots, \|U_n\|$. Define the \emph{mean actuation field}:
+$\|U_1\|, \ldots, \|U_n\|$, where $\|U_i\|$ measures the
+\emph{degrees of freedom} of agent~$i$'s autonomous control set
+(the dimension of $\mathrm{span}(U_i)$ when $U_i$ is a linear
+subspace; $|U_i|$ when discrete).
+Define the \emph{mean actuation field}:
 \[
   \bar{U} = \frac{1}{n} \sum_{i=1}^{n} \|U_i\|.
 \]
@@ -15,13 +19,16 @@ $\|U_1\|, \ldots, \|U_n\|$. Define the \emph{mean actuation field}:
 The king's detection function $\Obs$ has finite bandwidth: it cannot
 monitor all agents with equal precision. In practice, $\Obs$ triggers
 on agents whose actuation \emph{deviates significantly from the mean}:
-\[
+\begin{equation}\label{eq:detection}
   r \in \mathrm{Im}(\Obs)
   \iff
   \|U_r\| - \bar{U} > \tau(\Obs),
-\]
+\end{equation}
 where $\tau(\Obs)$ is the detection threshold determined by the king's
-observational capacity.
+observational capacity.  This reduces the set-valued observability
+concept ($r \in \mathrm{Im}(\Obs)$ or not) to a scalar comparison,
+valid when the king's bandwidth is finite and detection is
+threshold-based.
 
 \begin{theorem}[The knife is the mean]\label{thm:meanfield}
 The knife threshold is determined by the system's mean actuation field.
@@ -36,21 +43,29 @@ $\bar{U}$, not a change in any individual $\Ur$.
 \end{theorem}
 
 \begin{proof}
-In wartime, many agents have high actuation (soldiers, generals,
-administrators). The mean $\bar{U}$ is high, so the threshold
-$\bar{U} + \tau(\Obs)$ is high: few agents exceed it. Most actuation
-is \emph{expected} and therefore not flagged.
+Condition~(i) is unchanged from \cref{def:knife}.
+For condition~(ii): by the detection model~\eqref{eq:detection},
+$r \in \mathrm{Im}(\Obs)$ if and only if
+$\|U_r\| - \bar{U} > \tau(\Obs)$.  Substituting into the knife
+criterion (\cref{def:knife}) yields the stated biconditional.
 
-At the phase transition (end of war), most agents' actuation drops to
-near zero (soldiers demobilize, wartime powers expire). The mean
-$\bar{U}$ drops sharply. But agents who \emph{retain} wartime-level
-actuation now exceed the new, lower threshold. The same $\|U_r\|$
-that was below the wartime mean is now above the peacetime mean.
-
-The knife is not created by the agent---it is created by the shift in
-the mean. The agent's actuation is unchanged; the system's reference
-frame has moved.
+For the phase-transition claim: let $\bar{U}_1$ denote the mean
+before the transition and $\bar{U}_2 < \bar{U}_1$ the mean after.
+An agent with fixed $\|U_r\|$ satisfying
+$\bar{U}_2 + \tau < \|U_r\| \leq \bar{U}_1 + \tau$
+is not a knife in regime~1 but becomes a knife in regime~2.
+The shift is in $\bar{U}$, not in any individual $\|U_r\|$.
 \end{proof}
+
+\begin{remark}[Historical illustration]\label{rem:meanfield-history}
+The formal mechanism is visible at every phase transition.
+In wartime, many agents carry high actuation; the mean $\bar{U}$ is
+high; few exceed the threshold. At demobilization, the mean drops
+sharply. Agents who retain wartime-level actuation now exceed the
+peacetime threshold---the same $\|U_r\|$ that was unremarkable before
+is now a deviation. The knife is not created by the agent but by the
+shift in the system's reference frame.
+\end{remark}
 
 \begin{remark}[Connection to statistical mechanics]\label{rem:statmech}
 This is precisely the mechanism of a phase transition in statistical

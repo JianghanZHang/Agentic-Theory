@@ -77,9 +77,9 @@ $\epsilon_i$      & Grace margin $= k_i - r$
                   & 恩典裕度 \\
 $\beta_i$         & RG $\beta$ function $= r - k_i$
                   & 重正化群 $\beta$ 函数 \\
-$K$               & Damping matrix $= \operatorname{diag}(k_0, k_1, k_2)$
+$\mathcal{K}$     & Damping matrix $= \operatorname{diag}(k_0, k_1, k_2)$
                   & 阻尼矩阵 \\
-$M$               & Stability matrix $= K - rI$
+$M$               & Stability matrix $= \mathcal{K} - rI$
                   & 稳定矩阵 \\
 \midrule
 \multicolumn{3}{@{}l}{\emph{Three-layer graph / 三层图}} \\
@@ -1605,7 +1605,7 @@ The dynamics \eqref{eq:layer-dynamics} admit a dual reading.
 \paragraph{来自希尔伯特的礼物 / Hilbert's gift: the gradient.}
 The Lyapunov function $V = \tfrac{1}{2}\|\boldsymbol{\mathcal{L}}\|^2$
 has gradient $\nabla V = \boldsymbol{\mathcal{L}}$.
-With the damping matrix $M = K - rI = \operatorname{diag}(\epsilon_0,
+With the damping matrix $M = \mathcal{K} - rI = \operatorname{diag}(\epsilon_0,
 \epsilon_1, \epsilon_2)$, the dynamics become
 \[
   \boldsymbol{\mathcal{L}}'

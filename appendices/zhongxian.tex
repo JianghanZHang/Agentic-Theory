@@ -34,19 +34,19 @@ outcomes of the county's ${\sim}1{,}000$ cadres at 副科级 and above.
 
 \begin{definition}[Graded cadre lattice]\label{def:cadre-lattice}
 A \emph{graded cadre lattice} is a finite poset
-$L = \bigsqcup_{k=0}^{K} L_k$ with rank function
-$\rho \colon L \to \{0, 1, \ldots, K\}$, equipped with:
+$\Lambda = \bigsqcup_{k=0}^{K} \Lambda_k$ with rank function
+$\rho \colon \Lambda \to \{0, 1, \ldots, K\}$, equipped with:
 \begin{enumerate}[label=(\roman*)]
-  \item \textbf{Level sizes} $n_k := |L_k|$;
+  \item \textbf{Level sizes} $n_k := |\Lambda_k|$;
   \item \textbf{Filtration ratios}
     $r_k := n_{k+1}/n_k$ for $0 \leq k < K$, measuring
     the structural selectivity between adjacent levels;
   \item \textbf{Time constants} $\tau_k > 0$: the mean duration
-    at level $L_k$ before promotion to $L_{k+1}$
+    at level $\Lambda_k$ before promotion to $\Lambda_{k+1}$
     (averaged over those who are promoted);
   \item \textbf{Age boundaries} $a_k^{\max}$: hard upper bounds
-    on the age at which a cadre in $L_k$ remains eligible
-    for promotion to $L_{k+1}$.
+    on the age at which a cadre in $\Lambda_k$ remains eligible
+    for promotion to $\Lambda_{k+1}$.
 \end{enumerate}
 \end{definition}
 
@@ -69,14 +69,14 @@ $3$ & 正处级 (full county)    &   5 & ---    & ---   & ${\sim}60$ \\
 \end{center}
 
 \noindent
-The entry time (from first assignment to $L_0$) averages $8$ years.
-A cadre entering at age $22$ therefore reaches $L_0$ at
-${\sim}30$, $L_1$ at ${\sim}33$, $L_2$ at ${\sim}40$,
-$L_3$ at ${\sim}48$.  The margin between this ideal trajectory
-and the age boundary at $L_3$ is ${\sim}7$ years---thin enough
+The entry time (from first assignment to $\Lambda_0$) averages $8$ years.
+A cadre entering at age $22$ therefore reaches $\Lambda_0$ at
+${\sim}30$, $\Lambda_1$ at ${\sim}33$, $\Lambda_2$ at ${\sim}40$,
+$\Lambda_3$ at ${\sim}48$.  The margin between this ideal trajectory
+and the age boundary at $\Lambda_3$ is ${\sim}7$ years---thin enough
 that a single delay of one promotion cycle can be fatal.
 The lattice has additional substructure: each level contains
-\emph{hidden steps} (隐形台阶), e.g.\ within $L_2$ the
+\emph{hidden steps} (隐形台阶), e.g.\ within $\Lambda_2$ the
 progression 县委常委 $\to$ 常务副县长 $\to$ 县长 $\to$ 县委书记,
 and a mandatory \emph{government--party spiral}
 (政--党螺旋晋升模式) that alternates between government and
@@ -86,15 +86,15 @@ party positions.
 \begin{proposition}[Lattice as viability constraint]
 \label{prop:pyramid-viability}
 The filtration ratios satisfy $r_k \ll 1$ for $k \geq 1$
-and $r_0 < 1$.  The cumulative survival ratio from $L_0$ to
-$L_3$ is
+and $r_0 < 1$.  The cumulative survival ratio from $\Lambda_0$ to
+$\Lambda_3$ is
 \[
   p_{\textup{top}}
   \;=\; \prod_{k=0}^{K-1} r_k
   \;=\; 0.41 \times 0.14 \times 0.13
   \;\approx\; 0.0074.
 \]
-Fewer than $1\%$ of cadres at $L_0$ will occupy $L_3$ in their
+Fewer than $1\%$ of cadres at $\Lambda_0$ will occupy $\Lambda_3$ in their
 career.  The age boundaries impose a hard absorbing face: in the
 viability framework (\cref{thm:viability-di}), the constraint set is
 \begin{equation}\label{eq:cadre-K}
@@ -259,7 +259,7 @@ In the execution graph $G = (V, E)$ (\cref{def:exgraph})
 of the cadre lattice, a \emph{cradle node} $v \in V$ is a
 node with anomalously high conditional promotion rate:
 if $p_v$ is the probability that a cadre who passes through
-$v$ reaches $L_{k+1}$, then $v$ is a cradle if
+$v$ reaches $\Lambda_{k+1}$, then $v$ is a cradle if
 $p_v / r_k > c$ for a threshold $c > 1$.
 The principle 高进高出 (``high entry, high exit'') describes
 the mechanism: cradle institutions attract already-promising
@@ -358,7 +358,7 @@ subgraph $C \subseteq G$ whose edges are blood ties
 (parent--child, sibling) or marriage ties (spouse, in-law),
 satisfying:
 \begin{enumerate}[label=(\roman*)]
-  \item every node in $C$ is a cadre at $L_k$ for some
+  \item every node in $C$ is a cadre at $\Lambda_k$ for some
     $k \geq 0$;
   \item the internal coupling is cooperative: the promotion
     of one member increases the promotion probability of
