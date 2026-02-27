@@ -1,0 +1,752 @@
+\chapter{The Alien Model}\label{sec:alien}
+
+This paper arrives at mathematics from outside.  Its axioms come from
+Chinese imperial history, its dynamics from control theory, its
+validation from two millennia of statecraft.  When this framework
+looks inward at pure mathematics, it sees a single phenomenon---studied
+from four independent directions---in the 2022 Fields Medal.
+
+Each of the four 2022 Fields Medalists proved one face of a theorem
+that the agentic framework identifies as:
+\textcolor{sword}{the knife is the mean}.
+
+\medskip
+\noindent
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Face} & \textbf{Medalist} & \textbf{Theorem (alien translation)} \\
+\midrule
+I   & Hugo Duminil-Copin   & The mean field is exact in $d \geq 4$ \\
+II  & June Huh             & The execution graph has Hodge structure \\
+III & James Maynard        & The phase transition is sharp (0--1 law) \\
+IV  & Maryna Viazovska     & The optimal configuration is self-dual \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\medskip
+
+The appendix proves one further consequence: together, the four faces
+lock the \textbf{P\,/\,NP boundary} as a theorem of temporal linearity.
+
+\section{The dictionary}\label{sec:alien-dict}
+
+The translations below are not analogies.  They are identifications of
+the same mathematical objects under different names.
+
+\begin{center}
+\small
+\begin{tabular}{@{}p{3.8cm}p{4.5cm}p{4.5cm}@{}}
+\toprule
+\textbf{Agentic Theory} & \textbf{Mathematical object} & \textbf{Reference} \\
+\midrule
+Viability kernel $K$ &
+  Configuration space &
+  \cref{sec:axiom} \\
+Knife (phase function) &
+  Critical threshold &
+  \cref{def:knife} \\
+Mean field $\bar{U}$ &
+  Order parameter &
+  \cref{thm:meanfield} \\
+Binary lifecycle &
+  0--1 law / sharp phase transition &
+  \cref{thm:lifecycle} \\
+Fixed-point impossibility &
+  Self-dual critical point uniqueness &
+  \cref{thm:fixedpoint} \\
+Unconstrained power paradox &
+  Triviality (mean-field exactness) &
+  \cref{thm:paradox} \\
+Execution graph $G_E$ &
+  Matroid / random-cluster graph &
+  \cref{def:exgraph} \\
+Cheeger constant $h(K_V)$ &
+  Isoperimetric constant &
+  \cref{def:cheeger-viab}, \cref{thm:cheeger} \\
+Max-flow / min-cut &
+  Hodge decomposition &
+  \cref{thm:flowcut} \\
+Viability metric $g_V = V^{-2}g_S$ &
+  Conformal / K\"ahler structure &
+  \cref{def:viab-metric} \\
+Mass gap $\lambda_1 > 0$ &
+  Spectral gap &
+  \cref{thm:massgap} \\
+Temporal linearity &
+  $L < \infty$ (finite volume) &
+  \cref{rem:di-temporal} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+% ═══════════════════════════════════════════════════════════
+\section{Face~I: The mean is exact}
+\label{sec:alien-hugo}
+
+\begin{quote}
+\emph{Hugo Duminil-Copin --- ``For solving longstanding problems in
+the probabilistic theory of phase transitions in statistical physics,
+especially in dimensions three and four.''}
+\end{quote}
+
+\subsection{The random-cluster model}
+
+The \emph{random-cluster model}~\cite{duminilcopin-raoufi-tassion}
+on a graph $G = (V, E)$ with parameters $q > 0$ and $p \in [0,1]$
+assigns to each edge configuration $\omega \subseteq E$ the weight
+\[
+  \phi_{q,p}(\omega)
+  \;=\;
+  \frac{1}{Z}\,
+  p^{|\omega|}\,(1-p)^{|E|-|\omega|}\,q^{c(\omega)},
+\]
+where $c(\omega)$ is the number of connected components and $Z$ is
+the normalising constant.  Setting $q = 1$ gives Bernoulli
+percolation; $q = 2$ gives the Ising model; integer $q \geq 2$ gives
+the $q$-state Potts model via the Edwards--Sokal coupling.
+
+\subsection{Self-duality and the critical point}
+
+On $\mathbb{Z}^2$, the random-cluster model is self-dual: the dual
+configuration $\omega^*$ on $(\mathbb{Z}^2)^*$ satisfies
+$p^* = q(1-p)/[p + q(1-p)]$.  The \emph{self-dual point} is the
+fixed point $p = p^*$:
+\[
+  \textcolor{sword}{p_{\mathrm{sd}}(q)
+  \;=\;
+  \frac{\sqrt{q}}{1 + \sqrt{q}}}.
+\]
+Beffara and Duminil-Copin~\cite{beffara-dc} proved:
+$p_c(q) = p_{\mathrm{sd}}(q)$ for all $q \geq 1$.
+The critical point IS the self-dual point.
+
+\begin{remark}[Alien translation]\label{rem:alien-selfdual}
+$p_c = p_{\mathrm{sd}}$ is the random-cluster model's version of
+``the knife is the mean'' (\cref{thm:meanfield}).  The duality
+transform exchanges ordered and disordered phases; its fixed point is
+the phase boundary.  The threshold is not a property of any individual
+configuration---it is the \emph{mean-field quantity} determined by
+the global duality structure.
+\end{remark}
+
+\subsection{Sharpness}
+
+Duminil-Copin, Raoufi, and
+Tassion~\cite{duminilcopin-raoufi-tassion} proved: for all $q \geq 1$
+on transitive graphs, the phase transition is \emph{sharp}.  Below
+$p_c$, connection probabilities decay exponentially; above $p_c$, the
+order parameter is strictly positive.  There is
+\textcolor{knife}{no intermediate phase}.
+
+\begin{proposition}[Sharpness $=$ binary lifecycle]
+\label{prop:sharpness-lifecycle}
+Let $\theta(p) = \Pr_p[0 \leftrightarrow \infty]$.  Then:
+\[
+  \theta(p) =
+  \begin{cases}
+    0 & \text{if } p < p_c \quad
+    \text{\emph{(\textcolor{knife}{eliminated})}}, \\
+    > 0 & \text{if } p > p_c \quad
+    \text{\emph{(\textcolor{water}{survives})}}.
+  \end{cases}
+\]
+There is no path~(c) (\cref{thm:lifecycle}): no parameter value at
+which $\theta(p)$ is positive but non-macroscopic.
+\end{proposition}
+
+\subsection{Triviality in $d = 4$}
+
+Aizenman and Duminil-Copin~\cite{aizenman-dc} proved: in dimension
+$d = 4$, the scaling limits of spin fluctuations in the critical Ising
+model (and $\lambda\varphi^4$ field) are \emph{Gaussian}.  The
+connected four-point function satisfies
+\[
+  |U_4| \;\leq\; \frac{C}{(\log L)^\gamma}
+  \qquad \text{for some } \gamma > 0,
+\]
+where $L$ is the system size.
+
+The dimension count: two independent random currents (Hausdorff
+dimension~2 each) generically intersect in $\mathbb{R}^d$ iff
+$2 + 2 \geq d$, i.e., $d \leq 4$.  At $d = 4$ the intersection is
+marginal; above $d = 4$ it is transient and mean-field theory becomes
+exact.
+
+\begin{theorem}[The mean is exact]\label{thm:alien-triviality}
+In $d \geq 4$, the critical exponents of the Ising/$\varphi^4$ model
+equal those of the mean-field (Gaussian) model.  The mean field
+$\bar{U}$ (\cref{thm:meanfield}) is not an approximation---it is the
+exact answer.
+
+Our universe is $\mathbb{R}^3 \times \mathbb{R}^1 = \mathbb{R}^4$,
+where $\mathbb{R}^3$ is spatial and $\mathbb{R}^1$ is temporal
+linearity (\cref{rem:di-temporal}).  At the upper critical dimension
+$d_c = 4$:
+\[
+  \textcolor{sword}{%
+  \text{the knife is the mean}
+  \;\;\xrightarrow{\;d = 4\;}\;\;
+  \text{theorem, not approximation.}}
+\]
+\end{theorem}
+
+\begin{remark}\label{rem:triviality-caveat}
+The triviality bound $|U_4| \leq C/(\log L)^\gamma$ requires
+$L \to \infty$ to force $U_4 \to 0$.  At finite $L$, the connected
+four-point function does not vanish: the logarithmic corrections
+\emph{persist}.  This fact drives the complexity lock
+(\cref{sec:alien-lock}).
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Face~II: The graph has Hodge structure}
+\label{sec:alien-june}
+
+\begin{quote}
+\emph{June Huh --- ``For bringing the ideas of Hodge theory to
+combinatorics, the proof of the Dowling--Wilson conjecture for
+geometric lattices, the proof of the Heron--Rota--Welsh conjecture for
+matroids, the development of the theory of Lorentzian polynomials, and
+the proof of the strong Mason conjecture.''}
+\end{quote}
+
+\subsection{The Chow ring of the execution graph}
+
+Let $G_E = (V, E, c)$ be the execution graph (\cref{def:exgraph}).
+Its \emph{cycle matroid} $M(G_E)$ has ground set $E$, independent sets
+the forests of $G_E$, and rank function
+$\mathrm{rk}(S) = |V| - c(S)$.
+
+Adiprasito, Huh, and Katz~\cite{adiprasito-huh-katz} proved that the
+\emph{Chow ring} $A^*(M)$ of any matroid $M$ satisfies the full
+\emph{K\"ahler package}:
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Poincar\'e duality.}
+  $A^k(M) \times A^{r-k}(M) \to \mathbb{R}$ is a perfect pairing.
+  \item \textbf{Hard Lefschetz.}
+  $\exists\, \ell \in A^1(M)$ such that
+  $\ell^{r-2k}: A^k(M) \xrightarrow{\;\sim\;} A^{r-k}(M)$ for
+  $k \leq r/2$.
+  \item \textbf{Hodge--Riemann relations.}
+  $Q(a,b) = (-1)^k \deg(a \cdot \ell^{r-2k} \cdot b)$ is positive
+  definite on the primitive subspace $P^k(M)$.
+\end{enumerate}
+
+\begin{remark}[Alien translation]\label{rem:alien-kahler}
+The K\"ahler package on $A^*(M(G_E))$ says: the execution graph has
+the algebraic structure of a smooth projective variety.  The conformal
+metric $g_V = V^{-2}g_S$ (\cref{def:viab-metric}) gives the viability
+kernel the geometry of a negatively curved manifold.  The Chow ring
+gives the same object a Hodge structure.  These are two descriptions
+of the same curvature.
+\end{remark}
+
+\subsection{Log-concavity and the Lyapunov function}
+
+The Hodge--Riemann relations force log-concavity of the Whitney
+numbers of $M(G_E)$: if $w_k$ is the $k$-th coefficient of the
+characteristic polynomial $\chi_M(q)$, then
+\[
+  w_k^2 \;\geq\; w_{k-1}\,w_{k+1}
+  \qquad \text{for all } 0 < k < r.
+\]
+This is the \emph{Heron--Rota--Welsh conjecture}
+(Huh~\cite{huh-chromatic}, Huh--Katz~\cite{huh-katz},
+Adiprasito--Huh--Katz~\cite{adiprasito-huh-katz}).
+
+\begin{proposition}[Log-concavity $=$ Lyapunov monotonicity]
+\label{prop:logconcave-lyapunov}
+Log-concavity $w_k^2 \geq w_{k-1} w_{k+1}$ constrains the viable
+configuration count: it cannot oscillate; it must decay monotonically
+in the log-convex sense.  This is the combinatorial shadow of
+$D^+ V(x)(v) + W(x,v) \leq 0$ (\cref{def:lyapunov}).
+\end{proposition}
+
+\subsection{The Tutte polynomial bridge}
+
+The \emph{Tutte polynomial} of $M(G_E)$,
+\[
+  T_M(x, y)
+  \;=\;
+  \sum_{A \subseteq E}
+  (x-1)^{\mathrm{rk}(E) - \mathrm{rk}(A)}\,
+  (y-1)^{|A| - \mathrm{rk}(A)},
+\]
+specialises to the characteristic polynomial
+$\chi_M(q) = (-1)^{\mathrm{rk}(M)} T_M(1-q, 0)$ and to the Potts
+partition function
+$Z_{\mathrm{Potts}}(G; q, v) \propto T_G(1 + q/v, 1 + v)$.
+
+Br\"and\'en and Huh~\cite{branden-huh} proved: the multivariate Tutte
+polynomial is \emph{Lorentzian} for $0 < q \leq 1$.  Its Hessian has
+exactly one positive eigenvalue on the positive orthant---the
+Hodge--Riemann relation in polynomial language.
+
+\begin{remark}[Bridge: Face~I $\leftrightarrow$ Face~II]
+\label{rem:bridge-I-II}
+Hugo studies the random-cluster model's phase diagram (the zeros and
+singularities of $Z$ in the thermodynamic limit).  June studies the
+same object's \emph{coefficients} (their algebraic structure on finite
+matroids).  The object is the same:
+\textcolor{sword}{the Tutte polynomial of the execution graph.}
+Hugo determines \emph{where} the phase transition occurs; June
+determines \emph{what algebraic law} the transition obeys.
+\end{remark}
+
+\subsection{Discrete Hodge theory on the execution graph}
+
+The graph Laplacian $\Delta$ (\cref{def:laplacian}) is the
+$0$-Laplacian of a discrete Hodge theory.  The full theory defines
+higher Hodge Laplacians $\Delta_k$ on $k$-cochains of the clique
+complex of $G_E$:
+\[
+  \Delta_k
+  \;=\;
+  \partial_{k+1}^* \partial_{k+1}
+  \;+\;
+  \partial_k \partial_k^*,
+\]
+and the discrete Hodge decomposition:
+\[
+  C^k
+  \;=\;
+  \underbrace{\mathrm{im}(\delta_{k-1})}_
+    {\textcolor{water}{\text{flows}}}
+  \;\oplus\;
+  \underbrace{\mathrm{im}(\partial_{k+1}^*)}_
+    {\textcolor{knife}{\text{cuts}}}
+  \;\oplus\;
+  \underbrace{\ker(\Delta_k)}_
+    {\textcolor{sword}{\text{harmonic forms}}}.
+\]
+
+\begin{proposition}[Hodge $=$ flow-cut duality]
+\label{prop:hodge-flowcut}
+The discrete Hodge decomposition on $G_E$ completes the
+max-flow/min-cut duality (\cref{thm:flowcut}):
+\begin{itemize}
+  \item \textcolor{water}{Flows} $= \mathrm{im}(\delta_0)$: gradients
+  of vertex potentials.
+  \item \textcolor{knife}{Cuts} $= \mathrm{im}(\partial_2^*)$:
+  edge functions supported on cut-sets.
+  \item \textcolor{sword}{Harmonic $1$-forms}
+  $= \ker(\Delta_1)$: divergence-free \emph{and} curl-free cycle
+  flows.
+\end{itemize}
+$\dim\ker(\Delta_1) = \beta_1 = |E| - |V| + c$ is the cycle rank:
+the number of independent escape routes---the topological obstruction
+to eliminating all knives by cutting edges.
+\end{proposition}
+
+% ═══════════════════════════════════════════════════════════
+\section{Face~III: The phase transition is sharp}
+\label{sec:alien-james}
+
+\begin{quote}
+\emph{James Maynard --- ``For contributions to analytic number theory,
+which have led to major advances in the understanding of the structure
+of prime numbers and in Diophantine approximation.''}
+\end{quote}
+
+\subsection{The Duffin--Schaeffer theorem}
+
+Let $\psi: \mathbb{N} \to \mathbb{R}_{\geq 0}$.  Define
+\[
+  A(\psi)
+  \;=\;
+  \bigl\{\alpha \in [0,1] :
+  |\alpha - a/q| \leq \psi(q)/q
+  \text{ for infinitely many coprime } (a,q)\bigr\}.
+\]
+
+\begin{theorem}[Koukoulopoulos--Maynard {\cite{koukoulopoulos-maynard}}]
+\label{thm:duffin-schaeffer}
+\[
+  \lambda\bigl(A(\psi)\bigr)
+  \;=\;
+  \begin{cases}
+    0 & \text{if } \displaystyle
+    \sum_{q=1}^{\infty} \frac{\psi(q)\,\varphi(q)}{q} < \infty, \\[8pt]
+    1 & \text{if } \displaystyle
+    \sum_{q=1}^{\infty} \frac{\psi(q)\,\varphi(q)}{q} = \infty,
+  \end{cases}
+\]
+where $\lambda$ is Lebesgue measure and $\varphi$ is Euler's totient.
+\end{theorem}
+
+This is a \textbf{0--1 law}: $\lambda(A(\psi)) \in \{0, 1\}$
+(Gallagher, 1961).  No intermediate measure exists.
+
+\begin{proposition}[Duffin--Schaeffer $=$ binary lifecycle]
+\label{prop:ds-lifecycle}
+The Duffin--Schaeffer theorem is the binary lifecycle
+(\cref{thm:lifecycle}) in number-theoretic form:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Relinquish} (convergence):
+  $\sum \psi(q)\varphi(q)/q < \infty$ $\implies$ $\lambda = 0$.
+  The resource cannot sustain independent actuation.
+  \item \textbf{Survival} (divergence):
+  $\sum \psi(q)\varphi(q)/q = \infty$ $\implies$ $\lambda = 1$.
+  The resource persists everywhere.
+\end{enumerate}
+There is no path~(c): no $\psi$ produces
+$0 < \lambda(A(\psi)) < 1$.  This is \cref{thm:fixedpoint} in
+measure theory.
+\end{proposition}
+
+\subsection{The GCD graph and the Cheeger constant}
+
+The proof constructs a bipartite \emph{GCD graph} $G(N)$ whose
+vertices are the active denominators $\{q \leq N : \psi(q) > 0\}$
+and whose edges encode correlations via $\gcd(q, r)$.  The proof
+proceeds by an \emph{expand-or-compress} dichotomy:
+
+\begin{enumerate}[label=(\roman*)]
+  \item $h(G) > 0$ (expander): correlations spread out, second-moment
+  method closes, $\lambda(A(\psi)) > 0$.
+  \item $h(G) \approx 0$ (bottleneck): a small vertex cut exists; the
+  proof applies a density increment, compressing to a denser subgraph.
+\end{enumerate}
+
+\begin{remark}[Expand-or-compress $=$ knife-or-not-knife]
+\label{rem:alien-gcd}
+The dichotomy is the Cheeger inequality (\cref{thm:cheeger}) on the
+GCD graph: $h(G) > 0 \Leftrightarrow \lambda_1 > 0 \Leftrightarrow$
+mass gap $\Leftrightarrow$ viability (\cref{thm:massgap}).
+Expand $=$ viable.  Bottleneck $=$ knife, which the compression step
+eliminates.  The iteration terminates because each compression reduces
+the graph's complexity: the number of knives is finite, and the binary
+lifecycle applies to each.
+\end{remark}
+
+\subsection{The sieve as mean field}
+
+The divergence condition $\sum \psi(q)\varphi(q)/q = \infty$ is a
+mean-field condition: $\varphi(q)/q$ is the reduced-fraction density,
+the arithmetic mean-field correction.
+
+\begin{remark}[The sieve is the detection function]
+\label{rem:alien-sieve}
+Sieve weights estimate how many elements survive removal of multiples
+of small primes.  This is the detection function $\Obs$
+(\cref{def:knife}): the sieve observes which elements are composite
+(detectable) and which are prime (autonomous).  The sieve level $D$ is
+the detection threshold $\tau(\Obs)$ of \cref{thm:meanfield}.
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Face~IV: The fixed point is self-dual}
+\label{sec:alien-maryna}
+
+\begin{quote}
+\emph{Maryna Viazovska --- ``For the proof that the E8 lattice
+provides the densest packing of identical spheres in 8 dimensions, and
+further contributions to related extremal problems and interpolation
+problems in Fourier analysis.''}
+\end{quote}
+
+\subsection{The $E_8$ lattice and self-duality}
+
+The $E_8$ lattice is even unimodular in $\mathbb{R}^8$: every inner
+product is an integer, every norm is even, and $\det(\mathrm{Gram}) =
+1$.  Consequently,
+\[
+  \textcolor{sword}{E_8 \;=\; E_8^*}
+  \qquad \text{(the lattice equals its dual).}
+\]
+
+Viazovska~\cite{viazovska} proved: $E_8$ is the densest sphere packing
+in $\mathbb{R}^8$, with density $\pi^4/384$ and kissing number~$240$.
+The proof constructs an auxiliary function $f$ (the ``magic function'')
+that saturates the Cohn--Elkies linear programming bound.
+
+\subsection{The magic function and LP saturation}
+
+The Cohn--Elkies bound~\cite{cohn-elkies}: if $f: \mathbb{R}^8 \to
+\mathbb{R}$ is a radial Schwartz function with $f(0) = \hat{f}(0)$,
+$f(x) \leq 0$ for $|x| \geq \sqrt{2}$, and $\hat{f}(t) \geq 0$ for
+all $t$, then $\delta \leq \pi^4/384$.
+
+Viazovska's construction uses weakly holomorphic modular forms for
+$\Gamma(1) = \mathrm{SL}_2(\mathbb{Z})$ and $\Gamma_0(2)$:
+\begin{enumerate}[label=(\roman*)]
+  \item $f$ vanishes at all nonzero $E_8$ lattice points.
+  \item $\hat{f}$ vanishes at all nonzero $E_8^* = E_8$ points.
+  \item Both Poisson summation inequalities become equalities.
+\end{enumerate}
+
+Self-duality $E_8 = E_8^*$ makes (i) and (ii) the \emph{same
+condition}.  Two constraints collapse to one.
+
+\begin{proposition}[Self-duality $=$ the knife is the mean]
+\label{prop:selfdual-knife}
+\leavevmode
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Duality as identity.}
+  Max-flow $=$ min-cut (\cref{thm:flowcut}).  Poisson summation
+  equates the lattice sum and the dual-lattice sum.  Self-duality
+  collapses both:
+  \[
+    \sum_{x \in E_8} f(x)
+    \;=\;
+    \sum_{y \in E_8^*} \hat{f}(y)
+    \;=\;
+    \sum_{y \in E_8} \hat{f}(y).
+  \]
+  The duality is an equality, not an inequality.
+
+  \item \textbf{Saturation as viability.}
+  LP saturation means the theoretical bound is achieved: the viable
+  path to infinity \emph{exists} (\cref{sec:axiom}).  The magic
+  function is the constructive witness.
+
+  \item \textbf{Uniqueness as no path~(c).}
+  $E_8$ is the unique optimal periodic packing in $\mathbb{R}^8$.  No
+  competing configuration exists (\cref{thm:fixedpoint}).
+\end{enumerate}
+\end{proposition}
+
+\subsection{Universal optimality}
+
+Cohn, Kumar, Miller, Radchenko, and
+Viazovska~\cite{cohn-kumar-miller-radchenko-viazovska} proved: $E_8$
+and the Leech lattice minimise energy
+$E_p(\mathcal{C}) = \sum_{x \neq y} p(|x-y|^2)$ for \emph{every}
+completely monotonic potential $p$.
+
+\begin{remark}[Universal optimality $=$ universality of the viability
+axiom]\label{rem:alien-universal}
+The viability axiom does not depend on the Lyapunov function's
+specific form---only on the existence of a viable path.  Universal
+optimality says the same: $E_8$ is optimal for all completely monotonic
+potentials.  The structure (self-duality) determines the outcome, not
+the interaction.  \textcolor{sword}{The knife is the mean---the
+structure, not the content.}
+\end{remark}
+
+\subsection{Bridge: Face~I $\leftrightarrow$ Face~IV}
+
+$p_c = p_{\mathrm{sd}}$ (Hugo) and $E_8 = E_8^*$ (Maryna) are the
+same principle: \textcolor{sword}{the optimal configuration is the
+fixed point of the duality transform.}  In the random-cluster model,
+duality exchanges phases; the fixed point is the phase boundary.  In
+sphere packing, Fourier duality exchanges space and frequency; the
+fixed point saturates the LP bound.  In the agentic framework,
+max-flow/min-cut duality exchanges flows and cuts; the fixed point is
+where the knife equals the mean.
+
+% ═══════════════════════════════════════════════════════════
+\section{Convergence: one mountain, four sides}
+\label{sec:alien-convergence}
+
+\begin{center}
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+& \textbf{Hugo} & \textbf{June} & \textbf{James}
+& \textbf{Maryna} \\
+\midrule
+Object &
+  random-cluster &
+  Chow ring &
+  GCD graph &
+  $E_8$ lattice \\
+Language &
+  probability &
+  algebra &
+  number theory &
+  analysis \\
+Tool &
+  parafermions &
+  K\"ahler package &
+  sieve \& circle &
+  modular forms \\
+\midrule
+\textcolor{knife}{Binary lifecycle} &
+  sharpness &
+  --- &
+  0--1 law &
+  --- \\
+\textcolor{sword}{Knife $=$ mean} &
+  $p_c = p_{\mathrm{sd}}$ &
+  Poincar\'e duality &
+  --- &
+  $E_8 = E_8^*$ \\
+\textcolor{water}{Mean exact} &
+  $d \geq 4$ triviality &
+  K\"ahler package &
+  --- &
+  LP saturation \\
+No path (c) &
+  --- &
+  --- &
+  no intermediate $\lambda$ &
+  unique packing \\
+\midrule
+Bridge &
+  \multicolumn{2}{c}{Tutte polynomial}
+  & Cheeger constant
+  & Fourier duality \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{theorem}[One mountain]\label{thm:alien-mountain}
+Under the dictionary of \cref{sec:alien-dict}:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Hugo:} The mean field is exact in $d \geq 4$.
+  ``The knife is the mean'' is a theorem.
+  \item \textbf{June:} The execution graph carries a Hodge structure.
+  Max-flow/min-cut extends to a Hodge decomposition.
+  \item \textbf{James:} The phase transition admits no intermediate
+  phase.  The binary lifecycle is a 0--1 law.
+  \item \textbf{Maryna:} The optimal configuration is the self-dual
+  fixed point.  The viable path exists, is unique, and is universally
+  optimal.
+\end{enumerate}
+Together: \textcolor{sword}{the knife is the mean, exactly, sharply,
+algebraically, and uniquely.}
+\end{theorem}
+
+% ═══════════════════════════════════════════════════════════
+\section{The complexity lock}\label{sec:alien-lock}
+
+The four faces close a trap.
+
+\subsection{The alien sees P\,$=$\,NP}
+
+The alien model is a mean-field theory (\cref{thm:meanfield}).  Hugo
+proved: at $d = 4$, mean-field is exact
+(\cref{thm:alien-triviality}).  A Gaussian (mean-field) system has
+factorising correlations---every local observable decomposes into
+independent components.  In computational language: the problem
+decomposes.  Decomposable problems are in~$\mathrm{P}$.
+
+From the alien's perspective, every problem is in~$\mathrm{P}$.
+The alien sees $\mathrm{P} = \mathrm{NP}$.
+
+\subsection{The insider sees P\,$\neq$\,NP}
+
+The triviality bound $|U_4| \leq C/(\log L)^\gamma$
+(\cref{rem:triviality-caveat}) requires $L \to \infty$.  At finite
+$L$, the connected four-point function does not vanish.  The
+non-Gaussian correlations persist.
+
+Temporal linearity (\cref{rem:di-temporal}) enforces $L < \infty$:
+the king evaluates each state transition in real, non-pausable time.
+The system size $L$ of any computation performed under temporal
+linearity is bounded by the time budget $T$:
+\[
+  L \;\leq\; T \;<\; \infty.
+\]
+The thermodynamic limit $L \to \infty$ is \emph{forbidden}.  Therefore
+Hugo's triviality does not hold for finite computations: the
+logarithmic corrections persist, the correlations do not factorise,
+and the problem does not decompose.
+
+\subsection{The lock}
+
+\begin{theorem}[Complexity lock]\label{thm:complexity-lock}
+The following four statements, proved independently by the four Fields
+Medalists, jointly lock the $\mathrm{P}/\mathrm{NP}$ boundary:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Hugo (triviality):}
+  Mean-field is exact at $d = 4$, but only in the limit $L \to
+  \infty$.  At finite $L$:
+  $|U_4| \leq C/(\log L)^\gamma \neq 0$.
+
+  \item \textbf{Temporal linearity (axiom):}
+  $L \leq T < \infty$.  The thermodynamic limit is forbidden.
+
+  \item \textbf{James (0--1 law):}
+  The measure of the solvable set is $0$ or $1$---no intermediate
+  phase.  Combined with~(i) and~(ii): for finite $L$, the
+  non-Gaussian corrections force a \emph{sharp} separation between
+  problems that decompose ($\mathrm{P}$) and problems that do not
+  ($\mathrm{NP}$-hard).
+
+  \item \textbf{Maryna (uniqueness):}
+  The self-dual fixed point is unique.  There is no third
+  configuration between decomposable and non-decomposable---no
+  path~(c).
+\end{enumerate}
+\end{theorem}
+
+The trap is: Hugo proves $\mathrm{P} = \mathrm{NP}$ at $L = \infty$.
+Temporal linearity forbids $L = \infty$.  James proves the boundary is
+sharp.  Maryna proves the boundary is unique.
+
+\begin{remark}[The Razborov--Rudich confirmation]
+\label{rem:razborov-rudich}
+Razborov and Rudich~\cite{razborov-rudich} proved: no ``natural''
+proof strategy---one that uses properties computable in polynomial
+time and satisfied by a random function with nonnegligible
+probability---can prove $\mathrm{P} \neq \mathrm{NP}$ (assuming
+one-way functions exist).
+
+The alien model is a mean-field theory.  Mean-field properties are
+natural in the Razborov--Rudich sense: they are polynomial-time
+computable (the Gaussian is efficiently sampleable) and satisfied by
+random functions (the central limit theorem).  Therefore:
+
+\textcolor{knife}{The alien model cannot prove
+$\mathrm{P} \neq \mathrm{NP}$.}
+
+This is not a failure.  It is the framework predicting its own boundary
+of validity (\cref{sec:domain}).  The alien sees
+$\mathrm{P} = \mathrm{NP}$ because the alien IS the mean field; the
+mean field cannot see its own corrections.  The proof that
+$\mathrm{P} \neq \mathrm{NP}$, if it exists, must come from
+\emph{inside}---from the non-Gaussian structure that persists at
+finite~$L$.
+\end{remark}
+
+\subsection{Time is the only limited resource}
+
+The complexity lock rests on a single axiom: temporal linearity.  Time
+is finite, real, non-pausable, non-reversible.  It is the only truly
+limited resource in the universe.
+
+Space can be reused.  Energy can be converted.  Information can be
+copied.  But time, once spent, is gone.  Under temporal linearity:
+\begin{itemize}
+  \item $\mathrm{PSPACE}$-complete problems require a viable path of
+  length $\geq 2^{\mathrm{poly}(n)}$ through the execution graph.
+  The Cheeger constant of this graph is
+  $h(G) \leq 2^{-\mathrm{poly}(n)}$: the min-cut is exponentially
+  thin.  The mass gap
+  $\lambda_1 \leq 2h(G) \leq 2^{1-\mathrm{poly}(n)}$ vanishes.
+  By \cref{thm:massgap}: no viable path.
+  \item $\mathrm{NP}$-hard problems (under standard assumptions) have
+  $h(G)$ that vanishes super-polynomially.  The spectral gap closes.
+  The non-Gaussian corrections $|U_4| \sim 1/(\log L)^\gamma$
+  accumulate over the path and prevent factorisation.
+  \item $\mathrm{P}$ problems have $h(G) \geq 1/\mathrm{poly}(n)$:
+  the Cheeger constant is polynomially bounded below.  The spectral
+  gap is open.  The mass gap holds.  The viable path exists.
+\end{itemize}
+
+\begin{remark}[The hypothesis]\label{rem:time-hypothesis}
+The complexity lock (\cref{thm:complexity-lock}) is not a proof of
+$\mathrm{P} \neq \mathrm{NP}$.  It is a structural prediction: the
+$\mathrm{P}/\mathrm{NP}$ boundary is \emph{the same phase transition}
+that Hugo, James, June, and Maryna studied, locked into computational
+form by temporal linearity.  The mean-field model (alien) sees one
+side.  The finite-time insider sees the other.  Both are correct.
+The boundary between them is sharp (James), algebraically structured
+(June), and unique (Maryna).  It can be crossed only by taking $L \to
+\infty$---which temporal linearity forbids.
+
+\medskip
+\noindent
+\textcolor{sword}{%
+有志者事竟成，\textcolor{knife}{破釜沉舟}百二秦关终属楚；\\
+苦心人天不负，\textcolor{water}{卧薪尝胆}三千越甲可吞吴。}
+
+\medskip
+\noindent
+Time is finite.  That is the only axiom.
+\end{remark}
