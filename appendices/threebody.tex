@@ -1,0 +1,265 @@
+\chapter{三体 --- The Three-Body Mass Gap}\label{app:threebody}
+
+The triad of \cref{app:triad} modelled three coupled variables
+as a cooperative dynamical system.  This appendix models the
+\emph{gravitational} three-body problem---the oldest unsolved
+problem in classical mechanics---through the lens of fixed points
+and mass gaps, and connects it to the viability framework.
+
+The central question is: \emph{can we place a fixed point, open a
+mass gap, and use gravity to close it?}  The answer is yes.
+In the restricted three-body problem, the Lagrange points are
+fixed points of the effective potential in the co-rotating frame.
+The Jacobi constant difference between a saddle point and a
+stable equilibrium defines a mass gap.  As the mass ratio $\mu$
+increases past the Routh critical value $\mu_{\mathrm{crit}}$,
+gravitational coupling destroys the stability of the fixed point,
+effectively closing the gap.
+
+\section{The restricted three-body problem}\label{sec:r3bp}
+
+\begin{definition}[Co-rotating frame]\label{def:corotating}
+Consider two masses $M_1 = 1 - \mu$ and $M_2 = \mu$
+($0 < \mu < 1$) in circular orbit about their common centre of
+mass, with unit separation and unit angular velocity.
+The \emph{co-rotating frame} fixes $M_1$ at $(-\mu, 0)$ and
+$M_2$ at $(1 - \mu, 0)$.  A test particle of negligible mass
+moves in the effective potential
+\begin{equation}\label{eq:eff-potential}
+  \Omega(x, y) \;=\;
+  \tfrac{1}{2}(x^2 + y^2)
+  \;+\; \frac{1 - \mu}{r_1}
+  \;+\; \frac{\mu}{r_2},
+\end{equation}
+where $r_1 = \sqrt{(x + \mu)^2 + y^2}$ and
+$r_2 = \sqrt{(x - 1 + \mu)^2 + y^2}$.
+\end{definition}
+
+The equations of motion in the co-rotating frame are
+\begin{equation}\label{eq:eom-rotating}
+  \ddot{x} - 2\dot{y} = \frac{\partial \Omega}{\partial x},
+  \qquad
+  \ddot{y} + 2\dot{x} = \frac{\partial \Omega}{\partial y}.
+\end{equation}
+The Coriolis terms $\pm 2\dot{y}$, $\mp 2\dot{x}$ encode the
+non-inertial character of the rotating frame and are the mechanism
+by which gravity ultimately closes the mass gap.
+
+\begin{definition}[Jacobi constant]\label{def:jacobi}
+The \emph{Jacobi constant} is the integral of motion
+\begin{equation}\label{eq:jacobi}
+  C_J \;=\; 2\,\Omega(x, y) \;-\;
+  (\dot{x}^2 + \dot{y}^2).
+\end{equation}
+At an equilibrium point ($\dot{x} = \dot{y} = 0$), one has
+$C_J = 2\,\Omega$.
+\end{definition}
+
+\section{Lagrange points as fixed points}\label{sec:lagrange-fp}
+
+\begin{proposition}[Lagrange points]\label{prop:lagrange}
+The effective potential $\Omega$ has exactly five critical points
+(Lagrange points):
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Collinear points} $L_1, L_2, L_3$: located on
+    the $x$-axis ($y = 0$), one between $M_1$ and $M_2$ ($L_1$),
+    one beyond $M_2$ ($L_2$), and one beyond $M_1$ ($L_3$).
+    All three are saddle points of $\Omega$.
+  \item \textbf{Equilateral points} $L_4, L_5$: located at
+    $(x, y) = (\tfrac{1}{2} - \mu,\; \pm\tfrac{\sqrt{3}}{2})$,
+    forming equilateral triangles with $M_1$ and $M_2$.
+    At these points $r_1 = r_2 = 1$.
+\end{enumerate}
+The Jacobi constants satisfy
+$C_J(L_1) > C_J(L_2) > C_J(L_3) > C_J(L_4) = C_J(L_5)$.
+\end{proposition}
+
+\begin{proof}
+Setting $\nabla\Omega = 0$ with $y = 0$ yields a quintic equation
+in $x$ for each collinear point; existence and uniqueness in each
+interval follow from the intermediate value theorem and
+monotonicity of the gravitational terms.  For $L_4$/$L_5$:
+at $(x, y) = (\tfrac{1}{2} - \mu, \pm\tfrac{\sqrt{3}}{2})$ one
+computes $r_1 = r_2 = 1$, and direct substitution into
+$\nabla\Omega = 0$ confirms equilibrium.  The Jacobi constant
+ordering follows from evaluation of $2\Omega$ at each point.
+\end{proof}
+
+\section{The mass gap}\label{sec:threebody-massgap}
+
+\begin{definition}[Mass gap]\label{def:mass-gap}
+The \emph{mass gap} of the three-body system at mass ratio $\mu$
+is
+\begin{equation}\label{eq:mass-gap}
+  \Delta(\mu)
+  \;:=\;
+  C_J(L_1) \;-\; C_J(L_4)
+  \;=\;
+  2\bigl[\Omega(L_1) - \Omega(L_4)\bigr].
+\end{equation}
+The gap $\Delta$ measures the energy barrier separating the
+saddle point $L_1$ from the stable equilibrium $L_4$: a test
+particle at $L_4$ with $C_J > C_J(L_1)$ is confined by the
+zero-velocity curve to a neighbourhood of $L_4$.
+\end{definition}
+
+\begin{proposition}[Analytical form at $L_4$]\label{prop:CJ-L4}
+At the equilateral point $L_4$ (or $L_5$),
+\begin{equation}\label{eq:CJ-L4}
+  C_J(L_4) \;=\; 3 - \mu + \mu^2.
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+At $L_4$: $r_1 = r_2 = 1$,
+$x = \tfrac{1}{2} - \mu$, $y = \tfrac{\sqrt{3}}{2}$.
+Then
+$\Omega(L_4) = \tfrac{1}{2}\bigl((\tfrac{1}{2} - \mu)^2
++ \tfrac{3}{4}\bigr) + (1 - \mu) + \mu
+= \tfrac{1}{2}(1 - \mu + \mu^2) + 1$,
+so $C_J(L_4) = 2\Omega(L_4) = 3 - \mu + \mu^2$.
+\end{proof}
+
+\section{Stability and the Routh criterion}\label{sec:routh}
+
+\begin{theorem}[Routh stability criterion]\label{thm:routh}
+The equilateral points $L_4$ and $L_5$ are linearly stable if and
+only if $\mu < \mu_{\mathrm{crit}}$, where
+\begin{equation}\label{eq:mu-crit}
+  \mu_{\mathrm{crit}}
+  \;=\; \frac{1}{2}\Bigl(1 - \sqrt{\tfrac{69}{81}}\,\Bigr)
+  \;=\; \frac{1}{2}\!\left(1 - \frac{\sqrt{69}}{9}\right)
+  \;\approx\; 0.03852.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+At $L_4$, the Hessian of $\Omega$ is
+$\Omega_{xx} = \tfrac{3}{4}$,
+$\Omega_{yy} = \tfrac{9}{4}$,
+$\Omega_{xy} = \tfrac{3\sqrt{3}}{4}(1 - 2\mu)$.
+The characteristic equation of the linearised system
+\eqref{eq:eom-rotating} at equilibrium is
+\begin{equation}\label{eq:char-L4}
+  \lambda^4 + \lambda^2 + \tfrac{27}{4}\,\mu(1 - \mu) = 0.
+\end{equation}
+Setting $s = \lambda^2$:
+$s^2 + s + \tfrac{27}{4}\mu(1 - \mu) = 0$.
+The discriminant is $1 - 27\mu(1 - \mu)$.  Both roots $s$
+are negative real (giving purely imaginary $\lambda$, hence
+stability) if and only if
+\[
+  1 - 27\mu(1 - \mu) \;\geq\; 0
+  \quad\Longleftrightarrow\quad
+  \mu(1 - \mu) \;\leq\; \tfrac{1}{27},
+\]
+which holds precisely for $\mu \leq \mu_{\mathrm{crit}}$.
+\end{proof}
+
+\section{Opening and closing the gap}\label{sec:gap-phases}
+
+The mass gap undergoes three phases as $\mu$ varies:
+
+\begin{theorem}[Mass gap phase transition]\label{thm:gap-transition}
+\hfill
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Vacuum} ($\mu \to 0^+$):
+    $\Delta(\mu) \to 0$.  The three-body problem degenerates to
+    Kepler two-body; no non-trivial fixed point exists.
+    The vacuum carries no mass gap.
+
+  \item \textbf{Gap open} ($0 < \mu < \mu_{\mathrm{crit}}$):
+    $\Delta(\mu) > 0$ and $L_4$ is linearly stable.
+    The fixed point is protected by the energy barrier $\Delta$:
+    trajectories with $C_J > C_J(L_1)$ are confined near $L_4$
+    by the zero-velocity curve.  The gravitational source
+    \emph{opened a fixed-point mass in the vacuum}.
+
+  \item \textbf{Gap closed by gravity}
+    ($\mu \geq \mu_{\mathrm{crit}}$):
+    $\Delta(\mu) > 0$ still, but $L_4$ is linearly
+    \emph{unstable}.  The Coriolis coupling (gravitational
+    frame-dragging in the co-rotating frame) exceeds the
+    restoring force.  The energy barrier persists but is
+    dynamically ineffective: gravity closed the gap.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)} As $\mu \to 0$, $L_1$ approaches $M_2$ and
+$\Omega(L_1) \to \Omega(L_4) + O(\mu^{2/3})$.
+Specifically, $C_J(L_1) - C_J(L_4) \sim 2 \cdot 3^{1/3}
+\mu^{2/3} \to 0$.
+
+\textbf{(b)} For $0 < \mu < \mu_{\mathrm{crit}}$: $\Delta > 0$
+by explicit computation of the collinear $L_1$ position (Hill
+sphere approximation gives
+$x_{L_1} \approx 1 - \mu - (\mu/3)^{1/3}$), and $L_4$ is stable
+by \cref{thm:routh}.
+
+\textbf{(c)} At $\mu = \mu_{\mathrm{crit}}$, the discriminant
+of \eqref{eq:char-L4} vanishes; for $\mu > \mu_{\mathrm{crit}}$,
+the eigenvalues acquire nonzero real parts, and $L_4$ becomes
+a spiral source.  The energy gap $\Delta$ remains positive
+(since $C_J(L_1) - C_J(L_4)$ is a smooth function of $\mu$),
+but the fixed point is no longer linearly stable, so the gap
+offers no dynamical protection.
+\end{proof}
+
+\section{Viability interpretation}\label{sec:threebody-viability}
+
+\begin{definition}[Three-body viability kernel]\label{def:tb-viab}
+For a Jacobi constant threshold $C_0 > 0$, define the
+\emph{three-body viability kernel} as the Hill region
+\[
+  K_{C_0} \;:=\;
+  \bigl\{\, (x, y) \in \R^2 \;:\;
+  2\,\Omega(x, y) \geq C_0 \,\bigr\}.
+\]
+This is the set of positions reachable by a test particle with
+Jacobi constant at least $C_0$ (zero-velocity curves bound the
+accessible region).
+\end{definition}
+
+\begin{corollary}[Viability of the fixed point]\label{cor:viab-L4}
+The fixed point $L_4$ lies in the interior of the connected
+component of $K_{C_J(L_1)}$ containing $L_4$ if and only if
+$\mu < \mu_{\mathrm{crit}}$.  At $\mu = \mu_{\mathrm{crit}}$,
+$L_4$ exits $\Viab(K_{C_J(L_1)})$ by loss of stability---the
+identical mechanism to the triad's ``stable until gone''
+bifurcation (\cref{thm:triad}(d)).
+\end{corollary}
+
+\begin{remark}[Analogy with the cooperative triad]
+\label{rem:triad-threebody}
+The cooperative triad (\cref{def:triad}) and the restricted
+three-body problem share the same mathematical skeleton:
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Concept} & \textbf{Triad} & \textbf{Three-body} \\
+\midrule
+State space & $\R^3_{\geq 0}$ & $\R^2$ (co-rotating frame) \\
+Fixed point & $x^* \in K_\epsilon^\circ$ & $L_4 \in K_{C_0}^\circ$ \\
+Coupling & $\beta_{ij}$ (cross-feeding) & $\mu$ (mass ratio) \\
+Gap & $V_\Pi(x^*) > 0$ & $\Delta(\mu) > 0$ \\
+Critical threshold & $\beta_{ij}^*$ & $\mu_{\mathrm{crit}}$ \\
+Closure mechanism & coupling weakens & gravity strengthens \\
+Death mode & ``stable until gone'' & Routh instability \\
+\bottomrule
+\end{tabular}
+\end{center}
+In both cases, the fixed point is stable until a single parameter
+crosses a critical threshold, at which point viability is lost
+abruptly---not gradually.  The mathematics is the same theorem
+(\cref{thm:triad}(d) $\cong$ \cref{thm:routh}); the physics
+differs.
+
+The directions are \emph{reversed}: in the triad, the gap closes
+when coupling \emph{weakens}; in the three-body problem, the gap
+closes when gravitational coupling \emph{strengthens}.
+This is because in the triad, coupling is cooperative
+($\beta_{ij} > 0$ helps), while in the three-body problem,
+coupling is destabilising (Coriolis $\to$ instability).
+\end{remark}
