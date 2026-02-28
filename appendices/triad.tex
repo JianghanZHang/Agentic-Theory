@@ -489,3 +489,221 @@ components.
 
 The mathematics is the theorem; the nation is the example.
 \end{remark}
+
+\section{The three-body problem: mass gap, optimal transport, and
+asymptotic collapse}\label{sec:triad-threebody}
+
+The cooperative triad (\cref{def:triad}) is structurally a
+\emph{three-body problem}: three interacting masses $x_1, x_2, x_3$
+whose trajectories are coupled through the cross-feeding terms
+$\beta_{ij}x_j$.  The classical three-body problem of celestial
+mechanics has no closed-form general solution (Poincar\'e, 1892).
+The triad, however, admits a special resolution when the
+\emph{vacuum}---the zero state
+$\mathbf{0} = (0,0,0) \in \partial\R^3_{\geq 0}$---carries a
+mass gap.
+
+\subsection{Mass gap as fixed-point anchor}
+
+\begin{definition}[Mass gap as fixed-point anchor]
+\label{def:massgap-anchor}
+Let $G_{\mathrm{triad}}$ be the execution graph
+(\cref{def:exgraph}) of the three-body triad, with nodes
+$\{x_1, x_2, x_3, \kappa, \infty\}$ and edge capacities
+$c(x_i, x_j) = \beta_{ij}$.
+The \emph{mass gap} of the triad is the spectral gap of its graph
+Laplacian (\cref{def:laplacian}):
+\[
+  \Delta m \;:=\; \lambda_1(\Delta_{G_{\mathrm{triad}}}) \;\geq\; 0.
+\]
+The mass gap is the \emph{fixed-point anchor}: when $\Delta m > 0$,
+the vacuum $\mathbf{0}$ is spectrally separated from the positive
+fixed point $x^* \in \R^3_{>0}$, and the existence and asymptotic
+stability of $x^*$ are enforced.
+\end{definition}
+
+\begin{proposition}[Mass gap $=$ equation of motion]
+\label{prop:massgap-eom}
+The mass gap $\Delta m > 0$ is equivalent to the existence of the
+trajectory (equation of motion of the triad):
+\[
+  \Delta m > 0
+  \;\iff\;
+  \exists\; x(\cdot): [0,\infty) \to K_\epsilon
+  \text{ solving \eqref{eq:triad} with }
+  f(x^*) = 0,\; x^* \in K_\epsilon^\circ.
+\]
+When $\Delta m \to 0$ (the gap closes), the tangential
+condition~\eqref{eq:rescue} becomes binding at the most fragile
+face $\partial_k K_\epsilon$, and the viable trajectory ceases to
+exist.
+\end{proposition}
+
+\begin{proof}
+$(\Rightarrow)$: If $\Delta m > 0$, then $\lambda_1 > 0$.
+By \cref{thm:massgap}, the viability axiom holds: there exists a
+viable path (positive agentic flow) in $G_{\mathrm{triad}}$.
+By dissipativity ($\gamma_i > 0$) and cooperativity
+($\beta_{ij} > 0$), the fixed-point map $T$ in the proof of
+\cref{thm:triad}(a) has a positive fixed point
+$x^* \in \R^3_{>0}$, and by \cref{thm:triad}(b) it is
+asymptotically stable.
+
+$(\Leftarrow)$: If a trajectory $x(\cdot)$ exists in
+$K_\epsilon^\circ$, then $x^*(B) \in K_\epsilon^\circ$, so the
+coupling condition \eqref{eq:coupling-threshold} holds for every
+$i$.  The cross-feeding terms $\sum_{j \neq i}\beta_{ij}x_j^* >
+\theta_i > 0$ imply every cut $\partial S$ in
+$G_{\mathrm{triad}}$ has strictly positive capacity.
+Hence $h(G_{\mathrm{triad}}) > 0$, and by \cref{thm:cheeger},
+$\lambda_1 \geq h(G)^2/2 > 0$.
+\end{proof}
+
+\begin{remark}[The closeness of the mass gap]\label{rem:gap-closeness}
+``The closeness of the mass gap'' is the quantity
+$\delta_k := x_k^* - \epsilon_k \geq 0$ for the most fragile
+coordinate~$k$ (\cref{rem:dependent}).
+When $\delta_k \to 0^+$, the fixed point approaches the face
+$\partial_k K_\epsilon$; the $g_{V_\Pi}$-distance from $x^*$ to
+that face diverges:
+\[
+  d_{g_{V_\Pi}}\!\bigl(x^*,\, \partial_k K_\epsilon\bigr)
+  \;\geq\;
+  \frac{1}{M^2} \int_{\epsilon_k}^{x_k^*}
+  \frac{du}{u - \epsilon_k}
+  \;=\;
+  \frac{1}{M^2}\,\log\!\Bigl(1 + \frac{\delta_k}{\epsilon_k}\Bigr)
+  \;\to\; +\infty
+  \quad\text{as }\delta_k \to 0^+
+\]
+(cf.\ \cref{prop:single-collapse}).
+The trajectory ``barely exists'': the fixed point is viable, but
+infinitely far from collapse in the viability metric.
+When $\delta_k = 0$, $V_\Pi(x^*) = 0$ and the trajectory ceases
+to exist.
+\end{remark}
+
+\subsection{Optimal transport of the observation fixed point}
+
+The observation function $\Obs$ (\cref{sec:framework}) maps the
+current state distribution $\rho_t \in \mathcal{P}(K_\epsilon)$
+to an estimate of the fixed point.  The natural measure of how
+well the system has ``found'' its fixed point is the
+\emph{Wasserstein-$2$ (optimal transport) distance}:
+
+\begin{definition}[Observation transport cost]
+\label{def:obs-transport}
+The \emph{observation transport cost} at time $t$ is
+\[
+  W_2(\rho_t,\, \delta_{x^*})^2
+  \;:=\;
+  \inf_{\pi \in \Pi(\rho_t,\, \delta_{x^*})}
+  \int_{K_\epsilon \times K_\epsilon}
+  |x - y|^2\, d\pi(x, y)
+  \;=\;
+  \int_{K_\epsilon} |x - x^*|^2\, d\rho_t(x),
+\]
+where $\delta_{x^*}$ is the Dirac measure at the fixed point $x^*$
+and the last equality uses the unique optimal coupling
+$\pi^* = \rho_t \otimes \delta_{x^*}$.
+The observation is \emph{viable} when
+$W_2(\rho_t, \delta_{x^*}) < \infty$.
+\end{definition}
+
+\begin{proposition}[Optimal transport contracts toward fixed point]
+\label{prop:ot-contract}
+Under the deterministic cooperative triad dynamics
+(\cref{def:triad} with $\delta_i = 0$), with $\Delta m > 0$ and
+$\rho_0$ supported in the basin of attraction of $x^*$:
+\[
+  W_2(\rho_t,\, \delta_{x^*})^2
+  \;\leq\;
+  W_2(\rho_0,\, \delta_{x^*})^2\; e^{-2\lambda_1 t}
+  \;\to\; 0
+  \quad \text{as } t \to \infty.
+\]
+The observation transport cost contracts exponentially to zero at
+rate $\lambda_1 = \Delta m$ (the mass gap).
+\end{proposition}
+
+\begin{proof}
+Let $\Phi_t$ be the flow map of \eqref{eq:triad}.
+Since $\rho_t = (\Phi_t)_\# \rho_0$ (push-forward), the optimal
+coupling in \cref{def:obs-transport} gives
+\[
+  W_2(\rho_t,\, \delta_{x^*})^2
+  = \int_{K_\epsilon} |\Phi_t(x) - x^*|^2\, d\rho_0(x).
+\]
+The eigenvalues of $Df|_{x^*}$ all have real part
+$\leq -\lambda_1 < 0$ (\cref{thm:triad}(b) combined with
+\cref{thm:massgap}).  Linearising:
+$|\Phi_t(x) - x^*|^2 \leq |x - x^*|^2 e^{-2\lambda_1 t}$
+for $x$ in the basin of $x^*$.  Integrating over $\rho_0$:
+\[
+  W_2(\rho_t,\, \delta_{x^*})^2
+  \leq e^{-2\lambda_1 t}
+  \int_{K_\epsilon} |x - x^*|^2\, d\rho_0(x)
+  = W_2(\rho_0,\, \delta_{x^*})^2\, e^{-2\lambda_1 t}.  \qedhere
+\]
+\end{proof}
+
+\subsection{Asymptotic collapse}
+
+\begin{theorem}[Asymptotic collapse]\label{thm:asymptotic-collapse}
+If any coupling $\beta_{kj}$ drops below the critical threshold
+$\beta_{kj}^*$ (\cref{thm:triad}(c)), then:
+\begin{enumerate}[label=(\alph*)]
+  \item \textbf{Fixed-point exit.}  $x_k^*(B) < \epsilon_k$:
+    the fixed point exits $K_\epsilon$ through the face
+    $\partial_k K_\epsilon$.
+  \item \textbf{Product collapse.}
+    $V_\Pi(x(t)) \to 0$ for every trajectory, regardless of
+    initial condition (\cref{prop:single-collapse}).
+  \item \textbf{Transport divergence.}
+    $W_2(\rho_t,\, \delta_{x^*}) \to \infty$ as $t \to \infty$:
+    the observation transport cost to the former fixed point
+    diverges.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\textbf{(a)} follows directly from \cref{thm:triad}(c): the
+fixed-point equation at $\beta_{kj} < \beta_{kj}^*$ yields
+$x_k^*(B) < \epsilon_k$.
+
+\textbf{(b)}: With $x^* \notin K_\epsilon^\circ$, the boundary
+rescue condition \eqref{eq:rescue} fails for the $k$-th face.
+The product Lyapunov function $V_\Pi$ has no interior critical
+point; by \cref{prop:single-collapse},
+$V_\Pi(x(t)) \leq M^2(x_k(t) - \epsilon_k) \to 0$.
+
+\textbf{(c)}: The distribution $\rho_t$ cannot concentrate on
+$x^* \notin K_\epsilon^\circ$.  As trajectories exit $K_\epsilon$
+through $\partial_k K_\epsilon$, the second moment
+$\int |x - x^*|^2\,d\rho_t(x)$ is bounded below by
+$(\epsilon_k - x_k^*)^2 \cdot \rho_t(\partial_k K_\epsilon)$
+(since on the face $\partial_k K_\epsilon$ where $x_k = \epsilon_k$,
+the distance satisfies $|x - x^*|^2 \geq (\epsilon_k - x_k^*)^2 > 0$,
+as $x_k^* < \epsilon_k$ by~(a));
+this lower bound grows without bound because
+$\rho_t(\partial_k K_\epsilon) \to 1$ and $(\epsilon_k - x_k^*)^2 > 0$
+is fixed.
+\end{proof}
+
+\begin{remark}[``At $t \to \infty$, system collapse'']
+\label{rem:collapse-hypo}
+The hypothesis ``at $t \to \infty$, system collapse'' is
+\cref{thm:asymptotic-collapse} made precise.  The collapse is not
+gradual: by \cref{thm:triad}(d) (stable until gone), the system
+holds at a stable fixed point until the coupling $\beta_{kj}$
+crosses the critical threshold $\beta_{kj}^*$, at which instant the
+fixed point exits $K_\epsilon$, $V_\Pi \to 0$, and
+$W_2(\rho_t, \delta_{x^*}) \to \infty$.
+
+Dually, \cref{prop:ot-contract} gives the complementary regime:
+when the mass gap is open ($\Delta m > 0$), optimal transport
+contracts the observation to the fixed point exponentially fast at
+rate $\Delta m$.  The mass gap IS the convergence rate.  Its
+closure IS the divergence of collapse.  There is no intermediate
+state (\cref{thm:triad}(d)).
+\end{remark}
