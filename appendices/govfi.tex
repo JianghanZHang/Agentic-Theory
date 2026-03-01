@@ -22,7 +22,7 @@ collapse into a computed optimisation.
 % ================================================================
 The following symbols are used throughout this appendix.
 \textcolor{water}{Blue} = flow/structure,
-\textcolor{knife}{red} = corruption/attack,
+\textcolor{dao}{red} = corruption/attack,
 \textcolor{sword}{cyan} = GovFi detection,
 \textcolor{caution}{orange} = breakpoint warnings.
 
@@ -85,7 +85,7 @@ $M$               & Stability matrix $= \mathcal{K} - rI$
 \multicolumn{3}{@{}l}{\emph{Three-layer graph / 三层图}} \\
 Layer 0           & \textcolor{water}{政府 (Gov)} --- source, issues bonds
                   & 源节点, 发行债券 \\
-Layer 1           & \textcolor{knife}{公司 (Companies)} --- min-cut
+Layer 1           & \textcolor{dao}{公司 (Companies)} --- min-cut
                   & 最小割, 路由资金+信息 \\
 Layer 2           & \textcolor{water}{建设者\,=\,纳税人 (Builders\,=\,People)} --- sink, physics
                   & 汇节点, 物理施工 (主体自身) \\
@@ -101,8 +101,8 @@ The GovFi framework rests on a single duality:
 the People's welfare problem and the Government's
 budget problem are \emph{the same problem viewed from
 two sides}.
-\textcolor{knife}{Corruption} is the
-\textcolor{knife}{duality gap}.
+\textcolor{dao}{Corruption} is the
+\textcolor{dao}{duality gap}.
 \textcolor{sword}{Transparency} is
 \textcolor{sword}{strong duality}.
 
@@ -195,10 +195,10 @@ budget flows only to binding needs.
   / 对偶间隙 $=$ 损耗场]
 \label{cor:fiscal-duality-gap}
 When the mapping $\lambda \mapsto C$ is
-\textcolor{knife}{corrupted}
-at \textcolor{knife}{Layer~1} (\cref{ex:three-layer}),
+\textcolor{dao}{corrupted}
+at \textcolor{dao}{Layer~1} (\cref{ex:three-layer}),
 complementary slackness fails
-and a \textcolor{knife}{\emph{duality gap}} opens:
+and a \textcolor{dao}{\emph{duality gap}} opens:
 \begin{equation}\label{eq:fiscal-duality-gap}
   \underbrace{B_{\textup{disbursed}}}_{\text{dual cost}}
   \;-\;
@@ -207,8 +207,8 @@ and a \textcolor{knife}{\emph{duality gap}} opens:
   \mathcal{L}(t)
   \;\geq\; 0.
 \end{equation}
-The loss field $\textcolor{knife}{\mathcal{L}(t)}$
-\emph{is} the \textcolor{knife}{duality gap}.
+The loss field $\textcolor{dao}{\mathcal{L}(t)}$
+\emph{is} the \textcolor{dao}{duality gap}.
 \textcolor{sword}{GovFi} restores
 \textcolor{sword}{strong duality} by making both sides
 independently observable (\cref{def:govfi-ledger}).
@@ -229,10 +229,10 @@ The primal--dual pair maps onto the fiscal flow graph:
   & \textcolor{water}{政府 (Gov)}
   & Budget allocation $\lambda$
   & \textcolor{water}{Dual} \\
-\textcolor{knife}{1}
-  & \textcolor{knife}{公司 (Companies)}
+\textcolor{dao}{1}
+  & \textcolor{dao}{公司 (Companies)}
   & Mapping $\lambda \mapsto C$
-  & \textcolor{knife}{Coupling} \\
+  & \textcolor{dao}{Coupling} \\
 \textcolor{water}{2}
   & \textcolor{water}{人民/建设者 (People/Builders)}
   & Construction $C$
@@ -251,14 +251,14 @@ consequence: cutting the coupling severs both the
 primal and dual channels simultaneously.
 
 \medskip\noindent
-\emph{\textcolor{knife}{Corruption $=$ duality gap $> 0$.}\quad
+\emph{\textcolor{dao}{Corruption $=$ duality gap $> 0$.}\quad
 \textcolor{sword}{Transparency $=$ strong duality.}\quad
 \textcolor{sword}{GovFi} $=$ the mechanism that
 \textcolor{sword}{closes the gap}.}
 \end{remark}
 
 % ================================================================
-\section{Sovereign debt as knife}\label{sec:gf-knife}
+\section{Sovereign debt as sword}\label{sec:gf-sword}
 % ================================================================
 
 \begin{definition}[Fiscal state space]\label{def:fiscal-state}
@@ -282,11 +282,11 @@ where $\delta(t) \geq 0$ is the primary deficit
 (new borrowing net of non-interest expenditure).
 \end{definition}
 
-\begin{proposition}[Debt satisfies the knife definition]
-\label{prop:debt-knife}
+\begin{proposition}[Debt satisfies the sword definition]
+\label{prop:debt-sword}
 Sovereign debt $D(t)$ satisfying \eqref{eq:debt-dynamics}
-is a \textcolor{knife}{knife} in the sense of
-\cref{def:knife}:
+is a \textcolor{dao}{sword} in the sense of
+\cref{def:sword}:
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Autonomous actuation.}  The interest term
     $rD(t)$ drives the state without any agent's deliberate
@@ -305,7 +305,7 @@ Condition~(i) follows from the structure of
 \eqref{eq:debt-dynamics}: the right-hand side contains the
 term $rD$ which depends on the state $D$ alone, providing
 autonomous actuation as a differential inclusion
-(\cref{rem:knife-di}).  Condition~(ii) is structural:
+(\cref{rem:sword-di}).  Condition~(ii) is structural:
 sovereign bonds are traded instruments, and market prices
 encode the collective observation $\Obs(D)$ continuously.
 \end{proof}
@@ -317,20 +317,20 @@ dynamics, not chosen.  This is a positive feedback loop:
 $D \uparrow \;\Rightarrow\; rD \uparrow \;\Rightarrow\;
 \delta \uparrow \;\Rightarrow\; D \uparrow$.
 In the language of \cref{thm:triangle}, debt in this regime
-is a self-reinforcing triangle: the knife actuates itself,
+is a self-reinforcing triangle: the sword actuates itself,
 generates the conditions for further actuation, and
 compounds without external input.
 \end{remark}
 
-\begin{corollary}[Knife lifecycle for debt]
+\begin{corollary}[Sword lifecycle for debt]
 \label{cor:debt-lifecycle}
-By \cref{thm:lifecycle}, every knife admits exactly two
+By \cref{thm:lifecycle}, every sword admits exactly two
 resolution paths:
 \begin{enumerate}[label=(\alph*)]
   \item \textbf{Controlled restructuring} (path~(a) of
     \cref{thm:lifecycle}): the sovereign deliberately
     reduces $D$ through haircuts, inflation, taxation, or
-    growth, relinquishing the knife before it becomes
+    growth, relinquishing the sword before it becomes
     lethal.
   \item \textbf{Systemic collapse} (path~(b) of
     \cref{thm:lifecycle}): the sovereign fails to act,
@@ -340,7 +340,7 @@ resolution paths:
 By \cref{thm:fixedpoint}, no third path exists:
 extend-and-pretend (relabelling non-performing loans,
 rolling over debt indefinitely) is not a resolution
-but a deferral that preserves the knife's autonomous
+but a deferral that preserves the sword's autonomous
 actuation while degrading observability.
 \end{corollary}
 
@@ -404,7 +404,7 @@ Extraction
 Collapse
   & $w_F \to 0$
   & Revenue $<$ debt service \\
-Pawn $\to$ knife
+Pawn $\to$ sword
   & Fiscal tool $\to$ threat
   & Infrastructure bond $\to$ NPL \\
 King absorbed
@@ -1012,10 +1012,10 @@ adjacency matrix~$A$.
     bounded above by the maximum row sum
     $\max_i \sum_j A_{ij}$.  The spectral contagion
     threshold $\alpha\,\rho(A) = 1$ is the
-    knife-is-the-mean theorem (\cref{thm:meanfield})
+    sword-is-the-mean theorem (\cref{thm:meanfield})
     applied to the guarantee network: the mean
     guarantee exposure determines whether the network
-    is a tool (distributing losses) or a knife
+    is a tool (distributing losses) or a sword
     (amplifying them to systemic scale).
 \end{enumerate}
 \end{theorem}
@@ -1057,7 +1057,7 @@ such that:
     $O(n)$---contagion is systemic with positive
     probability.
 \end{enumerate}
-The percolation threshold is a second knife-is-the-mean
+The percolation threshold is a second sword-is-the-mean
 result: the critical probability depends on the mean
 connectivity $d$ of the network, not on any individual
 node.
@@ -1100,15 +1100,15 @@ A \emph{GovFi ledger} is a fiscal execution graph
 \end{enumerate}
 \end{definition}
 
-\begin{proposition}[Full observability eliminates hidden knives]
+\begin{proposition}[Full observability eliminates hidden swords]
 \label{prop:govfi-observability}
 Under full observability ($\Obs = \mathcal{F}$), no debt
-instrument can satisfy the knife definition
-(\cref{def:knife}) \emph{without detection}.  By
+instrument can satisfy the sword definition
+(\cref{def:sword}) \emph{without detection}.  By
 \cref{prop:imperfect}, the gap between autonomous actuation
 and detected actuation is
 $\|U(x)\| - \|U(x) \cap \Obs(x)\|$.  Full observability
-closes this gap to zero: every knife is visible the moment
+closes this gap to zero: every sword is visible the moment
 it forms.
 
 In the 城投 context, the primary failure mode is
@@ -1136,7 +1136,7 @@ entity's $\mathcal{L}_i$ directly from on-chain data.
 Self-reporting is unnecessary; incentive compatibility
 is achieved not by mechanism design but by
 \emph{architectural design}---the same full
-observability that eliminates hidden knives
+observability that eliminates hidden swords
 also eliminates strategic misreporting.
 \end{remark}
 
@@ -1161,7 +1161,7 @@ At each threshold $\theta_k$:
     $\partial_{\textup{default}}$.
 \end{enumerate}
 By \cref{cor:breakpoint}, the breakpoints convert sovereign
-debt from a \textcolor{knife}{knife} (autonomous,
+debt from a \textcolor{dao}{sword} (autonomous,
 uncontrolled actuation) to a \textcolor{water}{tool}
 (programmatic, controlled actuation): the autonomous
 dynamics are interrupted by pre-committed restructuring
@@ -1275,8 +1275,8 @@ theorem rather than an assertion.
 \textcolor{water}{0} & \textcolor{water}{政府 (Gov)}
   & 截留: raise $B$, disburse $<B$
   & \textcolor{water}{Market signals} (CDS, yields) \\
-\textcolor{knife}{1} & \textcolor{knife}{公司 (Companies)}
-  & \textcolor{knife}{截留}: receive $B$, pass $<B$ to builders
+\textcolor{dao}{1} & \textcolor{dao}{公司 (Companies)}
+  & \textcolor{dao}{截留}: receive $B$, pass $<B$ to builders
   & \textcolor{sword}{Requires independent verification} \\
 \textcolor{water}{2} & \textcolor{water}{建设者 (Builders)}
   & 豆腐渣: receive full pay, build $<100\%$
@@ -1317,11 +1317,11 @@ Extend it:
 \textcolor{water}{L0 政府}  & \textcolor{sword}{30亿} & 0亿
   & \textcolor{water}{Market detects} (CDS, yields)
   & \textcolor{sword}{On-chain bond record} \\
-\textcolor{knife}{L1 公司}  & 0亿  & \textcolor{knife}{10亿}
-  & \textcolor{knife}{Gamed}: $\mathcal{L} = 0$
+\textcolor{dao}{L1 公司}  & 0亿  & \textcolor{dao}{10亿}
+  & \textcolor{dao}{Gamed}: $\mathcal{L} = 0$
   & \textcolor{sword}{Independent $C_{\textup{ver}}$} \\
 \textcolor{water}{L2 建设}  & 0亿  & \textcolor{sword}{30亿}
-  & \textcolor{knife}{Gamed}: $\mathcal{L} = 0$
+  & \textcolor{dao}{Gamed}: $\mathcal{L} = 0$
   & \textcolor{sword}{IoT + satellite} \\
 \bottomrule
 \end{tabular}
@@ -1346,19 +1346,19 @@ Extend it:
     is a verification mechanism that requires no ledger.
     \textcolor{water}{\textbf{行不通.}}
 
-  \item \textcolor{knife}{\textbf{Layer~1 survives:}}
+  \item \textcolor{dao}{\textbf{Layer~1 survives:}}
     Companies control \emph{both} information (what Gov sees)
     and money (what Builders receive).  This is the dual-ring
     structure (\cref{def:dual-ring}): the formal contract (合同)
     is the inner ring; the actual payment chain (实际资金链) is
     the outer ring.  Without independent verification,
     $\mathcal{L}$ can be gamed to zero indefinitely.
-    \textcolor{knife}{\textbf{唯一可持续攻击面.}}
+    \textcolor{dao}{\textbf{唯一可持续攻击面.}}
 \end{enumerate}
 
 \noindent
 \textbf{Conclusion.}
-Corruption concentrates at the \textcolor{knife}{min-cut (Layer~1)} by structural
+Corruption concentrates at the \textcolor{dao}{min-cut (Layer~1)} by structural
 necessity: it is the unique layer where both information and money
 channels can be simultaneously controlled.
 
@@ -1395,11 +1395,11 @@ Layer~1, creating the gap in which corruption hides.
   & \textcolor{water}{No (市场信号)}
   & \textcolor{sword}{Bond chain}
   & \textcolor{water}{\textbf{行不通}} \\
-\textcolor{knife}{L1} & \textcolor{knife}{截留 (diversion)}
-  & 0亿 & \textcolor{knife}{10亿}
-  & \textcolor{knife}{Yes (min-cut)}
+\textcolor{dao}{L1} & \textcolor{dao}{截留 (diversion)}
+  & 0亿 & \textcolor{dao}{10亿}
+  & \textcolor{dao}{Yes (min-cut)}
   & \textcolor{sword}{独立验收}
-  & \textcolor{knife}{\textbf{Unique attack}} \\
+  & \textcolor{dao}{\textbf{Unique attack}} \\
 \textcolor{water}{L2} & 豆腐渣 (fraud)
   & 0亿 & \textcolor{sword}{30亿}
   & \textcolor{water}{No (物理约束)}
@@ -1411,10 +1411,10 @@ Layer~1, creating the gap in which corruption hides.
 
 \noindent
 The min-cut theorem is a structural result:
-\textcolor{knife}{Layer~1 is the unique sustainable attack surface} because
+\textcolor{dao}{Layer~1 is the unique sustainable attack surface} because
 it is the only layer that controls both the
-\textcolor{knife}{information} and
-\textcolor{knife}{money} channels of the fiscal flow graph.
+\textcolor{dao}{information} and
+\textcolor{dao}{money} channels of the fiscal flow graph.
 \end{example}
 
 \begin{proposition}[Lyapunov stability with layer damping]
@@ -1448,10 +1448,10 @@ $V(\boldsymbol{\mathcal{L}}) = \tfrac{1}{2}\,
     where $\epsilon_{\min} = \min_i \epsilon_i$.
     The half-life of~$V$ is
     $\ln 2\,/\,(2\epsilon_{\min})$.
-  \item \textcolor{knife}{\textbf{Failure without GovFi.}}
-    If \textcolor{knife}{$k_1 = 0$} (no verification at the min-cut), then
-    $\dot{V}$ contains the \textcolor{knife}{positive} term
-    \textcolor{knife}{$r\,\mathcal{L}_1^2$}: the Lyapunov condition fails.
+  \item \textcolor{dao}{\textbf{Failure without GovFi.}}
+    If \textcolor{dao}{$k_1 = 0$} (no verification at the min-cut), then
+    $\dot{V}$ contains the \textcolor{dao}{positive} term
+    \textcolor{dao}{$r\,\mathcal{L}_1^2$}: the Lyapunov condition fails.
     Even as $\mathcal{L}_0$ and $\mathcal{L}_2$ decay,
     $\mathcal{L}_1$ grows at rate~$r$, and $V$ eventually
     diverges---the extend-and-pretend pattern
@@ -1499,7 +1499,7 @@ that are not corruption:
 \textcolor{water}{0} & \textcolor{water}{政府运营 (Gov operations)}
   & 公款吃喝 (official dining), 招待费, 差旅费
     --- \textcolor{sword}{reimbursable on-chain} \\
-\textcolor{knife}{1} & \textcolor{sword}{合理利润 (legitimate overhead)}
+\textcolor{dao}{1} & \textcolor{dao}{合理利润 (legitimate overhead)}
   & 管理费 (management fees), market-rate
     profit margin \\
 \textcolor{water}{2} & \textcolor{water}{建设成本 (construction variance)}
@@ -1540,8 +1540,8 @@ of \cref{app:zhongxian}:
 \textcolor{water}{0} & \textcolor{water}{正处/副处 (county)}
   & Issues bonds, decides projects
   & 公款吃喝, 招待费 \\
-\textcolor{knife}{1} & \textcolor{knife}{正科级 (section)}
-  & \textcolor{knife}{Runs SOEs, controls min-cut}
+\textcolor{dao}{1} & \textcolor{dao}{正科级 (section)}
+  & \textcolor{dao}{Runs SOEs, controls min-cut}
   & 管理费, 合理利润 \\
 \textcolor{water}{2} & \textcolor{water}{副科级 + implementers}
   & Builds infrastructure
@@ -1706,8 +1706,8 @@ who fund the bonds
 0 & 政府 (Government)
   & \textcolor{water}{Dual} (工具):
     issues bonds, allocates $\lambda$ \\
-1 & \textcolor{knife}{公司 (Companies)}
-  & \textcolor{knife}{Coupling} (min-cut):
+1 & \textcolor{dao}{公司 (Companies)}
+  & \textcolor{dao}{Coupling} (min-cut):
     maps $\lambda \mapsto C$ \\
 \bottomrule
 \end{tabular}
@@ -1725,14 +1725,14 @@ who fund the bonds
     draw=sword, thick, fill=sword!5,
     minimum height=1.0cm, align=center, font=\small},
   leak/.style={rectangle, rounded corners=4pt,
-    draw=knife, thick, dashed, fill=knife!6,
+    draw=dao, thick, dashed, fill=dao!6,
     minimum width=2.4cm, minimum height=0.8cm,
     align=center, font=\small},
   brk/.style={rectangle, rounded corners=3pt,
     draw=caution, thick, fill=caution!8,
     minimum height=0.9cm, align=center, font=\small},
   arr/.style={-{Stealth[length=6pt]}, thick},
-  darr/.style={-{Stealth[length=6pt]}, thick, dashed, knife},
+  darr/.style={-{Stealth[length=6pt]}, thick, dashed, dao},
   oarr/.style={-{Stealth[length=6pt]}, thick, sword},
   lbl/.style={font=\scriptsize, fill=white, inner sep=2pt},
 ]
@@ -1757,21 +1757,21 @@ who fund the bonds
 
   % ── Companies (bottom-right) — MIN-CUT / COUPLING ──
   \node[rectangle, rounded corners=4pt,
-    draw=knife, thick, fill=knife!6,
+    draw=dao, thick, fill=dao!6,
     minimum width=4.8cm, minimum height=1.0cm,
     align=center, font=\small]
     (company) at (3.8, -4.0)
-    {\textcolor{knife}{\textbf{Layer 1 --- 公司}}\\[-2pt]
+    {\textcolor{dao}{\textbf{Layer 1 --- 公司}}\\[-2pt]
      {\scriptsize Companies: $\lambda \!\mapsto\! C$
       --- \textbf{Coupling}}};
 
   % ── Min-cut marker ──
-  \draw[knife, very thick, densely dashed,
+  \draw[dao, very thick, densely dashed,
     rounded corners=8pt]
     ([shift={(-0.3, 0.35)}]company.north west)
     rectangle
     ([shift={( 0.3,-0.35)}]company.south east);
-  \node[font=\scriptsize\bfseries, text=knife,
+  \node[font=\scriptsize\bfseries, text=dao,
     anchor=south]
     at ([yshift=0.4cm]company.north)
     {min-cut / 最小割};
@@ -1807,8 +1807,8 @@ who fund the bonds
 
   % ── Hidden leak (below-right of Companies) ──
   \node[leak] (corrupt) at (3.8, -6.2)
-    {\textcolor{knife}{隐性流失}\\[-2pt]
-     \textcolor{knife}{\scriptsize hidden leak}};
+    {\textcolor{dao}{隐性流失}\\[-2pt]
+     \textcolor{dao}{\scriptsize hidden leak}};
   \draw[darr, line width=1.0pt]
     (company.south) --
     node[lbl, right=2pt] {\scriptsize 层层转包}
@@ -1911,7 +1911,7 @@ Money flows in a cycle:
 People $\xrightarrow{\;\tau\;}$ Gov
 $\xrightarrow{\;B\;}$ Companies
 $\xrightarrow{\;C\;}$ People.
-The \textcolor{knife}{min-cut} is at Layer~1 (Companies),
+The \textcolor{dao}{min-cut} is at Layer~1 (Companies),
 which controls both the information channel
 ($C_{\textup{ver}}$ reported upward) and the money channel
 ($B_{\textup{disb}}$ passed downward)---the dual-ring structure.
@@ -2309,7 +2309,7 @@ $\mathcal{L}(10) = 16.5$\,亿 and growing.
   -- cycle;
 
 % Fill 2: WITHOUT GovFi  (spread, slow)
-\fill[knife!12]
+\fill[dao!12]
   (0,0)
   -- (0,0) .. controls (0.3,12) and (0.8,14) .. (1,14)
   -- (4.5,14)
@@ -2328,7 +2328,7 @@ $\mathcal{L}(10) = 16.5$\,亿 and growing.
   .. controls (10.2,0.8) and (10.8,0.2) .. (11,0);
 
 % Curve 2: WITHOUT GovFi  (dashed, on top of both fills)
-\draw[knife, very thick, dashed]
+\draw[dao, very thick, dashed]
   (0,0) .. controls (0.3,12) and (0.8,14) .. (1,14)
   -- (4.5,14)
   .. controls (5.5,13) and (6.5,11) .. (7.5,9)
@@ -2367,9 +2367,9 @@ $\mathcal{L}(10) = 16.5$\,亿 and growing.
 \node[sword, anchor=west, font=\footnotesize]
   at (7, 11) {(closed-loop)};
 
-\node[knife, anchor=west, font=\footnotesize\bfseries]
+\node[dao, anchor=west, font=\footnotesize\bfseries]
   at (11, 7.5) {Without GovFi};
-\node[knife, anchor=west, font=\footnotesize]
+\node[dao, anchor=west, font=\footnotesize]
   at (11, 5.8) {(open-loop)};
 
 % ── Completion markers ──
@@ -2377,7 +2377,7 @@ $\mathcal{L}(10) = 16.5$\,亿 and growing.
 \node[sword, font=\footnotesize, anchor=north] at (11, -0.8)
   {水电站建成};
 
-\node[knife, font=\footnotesize, anchor=south] at (15, 1.5)
+\node[dao, font=\footnotesize, anchor=south] at (15, 1.5)
   {$t \to\,$?};
 
 % ── RSS-style annotations ──
@@ -2403,7 +2403,7 @@ observes $\mathcal{L}(t)$ at each breakpoint $\theta_j$,
 predicts the absorption trajectory over infinite horizon,
 and activates control $\bar{a} > 0$.
 The flow concentrates; the dam completes.
-\textcolor{knife}{Without GovFi} (dashed): open-loop,
+\textcolor{dao}{Without GovFi} (dashed): open-loop,
 no observation, no control.
 The flow spreads; completion recedes.
 同一座坝, 同一笔钱---问题只是何时.%
@@ -2450,8 +2450,8 @@ All three breakpoints sleep.
 In reality, actual construction covers only $70\%$ of
 the budget; $30$\,亿 is gone.
 The loss field is \emph{gamed}: the observability
-gap $\|\Obs\| > 0$ hides the knife
-(\cref{def:knife}, condition~(2)).
+gap $\|\Obs\| > 0$ hides the sword
+(\cref{def:sword}, condition~(2)).
 
 \paragraph{With GovFi ($\Obs = \mathcal{F}$).}
 Independent on-chain verification (IoT sensors,
@@ -2631,7 +2631,7 @@ In the framework:
     the observation signal, creating a gap
     $\|U\| - \|U \cap \Obs\| > 0$---exactly the
     condition of \cref{prop:imperfect} under which
-    knives become hidden.
+    swords become hidden.
 \end{enumerate}
 By \cref{thm:fixedpoint}, there is no fixed point of
 the system in which $\mathcal{L} > 0$ and no agent
@@ -2642,10 +2642,10 @@ $\mathcal{L}(t_0) > 0$.  Extend-and-pretend is not
 a strategy; it is a violation of conservation.
 \end{proposition}
 
-\begin{remark}[The 城投 knife]\label{rem:chengtou}
+\begin{remark}[The 城投 sword]\label{rem:chengtou}
 China's local government financing vehicles
 (地方政府融资平台, commonly called 城投) are the
-current instantiation of the fiscal knife.  The
+current instantiation of the fiscal sword.  The
 structure maps directly:
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Autonomous actuation}: 城投 debt
@@ -2677,7 +2677,7 @@ to crisis levels (\cref{prop:govfi-breakpoints}),
 and published $\mathcal{L}(t)$ ensures that the
 conservation law is visible to all agents
 (\cref{prop:govfi-observability}).
-The knife is real.  The losses are real.  The only
+The sword is real.  The losses are real.  The only
 question is the exit face.
 \end{remark}
 
@@ -2701,12 +2701,12 @@ the sovereign can compute the \emph{min-cut}
 (\cref{thm:flowcut}): the minimum-cost set of edges
 whose removal (restructuring) restores the system to
 $K_F$.
-The knife-is-the-mean theorem (\cref{thm:meanfield})
+The sword-is-the-mean theorem (\cref{thm:meanfield})
 applied to the fiscal domain states: the same debt
 level $D$ is sustainable or unsustainable depending
 on the system's mean fiscal capacity $\bar{w}_F$.
 Growth raises $\bar{w}_F$; the same nominal debt becomes
-a tool (financing productive investment) or a knife
+a tool (financing productive investment) or a sword
 (compounding toward default) depending on which side
 of the mean the system sits.
 

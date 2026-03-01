@@ -307,13 +307,13 @@ Let $G$ be a mesh.  Then:
     $G \setminus \{v\}$ is connected: removing any single node
     does not disconnect the execution graph.
     The elimination strategy of \cref{thm:cutvertex} (make
-    yourself the cut vertex, then remove the knife) requires
+    yourself the cut vertex, then remove the sword) requires
     a cut vertex to exist.  In a mesh, no such vertex exists.
   \item \textbf{The only death is phase transition.}  The
     mean actuation field $\bar{U}$ (\cref{thm:meanfield}) is
     computed over all nodes.  In a mesh, the mean is a
     \emph{bulk} quantity: no single node's removal changes
-    $\bar{U}$ by more than $O(1/|V|)$.  The system's knife
+    $\bar{U}$ by more than $O(1/|V|)$.  The system's sword
     threshold $\bar{U} + \tau(\Obs)$ is therefore stable under
     single-node perturbation.  The only mechanism that moves
     $\bar{U}$ below the viability threshold is a
@@ -331,7 +331,7 @@ Let $G$ be a mesh.  Then:
 be the mean actuation.  Removing node $k$ changes the mean to
 $\bar{U}' = \frac{1}{n-1}\sum_{i \neq k} \|U_i\|$.
 Then $|\bar{U}' - \bar{U}| = |\bar{U} - \|U_k\||/(n-1)$, which
-is $O(1/n)$ since both $\bar{U}$ and $\|U_k\|$ are bounded.  For the knife threshold
+is $O(1/n)$ since both $\bar{U}$ and $\|U_k\|$ are bounded.  For the sword threshold
 $\bar{U} + \tau(\Obs)$ to cross a critical value, the shift must
 be $\Omega(1)$, requiring $\Omega(n)$ nodes to change
 simultaneously---a phase transition.
@@ -442,17 +442,17 @@ during Reconstruction), the other two provided sufficient
 cross-feeding to prevent exit from $K_\epsilon$.
 \end{proof}
 
-\begin{remark}[Phase transition and the knife]
-\label{rem:triad-knife}
+\begin{remark}[Phase transition and the sword]
+\label{rem:triad-sword}
 The word ``once'' in ``once considered great'' is the detection
 of a weakening coupling.  In the framework of \cref{prop:phase},
 each variable $x_i$ of the triad is an autonomous actuator
-(\cref{def:knife}, condition~(1)): its dynamics $f_i$ can drive
+(\cref{def:sword}, condition~(1)): its dynamics $f_i$ can drive
 the state independently.  When the cross-feeding is strong
 ($\beta_{ij} > \beta_{ij}^*$), each variable is a
 \emph{tool}---its autonomous actuation reinforces the others.
 When the coupling weakens below threshold, the same autonomous
-dynamics become a \emph{knife}: a variable in decline drags the
+dynamics become a \emph{sword}: a variable in decline drags the
 others down through the positive feedback channel.
 
 By \cref{thm:triad}(d) (stable until gone), the transition is

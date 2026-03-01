@@ -2,8 +2,34 @@
 
 \section{The binary lifecycle}\label{sec:lifecycle}
 
+\begin{lemma}[Forcing]\label{lem:forcing}
+Let $r$ be a sword that persists: both conditions of
+\cref{def:sword} are satisfied for all $t \geq t_0$.  Then the
+tangential condition $F(x) \cap T_K(x) \neq \varnothing$
+(\cref{thm:viability-di}) requires the king to allocate
+$u^*(t) \in C(x(t))$ to compensate $r$ at every instant.  The
+cumulative cost $\int_{t_0}^{T} \|u^*\|\,dt$ is unbounded as
+$T \to \infty$.
+\end{lemma}
+
+\begin{proof}
+The sword $r$ acts independently (condition~1 of
+\cref{def:sword}), so $F_r(x)$ contributes an uncontrolled
+velocity component.  The king's feedback map $C(x)$
+(\cref{def:feedback}) must contain a compensating control at
+every instant (tangential condition).  Since $r$'s actuation is
+autonomous, the king cannot predict $r$'s choices within $\Ur$;
+compensation is reactive, not preventive.  The cost per unit
+time is bounded below by the minimum energy needed to counteract
+$F_r$, which is positive: condition~(1) ensures
+$F_r(x) \not\subset T_K(x)$ for some $x$ (\cref{rem:sword-di}).
+Over unbounded time, cost diverges.  The viability axiom
+(\cref{ax:viability}) requires finite-cost maintenance;
+therefore the sword must be resolved in finite time.
+\end{proof}
+
 \begin{theorem}[Binary fate]\label{thm:lifecycle}
-Every knife has exactly two possible outcomes after phase transition:
+Every sword has exactly two possible outcomes after phase transition:
 \begin{enumerate}[label=(\alph*)]
   \item \textbf{Relinquish}: the holder voluntarily sets
   $\Ur \to \varnothing$.
@@ -14,15 +40,45 @@ There is no path~(c).
 \end{theorem}
 
 \begin{proof}
-The knife criterion is $\Ur \neq \varnothing \;\wedge\;
-r \in \mathrm{Im}(\Obs)$ (\cref{rem:knife-di} for the DI
-restatement). To exit this classification, at least one condition
-must fail. Condition~(2) is controlled by the king
-(he can always look); only condition~(1) can be changed by the
-holder. Setting $\Ur \to \varnothing$ is path~(a). If the holder
-does not, the king must act (viability axiom), which is path~(b).
+The sword criterion is $\Ur \neq \varnothing \;\wedge\;
+r \in \mathrm{Im}(\Obs)$ (\cref{rem:sword-di} for the DI
+restatement).  As long as both conditions hold, the sword
+persists and \cref{lem:forcing} applies: the cost of indefinite
+coexistence is unbounded.  The viability axiom requires
+finite-cost maintenance, so the sword must be resolved.
+
+Resolution requires at least one condition to fail.
+Setting $\Ur \to \varnothing$ is path~(a).  If the holder does
+not relinquish, condition~(1) persists; regression to a pre-sword
+(suppressing condition~(2) while retaining condition~(1)) is not
+a resolution but a deferral, since the causal envelope persists
+and any expansion of $\Obs$ re-detects the resource
+(\cref{rem:lifecycle-scope}).  By \cref{lem:forcing}, the cost
+of indefinite coexistence is unbounded; the king is therefore
+forced to eliminate via $u^* \in \Umax$, which is path~(b).
 The classification is exhaustive.
 \end{proof}
+
+\begin{remark}[Scope of the binary lifecycle]\label{rem:lifecycle-scope}
+\Cref{thm:lifecycle} applies to \emph{swords}: resources satisfying
+both conditions of \cref{def:sword} simultaneously.  A resource that
+satisfies condition~(1) but not condition~(2)---a \emph{pre-sword}
+(\cref{def:presword})---is outside the theorem's scope.
+Xiao He's self-blunting strategy (\cref{ex:xiaohe}) is a sword
+$\to$ pre-sword regression: he exits the sword classification by
+suppressing condition~(2), not by relinquishing condition~(1).
+This is not path~(c); it is a transition to a different lifecycle
+state (\cref{rem:sword-lifecycle}).  The binary partition holds for
+every resource that \emph{remains} a sword: as long as both
+conditions are satisfied, exactly one of (a)~or~(b) must obtain.
+
+The pre-sword state is unstable because the causal envelope
+$\mathrm{Reach}(x, \Ur)$ (\cref{eq:causal-envelope}) persists: the
+agent retains capability, and any expansion of $\Obs$
+re-detects the resource, returning it to the sword row and
+re-activating the forcing cost of \cref{lem:forcing}.  Thus
+the pre-sword defers rather than resolves the binary fate.
+\end{remark}
 
 \begin{remark}[Han Xin's error]\label{rem:hanxin}
 The proverb ``when the cunning hare is killed, the hunting dog is
@@ -37,14 +93,14 @@ not parse its fine structure.
 \section{The fixed-point impossibility}\label{sec:fixedpoint}
 
 \begin{theorem}[No path (c)]\label{thm:fixedpoint}
-There is no strategy that ``proves your knife is not a knife'' while
-retaining the knife. Formally, the map
+There is no strategy that ``proves your sword is not a sword'' while
+retaining the sword. Formally, the map
 $T: \Ur \mapsto \varnothing$ conditional on $\Ur \neq \varnothing$
 has no fixed point other than $\Ur = \varnothing$.
 \end{theorem}
 
 \begin{proof}
-Case~1: $\Ur = \varnothing$. Then $r$ is not a knife, and no proof
+Case~1: $\Ur = \varnothing$. Then $r$ is not a sword, and no proof
 is needed. $\Ur = \varnothing$ is self-certifying.
 Case~2: $\Ur \neq \varnothing$. Then no speech act can set
 $\Ur \to \varnothing$---the criterion tests physical capability,
@@ -52,7 +108,7 @@ not narrative. The only way to satisfy $T(U_r) = \varnothing$ is to
 physically relinquish $\Ur$, which is path~(a).
 
 Moreover, the act of proving is itself a signal: ``I need to prove
-my knife is not a knife'' implies suspicion, i.e., $r$ is already
+my sword is not a sword'' implies suspicion, i.e., $r$ is already
 in $\mathrm{Im}(\Obs)$. The proof attempt reinforces condition~(2).
 \end{proof}
 
@@ -66,15 +122,15 @@ observable autonomous actuators:
   \text{the king must preempt all } r \text{ with }
   \Ur \neq \varnothing \;\wedge\; r \in \mathrm{Im}(\Obs).
 \]
-The more unconstrained the king, the more knives he must cut.
+The more unconstrained the king, the more swords he must cut.
 \end{theorem}
 
 \begin{proof}
 $\Umax$ means the king tolerates \emph{no} autonomous actuation:
 every such actuator is a boundary threat on $\Viab(K)$. A
-constrained system (constitutional regime) institutionalises knife
+constrained system (constitutional regime) institutionalises sword
 dynamics by installing breakpoints. An unconstrained system must
-handle every knife individually. The paradox: unconstrained power is
+handle every sword individually. The paradox: unconstrained power is
 not freedom---it is a perpetual elimination machine.
 \end{proof}
 
@@ -87,15 +143,15 @@ If the detection function $\Obs$ is imperfect, the paradox
 \begin{proof}
 Three steps:
 \begin{enumerate}[label=(\roman*)]
-  \item The king knows $\Obs$ is imperfect. Hidden knives
-  (\cref{def:knife}, condition~(2) unsatisfied) are more dangerous
+  \item The king knows $\Obs$ is imperfect. Hidden swords
+  (\cref{def:sword}, condition~(2) unsatisfied) are more dangerous
   than visible ones. The king has motive, capability, and survival
   obligation to expand $\Obs$.
-  \item Expanding $\Obs$ does not ``discover existing knives''---it
+  \item Expanding $\Obs$ does not ``discover existing swords''---it
   \emph{creates new ones} definitionally. A hidden actuator
   satisfying condition~(1) but not~(2) enters $\mathrm{Im}(\Obs)$
   upon expansion $\to$ both conditions now satisfied $\to$ it
-  \emph{becomes} a knife. The knife exists in the intersection
+  \emph{becomes} a sword. The sword exists in the intersection
   $\Ur \neq \varnothing \;\wedge\; r \in \mathrm{Im}(\Obs)$;
   expanding $\Obs$ expands this intersection.
   \item Positive feedback:
@@ -108,7 +164,7 @@ Historical instances: Qin's mutual surveillance law
 (\emph{lianzuo}), Han's gold-purity test (\emph{zhuo\-jin
 duo\-jue}), Ming's three-layer nested monitoring (Jinyiwei
 $\to$ Dongchang $\to$ Xichang---each layer itself becomes a new
-knife).
+sword).
 \end{proof}
 
 \begin{proposition}[$\Umax$ as attractor]\label{prop:attractor}
@@ -117,7 +173,7 @@ literal $\Umax$, but the system dynamics point toward it:
 \[
   \frac{d}{dt}\|U(t) - \Umax\| \leq 0
   \implies
-  \frac{d}{dt}\bigl(\text{detected knives}\bigr) \geq 0.
+  \frac{d}{dt}\bigl(\text{detected swords}\bigr) \geq 0.
 \]
 The paradox describes the trajectory, not the endpoint.
 \end{proposition}
@@ -125,11 +181,11 @@ The paradox describes the trajectory, not the endpoint.
 \section{The breakpoint criterion}\label{sec:breakpoint}
 
 \begin{corollary}[Breakpoint strategy]\label{cor:breakpoint}
-A resource $r$ is not a knife if and only if its execution chain
+A resource $r$ is not a sword if and only if its execution chain
 contains at least one node controlled by the king (a
 \emph{breakpoint}):
 \[
-  r \text{ is not a knife}
+  r \text{ is not a sword}
   \iff
   \exists\; v \in \text{execution chain of } r
   \;\text{s.t.}\; v \text{ is controlled by the king.}
@@ -138,10 +194,10 @@ contains at least one node controlled by the king (a
 
 \begin{proof}
 If a breakpoint exists, $r$ cannot execute independently
-(condition~(1) fails), so $r$ is not a knife. If no breakpoint
+(condition~(1) fails), so $r$ is not a sword. If no breakpoint
 exists, the execution chain is closed and $r$ can actuate
 autonomously, satisfying condition~(1). Combined with
-observability, this makes $r$ a knife.
+observability, this makes $r$ a sword.
 \end{proof}
 
 \begin{remark}[Modern translation]\label{rem:modern}

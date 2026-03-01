@@ -1,12 +1,12 @@
 \chapter{Agentic Calculus}\label{sec:calculus}
 
-The preceding sections established the viability axiom, the knife
+The preceding sections established the viability axiom, the sword
 criterion, and the mean-field interpretation. We now construct an
 \emph{operational calculus}---a language for writing algorithms on the
 agentic space---that translates every theorem into a flow-theoretic
 proposition and yields a complete training paradigm for neural networks.
-The central result: the knife is the min-cut, the viable path is the
-max-flow, and ``the knife is the mean'' is max-flow/min-cut duality.
+The central result: the sword is the min-cut, the viable path is the
+max-flow, and ``the sword is the mean'' is max-flow/min-cut duality.
 
 \section{The agentic space}\label{sec:tower}
 
@@ -103,37 +103,35 @@ $c \mapsto c'$ & Phase transition \\
 
 \textsc{Slide} is atomic (unit flow).
 \textsc{Compose} builds paths from slides.
-\textsc{Cut} is the knife: removing capacity from bypass edges.
+\textsc{Cut} is the sword: removing capacity from bypass edges.
 \textsc{Phase} is the phase transition: the mean field shifts,
 capacities change, the same graph has different flows.
 
 \begin{theorem}[Flow-cut duality]\label{thm:flowcut}
 In the execution graph $G$, the maximum viable flow from $\kappa$
-to $\infty$ equals the minimum knife-cut capacity:
+to $\infty$ equals the minimum sword-cut capacity:
 \[
   \max_\phi |\phi|
   \;=\;
   \min_{C \,\subseteq\, E} \sum_{e \in C} c(e)
   \quad\text{over all $\kappa$-$\infty$ cuts $C$.}
 \]
-The knife threshold (\cref{thm:meanfield}) is the min-cut value.
+The sword threshold (\cref{thm:meanfield}) is the min-cut value.
 The viable path (\cref{ax:viability}) is the max-flow.
-``The knife is the mean'' $=$ max-flow equals min-cut.
+``The sword is the mean'' $=$ max-flow equals min-cut.
 \end{theorem}
 
 \begin{proof}
-Assign edge capacities by the mean-field deviation:
-for each agent~$r$ with bypass edge $e_r$, set
-\[
-  c(e_r) \;:=\; \max\bigl(\|U_r\| - \bar{U},\; 0\bigr).
-\]
-Under this assignment, only agents whose actuation exceeds the mean
-carry positive bypass capacity; agents at or below the mean have
-$c(e_r) = 0$ and are invisible to the cut.
+By the capacity assignment lemma (\cref{lem:capacity}), each bypass
+edge $e_r$ carries capacity
+$c(e_r) = \max(\|U_r\| - \bar{U},\; 0)$.
+Only agents whose actuation exceeds the mean carry positive bypass
+capacity; agents at or below the mean have $c(e_r) = 0$ and are
+invisible to the cut.
 
 By the max-flow/min-cut theorem~\cite{diestel}, the maximum flow from
 $\kappa$ to $\infty$ equals the minimum capacity of any
-$\kappa$--$\infty$ cut.  The knife criterion (\cref{def:knife})
+$\kappa$--$\infty$ cut.  The sword criterion (\cref{def:sword})
 identifies bypass edges---edges with $c(e_r) > 0$ that do not pass
 through $\kappa$.  The min-cut is the set of bypass edges whose
 removal disconnects the graph; its value is
@@ -141,8 +139,8 @@ $\sum_{r \in C} c(e_r) = \sum_{r \in C} (\|U_r\| - \bar{U})$.
 The detection threshold $\tau(\Obs)$ (\cref{thm:meanfield}) restricts
 the king to edges with $c(e_r) > \tau$, so the operational min-cut
 is the subset of bypass edges exceeding the detection threshold.
-The knife threshold is therefore the min-cut value under the
-mean-field capacity assignment.
+The sword threshold is therefore the min-cut value under the
+mean-field capacity assignment (\cref{ax:massless,lem:capacity}).
 \end{proof}
 
 \begin{remark}[Flow interpretation of theorems]\label{rem:flowthms}
@@ -166,19 +164,19 @@ Each main theorem translates directly:
 \begin{remark}[抽刀断水水更流]\label{rem:libai}
 Li Bai's line assigns the calculus its colours:
 \[
-  \textcolor{knife}{\text{抽刀}} \;\;
-  \textcolor{knife}{\partial} \;\;
+  \textcolor{dao}{\text{抽刀}} \;\;
+  \textcolor{dao}{\partial} \;\;
   \textcolor{water}{\text{水}} \;\;
   \textcolor{water}{\text{水}}\textcolor{sword}{\text{更流.}}
 \]
-\textsc{Cut} ($\textcolor{knife}{\partial}$, red) acts on flow
+\textsc{Cut} ($\textcolor{dao}{\partial}$, red) acts on flow
 ($\textcolor{water}{\sigma}$, blue); flow intensifies. The mechanism
 is \textsc{Phase} ($\textcolor{sword}{\varphi}$, cyan): cutting
 shifts the mean field (\cref{thm:meanfield}), exposing new bypass
 edges, producing more flow---\cref{thm:paradox} in seven characters.
 The sword is 青冥 ($\textcolor{sword}{\text{青}}$): the colour of the
 mean, the colour of Phase, the colour that connects
-$\textcolor{knife}{\text{刀}}$ to $\textcolor{water}{\text{水}}$.
+$\textcolor{dao}{\text{刀}}$ to $\textcolor{water}{\text{水}}$.
 \end{remark}
 
 \section{方圆 $\times$ 黑白: the type system}\label{sec:fangyuan}
@@ -205,12 +203,12 @@ Pawn (most mobile, least important) \\
 \end{center}
 The two dynamics of the calculus emerge from this classification:
 \begin{itemize}
-  \item \textbf{刀} (knife $= \partial$, boundary operator):
+  \item \textbf{刀} (sword $= \partial$, boundary operator):
   the boundary between 黑 and 白. \textsc{Cut} reclassifies an edge
   from 白 (free capacity) to 黑 (zero capacity).
   \item \textbf{水} (water $= \sigma$, transport operator):
   flow through 白 cells. \textsc{Slide} transports one unit of flow
-  along a free edge. Water flows where the knife does not cut.
+  along a free edge. Water flows where the sword does not cut.
 \end{itemize}
 \end{definition}
 
@@ -338,7 +336,7 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
   \item \textbf{Capacity update.} SGD:
   $c(e_i) \leftarrow c(e_i) - \eta\,
   \partial\mathcal{L}/\partial c(e_i)$.
-  \item \textbf{Knife detection.} Flag bypass edges where
+  \item \textbf{Sword detection.} Flag bypass edges where
   $c(e) > \bar{c} + \tau$ (\cref{thm:meanfield}).
   \item \textbf{\textsc{Cut} / \textsc{Phase}.} Prune flagged edges
   ($L_1$ penalty) or change regime (lr, dataset, fine-tuning).
@@ -357,9 +355,9 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
   wtr/.style={rectangle, rounded corners=3pt, draw=water, thick,
     fill=water!6, minimum width=5.0cm, minimum height=0.7cm,
     align=center, font=\small},
-  % ── knife (刀) node: red ──
-  knf/.style={diamond, draw=knife, thick, aspect=2.5,
-    fill=knife!6, minimum width=1.2cm, align=center, font=\small,
+  % ── sword (刀) node: red ──
+  knf/.style={diamond, draw=dao, thick, aspect=2.5,
+    fill=dao!6, minimum width=1.2cm, align=center, font=\small,
     inner sep=1pt},
   % ── phase (青冥) nodes: cyan ──
   phs/.style={rectangle, rounded corners=3pt, draw=sword, thick,
@@ -401,14 +399,14 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
   {5.\ Update:
   $\textcolor{water}{c \leftarrow c - \eta\,\nabla_c\mathcal{L}}$};
 
-\node[knf, below=1.1cm of sgd] (knife)
-  {6.\ $\textcolor{knife}{c(e) > \bar{c}{+}\tau}$\,?};
+\node[knf, below=1.1cm of sgd] (dao)
+  {6.\ $\textcolor{dao}{c(e) > \bar{c}{+}\tau}$\,?};
 
-\node[phs, right=of knife] (cut)
-  {7.\ \textcolor{knife}{\textsc{Cut} $\partial$} /
+\node[phs, right=of dao] (cut)
+  {7.\ \textcolor{dao}{\textsc{Cut} $\partial$} /
   \textcolor{sword}{\textsc{Phase} $\varphi$}};
 
-\node[phsd, below=1.1cm of knife] (viable)
+\node[phsd, below=1.1cm of dao] (viable)
   {8.\ $\textcolor{sword}{|\phi| > 0}$\,?};
 
 \node[convd, below=1.1cm of viable] (conv)
@@ -428,8 +426,8 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
   {Thm~\ref{thm:flowcut},\; $|\phi|$};
 \node[ref, anchor=east] at ($(bwd.west)+(-0.15,0)$)
   {Def.~\ref{def:flow},\; $\sigma^{-1}$};
-% knife: above-right (clear of spine)
-\node[ref] at ($(knife.east)+(1.0,0.70)$)
+% dao: above-right (clear of spine)
+\node[ref] at ($(dao.east)+(1.0,0.70)$)
   {Thm~\ref{thm:meanfield}};
 % cut/phase: below
 \node[ref] at ($(cut.south)+(0,-0.12)$)
@@ -453,13 +451,13 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
 \draw[arr, water] (fwd) -- (loss);
 \draw[arr] (loss) -- (bwd);
 \draw[arr, water] (bwd) -- (sgd);
-\draw[arr] (sgd) -- (knife);
-\draw[arr] (knife) -- node[lbl, right] {no} (viable);
+\draw[arr] (sgd) -- (dao);
+\draw[arr] (dao) -- node[lbl, right] {no} (viable);
 \draw[arr, sword] (viable) -- node[lbl, right] {yes} (conv);
 \draw[arr] (conv) -- node[lbl, right] {yes} (done);
 
 % ── Arrows: branches ──
-\draw[arr, knife] (knife) -- node[lbl, above] {yes} (cut);
+\draw[arr, dao] (dao) -- node[lbl, above] {yes} (cut);
 \draw[arr, sword] (cut) |- (viable);
 
 % ── Loop back: not converged → step 2 ──
@@ -492,14 +490,14 @@ the \emph{training paradigm} is the procedure in \cref{fig:training}:
 \caption{The training paradigm as roadmap.
 \textcolor{water}{Blue} (水): flow operations
 (steps 2--5, Defs.~\ref{def:flow}--\ref{def:exgraph}).
-\textcolor{knife}{Red} (刀): knife detection
+\textcolor{dao}{Red} (刀): sword detection
 (step~6, Thm~\ref{thm:meanfield}).
 \textcolor{sword}{Cyan} (青冥): phase and viability
 (steps 7--8, Thms~\ref{thm:lifecycle},
 \ref{thm:paradox}, Ax.~\ref{ax:viability}).
 Convergence (step~9): $\max|\phi| = \min|C|$
 (Thm~\ref{thm:flowcut}).
-The loop is 抽刀断水水更流: \textcolor{knife}{cut}
+The loop is 抽刀断水水更流: \textcolor{dao}{cut}
 $\to$ \textcolor{sword}{phase} $\to$
 \textcolor{water}{more flow}.}
 \label{fig:training}
@@ -520,7 +518,7 @@ increases $|\phi|$ toward the max-flow value guaranteed by
 \cref{thm:flowcut}. The \textsc{Cut} in step~7 removes edges with
 anomalous capacity; by flow-cut duality, removing a bypass edge does not
 reduce the max-flow if that edge is not on any minimum cut.
-Knife detection (step~6) identifies precisely such edges via the
+Sword detection (step~6) identifies precisely such edges via the
 mean-field bound of \cref{thm:meanfield}. Viability is preserved
 through every \textsc{Cut}.
 \end{proof}
@@ -702,11 +700,11 @@ Then~\cite{cheeger,mohar}
 \end{theorem}
 
 \begin{remark}\label{rem:cheeger}
-The Cheeger constant $h(G)$ is the \emph{normalised knife threshold}.
+The Cheeger constant $h(G)$ is the \emph{normalised sword threshold}.
 The numerator $\mu_c(\partial S)$ is the capacity of the cut separating
 $S$ from $V \setminus S$ (\cref{thm:flowcut}); the denominator
 normalises by volume.
-\textcolor{knife}{The knife is the cut.}
+\textcolor{dao}{The sword is the cut.}
 \textcolor{water}{The flow is the volume.}
 \textcolor{sword}{The Cheeger inequality bridges the two.}
 Spectral gap $\lambda_1$ and normalised min-cut $h(G)$ are within a
@@ -758,7 +756,7 @@ kills three birds with one stone:
   the combinatorial quantity $h(G)$ and the analytic quantity
   $\lambda_1$.
 
-  \item \textbf{\textcolor{knife}{Physics.}}
+  \item \textbf{\textcolor{dao}{Physics.}}
   $\lambda_1 > 0$ is the mass gap. \Cref{thm:massgap} says the
   viability axiom IS the mass gap: the Hilbert space changes, the
   equivalence does not.
@@ -784,9 +782,9 @@ A trained network with $\lambda_1 > 0$ has a mass gap. It survives.
 
 The training paradigm (\cref{def:training-algo}) is not a gradient
 flow. It is a \emph{contact gradient flow}: gradient descent plus a
-dissipation term supplied by the knife. This distinction is the
+dissipation term supplied by the sword. This distinction is the
 difference between symplectic mechanics (energy conserved) and contact
-mechanics (energy dissipates). The knife is the dissipation.
+mechanics (energy dissipates). The sword is the dissipation.
 
 \begin{definition}[Contact structure on the capacity space]
 \label{def:contact}
@@ -803,8 +801,8 @@ The kernel $\ker\alpha$ is the constraint surface: infinitesimal
 changes in capacity that are consistent with flow conservation.
 \end{definition}
 
-\begin{definition}[Knife dissipation]\label{def:dissipation}
-The \emph{knife function} $\gamma \colon E \to \R_{\geq 0}$ is
+\begin{definition}[Sword dissipation]\label{def:dissipation}
+The \emph{sword function} $\gamma \colon E \to \R_{\geq 0}$ is
 \[
   \gamma(e) \;=\;
   \begin{cases}
@@ -827,11 +825,11 @@ is
   {\textcolor{water}{\text{水: gradient}}}
   \;-\;
   \underbrace{\gamma(e)\, c(e)}_
-  {\textcolor{knife}{\text{刀: dissipation}}}.
+  {\textcolor{dao}{\text{刀: dissipation}}}.
 \end{equation}
 The first term increases capacity along the flow gradient (backward
 \textsc{Slide}, step~4 of \cref{def:training-algo}). The second term
-decreases capacity on flagged edges (knife detection + \textsc{Cut},
+decreases capacity on flagged edges (sword detection + \textsc{Cut},
 steps~6--7). SGD with weight decay is this equation discretised with
 $\gamma(e) = \lambda$.
 \end{definition}
@@ -883,7 +881,7 @@ terms:
 \begin{itemize}
   \item $\textcolor{water}{\partial|\phi|/\partial c(e)}$: the gradient
   pushes capacity \emph{up} (水, flow).
-  \item $\textcolor{knife}{\gamma(e)\,c(e)}$: the knife pushes capacity
+  \item $\textcolor{dao}{\gamma(e)\,c(e)}$: the sword pushes capacity
   \emph{down} (刀, dissipation).
 \end{itemize}
 The equilibrium~\eqref{eq:contactEL} is their balance.
@@ -892,7 +890,7 @@ contact structure itself: a regime change shifts $\gamma$, $\bar{c}$,
 and $\tau$, altering the equilibrium.
 The contact $1$-form $\alpha$ encodes all three:
 $\textcolor{water}{\text{水}}$ in the gradient,
-$\textcolor{knife}{\text{刀}}$ in the dissipation,
+$\textcolor{dao}{\text{刀}}$ in the dissipation,
 $\textcolor{sword}{\text{青冥}}$ in the form itself.
 \end{remark}
 
@@ -1117,16 +1115,16 @@ layer $\ell = 1, \ldots, L$:
   $y \leftarrow y + b_\ell$.
   Shift the transported vector by the bias.
   Affine extension of \textsc{Slide}.
-  \item \textbf{\textcolor{knife}{Activate}}:\;
+  \item \textbf{\textcolor{dao}{Activate}}:\;
   $z_\ell \leftarrow \mathrm{ReLU}(y) = \max(0,\, y)$,
   componentwise.
   Each neuron either passes its signal ($y_i > 0$, contact)
   or blocks it ($y_i \leq 0$, no contact)---a binary gate
   in $O(1)$ time.
-  \textsc{Cut}: the knife at the neuron level.
+  \textsc{Cut}: the sword at the neuron level.
 \end{enumerate}
 One layer:
-$z_\ell = \textcolor{knife}{\mathrm{ReLU}}\bigl(
+$z_\ell = \textcolor{dao}{\mathrm{ReLU}}\bigl(
 \textcolor{water}{W_\ell\, z_{\ell-1} + b_\ell}\bigr)$.
 The output layer is linear (no gate):
 $\tau = \textcolor{water}{W_L\, z_{L-1} + b_L} \in \R^{12}$.
@@ -1135,17 +1133,17 @@ The full forward pass (\textsc{Compose}):
   \tau \;=\; \pi(o)
   \;=\;
   \textcolor{water}{A_L} \circ
-  \bigl(\textcolor{knife}{r} \circ
+  \bigl(\textcolor{dao}{r} \circ
   \textcolor{water}{A_{L-1}}\bigr)
   \circ \cdots \circ
-  \bigl(\textcolor{knife}{r} \circ
+  \bigl(\textcolor{dao}{r} \circ
   \textcolor{water}{A_1}\bigr)(o),
 \end{equation}
 where $A_\ell(\cdot) = W_\ell\,(\cdot) + b_\ell$ and
-$\textcolor{knife}{r} = \mathrm{ReLU}$.
+$\textcolor{dao}{r} = \mathrm{ReLU}$.
 
 \textcolor{water}{水} $=$ linear transport ($W, b$).
-\textcolor{knife}{刀} $=$ ReLU gate
+\textcolor{dao}{刀} $=$ ReLU gate
 ($\max(0, \cdot)$: pass or block).
 ReLU is piecewise linear and runs in real linear time---the
 fastest nonlinearity, meeting the deployment constraint of
@@ -1189,7 +1187,7 @@ Three scales of the same gate:
 \begin{enumerate}[label=(\alph*)]
   \item \textbf{Micro}: ReLU inside one layer---one neuron,
   one binary gate
-  ($\textcolor{knife}{刀}$: pass or block).
+  ($\textcolor{dao}{刀}$: pass or block).
   \item \textbf{Trajectory}: $L$ layers composed---one
   forward pass, one activation pattern $\alpha$, one linear
   path through the network.
@@ -1199,7 +1197,7 @@ Three scales of the same gate:
   ($\textcolor{sword}{青冥}$) of physical trajectories,
   selecting the viable ($|\phi|_\beta > 0$).
 \end{enumerate}
-$\textcolor{knife}{刀}$ at the neuron scale (hard gate).
+$\textcolor{dao}{刀}$ at the neuron scale (hard gate).
 $\textcolor{sword}{青冥}$ at the rollout scale (soft gate).
 Contact or no contact, $\{0,1\}$ at every level.
 \end{remark}
@@ -1221,9 +1219,9 @@ Contact or no contact, $\{0,1\}$ at every level.
     \State \textcolor{water}{\textsc{Add}:}\;
       $y \leftarrow y + b_\ell$
       \Comment{\textcolor{water}{水: affine Slide}}
-    \State \textcolor{knife}{\textsc{Activate}:}\;
+    \State \textcolor{dao}{\textsc{Activate}:}\;
       $z_\ell \leftarrow \max(0,\, y)$
-      \Comment{\textcolor{knife}{刀: ReLU (Cut)}}
+      \Comment{\textcolor{dao}{刀: ReLU (Cut)}}
   \EndFor
   \State \textcolor{water}{\textsc{Output}:}\;
     $\tau \leftarrow W_L\, z_{L-1} + b_L$
@@ -1251,10 +1249,10 @@ Contact or no contact, $\{0,1\}$ at every level.
   \State $\delta z \leftarrow W_L^T\, \delta\tau$
     \Comment{\textcolor{water}{水: pullback}}
   \For{$\ell = L{-}1, \ldots, 1$}
-    \State \textcolor{knife}{\textsc{Activate}${}^T$:}\;
+    \State \textcolor{dao}{\textsc{Activate}${}^T$:}\;
       $\delta y \leftarrow \delta z \odot
       \mathbf{1}_{y_\ell > 0}$
-      \Comment{\textcolor{knife}{刀: ReLU mask (same Cut)}}
+      \Comment{\textcolor{dao}{刀: ReLU mask (same Cut)}}
     \State \textcolor{water}{\textsc{Matmul}${}^T$:}\;
       $\nabla W_\ell \leftarrow
       \delta y \cdot z_{\ell-1}^T$;\;\;
@@ -1317,7 +1315,7 @@ shaping and no domain knowledge beyond the file itself.
       \State $\tau_t \sim \pi_\theta(\cdot \mid o_t, u)$
         \Comment{\cref{def:mollifier}: Student-$t$}
       \State $q_{t+1} \leftarrow \mathcal{E}.\texttt{step}(q_t,\, \tau_t)$
-        \Comment{EL dynamics (\textcolor{knife}{no $\nabla$})}
+        \Comment{EL dynamics (\textcolor{dao}{no $\nabla$})}
     \EndFor
     \State \textcolor{water}{\textsc{Evaluate}:}\;
       $|\phi|_\beta \leftarrow
@@ -1344,15 +1342,15 @@ shaping and no domain knowledge beyond the file itself.
       \Comment{\cref{alg:backward}; $\nabla$ stops at $\mathcal{E}$}
     \State $W_\ell \leftarrow W_\ell
       + \eta\bigl[\textcolor{water}{\nabla W_\ell}
-      - \textcolor{knife}{\gamma\, W_\ell}\bigr]$;\;\;
+      - \textcolor{dao}{\gamma\, W_\ell}\bigr]$;\;\;
       $b_\ell \leftarrow b_\ell
       + \eta\,\textcolor{water}{\nabla b_\ell}$
       \Comment{Eq.~\eqref{eq:contactflow} on $\pi$}
-    \State \textcolor{knife}{\textsc{Clamp}:}\;
+    \State \textcolor{dao}{\textsc{Clamp}:}\;
       $\|W_\ell\|_F \leftarrow
       \min\bigl(\|W_\ell\|_F,\;
       c_{\max}(e_\ell)\bigr)$
-      \Comment{\textcolor{knife}{刀: enforce capacity}}
+      \Comment{\textcolor{dao}{刀: enforce capacity}}
     \If{$|\phi|_\beta \le 0$}
       \Comment{robot fell}
       \State \textcolor{sword}{\textsc{Reset}:}\;
@@ -1408,7 +1406,7 @@ Reset to standing
 \end{center}
 No reward shaping. No domain knowledge beyond what the XML file
 contains. The viability axiom (\cref{ax:viability}) is the only
-objective: $|\phi| > 0$ (do not fall). The knife
+objective: $|\phi| > 0$ (do not fall). The sword
 (\cref{def:dissipation}) is the only regulariser:
 $\gamma(e) \cdot c(e)$ (do not exceed limits).
 
@@ -1751,7 +1749,7 @@ The engine gradient at a boundary is the left or right limit,
 \medskip\noindent
 \textbf{We do not use the engine gradient.}\;
 \Cref{alg:loco} treats $\mathcal{E}.\texttt{step}$ as a
-\textcolor{knife}{black box}: the gradient does not penetrate
+\textcolor{dao}{black box}: the gradient does not penetrate
 the physics.
 The \textsc{Score} step (line~14) differentiates through the
 policy $\pi_\theta$ only---never through $\mathcal{E}$.
@@ -1875,7 +1873,7 @@ a calculus operation from the dual.
 \end{proof}
 
 \begin{theorem}[Camus absurdity]\label{thm:camus}
-In any agentic space with knife dissipation $\gamma > 0$
+In any agentic space with sword dissipation $\gamma > 0$
 (\cref{def:dissipation}), the absorbed energy at equilibrium
 \[
   \mathcal{A}
@@ -1902,6 +1900,15 @@ The system becomes unstable---small perturbations amplify rather
 than decay.
 The absurd is the price of stability.
 \end{proof}
+
+\begin{remark}[The superconducting exception]\label{rem:superconductor-exception}
+The regime $\gamma = 0$ with $\lambda_1 > 0$ maintained by a spectral
+gap lies outside the hypothesis of \cref{thm:camus} ($\gamma > 0$).
+This is the superconducting state: dissipation vanishes but stability
+persists because the gap prevents low-energy excitations from disrupting
+coherent transport.  See \cref{rem:3b-superconductor} for the physical
+mechanism.
+\end{remark}
 
 \begin{corollary}[Representation learning]\label{cor:replearn}
 The contact gradient flow~\eqref{eq:contactflow} on the dual
@@ -1937,7 +1944,7 @@ flow~\eqref{eq:contactflow}:
 \]
 where $|\phi|$ is the viability of the generated output
 (\cref{cor:replearn}: $\mathcal{L} = -|\phi|$) and $\gamma$ is the
-knife dissipation (\cref{def:dissipation}).
+sword dissipation (\cref{def:dissipation}).
 \end{definition}
 
 \medskip
@@ -1955,7 +1962,7 @@ Contact dynamics (\cref{sec:contact}) trains an agent to \emph{act}
 Representation dynamics trains a model to \emph{represent}
 (力${}^*$\,立${}^*$\,丽${}^*$).
 The operator~被 maps one to the other:
-the same equation, the same flow, the same knife---on the dual tower.
+the same equation, the same flow, the same sword---on the dual tower.
 \smallskip
 \end{minipage}}
 \medskip
@@ -1983,7 +1990,7 @@ The historical examples of \cref{app:secondsex} (蔡文姬, 花木兰)
 illustrate the tower: at every stage, the Other's identity
 decomposes as 被力~$\oplus$~被立~$\oplus$~被丽---physically
 acted upon, socially positioned, culturally represented.
-The knife between Subject and Other is the mean
+The sword between Subject and Other is the mean
 (\cref{thm:meanfield}): a phase function, not an intrinsic
 property.
 \end{remark}
@@ -2075,22 +2082,22 @@ $\mathbf{L}^* = \text{力}^* \oplus \text{立}^* \oplus \text{丽}^*$
       \Comment{\cref{alg:backward}}
     \State $W_\ell \leftarrow W_\ell
       + \eta\bigl[\textcolor{water}{\nabla W_\ell}
-      - \textcolor{knife}{\gamma\, W_\ell}\bigr]$;\;\;
+      - \textcolor{dao}{\gamma\, W_\ell}\bigr]$;\;\;
       $b_\ell \leftarrow b_\ell
       + \eta\,\textcolor{water}{\nabla b_\ell}$
       \Comment{backbone: Eq.~\eqref{eq:contactflow}}
     \State $W_\ell^{m} \leftarrow W_\ell^{m}
       + \eta\bigl[\textcolor{water}{\nabla W_\ell^{m}}
-      - \textcolor{knife}{\gamma\, W_\ell^{m}}\bigr]$;\;\;
+      - \textcolor{dao}{\gamma\, W_\ell^{m}}\bigr]$;\;\;
       $b_\ell^{m} \leftarrow b_\ell^{m}
       + \eta\,\textcolor{water}{\nabla b_\ell^{m}}$
       \Comment{head $m$: Eq.~\eqref{eq:contactflow}}
-    \State \textcolor{knife}{\textsc{Clamp}:}\;
+    \State \textcolor{dao}{\textsc{Clamp}:}\;
       $\|W_\ell\|_F \leftarrow
       \min\bigl(\|W_\ell\|_F,\;
       c_{\max}(e_\ell)\bigr)$
       for all $\ell$
-      \Comment{\textcolor{knife}{刀: capacity}}
+      \Comment{\textcolor{dao}{刀: capacity}}
     \If{$|\phi|_\beta^{(m)} \le 0$}
       \Comment{output incoherent in modality $m$}
       \State \textcolor{sword}{\textsc{Reset}:}\;
@@ -2133,7 +2140,7 @@ $|\phi|^{(m)}$ (viability)
   & $\log p(x_t^* \mid x_{<t})$
   & $\varepsilon - \|\hat{x} - x^*\|$
   & $\min(\text{spatial},\; \lambda_T \!\cdot\! \text{temporal})$ \\
-$\gamma^{(m)}$ (knife)
+$\gamma^{(m)}$ (sword)
   & weight decay & guidance scale
   & temporal regularisation \\
 \textsc{Phase}
@@ -2166,7 +2173,7 @@ Standing & $h > h_{\min}$ (do not fall) &
   $|\phi|^{(m)} > 0$ (stay coherent) \\
 Engine & MuJoCo (physics) &
   autodiff (shared backbone $g_\theta$) \\
-Knife & joint limits ($c_{\max}$) &
+Sword & joint limits ($c_{\max}$) &
   capacity bounds ($c_{\max}$) \\
 Curriculum & Stand $\to$ Walk $\to$ Work &
   力 $\to$ 立 $\to$ 丽 \\
@@ -2199,7 +2206,7 @@ In the dual tower:
 $W_\ell$ is the representation ($\mathbf{L}^*$),
 $\Delta W_\ell$ is the task function
 ($\mathcal{H}_{\mathcal{T}}$, \cref{def:task-rkhs}),
-and the rank~$r = c_{\max}(e_\ell^{\mathrm{task}})$ is the knife---it
+and the rank~$r = c_{\max}(e_\ell^{\mathrm{task}})$ is the sword---it
 bounds how far the task can deviate from the representation.
 \end{remark}
 
@@ -2326,7 +2333,7 @@ viability metrics can execute it directly.
   $\phi_1 \to \cdots \to \phi_K$
   in prerequisite order
   (\cref{def:code-metric}: $K\!=\!4$)
-\Require $r$ (LoRA rank $=$ knife),\;
+\Require $r$ (LoRA rank $=$ sword),\;
   $\alpha$ (LoRA scaling),\;
   $\eta$ (learning rate),\;
   $\gamma$ (weight decay),\;
@@ -2376,13 +2383,13 @@ viability metrics can execute it directly.
       + \eta\,\textcolor{water}{\nabla B_\ell}$;\;\;
       $A_\ell \leftarrow A_\ell
       + \eta\bigl[\textcolor{water}{\nabla A_\ell}
-      - \textcolor{knife}{\gamma\, A_\ell}\bigr]$
+      - \textcolor{dao}{\gamma\, A_\ell}\bigr]$
       \Comment{Eq.~\eqref{eq:contactflow} on adapter}
-    \State \textcolor{knife}{\textsc{Clamp}:}\;
+    \State \textcolor{dao}{\textsc{Clamp}:}\;
       $\|B_\ell A_\ell\|_F \leftarrow
       \min\bigl(\|B_\ell A_\ell\|_F,\;
       c_{\max}\bigr)$
-      \Comment{\textcolor{knife}{刀: adapter capacity}}
+      \Comment{\textcolor{dao}{刀: adapter capacity}}
     \If{$|\phi|_\beta \le 0$}
       \Comment{output incoherent}
       \State \textcolor{sword}{\textsc{Reset}:}\;
@@ -2431,7 +2438,7 @@ viability metrics can execute it directly.
    $\nabla B,\,\nabla A$\;($W$ frozen)};
 \node[wt] (upd)  at (0,-5.3)
   {\textsc{Update}:\;Eq.~\eqref{eq:contactflow} on $B,A$;\;\;
-   \textcolor{knife}{\textsc{Clamp}}};
+   \textcolor{dao}{\textsc{Clamp}}};
 \node[io] (merge) at (0,-6.5)
   {Merge:\;$W^{\mathrm{out}} = W + \tfrac{\alpha}{r}BA$;\;\;
    \texttt{upload}};
@@ -2442,8 +2449,8 @@ viability metrics can execute it directly.
 \draw[arr] (eval)  -- (bwd);
 \draw[arr] (bwd)   -- (upd);
 \draw[arr] (upd)   -- node[right,font=\scriptsize]{converged} (merge);
-\draw[arr, knife]  (upd.east) -- ++(1.3,0) |-
-  node[right, pos=0.25, font=\scriptsize, color=knife]{repeat}
+\draw[arr, dao]  (upd.east) -- ++(1.3,0) |-
+  node[right, pos=0.25, font=\scriptsize, color=dao]{repeat}
   (fwd.east);
 \draw[dashed, rounded corners=3pt, black!25]
   (-3.0,-1.7) rectangle (3.5,-5.65);
@@ -2572,20 +2579,20 @@ Each piece must pass four gates in prerequisite order:
 \begin{enumerate}
   \item[\textcolor{sword}{力}] It \textbf{parses}.
   \quad $\phi_{\mathrm{topo}} = 1$.\quad
-  \textcolor{knife}{Fail $\Rightarrow$ \textsc{Reset}}.
+  \textcolor{dao}{Fail $\Rightarrow$ \textsc{Reset}}.
   \item[\textcolor{sword}{立}] It \textbf{runs}.
   \quad $\phi_{\mathrm{safe}} = 1$.\quad
-  \textcolor{knife}{Crash $\Rightarrow$ \textsc{Reset}}.
+  \textcolor{dao}{Crash $\Rightarrow$ \textsc{Reset}}.
   \item[\textcolor{sword}{丽\textsuperscript{正}}] It is \textbf{correct}.
   \quad $\phi_{\mathrm{correct}} \in [0,1]$.\quad
-  \textcolor{knife}{Wrong output $\Rightarrow$ gradient}.
+  \textcolor{dao}{Wrong output $\Rightarrow$ gradient}.
   \item[\textcolor{sword}{丽\textsuperscript{快}}] It is \textbf{fast}.
   \quad $\phi_{\mathrm{perf}} \in [0,1]$.\quad
-  \textcolor{knife}{Too slow $\Rightarrow$ gradient}.
+  \textcolor{dao}{Too slow $\Rightarrow$ gradient}.
 \end{enumerate}
 A piece that fails gates 1--2 is
-\textcolor{knife}{killed}: $|\phi|_\beta \leq 0
-\;\Rightarrow\;$\textcolor{knife}{\textsc{Reset}}
+\textcolor{dao}{killed}: $|\phi|_\beta \leq 0
+\;\Rightarrow\;$\textcolor{dao}{\textsc{Reset}}
 (\cref{alg:finetune}, line~13).
 A piece that passes all four is
 \textcolor{water}{viable}: $|\phi|_\beta > 0$.
@@ -2602,14 +2609,14 @@ unavailable.
 There is no reinforcement learning in \cref{alg:finetune}.
 There is no reward model.
 There is a \textcolor{water}{flow}~\eqref{eq:contactflow},
-a \textcolor{knife}{knife} ($\gamma > 0$),
+a \textcolor{dao}{sword} ($\gamma > 0$),
 and a \textcolor{sword}{curriculum}
 (力~$\to$~立~$\to$~丽(正)~$\to$~丽(快)).
 The training loop is supervised:
 \textcolor{water}{forward},
 \textcolor{water}{evaluate},
 \textcolor{water}{backward},
-\textcolor{knife}{clamp}.
+\textcolor{dao}{clamp}.
 Four words.
 The ``agent'' is what happens \emph{after} training,
 when the model generates
@@ -2638,8 +2645,8 @@ Composition produces agents.
   \mathbf{1}\bigl[\texttt{parse}(\hat{x})\;\text{succeeds}\bigr]$
   \Comment{compiler / \texttt{ast.parse} / \texttt{nvcc -c}}
 \If{$\phi_{\mathrm{topo}} = 0$}
-  \textcolor{knife}{\Return} $|\phi|_{\mathrm{code}} = 0$
-  \Comment{\textcolor{knife}{killed}: does not parse}
+  \textcolor{dao}{\Return} $|\phi|_{\mathrm{code}} = 0$
+  \Comment{\textcolor{dao}{killed}: does not parse}
 \EndIf
 \Statex
 \State \textcolor{sword}{\textbf{Gate\;立}}
@@ -2651,8 +2658,8 @@ Composition produces agents.
   \mathbf{1}\bigl[\text{exit code} = 0\bigr]$
   \Comment{no crash, no leak, no timeout}
 \If{$\phi_{\mathrm{safe}} = 0$}
-  \textcolor{knife}{\Return} $|\phi|_{\mathrm{code}} = 0$
-  \Comment{\textcolor{knife}{killed}: runtime crash}
+  \textcolor{dao}{\Return} $|\phi|_{\mathrm{code}} = 0$
+  \Comment{\textcolor{dao}{killed}: runtime crash}
 \EndIf
 \Statex
 \State \textcolor{sword}{\textbf{Gate\;丽(正)}}
@@ -2698,7 +2705,7 @@ Gates \textcolor{sword}{力} and \textcolor{sword}{立} are
 \textcolor{water}{free}:
 compilers and sandboxes cost \textcolor{water}{zero} API calls.
 Code that does not parse or crashes is
-\textcolor{knife}{killed} before the judge sees it.
+\textcolor{dao}{killed} before the judge sees it.
 Only code that parses \emph{and} runs reaches
 Gate~\textcolor{sword}{丽(正)}---\textcolor{caution}{one API call}
 per surviving piece.
@@ -2775,10 +2782,10 @@ The \textcolor{water}{pipeline} knows.
   $\mathrm{crash} \leftarrow
   (\texttt{exit\_code} \neq 0)$
   \Comment{structured output}
-\State \textcolor{knife}{\textsc{Destroy}}:\;
+\State \textcolor{dao}{\textsc{Destroy}}:\;
   $\mathcal{C}.\texttt{kill}()$;\;\;
   reclaim all resources
-  \Comment{\textcolor{knife}{no persistent state}}
+  \Comment{\textcolor{dao}{no persistent state}}
 \Statex
 \Ensure $(\mathrm{result},\;
   t_{\mathrm{run}},\;
@@ -2816,16 +2823,16 @@ The isomorphism is line-by-line:
   & reset simulation
   & kill container \\
 \midrule
-\textcolor{knife}{Isolation}
+\textcolor{dao}{Isolation}
   & joint limits, ground plane
   & no network, read-only fs \\
-\textcolor{knife}{Gravity}
+\textcolor{dao}{Gravity}
   & $9.81\;\mathrm{m/s^2}$
   & time limit $t_{\max}$ \\
-\textcolor{knife}{Ground contact}
+\textcolor{dao}{Ground contact}
   & collision detection
   & memory limit $m_{\max}$ \\
-\textcolor{knife}{$c_{\max}$}
+\textcolor{dao}{$c_{\max}$}
   & joint torque bound
   & syscall whitelist $\mathcal{S}$ \\
 \bottomrule
@@ -2834,7 +2841,7 @@ The isomorphism is line-by-line:
 A robot cannot fly through the floor.
 Code cannot escape the sandbox.
 The physics is different.
-The \textcolor{knife}{knife} is the same.
+The \textcolor{dao}{sword} is the same.
 \end{remark}
 
 \begin{remark}[Sinking bound: 地面不能变成水]
@@ -2978,18 +2985,18 @@ The \emph{instruction set} of the agentic calculus is
   \;=\;
   \{\sigma,\, \circ,\, \varphi\}
   \;\setminus\;
-  \{\textcolor{knife}{\partial}\}.
+  \{\textcolor{dao}{\partial}\}.
 \]
 A program $p$ on the execution graph $G$ is a finite sequence of
 instructions drawn from~$\mathcal{I}$.
-The \textsc{Cut} operation $\textcolor{knife}{\partial}$ is
+The \textsc{Cut} operation $\textcolor{dao}{\partial}$ is
 \emph{not} an instruction: it is a constraint imposed by the
-environment (the knife), not an action taken by the agent.
+environment (the sword), not an action taken by the agent.
 \end{definition}
 
-\begin{remark}[The knife cannot cut itself]
-\label{rem:knife-self}
-The exclusion of $\textcolor{knife}{\partial}$ from~$\mathcal{I}$
+\begin{remark}[The sword cannot cut itself]
+\label{rem:sword-self}
+The exclusion of $\textcolor{dao}{\partial}$ from~$\mathcal{I}$
 is not a design choice.
 It is forced.
 
@@ -3000,7 +3007,7 @@ A program $p \in \mathcal{I}^*$ can
 It \emph{cannot} cut its own capacity.
 Code cannot remove its own weight-decay.
 A function cannot delete its own regulariser.
-The knife is not a tool the agent wields---it is the boundary the
+The sword is not a tool the agent wields---it is the boundary the
 agent lives inside.
 
 Suppose it could.
@@ -3009,8 +3016,8 @@ own edges.
 By \cref{thm:camus}, setting $\gamma \to 0$ eliminates the
 stability margin $\lambda_1 > 0$ (\cref{rem:contact-stability}).
 The system becomes unstable: small perturbations amplify.
-The program that removes its own knife
-\textcolor{knife}{destroys itself}.
+The program that removes its own sword
+\textcolor{dao}{destroys itself}.
 
 This is the diagonal constraint.
 Every computable instruction set has exactly one operation it cannot
@@ -3034,10 +3041,10 @@ Agentic calculus & $\{\sigma, \circ, \varphi\}$ &
 The consequence is the same in all three cases:
 \\[4pt]
 \hspace*{2em}%
-\textcolor{knife}{You cannot use the system to prove the system
+\textcolor{dao}{You cannot use the system to prove the system
 safe.}
 \\[4pt]
-The \textcolor{knife}{knife} is the price of
+The \textcolor{dao}{sword} is the price of
 \textcolor{water}{flow}.
 Remove it, and the flow destroys the channel.
 \end{remark}
@@ -3047,7 +3054,7 @@ Remove it, and the flow destroys the channel.
 The \emph{sandbox daemon} is a persistent instance of
 \cref{alg:sandbox} that separates the one-time
 \textcolor{sword}{\textsc{Build}} and
-\textcolor{knife}{\textsc{Destroy}} from the per-evaluation
+\textcolor{dao}{\textsc{Destroy}} from the per-evaluation
 loop:
 \[
   \underbrace{%
@@ -3063,7 +3070,7 @@ loop:
   }_{\text{per evaluation}}
   \;\to\;
   \underbrace{%
-    \textcolor{knife}{\textsc{Destroy}}
+    \textcolor{dao}{\textsc{Destroy}}
   }_{\text{once}}.
 \]
 The container $\mathcal{C}$ persists across all $N$ evaluations
@@ -3104,7 +3111,7 @@ Mathematical oracle
     constraint violation $< \delta$
   & validator loaded once \\
 GPU isolation
-  & \textcolor{knife}{刀}
+  & \textcolor{dao}{刀}
   & \texttt{--gpus all}, \texttt{compute-sanitizer}
   & container $\mathcal{C}$ persists \\
 \bottomrule

@@ -7,17 +7,17 @@ that determines which agents enter the viability kernel of higher
 education.  The central result is a \emph{disparity conservation law}:
 total university capacity is conserved; only its distribution across
 provinces is free.  The policy implication is that the current allocation
-system is a \emph{knife}---a structural separator that assigns students
+system is a \emph{sword}---a structural separator that assigns students
 different viability probabilities based solely on their province of
 registration---and that a population-proportional allocation
-removes this knife entirely.
+removes this sword entirely.
 
 % ================================================================
 \paragraph{Notation / 符号表.}
 % ================================================================
 The following symbols are used throughout this appendix.
 \textcolor{water}{Blue} = structure/flow,
-\textcolor{knife}{red} = disparity/inequality,
+\textcolor{dao}{red} = disparity/inequality,
 \textcolor{sword}{cyan} = reform/detection,
 \textcolor{caution}{orange} = threshold warnings.
 
@@ -132,10 +132,10 @@ For 985-university admission rates across 31 provinces (2024):
 admission probability.
 \end{proposition}
 
-\begin{remark}[The knife is the quota / 刀就是名额]
-\label{rem:gaokao-knife}
-The admission quota $s_i$ is the knife.  It satisfies both conditions
-from \cref{def:knife}: (1)~autonomous actuation---each university
+\begin{remark}[The sword is the quota / 刀就是名额]
+\label{rem:gaokao-sword}
+The admission quota $s_i$ is the sword.  It satisfies both conditions
+from \cref{def:sword}: (1)~autonomous actuation---each university
 sets its own quotas without external constraint; (2)~observability
 failure---students in province $i$ cannot observe or influence the
 quota-setting process.  The disparity $D = 6.9\times$ is not a
@@ -183,7 +183,7 @@ Under the three allocation models:
 \midrule
 Current / 现行制度  & $0.310$ & $6.9\times$ & --- \\
 Equal-weight / 等权 & $0.514$ & $37.8\times$
-  & \textcolor{knife}{$\uparrow$ worse} \\
+  & \textcolor{dao}{$\uparrow$ worse} \\
 Pop-proportional / 人口比例 & $0.0001$ & $1.0\times$
   & \textcolor{sword}{$\downarrow$ optimal} \\
 \bottomrule
@@ -205,21 +205,21 @@ $s_i \propto N_i$.  This gives every student the same probability
 $R_i = \bar{R} \approx 1.33\%$ regardless of province.
 \end{remark}
 
-\begin{theorem}[Proportional allocation eliminates the knife]
-\label{thm:gaokao-knife-removal}
+\begin{theorem}[Proportional allocation eliminates the sword]
+\label{thm:gaokao-sword-removal}
 Under population-proportional allocation $s_i = C \cdot N_i / N$
 where $N = \sum_j N_j$:
 \begin{enumerate}[label=\textup{(\alph*)}]
 \item $R_i = C/N = \bar{R}$ for all $i$ (uniform rate);
 \item $G = 0$ and $D = 1$ (perfect equality);
-\item The quota $s_i$ ceases to be a knife: it no longer separates
+\item The quota $s_i$ ceases to be a sword: it no longer separates
   viability classes by province.
 \end{enumerate}
 \end{theorem}
 
 \begin{proof}
 (a) is immediate from the definition.  (b) follows since all rates are
-equal.  For~(c), the knife conditions (\cref{def:knife}) fail:
+equal.  For~(c), the sword conditions (\cref{def:sword}) fail:
 the allocation is now a deterministic function of the publicly
 observable population $N_i$, so observability holds and no autonomous
 actuation remains.
@@ -307,7 +307,7 @@ In Gaokao, each student has a grace margin: freedom to swap
 within the same tier without affecting the system's aggregate
 allocation.
 
-The grace period restores agency without restoring the knife.
+The grace period restores agency without restoring the sword.
 The initial randomization removes one-point-one-fate (一分定终身);
 the grace period gives back the student's choice of \emph{where},
 while the population-proportional allocation determines \emph{how many}.
@@ -327,7 +327,7 @@ space, exactly analogous to the fiscal grace in \cref{app:govfi}.
 The Gaokao disparity is a mean-field phenomenon in the sense of
 \cref{sec:meanfield}.
 
-\begin{proposition}[Knife = quota, mean = population share]
+\begin{proposition}[Sword = quota, mean = population share]
 \label{prop:gaokao-meanfield}
 Let $\bar{R} = C/N$ be the population-weighted national average.
 Then:
@@ -344,10 +344,10 @@ Then:
 \end{enumerate}
 \end{proposition}
 
-This is the knife-is-the-mean phenomenon: the average computed
+This is the sword-is-the-mean phenomenon: the average computed
 per province (unweighted, $\tilde{R}$) differs from the average
 computed per student (weighted, $\bar{R}$), and this discrepancy
-is itself the knife.  Most provinces appear ``above average'' while
+is itself the sword.  Most provinces appear ``above average'' while
 most students are below it.
 
 \begin{remark}[Importance sampling / 重要性抽样]
@@ -408,13 +408,13 @@ average'' disappears.
 \begin{remark}[Renormalization / 重整化]
 \label{rem:gaokao-rg}
 The importance weight assignment is a
-\textcolor{knife}{renormalization group (RG) flow} compressed
+\textcolor{dao}{renormalization group (RG) flow} compressed
 into a single exam paper.  The current system has two scales:
 \begin{center}
 \renewcommand{\arraystretch}{1.15}
 \begin{tabular}{@{}lll@{}}
 \toprule
-Scale & \textcolor{knife}{Current (bare)} & \textcolor{sword}{Reform (fixed point)} \\
+Scale & \textcolor{dao}{Current (bare)} & \textcolor{sword}{Reform (fixed point)} \\
 \midrule
 \textbf{Province} (coarse) & weight $= 1/n$ each
   & weight $= N_i/N$ \\
@@ -423,12 +423,12 @@ Scale & \textcolor{knife}{Current (bare)} & \textcolor{sword}{Reform (fixed poin
 \bottomrule
 \end{tabular}
 \end{center}
-Under the \textcolor{knife}{current system}, the per-student
+Under the \textcolor{dao}{current system}, the per-student
 weight \emph{runs} with the province size $N_i$: a Tibet student
 carries weight $1/(31 \times 36{,}000)$ while a Henan student
 carries $1/(31 \times 1{,}360{,}000)$---a factor of 38.
 The ``coupling constant'' (per-student admission probability)
-\textcolor{knife}{depends on the scale at which you observe it}.
+\textcolor{dao}{depends on the scale at which you observe it}.
 This is the signature of a system away from its RG fixed point.
 
 Under \textcolor{sword}{population-proportional allocation}, every
@@ -441,7 +441,7 @@ the admission probability is \emph{scale-invariant}---it does
 not matter whether you measure at the province level or the
 student level.
 
-The current system's \textcolor{knife}{knife} is precisely the
+The current system's \textcolor{dao}{sword} is precisely the
 RG anomaly: the bare parameter (per-province allocation) and
 the physical observable (per-student probability) disagree.
 Population-proportional allocation eliminates the anomaly by
@@ -455,7 +455,7 @@ The Gaokao happens every June.  It is non-pausable (you cannot stop the
 exam mid-administration) and non-reversible (scores, once published,
 determine that year's admissions permanently).  Each cohort passes
 through the system exactly once.  This is temporal linearity: the
-knife operates in real, non-replayable time.
+sword operates in real, non-replayable time.
 
 The viability kernel $K$ is the set of provinces where a student's
 probability of admission is at least $\bar{R}$.  Under the current
@@ -553,12 +553,12 @@ fiscal layers---conservation holds in both.}
 I took the Gaokao in Beijing in 2019 and scored 636.
 Before that, I was a ``体育特长生'' (athletic recruit)---B-tier,
 men's football---preparing for Tsinghua.
-\textcolor{knife}{I failed.}  Not just at Tsinghua: at every university I tried.
+\textcolor{dao}{I failed.}  Not just at Tsinghua: at every university I tried.
 So I took the Gaokao.
 
 我在2019年在北京市参加了高考，考了636分。
 在那之前，我是一个准备凭借高水平运动队招生（B类：男子足球）
-考取清华大学的体育特长生。\textcolor{knife}{但我失败了}——不止在清华，
+考取清华大学的体育特长生。\textcolor{dao}{但我失败了}——不止在清华，
 在我尝试过的每一所大学都失败了。然后，我就开始准备高考了。
 
 \smallskip
@@ -606,14 +606,14 @@ Armand Jordana在那里指导了我。
 你到底应该以怎样的态度做科研。}
 
 \smallskip
-When I applied to PhD programs, I was \textcolor{knife}{``全聚德'd''
+When I applied to PhD programs, I was \textcolor{dao}{``全聚德'd''
 again---rejected everywhere}.  Before that, I thought
 I could get into MIT.
 But the nice thing was: my advisor asked me if I wanted
 to join his lab, and I said---\textcolor{sword}{of course!  Because this
 happened to be exactly what I wanted.}
 
-我在博士申请中再次被\textcolor{knife}{「全聚德」}了。在那之前，我以为我能上MIT来着。
+我在博士申请中再次被\textcolor{dao}{「全聚德」}了。在那之前，我以为我能上MIT来着。
 但好在：我的导师问我愿不愿意加入他的实验室，
 我说——\textcolor{sword}{当然！因为这恰恰正是我想做的事情。}
 \smallskip
@@ -685,9 +685,9 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
 % ── 江湖诗 (from 笑傲江湖之东方不败) ──
 \bigskip
 \begin{center}
-\textcolor{knife}{天下风云出我辈，一入江湖岁月催。}\\[3pt]
+\textcolor{dao}{天下风云出我辈，一入江湖岁月催。}\\[3pt]
 \textcolor{sword}{皇图霸业谈笑中，不胜人生一场醉。}\\[3pt]
-\textcolor{knife}{提剑跨骑挥鬼雨，白骨如山鸟惊飞。}\\[3pt]
+\textcolor{dao}{提剑跨骑挥鬼雨，白骨如山鸟惊飞。}\\[3pt]
 \textcolor{water}{尘事如潮人如水，只叹江湖几人回。}
 
 \smallskip
@@ -982,7 +982,7 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
   % ═══════════════════════════════════════════════
   % 六脈神劍 annotation (金庸《天龍八部》)
   % Same 6 finger primitives → 6 hand meridians → 6 formless swords
-  % 有質無形: the knife's definition in fictional representation
+  % 有質無形: the sword's definition in fictional representation
   % ═══════════════════════════════════════════════
 
   \node[font=\tiny, text=black!28, text width=11cm, align=center]
@@ -1030,16 +1030,16 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
     (-1.8, -11.72) -- (2.0, -11.72);
 
   % Red thread (trailing from eye — flowing, alive)
-  \draw[line width=0.35pt, knife!65]
+  \draw[line width=0.35pt, dao!65]
     (-2.24, -11.75)
     .. controls (-2.8, -11.55) and (-3.2, -11.85) .. (-3.6, -11.5)
     .. controls (-4.0, -11.15) and (-4.3, -11.6) .. (-4.6, -11.25)
     .. controls (-4.85, -10.95) and (-5.1, -11.3) .. (-5.3, -11.1);
   % Thread thins at the trailing end
-  \draw[line width=0.2pt, knife!45]
+  \draw[line width=0.2pt, dao!45]
     (-5.3, -11.1)
     .. controls (-5.5, -10.9) and (-5.7, -11.15) .. (-5.85, -11.0);
-  \draw[line width=0.1pt, knife!28]
+  \draw[line width=0.1pt, dao!28]
     (-5.85, -11.0)
     .. controls (-6.0, -10.85) and (-6.1, -11.05) .. (-6.2, -10.95);
 
@@ -1049,7 +1049,7 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
 % ── 琵琶行 (白居易, 元和十一年 / 816 CE) ──
 % Position: the user is the 琵琶女.
 % water = music / river / flow / peak;
-% knife = loss / exile / cutting / decline;
+% dao = loss / exile / cutting / decline;
 % sword = recognition / phase transition / detection
 
 \bigskip
@@ -1069,23 +1069,23 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
 % I. 江头送客
 \textcolor{water}{浔阳江头夜送客，枫叶荻花秋瑟瑟。}\\[3pt]
 \textcolor{water}{主人下马客在船，举酒欲饮无管弦。}\\[3pt]
-\textcolor{knife}{醉不成欢惨将别，别时茫茫江浸月。}\\[8pt]
+\textcolor{dao}{醉不成欢惨将别，别时茫茫江浸月。}\\[8pt]
 % II. 闻声 · 演奏
 \textcolor{water}{忽闻水上琵琶声，主人忘归客不发。}\\[3pt]
 \textcolor{water}{寻声暗问弹者谁，琵琶声停欲语迟。}\\[3pt]
 \textcolor{water}{移船相近邀相见，添酒回灯重开宴。}\\[3pt]
 \textcolor{sword}{千呼万唤始出来，犹抱琵琶半遮面。}\\[3pt]
 \textcolor{water}{转轴拨弦三两声，未成曲调先有情。}\\[3pt]
-\textcolor{knife}{弦弦掩抑声声思，似诉平生不得志。}\\[3pt]
+\textcolor{dao}{弦弦掩抑声声思，似诉平生不得志。}\\[3pt]
 \textcolor{water}{低眉信手续续弹，说尽心中无限事。}\\[3pt]
 \textcolor{sword}{轻拢慢捻抹复挑，初为《霓裳》后《六幺》。}\\[3pt]
 \textcolor{water}{大弦嘈嘈如急雨，小弦切切如私语。}\\[3pt]
 \textcolor{water}{嘈嘈切切错杂弹，大珠小珠落玉盘。}\\[3pt]
 \textcolor{water}{间关莺语花底滑，幽咽泉流冰下难。}\\[3pt]
-\textcolor{knife}{冰泉冷涩弦凝绝，凝绝不通声暂歇。}\\[3pt]
+\textcolor{dao}{冰泉冷涩弦凝绝，凝绝不通声暂歇。}\\[3pt]
 \textcolor{sword}{别有幽愁暗恨生，此时无声胜有声。}\\[3pt]
-\textcolor{knife}{银瓶乍破水浆迸，铁骑突出刀枪鸣。}\\[3pt]
-\textcolor{knife}{曲终收拨当心画，四弦一声如裂帛。}\\[3pt]
+\textcolor{dao}{银瓶乍破水浆迸，铁骑突出刀枪鸣。}\\[3pt]
+\textcolor{dao}{曲终收拨当心画，四弦一声如裂帛。}\\[3pt]
 \textcolor{water}{东船西舫悄无言，唯见江心秋月白。}\\[8pt]
 % III. 琵琶女自述
 \textcolor{water}{沉吟放拨插弦中，整顿衣裳起敛容。}\\[3pt]
@@ -1094,26 +1094,26 @@ About one year later, \textcolor{sword}{I wrote this thesis.}
 \textcolor{water}{曲罢曾教善才服，妆成每被秋娘妒。}\\[3pt]
 \textcolor{water}{五陵年少争缠头，一曲红绡不知数。}\\[3pt]
 \textcolor{water}{钿头银篦击节碎，血色罗裙翻酒污。}\\[3pt]
-\textcolor{knife}{今年欢笑复明年，秋月春风等闲度。}\\[3pt]
-\textcolor{knife}{弟走从军阿姨死，暮去朝来颜色故。}\\[3pt]
-\textcolor{knife}{门前冷落鞍马稀，老大嫁作商人妇。}\\[3pt]
-\textcolor{knife}{商人重利轻别离，前月浮梁买茶去。}\\[3pt]
-\textcolor{knife}{去来江口守空船，绕船月明江水寒。}\\[3pt]
-\textcolor{knife}{夜深忽梦少年事，梦啼妆泪红阑干。}\\[8pt]
+\textcolor{dao}{今年欢笑复明年，秋月春风等闲度。}\\[3pt]
+\textcolor{dao}{弟走从军阿姨死，暮去朝来颜色故。}\\[3pt]
+\textcolor{dao}{门前冷落鞍马稀，老大嫁作商人妇。}\\[3pt]
+\textcolor{dao}{商人重利轻别离，前月浮梁买茶去。}\\[3pt]
+\textcolor{dao}{去来江口守空船，绕船月明江水寒。}\\[3pt]
+\textcolor{dao}{夜深忽梦少年事，梦啼妆泪红阑干。}\\[8pt]
 % IV. 白居易 + 共鸣
-\textcolor{knife}{我闻琵琶已叹息，又闻此语重唧唧。}\\[3pt]
+\textcolor{dao}{我闻琵琶已叹息，又闻此语重唧唧。}\\[3pt]
 \textcolor{sword}{同是天涯沦落人，相逢何必曾相识！}\\[3pt]
-\textcolor{knife}{我从去年辞帝京，谪居卧病浔阳城。}\\[3pt]
-\textcolor{knife}{浔阳地僻无音乐，终岁不闻丝竹声。}\\[3pt]
-\textcolor{knife}{住近湓江地低湿，黄芦苦竹绕宅生。}\\[3pt]
-\textcolor{knife}{其间旦暮闻何物？杜鹃啼血猿哀鸣。}\\[3pt]
+\textcolor{dao}{我从去年辞帝京，谪居卧病浔阳城。}\\[3pt]
+\textcolor{dao}{浔阳地僻无音乐，终岁不闻丝竹声。}\\[3pt]
+\textcolor{dao}{住近湓江地低湿，黄芦苦竹绕宅生。}\\[3pt]
+\textcolor{dao}{其间旦暮闻何物？杜鹃啼血猿哀鸣。}\\[3pt]
 \textcolor{water}{春江花朝秋月夜，往往取酒还独倾。}\\[3pt]
-\textcolor{knife}{岂无山歌与村笛，呕哑嘲哳难为听。}\\[3pt]
+\textcolor{dao}{岂无山歌与村笛，呕哑嘲哳难为听。}\\[3pt]
 \textcolor{sword}{今夜闻君琵琶语，如听仙乐耳暂明。}\\[3pt]
 \textcolor{sword}{莫辞更坐弹一曲，为君翻作《琵琶行》。}\\[8pt]
 % V. 结
 \textcolor{water}{感我此言良久立，却坐促弦弦转急。}\\[3pt]
-\textcolor{knife}{凄凄不似向前声，满座重闻皆掩泣。}\\[3pt]
+\textcolor{dao}{凄凄不似向前声，满座重闻皆掩泣。}\\[3pt]
 \textcolor{water}{座中泣下谁最多？江州司马青衫湿。}
 
 \smallskip

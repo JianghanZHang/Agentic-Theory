@@ -1,7 +1,7 @@
-\chapter{The Knife as Mean Field}\label{sec:meanfield}
+\chapter{The Sword as Mean Field}\label{sec:meanfield}
 
-The preceding sections defined the knife as a two-condition criterion
-applied to individual resources. We now argue that the knife is
+The preceding sections defined the sword as a two-condition criterion
+applied to individual resources. We now argue that the sword is
 fundamentally a \emph{mean-field} phenomenon.
 
 \section{The mean actuation field}
@@ -17,8 +17,52 @@ Define the \emph{mean actuation field}:
 \]
 
 The king's detection function $\Obs$ has finite bandwidth: it cannot
-monitor all agents with equal precision. In practice, $\Obs$ triggers
-on agents whose actuation \emph{deviates significantly from the mean}:
+monitor all agents with equal precision.
+
+\begin{proposition}[Detection as optimal monitoring]
+\label{prop:detection-derivation}
+Let the king have finite monitoring bandwidth~$B$: he can
+observe at most~$B$ agents simultaneously.  Under the viability
+axiom (\cref{ax:viability}), the optimal monitoring policy
+$\Obs^*$ is a threshold rule:
+\[
+  r \in \mathrm{Im}(\Obs^*)
+  \iff
+  \|U_r\| - \bar{U} > \tau(B),
+\]
+where $\tau(B)$ is the threshold that selects the top-$B$
+agents by deviation from the mean.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+\leavevmode
+\begin{enumerate}[label=(\roman*),nosep]
+  \item The king must maintain $F(x) \cap T_K(x) \neq
+  \varnothing$ (tangential condition,
+  \cref{thm:viability-di}).
+  \item The threat from agent~$r$ is proportional to
+  $\|\Ur\|$ (the dimension of its autonomous control set).
+  \item The mean field~$\bar{U}$ is the unique unbiased
+  baseline: by the massless axiom, deviations must net to
+  zero, forcing $b = \bar{U}$ (\cref{lem:capacity}).
+  Agents at or below the mean carry zero bypass capacity
+  and pose no threat.
+  \item With finite bandwidth~$B$, optimal allocation monitors
+  the agents with largest $\|\Ur\| - \bar{U}$, i.e., the
+  most deviant.
+  \item The threshold $\tau(B)$ is determined by~$B$: it is
+  the $(n - B)$-th order statistic of
+  $\{\|U_i\| - \bar{U}\}$.
+\end{enumerate}
+This is the evaluation operator $T^{\Obs}$: given the current
+mean field~$\bar{U}$, it evaluates which agents are monitored.
+The detection equation~\eqref{eq:detection} is the fixed point
+of this operator, self-consistent when both~$\bar{U}$ and the
+detected set are stable.
+\end{proof}
+
+By \cref{prop:detection-derivation}, $\Obs$ triggers on agents
+whose actuation deviates significantly from the mean:
 \begin{equation}\label{eq:detection}
   r \in \mathrm{Im}(\Obs)
   \iff
@@ -30,9 +74,9 @@ concept ($r \in \mathrm{Im}(\Obs)$ or not) to a scalar comparison,
 valid when the king's bandwidth is finite and detection is
 threshold-based.
 
-\begin{theorem}[The knife is the mean]\label{thm:meanfield}
-The knife threshold is determined by the system's mean actuation field.
-A resource $r$ is a knife if and only if:
+\begin{theorem}[The sword is the mean]\label{thm:meanfield}
+The sword threshold is determined by the system's mean actuation field.
+A resource $r$ is a sword if and only if:
 \begin{enumerate}[label=(\roman*)]
   \item $\Ur \neq \varnothing$ (autonomous actuation exists), and
   \item $\|U_r\|$ exceeds the mean field by more than the detection
@@ -43,17 +87,17 @@ $\bar{U}$, not a change in any individual $\Ur$.
 \end{theorem}
 
 \begin{proof}
-Condition~(i) is unchanged from \cref{def:knife}.
+Condition~(i) is unchanged from \cref{def:sword}.
 For condition~(ii): by the detection model~\eqref{eq:detection},
 $r \in \mathrm{Im}(\Obs)$ if and only if
-$\|U_r\| - \bar{U} > \tau(\Obs)$.  Substituting into the knife
-criterion (\cref{def:knife}) yields the stated biconditional.
+$\|U_r\| - \bar{U} > \tau(\Obs)$.  Substituting into the sword
+criterion (\cref{def:sword}) yields the stated biconditional.
 
 For the phase-transition claim: let $\bar{U}_1$ denote the mean
 before the transition and $\bar{U}_2 < \bar{U}_1$ the mean after.
 An agent with fixed $\|U_r\|$ satisfying
 $\bar{U}_2 + \tau < \|U_r\| \leq \bar{U}_1 + \tau$
-is not a knife in regime~1 but becomes a knife in regime~2.
+is not a sword in regime~1 but becomes a sword in regime~2.
 The shift is in $\bar{U}$, not in any individual $\|U_r\|$.
 \end{proof}
 
@@ -63,7 +107,7 @@ In wartime, many agents carry high actuation; the mean $\bar{U}$ is
 high; few exceed the threshold. At demobilization, the mean drops
 sharply. Agents who retain wartime-level actuation now exceed the
 peacetime threshold---the same $\|U_r\|$ that was unremarkable before
-is now a deviation. The knife is not created by the agent but by the
+is now a deviation. The sword is not created by the agent but by the
 shift in the system's reference frame.
 \end{remark}
 
@@ -76,6 +120,14 @@ of the free energy: the system minimises threats to $\Viab(K)$, just
 as a thermodynamic system minimises free energy.
 \end{remark}
 
+\begin{remark}[Validity conditions]\label{rem:meanfield-validity}
+The arithmetic mean~$\bar{U}$ is the operative threshold for
+homogeneous systems where agents draw from comparable control
+sets.  In hierarchical systems, clique amplification
+(see \cref{app:zhongxian}) may require a modified threshold
+that accounts for correlated actuation within subgroups.
+\end{remark}
+
 \section{Implications}
 
 The mean-field interpretation resolves several puzzles:
@@ -85,12 +137,12 @@ The mean-field interpretation resolves several puzzles:
   generals with identical $\Ur$ can have opposite outcomes if one
   operates in a high-$\bar{U}$ environment (wartime coalition) and
   the other in a low-$\bar{U}$ environment (consolidated empire).
-  The knife is relative to the mean.
+  The sword is relative to the mean.
 
   \item \textbf{Why the paradox is a feedback loop.} As the king
-  eliminates knives, $\bar{U}$ drops, lowering the threshold. Agents
+  eliminates swords, $\bar{U}$ drops, lowering the threshold. Agents
   who were below the old threshold now exceed the new one $\to$ new
-  knives $\to$ more elimination $\to$ lower $\bar{U}$ $\to$ \ldots
+  swords $\to$ more elimination $\to$ lower $\bar{U}$ $\to$ \ldots
   This is the positive feedback of \cref{thm:paradox}, now given a
   statistical mechanism.
 
@@ -100,7 +152,7 @@ The mean-field interpretation resolves several puzzles:
   By visibly degrading his own actuation, Xiao He pulled $\|U_r\|$
   toward $\bar{U}$, falling below the detection threshold.
 
-  \item \textbf{Why breakpoints prevent knives.} A breakpoint in the
+  \item \textbf{Why breakpoints prevent swords.} A breakpoint in the
   execution chain reduces $\|U_r\|$ (effective autonomous actuation)
   to below $\bar{U} + \tau(\Obs)$, since the king controls part of
   the chain. The resource remains capable but not \emph{independently}

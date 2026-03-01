@@ -13,12 +13,12 @@ conditions:
 Diffuse sovereignty & No unique king; cut vertex undefined & Late
 European feudalism, early federalism \\
 External shock dominance & $\Viab(K)$ broken by external force;
-internal knife dynamics secondary & Mongol invasion, colonialism \\
+internal sword dynamics secondary & Mongol invasion, colonialism \\
 Rapid ideological reshaping & $K$ itself is changing faster than
 actuation reshapes state & Religious revolution, ideology \\
 High-latency detection & $\Obs$ too slow; phase transition completes
 before detection & Large empire frontiers \\
-Universal $\Ur \approx \varnothing$ & No knives; framework trivial &
+Universal $\Ur \approx \varnothing$ & No swords; framework trivial &
 Extremely atomised societies \\
 \bottomrule
 \end{tabular}
@@ -30,7 +30,7 @@ interval of Chinese imperial history but not all political forms.
 
 \section{The water dynamics}\label{sec:water}
 
-The framework so far analyzes one layer: the king--knife interaction. A
+The framework so far analyzes one layer: the king--sword interaction. A
 complete viability analysis requires the \emph{viability chain}---the
 three-level dependency that sustains the system:
 \[
@@ -53,7 +53,7 @@ $\|\Ur\| \leq g(w)$ for some monotone function $g$ with $g(0) = 0$.
 \end{definition}
 
 The king needs the pawn to execute viability maintenance (eliminate
-knives, administer territory). The pawn needs water to function. If
+swords, administer territory). The pawn needs water to function. If
 $w \to 0$, the pawn's actuation capacity collapses regardless of the
 king's commands.
 
@@ -66,8 +66,8 @@ The intermediate options (negotiate, migrate, trade, accumulate) require
 $w > 0$. At $w = 0$, the pawn has nothing to lose, and the viability
 axiom (\cref{ax:viability}) now applies \emph{to the pawn}: the pawn's
 own survival requires a viable path, and submission no longer provides
-one. The pawn becomes a knife---$\Ur$ transitions from $\varnothing$ to
-$\neq \varnothing$---and the king faces a knife he created by exhausting
+one. The pawn becomes a sword---$\Ur$ transitions from $\varnothing$ to
+$\neq \varnothing$---and the king faces a sword he created by exhausting
 the water.
 \end{proposition}
 
@@ -76,7 +76,7 @@ Let $w(t)$ be decreasing under extraction. Then:
 \[
   w(t) \to 0
   \implies
-  \text{pawn} \to \text{knife}
+  \text{pawn} \to \text{sword}
   \implies
   \text{king absorbed.}
 \]
@@ -87,10 +87,25 @@ its own substrate.
 This is the content of Du Mu's \emph{A Fang Gong Fu} \cite{dumu} (825~CE): ``It was
 not the Qin who destroyed the six states, but the six states themselves;
 it was not the world that destroyed Qin, but Qin itself.'' In our
-language: the states depleted their own water, creating the knives that
+language: the states depleted their own water, creating the swords that
 destroyed them. Qin, having unified, then depleted its own water
-(conscription for the Great Wall and Epang Palace), creating the knives
+(conscription for the Great Wall and Epang Palace), creating the swords
 (Chen Sheng, Wu Guang) that destroyed it.
+
+\begin{remark}[Irreversibility of the pawn-to-sword transition]
+\label{rem:dumu-irreversibility}
+The hypothesis ``$w(t)$ decreasing'' is not merely a sufficient
+condition: the transition is hysteretic.  Once $\Ur$ expands from
+$\varnothing$ to $\{\text{submit}, \text{rebel}\}$, the organisational
+infrastructure of rebellion (networks, leaders, arms) persists even
+if $w$ is subsequently restored.  The causal envelope
+$\Reach(x, \Ur, T)$ ratchets: it can expand but not contract,
+because the agent's Bayesian update---having observed the king drive
+$w \to 0$ once---permanently raises the perceived probability of
+recurrence.  Restoration of $w$ reduces the \emph{incentive} to
+rebel but not the \emph{capability}; the pawn remains a sword by
+condition~(1) of \cref{def:sword}.
+\end{remark}
 
 \begin{remark}[Water as viability constraint]
 ``Water can carry the boat, and water can capsize the boat'' (attributed
@@ -98,5 +113,5 @@ to Wei Zheng, Tang dynasty) is not a metaphor. It is a restatement of
 \cref{thm:dumu}: the substrate that enables the king's viability
 ($w > 0$ $\implies$ pawn functions $\implies$ king's path to $\infty$
 exists) is the same substrate whose depletion destroys it ($w = 0$
-$\implies$ pawn $\to$ knife $\implies$ no path to $\infty$).
+$\implies$ pawn $\to$ sword $\implies$ no path to $\infty$).
 \end{remark}

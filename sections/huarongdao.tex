@@ -31,7 +31,7 @@ to any $\sigma_f$ with $\sigma_f(p_*) = E$?
 \end{definition}
 
 The standard instance is $\mathcal{B} = [4] \times [5]$ in the
-configuration 横刀立马 (``horizontal knife, standing horse''):
+configuration 横刀立马 (``horizontal sword, standing horse''):
 
 \begin{center}
 \begin{tikzpicture}[scale=0.85]
@@ -46,7 +46,7 @@ configuration 横刀立马 (``horizontal knife, standing horse''):
   \fill[black!80] (1.05,3.05) rectangle (2.95,4.95);
   \node[white, font=\bfseries\large] at (2,4.2) {曹操};
   \node[white, font=\scriptsize] at (2,3.5) {$p_*\;(2{\times}2)$};
-  % 关羽 (2×1 horizontal) — the knife
+  % 关羽 (2×1 horizontal) — the sword
   \fill[black!55] (1.05,2.05) rectangle (2.95,2.95);
   \node[white, font=\small\bfseries] at (2,2.5) {关羽 $(2{\times}1)$};
   % Generals (1×2 vertical)
@@ -109,7 +109,7 @@ The standard 华容道 instance instantiates the viability framework:
 Viability axiom & Path $\sigma_0 \to \sigma_f$ in $\mathcal{G}$ &
 King must reach exit \\
 King & 曹操 $(2{\times}2)$ & Least mobile, highest importance \\
-Knife (\cref{def:knife}) & 关羽 $(2{\times}1)$ & Blocks exit;
+Sword (\cref{def:sword}) & 关羽 $(2{\times}1)$ & Blocks exit;
 autonomous; observable \\
 Pawns & Soldiers $(1{\times}1)$ & Most mobile, lowest importance \\
 Cut vertex & Free cells $\mathcal{F}$ &
@@ -131,7 +131,7 @@ configuration graph is the execution graph; each edge is a legal move;
 the viable kernel is the set of configurations from which the exit
 remains reachable.
 
-\emph{Knife.} 关羽 satisfies both conditions of \cref{def:knife}:
+\emph{Sword.} 关羽 satisfies both conditions of \cref{def:sword}:
 (1)~autonomous actuation---he can slide independently of 曹操---and
 (2)~observability---his position visibly blocks the exit corridor.
 He must yield for the king to pass.
@@ -154,8 +154,8 @@ water through 81 channels.
 \end{proof}
 
 \begin{remark}[横刀立马: the name is the theorem]\label{rem:hrdname}
-The configuration's traditional name means ``horizontal knife, standing
-horse.'' 刀~(knife) $=$ 关羽 blocking horizontally; 马~(horse) $=$
+The configuration's traditional name means ``horizontal sword, standing
+horse.'' 刀~(sword) $=$ 关羽 blocking horizontally; 马~(horse) $=$
 generals standing vertically. Chinese game designers named the
 configuration by its structural properties---the framework's vocabulary,
 centuries before graph theory.
@@ -164,7 +164,7 @@ centuries before graph theory.
 \begin{remark}[义释曹操]\label{rem:guanyu}
 In the \emph{Romance of the Three Kingdoms}, 关羽 is stationed at
 华容道 after the Battle of Red Cliffs (208~CE). 曹操 retreats through.
-关羽 has both conditions of \cref{def:knife}: autonomous actuation
+关羽 has both conditions of \cref{def:sword}: autonomous actuation
 (his army) and observability (曹操 approaching in plain sight). He
 chooses path~(a): 义~(righteousness) overrides 忠~(loyalty to Liu Bei),
 and he sets $\Ur \to \varnothing$ voluntarily.
@@ -233,7 +233,7 @@ The 水-position $\{f_1, f_2\}$ has \emph{mode}:
   Only $1 \times 1$ pieces (soldiers) can move.
 \end{itemize}
 The king ($2 \times 2$) requires mode H or V\@.
-The knife ($2 \times 1$) requires mode~H\@.
+The sword ($2 \times 1$) requires mode~H\@.
 In mode~S, only soldiers act---水 is diffuse.
 \end{definition}
 
@@ -467,7 +467,7 @@ The midpoint $\lfloor 81/2 \rfloor = 40$.
 \begin{theorem}[Saddle $=$ phase transition]\label{thm:saddle}
 At the saddle $\sigma^*$ (step~$40$):
 \begin{enumerate}[label=(\roman*)]
-  \item 关羽 (knife) is at position $(2, 0)$, far from
+  \item 关羽 (sword) is at position $(2, 0)$, far from
   the exit corridor---she has cleared.
   \item The 水-mode is H
   (horizontal pair at $\{(1,2), (2,2)\}$),
@@ -513,7 +513,7 @@ Along the $81$-步 path, the 水-mode after each step is:
 \toprule
 \textbf{Mode} & \textbf{Count} & \textbf{Enables} \\
 \midrule
-H (horizontal) & $27$ & knife, king (horizontal) \\
+H (horizontal) & $27$ & sword, king (horizontal) \\
 V (vertical)   & $42$ & generals, king (vertical) \\
 S (separated)  & $12$ & soldiers only \\
 \bottomrule

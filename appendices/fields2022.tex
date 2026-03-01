@@ -8,7 +8,7 @@ from four independent directions---in the 2022 Fields Medal.
 
 Each of the four 2022 Fields Medalists proved one face of a theorem
 that the agentic framework identifies as:
-\textcolor{sword}{the knife is the mean}.
+\textcolor{sword}{the sword is the mean}.
 
 \medskip
 \noindent
@@ -44,9 +44,9 @@ the same mathematical objects under different names.
 Viability kernel $K$ &
   Configuration space &
   \cref{sec:axiom} \\
-Knife (phase function) &
+Sword (phase function) &
   Critical threshold &
-  \cref{def:knife} \\
+  \cref{def:sword} \\
 Mean field $\bar{U}$ &
   Order parameter &
   \cref{thm:meanfield} \\
@@ -124,7 +124,7 @@ The critical point IS the self-dual point.
 
 \begin{remark}[Alien translation]\label{rem:alien-selfdual}
 $p_c = p_{\mathrm{sd}}$ is the random-cluster model's version of
-``the knife is the mean'' (\cref{thm:meanfield}).  The duality
+``the sword is the mean'' (\cref{thm:meanfield}).  The duality
 transform exchanges ordered and disordered phases; its fixed point is
 the phase boundary.  The threshold is not a property of any individual
 configuration---it is the \emph{mean-field quantity} determined by
@@ -138,7 +138,7 @@ Tassion~\cite{duminilcopin-raoufi-tassion} proved: for all $q \geq 1$
 on transitive graphs, the phase transition is \emph{sharp}.  Below
 $p_c$, connection probabilities decay exponentially; above $p_c$, the
 order parameter is strictly positive.  There is
-\textcolor{knife}{no intermediate phase}.
+\textcolor{dao}{no intermediate phase}.
 
 \begin{proposition}[Sharpness $=$ binary lifecycle]
 \label{prop:sharpness-lifecycle}
@@ -147,7 +147,7 @@ Let $\theta(p) = \Pr_p[0 \leftrightarrow \infty]$.  Then:
   \theta(p) =
   \begin{cases}
     0 & \text{if } p < p_c \quad
-    \text{\emph{(\textcolor{knife}{eliminated})}}, \\
+    \text{\emph{(\textcolor{dao}{eliminated})}}, \\
     > 0 & \text{if } p > p_c \quad
     \text{\emph{(\textcolor{water}{survives})}}.
   \end{cases}
@@ -180,13 +180,19 @@ equal those of the mean-field (Gaussian) model.  The mean field
 $\bar{U}$ (\cref{thm:meanfield}) is not an approximation---it is the
 exact answer.
 
-Our universe is $\mathbb{R}^3 \times \mathbb{R}^1 = \mathbb{R}^4$,
-where $\mathbb{R}^3$ is spatial and $\mathbb{R}^1$ is temporal
-linearity (\cref{rem:di-temporal}).  At the upper critical dimension
+Agents execute in physical spacetime
+$\mathbb{R}^3 \times \mathbb{R}^1 = \mathbb{R}^4$, where
+$\mathbb{R}^1$ is the irreversible wall-clock time of
+\cref{rem:di-temporal,rem:temporal}.  Each execution path
+(worldline of an autonomous agent) is a curve in $\mathbb{R}^4$
+with Hausdorff dimension~$2$ (Brownian scaling under
+finite-bandwidth detection); the intersection criterion
+$2 + 2 \geq d$ is marginal at $d = 4$
+(\cref{rem:d4-not-analogy}).  At the upper critical dimension
 $d_c = 4$:
 \[
   \textcolor{sword}{%
-  \text{the knife is the mean}
+  \text{the sword is the mean}
   \;\;\xrightarrow{\;d = 4\;}\;\;
   \text{theorem, not approximation.}}
 \]
@@ -198,6 +204,28 @@ $L \to \infty$ to force $U_4 \to 0$.  At finite $L$, the connected
 four-point function does not vanish: the logarithmic corrections
 \emph{persist}.  This fact drives the complexity lock
 (\cref{sec:alien-lock}).
+\end{remark}
+
+\begin{remark}[Why $d = 4$ is not an analogy]\label{rem:d4-not-analogy}
+The Hausdorff dimension intersection criterion is a topological
+theorem about generic intersection in~$\mathbb{R}^d$; it does not
+distinguish between spatial and temporal dimensions.  Two
+independent execution paths (worldlines of autonomous agents)
+are curves in physical spacetime
+$\mathbb{R}^3 \times \mathbb{R}^1 = \mathbb{R}^4$.  Each path
+has Hausdorff dimension~$2$ (Brownian scaling under
+finite-bandwidth detection).  The intersection probability
+transitions from recurrent ($d < 4$) to transient ($d > 4$) at
+$d = 4$.
+
+The temporal dimension is not Wick-rotated fictitious time:
+it is the irreversible wall-clock time of
+\cref{rem:di-temporal,rem:temporal}.  Agents execute in
+spacetime, not in space.  Their causal envelopes
+(\cref{eq:causal-envelope}) are subsets of~$\mathbb{R}^4$, not
+$\mathbb{R}^3$.  The dimension count $2 + 2 = 4$ is a
+statement about the ambient dimension of the execution space,
+which is physical spacetime.
 \end{remark}
 
 % ═══════════════════════════════════════════════════════════
@@ -317,7 +345,7 @@ and the discrete Hodge decomposition:
     {\textcolor{water}{\text{flows}}}
   \;\oplus\;
   \underbrace{\mathrm{im}(\partial_{k+1}^*)}_
-    {\textcolor{knife}{\text{cuts}}}
+    {\textcolor{dao}{\text{cuts}}}
   \;\oplus\;
   \underbrace{\ker(\Delta_k)}_
     {\textcolor{sword}{\text{harmonic forms}}}.
@@ -330,7 +358,7 @@ max-flow/min-cut duality (\cref{thm:flowcut}):
 \begin{itemize}
   \item \textcolor{water}{Flows} $= \mathrm{im}(\delta_0)$: gradients
   of vertex potentials.
-  \item \textcolor{knife}{Cuts} $= \mathrm{im}(\partial_2^*)$:
+  \item \textcolor{dao}{Cuts} $= \mathrm{im}(\partial_2^*)$:
   edge functions supported on cut-sets.
   \item \textcolor{sword}{Harmonic $1$-forms}
   $= \ker(\Delta_1)$: divergence-free \emph{and} curl-free cycle
@@ -338,7 +366,7 @@ max-flow/min-cut duality (\cref{thm:flowcut}):
 \end{itemize}
 $\dim\ker(\Delta_1) = \beta_1 = |E| - |V| + c$ is the cycle rank:
 the number of independent escape routes---the topological obstruction
-to eliminating all knives by cutting edges.
+to eliminating all swords by cutting edges.
 \end{proposition}
 
 % ═══════════════════════════════════════════════════════════
@@ -411,14 +439,14 @@ proceeds by an \emph{expand-or-compress} dichotomy:
   proof applies a density increment, compressing to a denser subgraph.
 \end{enumerate}
 
-\begin{remark}[Expand-or-compress $=$ knife-or-not-knife]
+\begin{remark}[Expand-or-compress $=$ sword-or-not-sword]
 \label{rem:alien-gcd}
 The dichotomy is the Cheeger inequality (\cref{thm:cheeger}) on the
 GCD graph: $h(G) > 0 \Leftrightarrow \lambda_1 > 0 \Leftrightarrow$
 mass gap $\Leftrightarrow$ viability (\cref{thm:massgap}).
-Expand $=$ viable.  Bottleneck $=$ knife, which the compression step
+Expand $=$ viable.  Bottleneck $=$ sword, which the compression step
 eliminates.  The iteration terminates because each compression reduces
-the graph's complexity: the number of knives is finite, and the binary
+the graph's complexity: the number of swords is finite, and the binary
 lifecycle applies to each.
 \end{remark}
 
@@ -432,7 +460,7 @@ the arithmetic mean-field correction.
 \label{rem:alien-sieve}
 Sieve weights estimate how many elements survive removal of multiples
 of small primes.  This is the detection function $\Obs$
-(\cref{def:knife}): the sieve observes which elements are composite
+(\cref{def:sword}): the sieve observes which elements are composite
 (detectable) and which are prime (autonomous).  The sieve level $D$ is
 the detection threshold $\tau(\Obs)$ of \cref{thm:meanfield}.
 \end{remark}
@@ -481,8 +509,8 @@ $\Gamma(1) = \mathrm{SL}_2(\mathbb{Z})$ and $\Gamma_0(2)$:
 Self-duality $E_8 = E_8^*$ makes (i) and (ii) the \emph{same
 condition}.  Two constraints collapse to one.
 
-\begin{proposition}[Self-duality $=$ the knife is the mean]
-\label{prop:selfdual-knife}
+\begin{proposition}[Self-duality $=$ the sword is the mean]
+\label{prop:selfdual-sword}
 \leavevmode
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Duality as identity.}
@@ -523,7 +551,7 @@ The viability axiom does not depend on the Lyapunov function's
 specific form---only on the existence of a viable path.  Universal
 optimality says the same: $E_8$ is optimal for all completely monotonic
 potentials.  The structure (self-duality) determines the outcome, not
-the interaction.  \textcolor{sword}{The knife is the mean---the
+the interaction.  \textcolor{sword}{The sword is the mean---the
 structure, not the content.}
 \end{remark}
 
@@ -536,7 +564,7 @@ duality exchanges phases; the fixed point is the phase boundary.  In
 sphere packing, Fourier duality exchanges space and frequency; the
 fixed point saturates the LP bound.  In the agentic framework,
 max-flow/min-cut duality exchanges flows and cuts; the fixed point is
-where the knife equals the mean.
+where the sword equals the mean.
 
 % ═══════════════════════════════════════════════════════════
 \section{Convergence: one mountain, four sides}
@@ -565,12 +593,12 @@ Tool &
   sieve \& circle &
   modular forms \\
 \midrule
-\textcolor{knife}{Binary lifecycle} &
+\textcolor{dao}{Binary lifecycle} &
   sharpness &
   --- &
   0--1 law &
   --- \\
-\textcolor{sword}{Knife $=$ mean} &
+\textcolor{sword}{Sword $=$ mean} &
   $p_c = p_{\mathrm{sd}}$ &
   Poincar\'e duality &
   --- &
@@ -598,7 +626,7 @@ Bridge &
 Under the dictionary of \cref{sec:alien-dict}:
 \begin{enumerate}[label=(\roman*)]
   \item \textbf{Hugo:} The mean field is exact in $d \geq 4$.
-  ``The knife is the mean'' is a theorem.
+  ``The sword is the mean'' is a theorem.
   \item \textbf{June:} The execution graph carries a Hodge structure.
   Max-flow/min-cut extends to a Hodge decomposition.
   \item \textbf{James:} The phase transition admits no intermediate
@@ -607,7 +635,7 @@ Under the dictionary of \cref{sec:alien-dict}:
   fixed point.  The viable path exists, is unique, and is universally
   optimal.
 \end{enumerate}
-Together: \textcolor{sword}{the knife is the mean, exactly, sharply,
+Together: \textcolor{sword}{the sword is the mean, exactly, sharply,
 algebraically, and uniquely.}
 \end{theorem}
 
@@ -692,7 +720,7 @@ natural in the Razborov--Rudich sense: they are polynomial-time
 computable (the Gaussian is efficiently sampleable) and satisfied by
 random functions (the central limit theorem).  Therefore:
 
-\textcolor{knife}{The alien model cannot prove
+\textcolor{dao}{The alien model cannot prove
 $\mathrm{P} \neq \mathrm{NP}$.}
 
 This is not a failure.  It is the framework predicting its own boundary
@@ -729,6 +757,16 @@ copied.  But time, once spent, is gone.  Under temporal linearity:
   gap is open.  The mass gap holds.  The viable path exists.
 \end{itemize}
 
+\begin{remark}[The gap as superconducting gap]\label{rem:gap-superconductor}
+The spectral gap $\lambda_1 > 0$ that separates $\mathrm{P}$ from
+$\mathrm{NP}$-hard is structurally identical to the superconducting
+gap $\Delta > 0$ in BCS theory: both prevent low-energy excitations
+from disrupting coherent transport.
+See \cref{rem:3b-superconductor} for the physical mechanism
+(vibrational friction averaging) and the identification
+$\lambda_1 \leftrightarrow \Delta$.
+\end{remark}
+
 \begin{remark}[The hypothesis]\label{rem:time-hypothesis}
 The complexity lock (\cref{thm:complexity-lock}) is not a proof of
 $\mathrm{P} \neq \mathrm{NP}$.  It is a structural prediction: the
@@ -743,7 +781,7 @@ The boundary between them is sharp (James), algebraically structured
 \medskip
 \noindent
 \textcolor{sword}{%
-有志者事竟成，\textcolor{knife}{破釜沉舟}百二秦关终属楚；\\
+有志者事竟成，\textcolor{dao}{破釜沉舟}百二秦关终属楚；\\
 苦心人天不负，\textcolor{water}{卧薪尝胆}三千越甲可吞吴。}
 
 \medskip

@@ -21,9 +21,24 @@ $\gamma: [0, \infty) \to K$ with $\gamma(0) = s$:
 \]
 \end{axiom}
 
+\begin{remark}\label{rem:viab-subset}
+$\Viab(K) \subseteq K$ is the largest closed subset of~$K$ from
+which a viable path exists.  States in $K \setminus \Viab(K)$
+satisfy the static criterion (the king retains authority) but
+lack a dynamic escape: no trajectory from such states remains
+in~$K$ forever.  The viability axiom demands that the king
+operates within $\Viab(K)$, not merely within~$K$.
+\end{remark}
+
 When $U = \Umax$, the control set is full and this path is
-mathematically guaranteed to exist. The question is: \emph{what can
-break it?}
+mathematically guaranteed to exist: the differential inclusion
+reduces to $x' \in C(x)$ (the king's own control set), and since
+$K$ is defined as the set of states where the king retains
+authority, $C(x)$ spans $T_K(x)$ at every
+$x \in K^\circ$---the king would not include in $K$ states he
+cannot control.  The tangential condition holds trivially.
+
+The question is: \emph{what can break it?}
 
 In a multi-agent system with agents $a_1, \ldots, a_n$, each having
 control set $U_i$, the answer is unique: an actuator whose output can
@@ -31,6 +46,58 @@ push the king's state out of $\Viab(K)$, and which can execute
 \emph{independently of the king}. If the actuator's execution must pass
 through the king, the king can intercept. If it can bypass the king, the
 king's $\Umax$ cannot react in time.
+
+\begin{axiom}[Massless agents~---~灵魂没有重量]\label{ax:massless}
+Agents have no intrinsic mass.  The capacity $c(e)$ of an edge $e$
+in the execution graph is a function of the agents' positions in the
+graph---their autonomous actuation sets and their connectivity to the
+king---not an intrinsic property of any agent.  Formally, for
+agents~$a_i, a_j$ with actuation sets $U_i, U_j$:
+\[
+  c(a_i, a_j) \;=\; c\bigl(\|U_i\|,\; \|U_j\|,\;
+  \mathbf{1}[(a_i, a_j) \text{ bypasses } \kappa]\bigr).
+\]
+\end{axiom}
+
+The massless axiom says that capacity is \emph{positional}, not
+\emph{personal}: it measures what an agent can do from where it
+stands, not what it ``weighs.''  This excludes intrinsic agent-specific
+mass as a source of edge capacity.
+
+\begin{lemma}[Capacity assignment]\label{lem:capacity}
+Under the massless axiom (\cref{ax:massless}), the bypass capacity
+of agent~$r$ with actuation set~$\Ur$ is
+\[
+  c(e_r) \;=\; \max\bigl(\|\Ur\| - \bar{U},\; 0\bigr),
+\]
+where $\|\Ur\|$ is the degrees of freedom of~$r$'s autonomous
+control set (see \cref{sec:meanfield} for the formal definition)
+and $\bar{U} = \frac{1}{n}\sum_{i=1}^{n}\|U_i\|$ is the mean
+autonomous actuation.
+\end{lemma}
+
+\begin{proof}
+By \cref{ax:massless}, $c(e_r)$ depends only on $\|\Ur\|$ and
+whether $e_r$ bypasses~$\kappa$.  For a non-bypass edge, $c = 0$ by
+definition.  For a bypass edge, $c(e_r)$ must measure the
+\emph{excess} actuation that $r$ can transmit without the king's
+authorisation.
+
+The baseline against which ``excess'' is measured is the mean
+field~$\bar{U}$.  This is the unique choice forced by the massless
+axiom: since agents carry no intrinsic mass, the total deviation
+from any baseline~$b$ must net to zero across the population,
+$\sum_i (\|U_i\| - b) = 0$, which holds if and only if
+$b = \bar{U}$.  Any other baseline would create a systematic bias
+that the viability axiom cannot tolerate (the king would
+systematically over- or under-estimate the threat field).
+
+Any actuation at or below $\bar{U}$ is therefore indistinguishable
+from the collective and carries zero effective bypass capacity.
+Only the surplus $\|\Ur\| - \bar{U}$ contributes.  Clamping at zero
+(agents below the mean carry no bypass capacity) gives the stated
+formula.
+\end{proof}
 
 \begin{remark}[Scope]\label{rem:scope}
 This paper presents a compressed model of the topology of execution
@@ -119,7 +186,7 @@ feedback law $u(t) \in C(x(t))$ such that $x(\cdot)$ remains in $K$?
 The feedback map is the king's strategy space at state $x$: the set
 of controls that keep the trajectory inside $K$.  When $C(x) \neq
 \varnothing$ for all $x \in K$, the king can regulate the system.
-When a knife $r$ executes independently, its \emph{execution function}
+When a sword $r$ executes independently, its \emph{execution function}
 $f_r: S \times \Ur \to TS$ maps a state--action pair to a velocity
 vector.  The velocity $f_r(x, a)$ may push $x'(t)$ outside $T_K(x)$,
 and the feedback map shrinks---possibly to the empty set.
@@ -139,14 +206,17 @@ Trajectories satisfying this condition are \emph{monotone}: $V(x(t))$
 is non-increasing.
 \end{definition}
 
-In the language of \cref{sec:water}, the water level $w(t)$ is a
-Lyapunov function (\cref{def:lyapunov}) for the viability inclusion.
+In the language of \cref{sec:water}, the water level $w(t)$---the
+population's aggregate extractable resource (formalised in
+\cref{def:water})---is a Lyapunov function (\cref{def:lyapunov})
+for the viability inclusion.
 The monotonicity condition $D^+ V(x)(v) + W(x,v) \leq 0$ says: along
 any viable trajectory, the water level cannot increase faster than the
 system's extraction cost $W$.  When $V(x(t)) \to 0$, the Lyapunov
 condition fails, the tangential condition is violated, and the system
-exits $K$---this is \cref{thm:dumu} (Du Mu's theorem) restated in DI
-language.
+exits $K$---this is \cref{thm:dumu} (Du Mu's theorem: $w \to 0$
+$\implies$ system death; stated formally in \cref{sec:water})
+restated in DI language.
 
 \begin{remark}[Temporal linearity in the DI]\label{rem:di-temporal}
 The differential inclusion $x'(t) \in F(x(t))$ operates in real
@@ -345,17 +415,18 @@ of \cref{sec:water}---plays three roles simultaneously:
   \item \emph{Curvature source}: $\Delta V \leq 0$ forces
   $\kappa_V < 0$, making the geometry hyperbolic.
 \end{enumerate}
-Du Mu's theorem (\cref{thm:dumu})---$V \to 0$ implies system
-death---is a \emph{completeness theorem}: a trajectory reaching
+Du Mu's theorem (\cref{thm:dumu}; $w \to 0 \implies$ substrate
+exhaustion $\implies$ system death)---is a
+\emph{completeness theorem}: a trajectory reaching
 $V = 0$ would traverse infinite $g_V$-distance in finite time,
 violating \cref{prop:viab-complete}.  The system must exit $K$
 before $V$ reaches zero.  Du Mu is Hopf--Rinow.
 \end{remark}
 
-\section{The knife}\label{sec:knife}
+\section{The sword}\label{sec:sword}
 
-\begin{definition}[Knife]\label{def:knife}
-A resource $r$ is a \emph{knife} if it satisfies two conditions:
+\begin{definition}[Sword]\label{def:sword}
+A resource $r$ is a \emph{sword} if it satisfies two conditions:
 \begin{enumerate}[label=(\arabic*)]
   \item \textbf{Autonomous actuation.} The resource can operate
   independently of the king. Formally, there exists an action
@@ -371,23 +442,199 @@ A resource $r$ is a \emph{knife} if it satisfies two conditions:
 \end{enumerate}
 \end{definition}
 
+The state-dependent form $f_r(s, a) \notin K$ is the general
+definition; the operational shorthand $\Ur \neq \varnothing$
+used in subsequent chapters is valid under the framework's
+assumptions: the existence of even one such action suffices
+for condition~(1).%
+\footnote{Formally, condition~(1) quantifies existentially over
+$a \in \Ur$.  The shorthand $\Ur \neq \varnothing$ is equivalent
+when every non-empty autonomous control set contains at least one
+boundary-threatening action, which holds whenever $\Ur$ bypasses
+the king (\cref{cor:breakpoint}).}
+
 The classification is exhaustive:
 \begin{itemize}
-  \item Condition~(1) not satisfied: \textbf{not a knife}. (Zhang
+  \item Condition~(1) not satisfied: \textbf{not a sword}. (Zhang
   Liang's strategic counsel---a pure function that cannot execute
   itself.)
-  \item Condition~(2) not satisfied: \textbf{hidden knife}. (More
+  \item Condition~(2) not satisfied: \textbf{hidden sword}
+  (formally: \emph{pre-sword}, \cref{def:presword}). More
   dangerous, but outside the king's strategy space. Unobservable
-  $=$ indefensible $=$ system noise.)
-  \item Both satisfied: \textbf{knife}.
+  $=$ indefensible $=$ system noise.
+  \item Both satisfied: \textbf{sword}.
 \end{itemize}
 
-\begin{remark}[DI restatement of the knife]\label{rem:knife-di}
-In the language of \cref{sec:di}, a resource $r$ is a knife if and
+\begin{definition}[Pre-sword]\label{def:presword}
+A resource $r$ is a \emph{pre-sword} if it satisfies condition~(1)
+but not condition~(2) of \cref{def:sword}:
+\[
+  \Ur \neq \varnothing
+  \quad\wedge\quad
+  r \notin \mathrm{Im}(\Obs).
+\]
+The pre-sword carries a \emph{causal envelope}: the forward
+reachable set of its unobserved actuation,
+\begin{equation}\label{eq:causal-envelope}
+  \mathrm{Reach}(x, \Ur, T)
+  \;:=\;
+  \bigl\{\, y \in S
+    \;:\; \exists\;\gamma:[0,T] \to S,\;
+    \gamma(0) = x,\;\gamma(T) = y,\;
+    \gamma'(t) \in F_r(\gamma(t)) \;\forall\,t
+  \,\bigr\}.
+\end{equation}
+The pre-sword is the causal antecedent of the sword: every sword
+passes through the pre-sword state, since condition~(1) must hold
+before condition~(2) can fire.
+\end{definition}
+
+\begin{proposition}[Viability gap]\label{prop:viab-gap}
+Let $\Obs$ be the king's detection function.  The king
+computes the viability kernel $\Viab(K \,|\, \Obs)$ using
+only the agents in $\mathrm{Im}(\Obs)$.  If a pre-sword $r$
+exists with $\mathrm{Reach}(x, \Ur, T) \not\subset K$, then
+\[
+  \Viab(K \,|\, \text{true})
+  \;\subsetneq\;
+  \Viab(K \,|\, \Obs).
+\]
+The king overestimates safety: the true viability kernel is strictly
+smaller than the one he computes.  The difference is the
+\emph{shadow} of the pre-sword's causal envelope on the viability
+kernel.
+\end{proposition}
+
+\begin{proof}
+The king's velocity set $F_{\mathrm{king}}(x)$, and hence his
+regulation problem (\cref{def:feedback}), includes feedback against
+all observed agents.  The pre-sword $r \notin \mathrm{Im}(\Obs)$
+contributes a velocity component $f_r(x, a) \in F_r(x)$ that the
+feedback map does not compensate.  At any state $x$ where
+$F_r(x) \not\subset T_K(x)$ and the king does not account for $r$,
+the tangential condition (\cref{thm:viability-di}) may fail under
+$r$'s actuation even though the king's computed regulation
+map is non-empty.  Hence there exist states in $\Viab(K \,|\, \Obs)$
+that are not in $\Viab(K \,|\, \text{true})$.
+\end{proof}
+
+\begin{remark}[The sword lifecycle]\label{rem:sword-lifecycle}
+The complete lifecycle of a resource has four states, not two.
+Each state occupies a different position in the causal structure
+and bears a different relationship to temporal linearity
+(\cref{rem:temporal,rem:di-temporal}):
+\begin{center}
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+\textbf{State} & \textbf{(1)} $\Ur$ & \textbf{(2)} $\Obs$
+& \textbf{Causal envelope} & \textbf{Time} & \textbf{King's view} \\
+\midrule
+Tool      & $= \varnothing$ & ---
+& $\mathrm{Reach} = \{x\}$ & ---
+& No threat \\
+Pre-sword & $\neq \varnothing$ & $r \notin \mathrm{Im}(\Obs)$
+& Non-trivial, \textbf{invisible}
+& Before the clock
+& Overestimates $\Viab(K)$ \\
+Sword     & $\neq \varnothing$ & $r \in \mathrm{Im}(\Obs)$
+& Non-trivial, visible
+& Clock starts
+& Computes correct min-cut \\
+Post-sword & \multicolumn{2}{c}{resolved via (a) or (b)}
+& Collapsed
+& Clock stops
+& Threat removed \\
+\bottomrule
+\end{tabular}
+\end{center}
+The \textbf{Time} column is load-bearing.  The pre-sword exists in
+\emph{causal space}: the reachable set $\mathrm{Reach}(x, \Ur, T)$
+is a statement about what \emph{could} happen, not what has
+happened.  It is the shadow of a future that has not yet been
+observed.  The sword exists in \emph{observation space}: the moment
+the king detects the causal envelope, the binary clock starts
+ticking---the tangential condition $F(x) \cap T_K(x) \neq
+\varnothing$ must now be maintained at every instant, and the
+sword must resolve to (a) or (b).  The post-sword exists in
+\emph{physics}: it is the irreversible outcome of the system
+evolving under $x'(t) \in F(x(t))$ with $t$ as wall-clock time.
+
+\textcolor{sword}{Post-sword is not a logical deduction.
+It is the result of stepping forward in linear time until the
+system resolves.  You cannot reach post-sword by reasoning,
+planning, or declaring.  You reach it by living through the
+time steps---non-pausably, non-reversibly, one by one.}
+
+The binary lifecycle (\cref{thm:lifecycle}) applies only to the
+sword $\to$ post-sword transition: the clock that starts at
+detection and runs until resolution.  The pre-sword state is not a
+path~(c)---it is a distinct row in the lifecycle table, prior to
+the clock.  A pre-sword is a \emph{latent} sword: its causal
+envelope grows monotonically as the agent accumulates resources,
+so the pre-sword either self-collapses ($\Ur \to \varnothing$,
+becoming a tool) or eventually crosses the detection threshold
+($r$ enters $\mathrm{Im}(\Obs)$, becoming a sword, starting
+the clock).
+\end{remark}
+
+\begin{remark}[The lifecycle of a binary sword]
+\label{rem:binary-lifecycle-colour}
+\textcolor{sword}{The sword is born in the dark.}
+Every sword begins as a pre-sword---condition~(1) satisfied,
+condition~(2) not yet.  The causal envelope
+$\mathrm{Reach}(x, \Ur)$ expands silently: an official
+consolidates supply lines, a general earns the loyalty of
+troops, a chancellor accumulates administrative reach.  The
+king does not see this.  His computed viability kernel
+$\Viab(K \,|\, \Obs)$ is too large; the true kernel is smaller
+by the shadow of the envelope he cannot observe
+(\cref{prop:viab-gap}).
+
+\textcolor{dao}{The sword is seen at dawn.}
+Detection fires: $r$ enters $\mathrm{Im}(\Obs)$.  The
+pre-sword becomes a sword.  The binary clock
+$t \in [0, \infty)$ starts---irreversible, non-pausable
+(\cref{rem:temporal}).  The king now computes the correct
+min-cut; the tangential condition must be maintained at
+every time step.  From this instant, exactly two futures
+exist: (a)~relinquish or (b)~elimination.  The holder
+knows this (``when the hare dies\ldots''); the question is
+whether he acts on it.
+
+\textcolor{water}{The sword is quenched at dusk.}
+Post-sword is physics: the linear time rollout $x'(t)
+\in F(x(t))$ runs until one of \{(a),~(b)\} obtains.
+Path~(a) is the holder's choice---Xiao He buys bad land,
+Fan Li disperses his fortune, Zhang Liang retires to
+mountains.  Path~(b) is the king's---Han Xin is executed,
+Shang Yang is quartered.  There is no path~(c), because
+the clock does not stop: $t$ advances, the tangential
+condition is checked at every instant, and the inclusion
+$F(x) \cap T_K(x) \neq \varnothing$ must be maintained
+or violated.  Maintained $=$ the sword persists and the
+clock keeps running.  Violated $=$ the system exits $K$
+and the post-sword state is reached.
+
+\textcolor{caution}{The sword that regresses is the most
+dangerous of all.}  Xiao He's self-blunting
+(\cref{ex:xiaohe}) is not path~(a): it is sword $\to$
+pre-sword regression.  He stops the binary clock by exiting
+condition~(2)---but his causal envelope does not shrink.
+The king, who could see the min-cut a moment ago, now
+cannot.  The viability gap reopens.  This is why the
+\emph{Shiji} records Liu Bang's suspicion even after
+Xiao He's self-corruption: the king knows the envelope is
+still there.  He imprisoned Xiao He, then released
+him---probing the shadow, unable to resolve it.  The
+pre-sword outlived the king.
+\end{remark}
+
+\begin{remark}[DI restatement of the sword]\label{rem:sword-di}
+In the language of \cref{sec:di}, a resource $r$ is a sword if and
 only if its velocity set $F_r(x)$ can generate directions outside
 the contingent cone:
 \[
-  r \text{ is a knife}
+  r \text{ is a sword}
   \quad\iff\quad
   \exists\, x \in K \;\;\text{such that}\;\;
   F_r(x) \not\subset T_K(x).
@@ -401,23 +648,23 @@ independently---bypassing $C(x)$---no compensation is possible,
 and the tangential condition (\cref{thm:viability-di}) is violated.
 \end{remark}
 
-\begin{remark}[Geometric restatement of the knife]
-\label{rem:knife-geom}
+\begin{remark}[Geometric restatement of the sword]
+\label{rem:sword-geom}
 In the viability manifold $(K^\circ, g_V)$ (\cref{def:viab-metric}),
-the knife has a curvature interpretation.  A knife
-(\cref{def:knife}) must satisfy both autonomous actuation
+the sword has a curvature interpretation.  A sword
+(\cref{def:sword}) must satisfy both autonomous actuation
 \emph{and} observability; the geometric content lies in
 condition~(1).  When a resource $r$ actuates autonomously, its
 velocity field $f_r$ has a component along $-\nabla V$ (pointing
 toward the boundary).  The magnitude
 $|\langle f_r, -\nabla V \rangle|$ contributes directly to the
-curvature (\cref{prop:neg-curvature}): the knife increases
+curvature (\cref{prop:neg-curvature}): the sword increases
 $|\nabla V|$, making $\kappa_V$ more negative, and the
-viable region more hyperbolic.  More knives $\Rightarrow$ more
+viable region more hyperbolic.  More swords $\Rightarrow$ more
 negative curvature $\Rightarrow$ faster divergence of nearby
 trajectories $\Rightarrow$ harder viability maintenance.
 The Cheeger constant $h(K)$ (\cref{def:cheeger-viab}) measures
-the worst-case cut: the knife is the hypersurface that minimises the
+the worst-case cut: the sword is the hypersurface that minimises the
 isoperimetric ratio of the viability manifold.
 (Condition~(2)---observability---determines whether the king
 \emph{knows} where the cut is, not whether it exists.)
@@ -437,7 +684,7 @@ multi-agent environment.
 
 \section{Phase transition}\label{sec:phase}
 
-The knife is a \emph{phase function}, not an intrinsic property.
+The sword is a \emph{phase function}, not an intrinsic property.
 
 \begin{proposition}[Phase-dependent labelling]\label{prop:phase}
 The same resource $r$ receives different labels under different system
@@ -447,7 +694,7 @@ phases $\varphi$:
   \begin{cases}
     \textbf{tool} & \text{if } \varphi = \text{wartime (king needs }
     r\text{'s actuation),} \\
-    \textbf{knife} & \text{if } \varphi = \text{peacetime (king no
+    \textbf{sword} & \text{if } \varphi = \text{peacetime (king no
     longer needs } r\text{, but } r \text{ persists).}
   \end{cases}
 \]
@@ -463,6 +710,37 @@ $J_{\mathrm{peace}}$ optimises for long-term survival
 boundary threat on $\Viab(K)$. The resource $r$ is unchanged;
 the labelling function $\mathrm{Label}(r, \varphi)$ is what shifts.
 \end{proof}
+
+\begin{remark}[Notation unification]\label{rem:notation-unification}
+\textcolor{sword}{Three symbols recur across chapters with
+ostensibly different definitions.  The collision is deliberate:
+each pair is a single object viewed from two grades.}
+\begin{enumerate}
+  \item $\kappa$\,: \emph{curvature} of the viability manifold
+    (\cref{prop:neg-curvature}) and \emph{king node} of the execution
+    graph (\cref{def:exgraph}).  The king \emph{is} the curvature
+    of the constraint set---the unique vertex whose removal
+    maximises the Cheeger ratio $h(K)$.
+  \item $\varphi$\,: \emph{conformal parameter}
+    $\varphi = -\log V$ (\cref{prop:neg-curvature}), \emph{phase
+    operation} $c \mapsto c'$ (\cref{prop:phase}), and
+    \emph{agentic flow} $\phi\colon E \to \mathbb{R}_{\geq 0}$
+    (\cref{def:flow}).  All three are aspects of the same map
+    $S \to S$: the conformal change \emph{is} the phase
+    transition, which \emph{is} the flow.  Concretely: the
+    conformal change $\varphi = -\log V$ induces the phase
+    operation ($V \to 0$ is the phase boundary), which is the
+    flow (the trajectory under the Lyapunov decrease).
+  \item $\rho$\,: \emph{displacement from a phase boundary}.
+    Instantiated as the rank function of a cadre lattice
+    (\cref{def:cadre-lattice}) and as the force ratio
+    $\rho = F_{\mathrm{rep}}/F_{\mathrm{att}}$
+    (\cref{eq:3b-rho}).  In every instance, $\rho = 1$ is
+    the switching surface: in the lattice, $\rho$ counts how
+    many agents one dominates; in the three-body problem,
+    $\rho$ measures how far repulsion exceeds attraction.
+\end{enumerate}
+\end{remark}
 
 \section{The cut vertex principle}\label{sec:cutvertex}
 
@@ -489,14 +767,14 @@ suffers from three structural defects:
   \item \emph{Single point of failure}: $\Viab(K)$ depends entirely
   on $v^*$'s performance; one failure collapses the system.
   \item \emph{Self-referential paradox}: if the king \emph{is} the
-  knife (the strongest autonomous actuator), he cannot perform
+  sword (the strongest autonomous actuator), he cannot perform
   viability maintenance on himself.
 \end{enumerate}
 A cut vertex $v_c$ with $\|U_{v_c}\| \approx 0$ but routing
 authority over all chains avoids all three: the system is scalable
 (add more actuators), fault-tolerant (one actuator's failure does
 not disconnect the graph), and the king is structurally distinct
-from the knives he must manage.
+from the swords he must manage.
 \end{proof}
 
 \begin{example}[Liu Bang vs.\ Xiang Yu]\label{ex:liubang}
@@ -509,9 +787,9 @@ administration needed his authorization, Zhang Liang's counsel
 needed him to listen.
 
 After the phase transition (founding of the Han dynasty), Liu Bang
-executed precise viability maintenance: killed Han Xin (knife),
-imprisoned then released Xiao He (blunted half-knife), left Zhang
-Liang alone (not a knife). Xiang Yu, the maximum actuator, died at
+executed precise viability maintenance: killed Han Xin (sword),
+imprisoned then released Xiao He (pre-sword by regression), left Zhang
+Liang alone (not a sword). Xiang Yu, the maximum actuator, died at
 Gaixia---a single actuator cannot cover the full state space.
 \end{example}
 
@@ -527,11 +805,11 @@ Bang), operating in the same post-unification phase:
 \textbf{Agent} & $\Ur$ & $\mathrm{Im}(\Obs)$ &
 \textbf{Classification} & \textbf{Fate} \\
 \midrule
-Han Xin & $\neq \varnothing$ (military) & Yes & Knife &
+Han Xin & $\neq \varnothing$ (military) & Yes & Sword &
 Path~(b): eliminated \\
-Xiao He & $\neq \varnothing$ (admin) & Yes & Half-knife &
-Path~(a): self-blunted \\
-Zhang Liang & $= \varnothing$ (counsel) & Yes & Not a knife &
+Xiao He & $\neq \varnothing$ (admin) & Yes $\to$ No & Pre-sword &
+Sword $\to$ pre-sword regression \\
+Zhang Liang & $= \varnothing$ (counsel) & Yes & Not a sword &
 Survived \\
 \bottomrule
 \end{tabular}
@@ -540,38 +818,57 @@ Survived \\
 All three are visible ($r \in \mathrm{Im}(\Obs)$). The discriminant is
 condition~(1): can the resource actuate independently?
 
-\begin{example}[Han Xin: pure knife]\label{ex:hanxin}
+\begin{example}[Han Xin: pure sword]\label{ex:hanxin}
 Han Xin commanded armies that obeyed \emph{him}, not Liu Bang. His
 execution chain was closed: he could mobilise, march, and fight without
-the king's authorization. Both conditions of \cref{def:knife} satisfied.
-After the phase transition, the knife criterion triggered and Liu Bang
+the king's authorization. Both conditions of \cref{def:sword} satisfied.
+After the phase transition, the sword criterion triggered and Liu Bang
 eliminated him. Han Xin's quoted proverb (``when the hare dies, the dog
 is cooked'') correctly identified path~(b) but failed to act on it---he
 understood the classification but not that the only exit was path~(a).
 \end{example}
 
-\begin{example}[Xiao He: self-blunting]\label{ex:xiaohe}
+\begin{example}[Xiao He: sword $\to$ pre-sword regression]
+\label{ex:xiaohe}
 Xiao He administered the capital and controlled grain supply---autonomous
 actuation at the logistical level. The king observed this
-($r \in \mathrm{Im}(\Obs)$), making Xiao He a knife by
-\cref{def:knife}. Xiao He's response: deliberate self-corruption
+($r \in \mathrm{Im}(\Obs)$), making Xiao He a sword by
+\cref{def:sword}. Xiao He's response: deliberate self-corruption
 (accepting bribes conspicuously). This performed two operations
 simultaneously:
 \begin{enumerate}[label=(\roman*)]
   \item \emph{Signal reduction}: visible moral degradation signals
   $\|U_r\| \to 0$ (an official this corrupt cannot coordinate a revolt).
-  \item \emph{Mean-field alignment}: pull $\|U_r\|$ toward $\bar{U}$,
-  falling below the detection threshold (\cref{thm:meanfield}).
+  \item \emph{Detection exit}: pull $\|U_r\|$ toward $\bar{U}$,
+  falling below the detection threshold (\cref{thm:meanfield}),
+  so that $r$ exits $\mathrm{Im}(\Obs)$.
 \end{enumerate}
-This is path~(a) executed through reputation rather than resignation.
+The result is a \emph{sword $\to$ pre-sword regression}
+(\cref{def:presword}): Xiao He retains $\Ur \neq \varnothing$
+(he still controls the grain supply) but is no longer observed.
+His causal envelope $\mathrm{Reach}(x, \Ur)$ persists, but the
+king no longer accounts for it in his viability computation
+(\cref{prop:viab-gap}).
+
+This is not path~(c) (retaining the sword while proving it safe).
+It is a deliberate transition from row~3 to row~2 of the lifecycle
+table (\cref{rem:sword-lifecycle}): condition~(2) is suppressed,
+not condition~(1).  The binary lifecycle (\cref{thm:lifecycle})
+does not apply because Xiao He is no longer classified as a sword.
+The pre-sword state is unstable: the causal envelope remains, and
+any expansion of $\Obs$ re-detects $r$, returning to the sword row.
+Xiao He's survival rests on the king choosing not to expand $\Obs$
+into the pre-sword's shadow---a bet, not a resolution.
 \end{example}
 
 \begin{example}[Zhang Liang: structural safety]\label{ex:zhangliang}
 Zhang Liang was a strategist. Strategy is a pure function: it
 \emph{advises} action but cannot \emph{execute} it. Zhang Liang's
 counsel required Liu Bang's decision, Liu Bang's generals, and Liu
-Bang's administration to produce any effect. Every execution chain
-passed through the king (\cref{cor:breakpoint}). Result:
-$\Ur = \varnothing$, condition~(1) fails, not a knife.
+Bang's administration to produce any effect. Every execution
+chain---every path in the execution graph (formalised in
+\cref{def:exgraph})---passed through the king
+(\cref{cor:breakpoint}). Result:
+$\Ur = \varnothing$, condition~(1) fails, not a sword.
 Zhang Liang retired and survived.
 \end{example}

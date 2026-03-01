@@ -82,8 +82,10 @@ criterion---is forced by the requirement that computation fit inside
 real, linear, non-pausable time.  These are not design preferences;
 they are the only structures fast enough to survive.
 
-The two historical failure modes in \cref{sec:errorlog} are the two
-ways the computational constraint breaks:
+The two historical failure modes---the processor that runs an
+irrelevant subroutine (latency explosion) and the processor that is
+removed entirely (see \cref{sec:errorlog} for the full
+analysis)---are the two ways the computational constraint breaks:
 \begin{itemize}
 \item 嘉靖: cut vertex present but $t_\pi \to \infty$.
   The emperor computes Daoist alchemy for twenty years while the
@@ -100,7 +102,7 @@ It is the medium in which the entire theory operates.
 Shang Yang's fate validates the framework's robustness: his reform
 network itself became an autonomous actuator ($\Ur \neq \varnothing$).
 The system eliminated its creator---not irony, but a robustness test.
-A knife-detection system that exempts its designer is not robust
+A sword-detection system that exempts its designer is not robust
 (\cref{sec:second} formalises this as second-mover viability).
 
 \subsection{The submartingale-induced unitary group}
@@ -110,9 +112,11 @@ More precisely, Shang Yang's reform sequence is a
 
 \begin{definition}[Submartingale reform]\label{def:submartingale}
 A reform sequence $X_0, X_1, \ldots, X_n$ is a \emph{submartingale}
-if each step strictly increases the centralization index:
-$\mathbb{E}[X_{k+1}] \geq X_k$, and each step is irreversible
-(reversal requires undoing all subsequent steps).
+if each step strictly increases the centralisation index:
+$\mathbb{E}[X_{k+1}] \geq X_k$ (deterministic analogue: the
+sequence is non-decreasing in expectation under any re-ordering,
+with the added constraint of irreversibility), and each step is
+irreversible (reversal requires undoing all subsequent steps).
 \end{definition}
 
 Shang Yang's five reforms form such a sequence:
@@ -127,11 +131,11 @@ Each step burns the entropy of the old feudal order irreversibly.
 
 Once installed, the system forms a \emph{unitary group}: a
 structure-preserving transformation that maintains its invariants
-(king $=$ cut vertex, all knives eliminated) at every cycle, applied
+(king $=$ cut vertex, all swords eliminated) at every cycle, applied
 to every vector in the state space without exception.
 
 \begin{theorem}[Shang Yang's paradox]\label{thm:shangyang}
-Any agent who installs a knife-elimination system via submartingale
+Any agent who installs a sword-elimination system via submartingale
 reform must possess $\Ur \neq \varnothing$ to execute the installation.
 But the submartingale is monotone: each step lowers the detection
 threshold. The installer's own actuation becomes increasingly visible
@@ -260,10 +264,10 @@ detection threshold reached him.  Both understood \cref{cor:second}
 before it was stated: read the existence proof, do not write it; use
 the infrastructure, do not install it.
 
-\section{The dollar as knife precursor}\label{sec:dollar}
+\section{The dollar as sword precursor}\label{sec:dollar}
 
-Money is not a knife (it cannot actuate independently). Money is a
-\emph{knife precursor}: a universal voucher exchangeable for
+Money is not a sword (it cannot actuate independently). Money is a
+\emph{sword precursor}: a universal voucher exchangeable for
 $\Ur \neq \varnothing$ on the market. The king detects not how much
 money you have, but whether your money has \emph{already converted}
 into autonomous execution capability.
@@ -273,13 +277,13 @@ three times and dispersed them twice, ensuring $\Ur$ never crossed
 the threshold. Shen Wansan and Hu Xueyan did not---their wealth
 formed closed execution loops, and they were eliminated.
 
-\section{The Atlantic triangular trade: a knife with no cut
+\section{The Atlantic triangular trade: a sword with no cut
 vertex}\label{sec:triangle}
 
 The Atlantic Triangular Trade (16th--19th century) is a three-leg
 closed execution loop: manufactured goods (Europe $\to$ West Africa),
 enslaved human beings (West Africa $\to$ Americas), raw materials
-(Americas $\to$ Europe). This loop satisfies \cref{def:knife}: it
+(Americas $\to$ Europe). This loop satisfies \cref{def:sword}: it
 actuates autonomously (multiple nations operate independent instances;
 remove any one and the loop continues) and is observable (300~years of
 ships, ledgers, and auction blocks).
@@ -287,7 +291,7 @@ ships, ledgers, and auction blocks).
 The loop has a property stronger than condition~(1): it is
 \emph{self-financing}. The raw materials extracted on leg~3 fund the
 goods shipped on leg~1, which purchase the enslaved labour on leg~2,
-who produce the raw materials on leg~3. A knife that funds its own
+who produce the raw materials on leg~3. A sword that funds its own
 actuation cannot be starved from outside.
 
 \paragraph{Where the isomorphism breaks.}
@@ -297,7 +301,7 @@ enslaved people had $\text{water} = 0$ from day one. Force~$F$
 substituted for water---temporarily. The substitution cost: every unit
 of force burns resources drawn from the extracted water on leg~3. The
 loop becomes a self-financing violence machine. \Cref{sec:water}
-predicts $\text{water} = 0 \implies \text{pawn} \to \text{knife}
+predicts $\text{water} = 0 \implies \text{pawn} \to \text{sword}
 \implies \text{collapse}$; force delays but does not prevent this.
 The longer the delay, the more violent the eventual resolution.
 
@@ -311,7 +315,7 @@ still had no breakpoint. Verdict: phase transition in the sense of
 \cref{sec:phase}---label changed, topology unchanged. This is
 path~(c), which \cref{thm:fixedpoint} proves is not a resolution.
 
-\begin{theorem}[Closed-loop knife]\label{thm:triangle}
+\begin{theorem}[Closed-loop sword]\label{thm:triangle}
 Any closed execution loop that is self-financing, has no cut vertex
 (mesh topology, multiple independent operators), and substitutes
 force for water, has exactly two exit paths: physical dismantlement
@@ -335,12 +339,12 @@ The singer sails to Bombay not to trade but to reunite. This is not
 path~(c) (the route is not relabeled; the self-financing loop is broken
 because love does not fund the next leg). It is path~(a) by mean-field
 shift: the infrastructure persists, but the mean changes, and therefore
-the knife changes.
+the sword changes.
 \end{remark}
 
 \section{The corrupted detection function}\label{sec:nazi}
 
-\Cref{def:knife} uses a structural detection function
+\Cref{def:sword} uses a structural detection function
 $\Obs_{\mathrm{structural}}$ that tests $\Ur$: \emph{what can the
 resource do independently?} This function is identity-blind. Zhang
 Liang is safe because $\Ur = \varnothing$, not because he is Zhang
@@ -354,14 +358,14 @@ membership):
   \Obs_{\mathrm{identity}}:\;
   r \;\mapsto\;
   \begin{cases}
-    \textbf{knife} & \text{if } \mathrm{agent}(r) \in \text{Group } X, \\
-    \textbf{not knife} & \text{otherwise.}
+    \textbf{sword} & \text{if } \mathrm{agent}(r) \in \text{Group } X, \\
+    \textbf{not sword} & \text{otherwise.}
   \end{cases}
 \]
 \end{definition}
 
 The corruption produces a \emph{false positive catastrophe}: every
-member of Group~$X$ with $\Ur = \varnothing$ is classified as a knife
+member of Group~$X$ with $\Ur = \varnothing$ is classified as a sword
 and eliminated. Every agent outside Group~$X$ with $\Ur \neq \varnothing$
 is a false negative. Six million false positives is the output of a
 corrupted detection function running to completion.
@@ -371,7 +375,7 @@ A system exhibits \emph{Nazi structure} if and only if: (1)~it performs
 viability maintenance (eliminates perceived threats to $\Viab(K)$),
 (2)~its detection criterion is identity-based, not structure-based,
 and (3)~it executes path~(b) against agents classified by identity
-who do not satisfy \cref{def:knife} ($\Ur = \varnothing$ for the
+who do not satisfy \cref{def:sword} ($\Ur = \varnothing$ for the
 individual). These conditions are necessary and sufficient.
 \end{definition}
 

@@ -45,7 +45,7 @@
 
 % ── Calculus colours ─────────────────────────────────────
 \definecolor{water}{RGB}{0,90,180}       % 水 — blue
-\definecolor{knife}{RGB}{180,30,30}      % 刀 — red
+\definecolor{dao}{RGB}{180,30,30}        % 刀 — red
 \definecolor{sword}{RGB}{0,150,150}      % 青冥 — cyan
 \definecolor{caution}{RGB}{220,120,0}    % warning — orange
 
@@ -93,13 +93,13 @@
 
 \vspace{1.5cm}
 
-{\LARGE\bfseries The Knife Is the Mean}\\[8pt]
+{\LARGE\bfseries The Sword Is the Mean}\\[8pt]
 {\Large Mathematical Principles of Viability Maintenance\\
 under Temporal Linearity}
 
 \vspace{1.5cm}
 
-{\large 有志者事竟成，\textcolor{knife}{破釜沉舟}\textcolor{knife}{百二秦关}\textcolor{sword}{终属楚}；\\[3pt]
+{\large 有志者事竟成，\textcolor{dao}{破釜沉舟}\textcolor{dao}{百二秦关}\textcolor{sword}{终属楚}；\\[3pt]
 苦心人天不负，\textcolor{water}{卧薪尝胆}\textcolor{water}{三千越甲}\textcolor{sword}{可吞吴}。}
 
 \medskip
@@ -128,23 +128,23 @@ condition $F(x) \cap T_K(x) \neq \varnothing$ of Aubin's viability
 theory.  The Lyapunov function $V$ (water level) defines a conformal
 Riemannian metric $g_V = V^{-2}g_S$ on the viability kernel, under
 which the viable region is a complete, negatively curved manifold
-whose Cheeger constant is the knife.
+whose Cheeger constant is the sword.
 Under this axiom, we derive a structural criterion---the
-\emph{knife}---that classifies any resource as a threat based on two
+\emph{sword}---that classifies any resource as a threat based on two
 conditions: autonomous actuation and observability.  We prove that the
-knife is not an intrinsic property of a resource but a \emph{phase
+sword is not an intrinsic property of a resource but a \emph{phase
 function} determined by the system's mean field.  We establish three
-main results: (1)~a binary lifecycle theorem (every knife is either
+main results: (1)~a binary lifecycle theorem (every sword is either
 relinquished or eliminated), (2)~a fixed-point impossibility (no third
 path exists), and (3)~an unconstrained power paradox (maximizing control
 forces maximizing elimination).  An \emph{agentic calculus} translates
-these results into a flow-theoretic language: the knife is the min-cut
+these results into a flow-theoretic language: the sword is the min-cut
 of the execution graph, the viable path is the max-flow, and the
-central thesis---the knife is the mean---is a restatement of
+central thesis---the sword is the mean---is a restatement of
 max-flow/min-cut duality.  The framework is validated against Chinese
 imperial history (475~BCE--1644~CE) and extended to the Atlantic
 triangular trade, the structure of ideological hatred, parasitic network
-topologies, and militarism.  The central thesis is that the knife is the
+topologies, and militarism.  The central thesis is that the sword is the
 mean: the critical threshold separating tools from threats is determined
 by the system's average autonomous actuation level, making viability
 maintenance a mean-field phenomenon.  Temporal linearity is the medium
@@ -176,6 +176,7 @@ in which the entire theory operates.
 \input{appendices/govfi}
 \input{appendices/gaokao}
 \input{appendices/fields2022}
+\input{appendices/threebody}
 
 % ── Bibliography ──────────────────────────────────────────
 \begin{thebibliography}{10}
@@ -275,6 +276,36 @@ formulas,
 A.~A.~Razborov and S.~Rudich,
 Natural proofs,
 \emph{J.~Comput.\ System Sci.}\ \textbf{55} (1997), 24--35.
+\bibitem{newton}
+I.~Newton,
+\emph{Philosophi\ae{} Naturalis Principia Mathematica},
+London, 1687.
+\bibitem{mujoco}
+E.~Todorov, T.~Erez, and Y.~Tassa,
+MuJoCo: A physics engine for model-based control,
+in \emph{IEEE/RSJ Int.\ Conf.\ on Intelligent Robots and Systems},
+2012, pp.~5026--5033.
+\bibitem{pdp}
+W.~Jin, Z.~Wang, Z.~Yang, and S.~Mou,
+Pontryagin differentiable programming: An end-to-end learning and
+control framework,
+in \emph{Advances in Neural Information Processing Systems}
+\textbf{33}, 2020, pp.~7979--7992.
+\bibitem{mason}
+M.~T.~Mason,
+\emph{Mechanics of Robotic Manipulation},
+MIT Press, 2001.
+\bibitem{cheng-manip}
+X.~Cheng, E.~Huang, Y.~Hou, and M.~T.~Mason,
+Contact mode guided motion planning for quasidynamic dexterous
+manipulation in 3D,
+in \emph{IEEE Int.\ Conf.\ on Robotics and Automation}, 2022,
+pp.~6520--6526.
+\bibitem{contactsdf}
+Y.~Wen, X.~Cheng, G.~Izatt, and R.~Tedrake,
+ContactSDF: Signed distance functions as multi-contact models for
+dexterous manipulation,
+\emph{IEEE Robotics and Automation Letters}, 2024.
 \end{thebibliography}
 
 \end{document}

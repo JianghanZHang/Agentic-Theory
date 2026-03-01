@@ -1,0 +1,2018 @@
+\chapter{The Three-Body Galaxy}\label{sec:threebody}
+
+\begin{center}
+\itshape
+I now demonstrate the frame of the system of the world.\\[4pt]
+\upshape ---Isaac Newton, \emph{Principia Mathematica}, Book~III (1687)~\cite{newton}
+\end{center}
+
+\bigskip
+
+Newton demonstrated the two-body frame: Keplerian orbits, inverse-square
+law, universal gravitation.  The three-body frame remained open for three
+centuries because it has \emph{no king}---the complete graph $K_3$ has no
+cut vertex, and the mean-field detection of \cref{thm:meanfield} fails.
+We now apply the framework to the three-body problem and construct the
+\emph{gravity damper}: a controlled agent $\kappa$ that stabilises the
+system by maintaining the spectral gap $\lambda_1 > 0$.  The three-body
+problem has no analytical solution, but it admits an \emph{agentic}
+one: the agent does not predict the future---it controls the present.
+
+The argument proceeds in seven stages:
+\begin{enumerate}
+  \item \textbf{Diagnosis} (\cref{sec:3b-diagnosis}): $K_3$ has no
+  king, so $\lambda_1 \to 0$ and viability fails.
+  \item \textbf{Design} (\cref{sec:3b-ocp}): introduce a controlled
+  mass $m_*$ and derive the optimal control law.
+  \item \textbf{Extension} (\cref{sec:3b-manipulation}): the same
+  structure governs rigid-body manipulation---one hand stabilises an
+  object against gravity.
+  \item \textbf{Computation} (\cref{sec:3b-mppi}): MPPI sampling
+  exchanges exponential mode enumeration for polynomial search;
+  the spectral gap controls mixing time.
+  \item \textbf{Sufficiency} (\cref{sec:3b-kakeya}): the Kakeya
+  condition guarantees that $\bar{u}^* > 0$ strictly---free stability
+  does not exist.
+  \item \textbf{Agenticity} (\cref{sec:3b-agenticity}): the formal
+  definition---observability, reachability, controllability, and
+  their Kalman duality through gravity.
+  \item \textbf{Implementation} (\cref{sec:3b-mujoco}): the
+  physics-backend isomorphism---the same $\rho$-controller runs on
+  hand-rolled gravity and on MuJoCo contact dynamics; force
+  elimination (\cref{sec:3b-force-elim}); ground duality
+  (\cref{sec:3b-ground-duality}).
+\end{enumerate}
+
+% ═══════════════════════════════════════════════════════════
+\section{Diagnosis: why the three-body system escapes}
+\label{sec:3b-diagnosis}
+
+\subsection{The gravitational graph Laplacian}
+
+Three point masses $m_1, m_2, m_3$ in $\R^3$, with positions
+$q_i \in \R^3$.  The \emph{gravitational graph Laplacian}
+$L_G \in \R^{3\times 3}$ has edge weights given by the tidal coupling:
+\[
+  w_{ij}(q) \;=\; \frac{G\, m_i\, m_j}{\|q_i - q_j\|^3},
+  \qquad i \neq j.
+\]
+The Fiedler eigenvalue $\lambda_1(L_G)$ measures algebraic connectivity.
+
+\begin{corollary}[Three-body mass gap closure]\label{cor:threebody}
+In the three-body system without a controlled agent,
+$\lambda_1(L_G(q(t))) \to 0$ as $t \to \infty$ for generic initial
+conditions.
+\end{corollary}
+
+\begin{proof}
+$K_3$ has no cut vertex (\cref{thm:massgap}: connectivity is
+equivalent to $\lambda_1 > 0$).  When two bodies approach
+($\|q_i - q_j\| \to 0$), the weight $w_{ij} \to \infty$ while
+$w_{ik}, w_{jk} \to 0$ as the third body escapes.  The graph
+disconnects: $\lambda_1 \to 0$.
+
+In the language of \cref{thm:meanfield}: every body's actuation
+$\|U_r\|$ is near the mean $\bar{U}$, so no sword is detected.
+But the system is unstable---mean-field detection requires a king,
+and $K_3$ has none.
+\end{proof}
+
+\begin{remark}[Scope boundary of mean-field detection]
+\label{rem:3b-scope}
+\Cref{cor:threebody} gives the precise scope of the central thesis.
+The sword is the mean under finite-bandwidth detection in a system
+\emph{with} a unique principal agent (\cref{thm:meanfield}).  In a
+system without a king---a pure $K_n$ graph---mean-field detection is
+insufficient.  The spectral gap $\lambda_1$ (\cref{thm:massgap})
+remains the correct stability criterion, but it must be
+\emph{maintained by active control}, not merely observed.
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Design: the gravity damper}\label{sec:3b-ocp}
+
+\subsection{The four-body system}
+
+Introduce a fourth body $m_*$---the \emph{damper}---with position
+$q_* \in \R^3$ and control input $u(t) \in \R^3$.  The three
+celestial masses obey Newton; the damper receives external force:
+\begin{align}
+  m_i \ddot{q}_i &= -\nabla_{q_i} V,
+  \qquad i \in \{1,2,3\}, \label{eq:3b-newton}\\
+  m_* \ddot{q}_* &= -\nabla_{q_*} V + u. \label{eq:3b-damper}
+\end{align}
+The gravitational potential is
+\[
+  V(q) = -\sum_{1 \le i < j \le 3} \frac{G\,m_i m_j}{\|q_i - q_j\|}
+  - \sum_{i=1}^{3} \frac{G\,m_i m_*}{\|q_i - q_*\|}.
+\]
+In the execution graph, the damper $m_*$ is the king $\kappa$: it is
+the only agent with a control input.  The topology is now $K_4$, and
+$\kappa$ is a potential cut vertex---\emph{if} it has sufficient
+actuation authority.
+
+\subsection{The optimal control problem}
+
+\begin{definition}[Gravity damper OCP]\label{def:3b-ocp}
+The gravity damper seeks the path of least action that keeps the
+system spectrally connected:
+\begin{equation}\label{eq:3b-ocp}
+  \min_{u(\cdot)} \; J[u] = \int_0^T \left[
+  \mathcal{L}(q, \dot{q}) + \frac{\alpha}{2}\|u\|^2 \right] dt
+\end{equation}
+subject to: (i)~dynamics \eqref{eq:3b-newton}--\eqref{eq:3b-damper},
+(ii)~spectral gap constraint $\lambda_1(L_G(q(t))) \ge \epsilon$
+for all $t$, and (iii)~box constraint
+$u(t) \in \mathcal{U} = [-\bar{u}, \bar{u}]^3$.
+
+Here $\mathcal{L} = \sum_i \frac{1}{2}m_i\|\dot{q}_i\|^2 - V(q)$
+is the gravitational Lagrangian, $\alpha > 0$ is the control cost,
+and $\bar{u}$ is the damper's maximum thrust.
+\end{definition}
+
+The box constraint is essential for well-posedness.  Without it,
+when $\lambda_1 \to \epsilon$, the optimal control $u^* \to \infty$---
+the damper cheats by applying infinite force at the last instant.
+The box constraint enforces temporal linearity (\cref{rem:di-temporal}):
+the damper must plan ahead with bounded resources.
+
+\subsection{Closed-form solution}
+
+State: $x = (q_1, q_2, q_3, q_*, \dot{q}_1, \ldots, \dot{q}_*) \in
+\R^{24}$.  Costates: $p \in \R^{24}$.  Multiplier $\mu(t) \ge 0$
+for the spectral constraint.
+
+\begin{theorem}[Gravity damper: three-term decomposition]
+\label{thm:3b-damper}
+The optimal trajectory of $m_*$ satisfies
+\begin{equation}\label{eq:3b-threeterm}
+  m_* \ddot{q}_*
+  = \underbrace{-\nabla_{q_*}V}_{\text{\textup{(I) Gravity}}}
+  + \underbrace{u_{\mathrm{action}}(t)}_{%
+    \text{\textup{(II) Least action}}}
+  + \underbrace{\frac{\mu(t)}{\alpha m_*}
+    \nabla_{q_*}\lambda_1}_{%
+    \text{\textup{(III) Spectral kick}}},
+\end{equation}
+where:
+\begin{enumerate}[label=\textup{(\Roman*)}]
+  \item is the passive gravitational force---the damper falls;
+  \item is the unconstrained action-minimising correction---the
+  costate feedback from the Euler--Lagrange adjoint;
+  \item activates only when $\lambda_1 = \epsilon$ (by complementary
+  slackness: $\mu(t)(\epsilon - \lambda_1) = 0$)---the damper kicks
+  in the direction that most increases $\lambda_1$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Write the control Hamiltonian:
+\[
+  \mathcal{H}(x,p,u,\mu) = \mathcal{L} + \frac{\alpha}{2}\|u\|^2
+  + p \cdot f(x,u) + \mu(\epsilon - \lambda_1(q)).
+\]
+Pontryagin optimality gives:
+\begin{align}
+  u^*(t) &= \mathrm{sat}_{\bar{u}}\!\Bigl(
+  -\frac{1}{\alpha m_*}\, p_{\dot{q}_*}(t)\Bigr),
+  \label{eq:3b-ustar}\\
+  \dot{p}_{q_*} &= -\nabla_{q_*}\mathcal{L}
+  + \mu(t)\,\nabla_{q_*}\lambda_1,
+  \label{eq:3b-costate}
+\end{align}
+where $\mathrm{sat}_{\bar{u}}$ is componentwise saturation.
+Substituting \eqref{eq:3b-ustar} into the damper
+dynamics~\eqref{eq:3b-damper} and decomposing the costate into its
+Euler--Lagrange part (term~II) and spectral part (term~III) via
+\eqref{eq:3b-costate} gives the stated three-term form.  When
+$\mu = 0$, term~III vanishes and we recover the unconstrained
+action-minimising trajectory.
+\end{proof}
+
+\subsection{Bang-singular structure and the Lagrange points}
+
+With the box constraint, the optimal trajectory has three arc types:
+
+\begin{description}
+  \item[Singular arc] $\lambda_1 > \epsilon$ and $\|u^*\| < \bar{u}$.
+  The damper coasts along the least-action geodesic.
+  \item[Bang arc] $\lambda_1$ approaches $\epsilon$, the costate
+  drives $\|u\| = \bar{u}$.  The damper fires at maximum thrust.
+  \item[Infeasible arc] If $\bar{u}$ is too small, bang cannot
+  prevent $\lambda_1$ from crossing $\epsilon$.  The system escapes.
+\end{description}
+
+\begin{proposition}[Bang points concentrate at Lagrange points]
+\label{prop:3b-lagrange}
+The switching surface between singular and bang arcs projects onto
+the damper's configuration space at the Lagrange points of the
+instantaneous three-body configuration.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+At a Lagrange point $q_* = L_k$, the effective gravitational force
+on the damper vanishes in the co-rotating frame:
+$\nabla_{q_*}V_\mathrm{eff}\big|_{L_k} = 0$, so term~(I) vanishes
+and all control authority is freed for the spectral kick.
+
+The collinear points $L_1, L_2, L_3$ are saddle points of
+$\lambda_1(q_*)$: the spectral gradient $\|\nabla_{q_*}\lambda_1\|$
+is maximal here, driving the costate to saturation.  The triangular
+points $L_4, L_5$ are local maxima of $\lambda_1$: the damper parks
+here during singular arcs.
+
+The optimal strategy is: park at $L_4/L_5$ (singular arc), commute
+to $L_1/L_2/L_3$ when $\lambda_1$ drops (bang arc), apply spectral
+kick, return.
+\end{proof}
+
+\begin{definition}[Critical actuation threshold]
+\label{def:3b-ustar}
+The minimum thrust for OCP feasibility is
+\[
+  \bar{u}^* = \inf\Bigl\{\bar{u} > 0 :
+  \exists\, u(\cdot) \in [-\bar{u},\bar{u}]^3 \;\text{s.t.}\;
+  \lambda_1(q(t)) \ge \epsilon \;\;\forall\, t \in [0,T]\Bigr\}.
+\]
+$\bar{u}^* > 0$ strictly: free stability does not exist.
+\end{definition}
+
+\subsection{The Lyapunov barrier}
+
+\begin{proposition}[Action--Lyapunov--Spectral equivalence]
+\label{prop:3b-equiv}
+The following are equivalent for the controlled system:
+\begin{enumerate}[label=\textup{(\Roman*)}]
+  \item \textbf{Least action.}
+  There exists $u^* \in \mathcal{U}$ minimising $J[u]$ with
+  $\lambda_1 \ge \epsilon$.
+  \item \textbf{Lyapunov stability.}
+  There exists a control-Lyapunov function
+  $W = H + \beta/(\lambda_1 - \epsilon)$ with $\dot{W} \le 0$ under
+  admissible control.
+  \item \textbf{Spectral gap maintenance.}
+  $\lambda_1(q(t)) \ge \epsilon$ for all $t \in [0,T]$.
+\end{enumerate}
+The connections are:
+$\textup{(I)} \xrightarrow{\textup{HJB}} \textup{(III)}
+ \xrightarrow{\textup{barrier}} \textup{(II)}
+ \xrightarrow{\textup{Sontag}} \textup{(I)}$.
+\end{proposition}
+
+\begin{proof}
+(I)$\Rightarrow$(III): by constraint.
+(III)$\Rightarrow$(II): construct $W(x) = H(x) + \beta/(\lambda_1 -
+\epsilon)$.  Along feasible trajectories $\lambda_1 > \epsilon$,
+so $W$ is finite; the barrier $\beta/(\lambda_1-\epsilon) \to
++\infty$ as $\lambda_1 \to \epsilon^+$ prevents crossing.
+Compute $\dot{W} = u \cdot \dot{q}_* -
+\beta\dot{\lambda}_1/(\lambda_1-\epsilon)^2$; the optimal control
+ensures $\dot{W} \le 0$.
+(II)$\Rightarrow$(I): Sontag's universal formula constructs smooth
+$u$ from the CLF; this $u$ is admissible and makes $J$ finite.
+\end{proof}
+
+\begin{remark}[顿开金绳，扯断玉锁]\label{rem:3b-jinsheng}
+The control policy takes its name from Chapter~117 of
+\emph{Dream of the Red Chamber}: ``suddenly snap the golden cord,
+wrench apart the jade lock.''  The golden cord is the gravitational
+binding.  The jade lock is the spectral gap closing.  The damper
+snaps the cord at the Lagrange points---the precise locations where
+gravitational equilibrium frees all control authority for the
+spectral kick.
+
+On singular arcs, the cord is slack: the damper rides the
+least-action geodesic.  On bang arcs, the lock tightens: the damper
+fires at maximum thrust to wrench it open.  The transition is
+sharp---not a gradient, but a switch.
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Extension: rigid-body manipulation}\label{sec:3b-manipulation}
+
+The three-body gravity damper is not an isolated curiosity.  Its
+structure appears whenever one agent must stabilise a multi-body
+system against gravity.
+
+\subsection{搬运 as a three-body problem}
+
+Consider a robotic hand (the damper $\kappa$) grasping and
+transporting an object.  The object's mass distribution defines
+$m_1, m_2, m_3$ (or more generally, the principal moments of
+inertia).  Gravity acts downward.  The hand applies contact forces
+$u(t)$ through the grasp.
+
+The execution graph is the same: the hand is $\kappa$, the object's
+inertia axes are the ``three bodies,'' and the spectral gap
+$\lambda_1$ of the \emph{grasp graph Laplacian} measures whether the
+grasp is stable~\cite{mason}.  When $\lambda_1 \to 0$, the object
+slips.  Cheng et~al.~\cite{cheng-manip} show that dexterous
+manipulation planning requires reasoning about contact mode
+transitions---precisely our bang-singular switching.  The signed
+distance function formulation of ContactSDF~\cite{contactsdf}
+provides a differentiable contact model: the SDF value at each
+contact point is a local proxy for $\lambda_1$, and its gradient is
+the spectral gradient $\nabla_{q_*}\lambda_1$ of
+\cref{thm:3b-damper}.
+
+\begin{proposition}[Manipulation is gravity damping]
+\label{prop:3b-manip}
+The optimal control for rigid-body manipulation under gravity has
+the same three-term structure as \cref{thm:3b-damper}:
+\begin{enumerate}[label=\textup{(\Roman*)}]
+  \item Gravity (the object falls);
+  \item Least-action trajectory (the hand follows the planned path);
+  \item Spectral kick (the hand tightens the grasp when
+  $\lambda_1 \to \epsilon$).
+\end{enumerate}
+The bang points are the \emph{grasp singularities}---configurations
+where the grasp matrix loses rank, analogous to the Lagrange points
+of the gravitational problem.
+\end{proposition}
+
+\subsection{From celestial mechanics to robotics}
+
+The mapping is:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Three-body} & \textbf{Manipulation} & \textbf{Framework} \\
+\midrule
+Celestial masses $m_1,m_2,m_3$ & Object inertia axes &
+Agents $a_1,a_2,a_3$ \\
+Damper $m_*$ & Robotic hand & King $\kappa$ \\
+Gravitational potential $V$ & Gravity + contact potential &
+Viability Lyapunov $V$ \\
+Spectral gap $\lambda_1$ & Grasp quality &
+Mass gap (\cref{thm:massgap}) \\
+Lagrange points & Grasp singularities & Switching surface $\Sigma$ \\
+Thrust $\bar{u}$ & Grip force limit & Box constraint \\
+$\bar{u}^*$ & Minimum grip force & Price of stability \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The central thesis applies: the hand's detection threshold (when to
+tighten the grasp) is determined by the mean contact force.
+An object slips when a perturbation exceeds the mean---\emph{the
+sword is the mean}, applied to grasping.
+
+% ═══════════════════════════════════════════════════════════
+\section{Computation: MPPI and polynomial tractability}
+\label{sec:3b-mppi}
+
+The three-term control law (\cref{thm:3b-damper}) requires evaluating
+$\nabla_{q_*}\lambda_1$ at each time step.  In the manipulation
+setting, the grasp graph Laplacian changes with every contact mode
+transition.  A na\"ive approach enumerates all $3^n$ contact mode
+assignments (separating, sliding, sticking at each of $n$ contact
+points)---exponential in the number of contacts.  We show that
+\emph{sampling} replaces \emph{enumeration}, and the spectral gap
+is the reason it works.
+
+\subsection{Contact modes as Laplacian weights}
+
+At each contact point $i$, the contact mode determines the edge
+weight $w_i$ of the grasp graph Laplacian:
+
+\begin{center}
+\begin{tabular}{@{}llc@{}}
+\toprule
+\textbf{Mode} & \textbf{Force transmission} & $w_i$ \\
+\midrule
+Separating & None & $0$ \\
+Sliding & Normal $+$ friction-limited tangential
+  & $k_n + \mu k_n$ \\
+Sticking & Normal $+$ full tangential & $k_n + k_t$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+A contact mode assignment $\sigma = (\sigma_1, \ldots, \sigma_n)$
+defines a weight vector $w(\sigma)$ and hence a Laplacian
+$L_G(\sigma)$ with Fiedler eigenvalue $\lambda_1(\sigma)$.
+
+\subsection{MPPI: sampling replaces enumeration}
+
+Model Predictive Path Integral (MPPI) control samples $K$ trajectories
+and weights them by the exponential cost:
+\[
+  u^*(t) = \frac{\displaystyle\sum_{k=1}^{K}
+    e^{-J_k/\alpha}\, u_k(t)}
+    {\displaystyle\sum_{k=1}^{K} e^{-J_k/\alpha}},
+\]
+where $J_k = \int_0^T [\mathcal{L} + \frac{\alpha}{2}\|u_k\|^2]\,dt$
+is the cost of the $k$-th sampled trajectory.  Trajectories that
+violate contact constraints ($\phi_i < 0$ in the signed distance
+field~\cite{contactsdf}) incur exponential penalty; their softmax
+weight vanishes.  MPPI therefore implicitly enumerates valid contact
+modes without explicit combinatorial search.
+
+\begin{theorem}[Exponential--polynomial exchange]
+\label{thm:3b-mppi}
+Under the spectral gap condition $\lambda_1 \ge \epsilon > 0$, the
+number of valid contact modes at each time step is $\mathrm{poly}(n)$,
+and MPPI with $K = O(\mathrm{poly}(n))$ samples finds a feasible
+trajectory with high probability.
+\end{theorem}
+
+\begin{proof}
+Cheng et~al.~\cite{cheng-manip} show that the contact mode lattice
+admits $\mathrm{poly}(n)$ valid modes under force balance; we
+identify this condition with $\lambda_1 > 0$ via the grasp
+Laplacian.  The SDF barrier
+$\beta / \phi_i$ in the MPPI cost suppresses invalid modes with
+weight $\exp(-\beta/\phi_i \cdot 1/\alpha) \to 0$ as
+$\phi_i \to 0^-$.  The effective sampling space is therefore
+$\mathrm{poly}(n)$, not $3^n$.
+
+More precisely: MPPI is a soft version of Cheng's polynomial
+enumeration.  She uses combinatorial lattice search (exact); MPPI
+uses sampling with softmax weighting (approximate).  Both exploit the
+same $\mathrm{poly}(n)$ structure.
+\end{proof}
+
+\subsection{Cheeger inequality and mixing time}
+
+The spectral gap does double duty: it controls both the
+\emph{physical} stability (mass gap) and the \emph{computational}
+tractability (mixing time of the sampling process).
+
+\begin{proposition}[Spectral gap controls mixing]\label{prop:3b-mixing}
+The Cheeger inequality (\cref{thm:massgap}) gives
+$\lambda_1 \ge h(G)^2 / 2$, where $h(G)$ is the Cheeger constant.
+The mixing time of the MPPI random walk satisfies
+$\tau_{\mathrm{mix}} = O(1/\lambda_1)$.  In particular:
+\[
+  \lambda_1 \ge \epsilon \quad\Longrightarrow\quad
+  \tau_{\mathrm{mix}} \le 1/\epsilon \quad\Longrightarrow\quad
+  K = O(1/\epsilon) \;\text{samples suffice.}
+\]
+\end{proposition}
+
+\begin{proof}
+Standard spectral graph theory~\cite{cheeger,mohar}: the second
+eigenvalue of the normalised Laplacian bounds the mixing time of a
+lazy random walk.  The contact mode graph, weighted by the SDF
+softmax, has the same spectral structure as the grasp Laplacian.
+When $\lambda_1 \ge \epsilon$, the chain mixes in $O(1/\epsilon)$
+steps, so $O(1/\epsilon)$ independent samples cover the valid mode
+space.
+\end{proof}
+
+\begin{remark}[The spectral gap does everything]
+The same quantity $\lambda_1$ determines:
+(i)~physical stability (will the object be dropped?),
+(ii)~control authority (when to fire the spectral kick), and
+(iii)~computational cost (how many MPPI samples are needed).
+This is not coincidence---it is the duality between the Cheeger
+constant of the execution graph and the min-cut of the flow network
+(\cref{thm:flowcut}).
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Sufficiency: the Kakeya condition}\label{sec:3b-kakeya}
+
+We have shown that the damper \emph{can} maintain $\lambda_1 \ge
+\epsilon$ given sufficient thrust $\bar{u} \ge \bar{u}^*$.  We now
+ask: must $\bar{u}^* > 0$?  That is, does free stability exist?
+
+\subsection{Instability directions and the reachable set}
+
+As the three-body system evolves, the pairwise instability
+directions
+\[
+  d_{ij}(t) = \frac{q_i(t) - q_j(t)}{\|q_i(t) - q_j(t)\|}
+  \in S^2, \qquad 1 \le i < j \le 3,
+\]
+rotate through the unit sphere.  Over a generic ergodic trajectory,
+$\{d_{12}, d_{13}, d_{23}\}$ sweep all of $S^2$.
+
+The damper's \emph{reachable set} at time $t$ with energy budget $E$
+is
+\[
+  \mathcal{R}(t, E) = \Bigl\{q_* \in \R^3 :
+  \exists\, u(\cdot) \in \mathcal{U},\;
+  \int_0^t \|u\|^2\,ds \le E,\;
+  q_*(s) \text{ reaches } q_* \text{ at } s = t\Bigr\}.
+\]
+
+\begin{proposition}[Kakeya sufficiency]\label{prop:3b-kakeya}
+The minimum thrust $\bar{u}^* > 0$ strictly, and
+\[
+  \bar{u}^* \;\ge\; \frac{m_*}{\alpha}\,
+  \sup_{t \in [0,T]}\Bigl[
+    \mu(t)\,\|\nabla_{q_*}\lambda_1\|\Bigr]
+    \Big|_{\text{worst Lagrange point}}.
+\]
+Below $\bar{u}^*$: no control can save the system.  Above: the
+least-action policy with spectral kicks suffices.
+\end{proposition}
+
+\begin{proof}
+On a bang arc at a collinear Lagrange point, the damper must exert
+force $\|u\| = \bar{u}$ along $\nabla_{q_*}\lambda_1$ to prevent
+$\lambda_1$ from crossing $\epsilon$.  The spectral gradient at $L_k$
+is bounded below by the tidal coupling:
+$\|\nabla_{q_*}\lambda_1\| \ge Gm_*/(r_{L_k})^3$, where $r_{L_k}$
+is the distance from $L_k$ to the nearest body.  By complementary
+slackness, $\mu > 0$ on the bang arc.  Hence term~(III) of
+\cref{thm:3b-damper} is strictly positive, requiring
+$\bar{u} > 0$.
+\end{proof}
+
+\subsection{The Kakeya dual}
+
+The geometric content of \cref{prop:3b-kakeya} is a duality with
+the Kakeya conjecture:
+
+\begin{itemize}
+  \item \textbf{Kakeya} asks: what is the minimum measure of a set in
+  $\R^n$ containing a unit segment in every direction?  The conjecture
+  asserts: Hausdorff dimension $n$ (full-dimensional).
+  \item \textbf{Damper} asks: what is the minimum energy budget for the
+  reachable set $\mathcal{R}(t,E)$ to cover all instability directions?
+  The answer: $\mathcal{R}$ must be full-dimensional in $\R^3$.
+\end{itemize}
+
+The instability directions $\{d_{ij}\}$ sweep $S^2$.  To block
+collapse in \emph{every} direction, the reachable set must contain a
+segment in every direction---a Besicovitch set.  Kakeya predicts
+this set is full-dimensional, hence the energy budget $E$ (and
+therefore $\bar{u}^*$) cannot be compressed to zero.
+
+\begin{remark}[Free stability does not exist --- 免费的稳定性不存在]
+\label{rem:3b-free}
+\Cref{prop:3b-kakeya} is the sufficiency condition for the entire
+framework: viability maintenance has a strictly positive price.
+The massless axiom (\cref{ax:massless}) says agents have no
+intrinsic mass; the Kakeya condition says \emph{control} has
+irreducible cost.  Together they give the complete picture: the
+sword is free to detect (it costs nothing to observe who exceeds
+the mean) but not free to control (maintaining $\lambda_1 > \epsilon$
+costs $\bar{u} \ge \bar{u}^* > 0$).
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Agenticity: observability--reachability--controllability}
+\label{sec:3b-agenticity}
+
+We now define the central concept.  An object has no intrinsic
+agenticity (\cref{ax:massless}).  Agenticity is \emph{conferred}---
+被赋予的---and \emph{controlled}---被控制的.  The definition is the
+conjunction of three conditions, linked by gravity.
+
+The construction is not specific to celestial mechanics or
+manipulation.  The quantity $P$ in the diagram below is a
+\emph{probability transition kernel} $P(x' \mid x, u)$---the
+transition function of a Markov decision process.  Pose
+$P \in \mathrm{SE}(3)$ and gravitational dynamics are one instance;
+any controlled Markov process is another.  The spectral gap
+$\lambda_1$ of the graph Laplacian serves triple duty:
+\begin{enumerate}[label=\textup{(\roman*)}]
+  \item \textbf{Physical stability}: will the system escape?
+  ($\lambda_1 > 0 \Leftrightarrow$ connected.)
+  \item \textbf{Controllability}: can the policy steer the state?
+  ($\lambda_1 > \epsilon \Leftrightarrow$ MDP is controllable.)
+  \item \textbf{Computational tractability}: how fast does MPPI
+  converge?
+  ($\tau_{\mathrm{mix}} = O(1/\lambda_1)$.)
+\end{enumerate}
+These are the same number because they are all $\lambda_1$ of the
+same Laplacian, viewed through different lenses.  The Cheeger
+constant connects them:
+$h(G) > 0 \;\Leftrightarrow\; \lambda_1 > 0
+\;\Leftrightarrow\;$ the chain mixes
+$\;\Leftrightarrow\;$ the system is controllable
+$\;\Leftrightarrow\;$ MPPI converges.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.6,
+  >=Stealth,
+  manifold/.style={water, line width=0.3pt, opacity=0.5},
+  tet/.style={green!60!black, line width=1pt},
+  tetfill/.style={green!30!black, fill opacity=0.08},
+]
+  % ═══ Layer 1 (绳 Rope, red): gravitational field ═══
+  % Background plane with ⊗ indicating m*g pointing into the page
+  % (bird's-eye view: gravity goes straight down, i.e. into screen)
+  \begin{scope}[shift={(-0.3,0)}]
+    \fill[dao!5] (-3.0, -2.4) rectangle (3.0, 2.4);
+    \draw[dao, line width=0.3pt, opacity=0.15]
+      (-3.0, -2.4) rectangle (3.0, 2.4);
+    % ⊗ sign (gravity into page)
+    \node[dao, font=\large, opacity=0.25] at (2.4, -1.8) {$\bigotimes$};
+    \node[dao, font=\scriptsize, opacity=0.35, anchor=west]
+      at (2.65, -1.8) {$m_*g$};
+  \end{scope}
+
+  % ═══ Layer 2 (锁 Lock, blue): manifold net 𝒳 ═══
+  \begin{scope}[shift={(-0.3,0)}]
+    % Horizontal curves (u-lines)
+    \foreach \v in {-2.0,-1.0,0,1.0,2.0} {
+      \draw[manifold] plot[smooth, domain=-2.8:2.8, samples=30]
+        ({\x}, {\v + 0.15*sin(60*\x) + 0.08*cos(90*\v)},
+         {0.3*cos(40*\x)*cos(40*\v)});
+    }
+    % Vertical curves (v-lines)
+    \foreach \u in {-2.5,-1.5,-0.5,0.5,1.5,2.5} {
+      \draw[manifold] plot[smooth, domain=-2.0:2.0, samples=20]
+        ({\u + 0.1*sin(70*\x)}, {\x},
+         {0.3*cos(40*\u)*cos(40*\x)});
+    }
+  \end{scope}
+
+  % ═══ Layer 3 (玉 Jade, green): tetrahedron Δ³ ═══
+  \coordinate (T1) at (-0.4, -1.0, 0);
+  \coordinate (T2) at (1.8, -0.4, 0);
+  \coordinate (T3) at (0.5,  1.4, 0);
+  \coordinate (T4) at (0.6,  0.15, 1.6);
+
+  % Back faces
+  \fill[tetfill, green!20!black] (T1) -- (T2) -- (T4) -- cycle;
+  \fill[tetfill, green!20!black] (T1) -- (T3) -- (T4) -- cycle;
+  \draw[tet, opacity=0.3, dashed] (T1) -- (T4);
+  % Front faces
+  \fill[tetfill, green!40!black] (T1) -- (T2) -- (T3) -- cycle;
+  \fill[tetfill, green!25!black] (T2) -- (T3) -- (T4) -- cycle;
+  % Edges
+  \draw[tet] (T1) -- (T2);
+  \draw[tet] (T2) -- (T3);
+  \draw[tet] (T3) -- (T1);
+  \draw[tet] (T2) -- (T4);
+  \draw[tet] (T3) -- (T4);
+
+  % ═══ Layer 4 (绳 Rope, red): state x(t) on Δ³ ═══
+  \coordinate (P) at ($(T2)!0.35!(T3)!0.4!(T4)$);
+  \fill[dao, opacity=0.9] (P) circle (2.5pt);
+
+  % ═══ Layer 5 (金 Golden, cyan): operations ═══
+  % ω̂ pseudovector
+  \draw[->, sword, line width=1.6pt]
+    (P) -- ++(0.8, 0.9, 0.5)
+    node[right, font=\small, text=sword]
+    {$\hat{\omega}$};
+  % ∇_{ω̂} P
+  \draw[->, sword, line width=1.6pt]
+    (P) -- ++(0.3, -1.4, 0.4)
+    node[right, font=\small, text=sword]
+    {$\nabla_{\hat{\omega}}\!P$};
+
+  % ── Labels ──────────────────────────────────────────
+  \node[water, font=\small, anchor=north east] at (-2.6, -2.0)
+    {$\mathcal{X}$};
+  \node[green!50!black, font=\small, anchor=west] at (2.1, 0.8)
+    {$\Delta^3$};
+  \node[dao, font=\small, anchor=south east] at ([xshift=-3pt]P)
+    {$x(t)$};
+
+  % ── Layer legend (right margin) ─────────────────────
+  \begin{scope}[shift={(4.0, 1.8)}]
+    \node[anchor=west, font=\scriptsize, text=sword]
+      at (0, 0) {\textbf{金}\; $\hat{\omega},\,\nabla_{\hat{\omega}}P$};
+    \node[anchor=west, font=\scriptsize, text=dao]
+      at (0, -0.5) {\textbf{绳}\; $x(t),\,m_*g$};
+    \node[anchor=west, font=\scriptsize, text=green!50!black]
+      at (0, -1.0) {\textbf{玉}\; $\Delta^3$};
+    \node[anchor=west, font=\scriptsize, text=water]
+      at (0, -1.5) {\textbf{锁}\; $\mathcal{X}$};
+  \end{scope}
+\end{tikzpicture}
+
+\medskip
+
+\caption{Agenticity diagram (bird's-eye view).  Layered
+construction from bottom to top:
+\textcolor{dao}{\textbf{绳}~Rope} (red): the gravitational field
+$m_*g$ pointing into the page ($\bigotimes$)---the drift $A$ that
+acts on every body.
+\textcolor{water}{\textbf{锁}~Lock} (blue): the manifold net
+$\mathcal{X}$---the viability kernel that supports the dynamics in
+linear time.
+\textcolor{green!50!black}{\textbf{玉}~Jade} (green): the Kakeya
+tetrahedron $\Delta^3$---the bodies that exist
+(\cref{prop:3b-kakeya}).
+\textcolor{dao}{\textbf{绳}~Rope} (red, again): the current state
+$x(t)$ on $\Delta^3$---where the agent acts.
+\textcolor{sword}{\textbf{金}~Golden} (cyan): the pseudovector
+$\hat{\omega} \in \mathfrak{so}(3)$ and the Lie derivative
+$\nabla_{\hat{\omega}}P$---the sword that cuts: simultaneously the
+gravity direction, the policy gradient, and the score function.}
+\label{fig:agenticity}
+\end{figure}
+
+\subsection{The linearised system}
+
+Linearise the controlled dynamics about a trajectory.  State
+$\delta x \in \R^{n}$:
+\begin{equation}\label{eq:3b-linear}
+  \delta\dot{x} = A(t)\,\delta x + B\,\delta u,
+  \qquad y = C(t)\,\delta x,
+\end{equation}
+where:
+\begin{itemize}
+  \item $A(t) = \partial f / \partial x$ encodes the
+  \textbf{natural drift}---the uncontrolled dynamics of the
+  transition kernel $P$.  In the gravitational instance, $A$ is the
+  tidal tensor.  In a general MDP, $A$ is the linearised transition
+  matrix $\partial P / \partial x$.
+  \item $B$ is the \textbf{control input}---force enters only through
+  the agent $\kappa$.  In the four-body instance,
+  $B = [0;\; \ldots;\; 0;\; I_3/m_*]^\top$.
+  \item $C(t) = \nabla_x \lambda_1$ is the \textbf{spectral
+  observation}---the Fiedler eigenvector gradient.
+\end{itemize}
+
+The matrix $A$ is gravity.  In the MDP, $A$ is the drift of the
+Markov chain---what happens without control.  It appears in all
+three conditions below.
+
+\subsection{The definition}
+
+\begin{definition}[Agenticity]\label{def:agenticity}
+An object $r$ in the execution graph $G$ has \textbf{agenticity}
+with respect to king $\kappa$ iff:
+\begin{enumerate}[label=\textup{(\Alph*)}]
+  \item \textbf{Observability.}
+  $r$ is spectrally visible: perturbations to $r$'s state produce
+  detectable changes in $\lambda_1$.  Formally, the observability
+  Gramian
+  \[
+    W_O(0,T) = \int_0^T \Phi(s,0)^\top C(s)^\top C(s)\,
+    \Phi(s,0)\,ds
+  \]
+  is positive definite on the subspace containing $r$'s coordinates,
+  where $\Phi$ is the state transition matrix of $A$.
+
+  \item \textbf{Reachability.}
+  $r$ is dynamically accessible: the reachable set
+  $\mathcal{R}(T,\mathcal{U})$ of $\kappa$ under dynamics $A$ and
+  box constraint $\mathcal{U} = [-\bar{u},\bar{u}]^3$ intersects
+  the set of states where $\kappa$ can influence $r$'s edge weight
+  $w_{\kappa r}$.  The dynamics $A$---gravity---determines this set.
+
+  \item \textbf{Controllability.}
+  $r$ is actuatable: the controllability Gramian
+  \[
+    W_C(0,T) = \int_0^T \Phi(0,s)\,B\,B^\top\,
+    \Phi(0,s)^\top\,ds
+  \]
+  is positive definite on the subspace coupling $\kappa$ to $r$.
+  Equivalently, $\kappa$ can modify $r$'s bypass capacity $c(e_r)$
+  through admissible control.
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Kalman duality of agenticity]\label{thm:3b-kalman}
+The pair $(A, C)$ is observable if and only if $(A^\top, C^\top)$
+is controllable.  In physical terms:
+\begin{quote}
+\itshape
+The ability to detect a sword (observability of $r$ through
+$\lambda_1$) is dual to the ability to control it (controllability
+of $r$'s bypass capacity).  The matrix $A$---gravity---is the
+bridge.
+\end{quote}
+\end{theorem}
+
+\begin{proof}
+Standard Kalman duality: $(A,C)$ observable iff
+$\mathrm{rank}[C;\; CA;\; CA^2;\; \ldots;\; CA^{n-1}] = n$, which
+holds iff $\mathrm{rank}[C^\top,\; A^\top C^\top,\; \ldots,\;
+(A^\top)^{n-1}C^\top] = n$, which is the controllability condition
+for $(A^\top, C^\top)$.
+
+Physically: $A$ propagates perturbations forward in time
+(observation: a disturbance at $r$ ripples through the transition
+kernel until $\lambda_1$ changes) and backward in time (control:
+a thrust at $\kappa$ ripples through the same kernel until
+$r$'s edge weight changes).  The same dynamics that make the sword
+\emph{visible} make it \emph{controllable}.
+
+In the MDP interpretation: $\nabla_{\hat{\omega}} P$ is
+simultaneously the \emph{gravity direction} (how the uncontrolled
+transition drifts), the \emph{policy gradient} (how the
+transition changes under control), and the \emph{score function}
+(how the MPPI proposal weights shift).  The Kalman duality says
+these are the same object viewed forward and backward in time.
+\end{proof}
+
+\begin{corollary}[The drift provides reachability]\label{cor:3b-gravity}
+Reachability is the bridge between observability and controllability,
+and it is given by the drift $A$---gravity in the physical instance,
+the uncontrolled transition in the MDP.  Specifically:
+\begin{enumerate}[label=\textup{(\roman*)}]
+  \item The reachable set $\mathcal{R}(T,\mathcal{U})$ is shaped by
+  $A$: stronger coupling (larger $w_{ij}$) expands
+  $\mathcal{R}$, weaker coupling contracts it.
+  \item At equilibria of the drift ($\nabla_{q_*}V = 0$ in the
+  gravitational instance; stationary points of $P$ in the MDP):
+  the drift releases the agent, and all control authority is freed
+  for the spectral kick.  Reachability is maximal.
+  \item Away from equilibria, the drift consumes control
+  authority: the agent must fight the drift before it can control
+  $\lambda_1$.  Reachability contracts.
+\end{enumerate}
+\end{corollary}
+
+\begin{remark}[草木竹石，皆可為劍]\label{rem:3b-caomuzhu}
+In Jin Yong's \emph{The Return of the Condor Heroes}
+(《神雕侠侣》), Dugu Qiubai's sword progression ends:
+\emph{after forty, not bound by material---grass, wood, bamboo,
+stone, all can become a sword.}
+
+This is agenticity.  Every object satisfies condition~(A):
+everything is observable (you can see grass).  Whether it satisfies
+(B) and~(C) depends on the swordsman:
+\begin{itemize}
+  \item \textbf{(B) Reachability}: can the swordsman reach the
+  object?  This is given by the dynamics---gravity, physics,
+  proximity.  Dugu Qiubai's 内力 (internal force) extends his
+  reachable set until grass is within reach.
+  \item \textbf{(C) Controllability}: can the swordsman confer
+  force through the object?  This costs $\bar{u} \ge \bar{u}^* > 0$
+  (\cref{prop:3b-kakeya}).  Free agenticity does not exist.
+\end{itemize}
+The massless axiom (\cref{ax:massless}) says: grass has no intrinsic
+swordness.  Agenticity is conferred by the controller through a
+reachable, controllable path.  The dynamics $A$---gravity---is the
+medium through which it is conferred.
+\end{remark}
+
+\begin{remark}[青冥宝剑胜龙泉 --- no gravity]\label{rem:3b-yujiaolong}
+In Ang Lee's \emph{Crouching Tiger, Hidden Dragon}
+(《卧虎藏龙》, 2000), 玉娇龙 (Jen Yu) takes the Green Destiny
+and declares:
+\begin{quote}\itshape
+我乃是潇洒人间一剑仙，青冥宝剑胜龙泉。\\
+任凭李俞江南鹤，都要低头求我怜。\\
+沙漠飞来一条龙，神来无影去无踪。\\
+今朝踏破峨眉顶，明日拔下武当峰！
+\end{quote}
+The declaration is made at the inn (客栈).  The moment 玉娇龙
+draws the sword (拔剑), gravity vanishes \emph{for her}---she is
+at the Lagrange point.  This is
+\cref{cor:3b-gravity}\textup{(ii)}: $\nabla_{q_*}V = 0$, all
+control authority is freed for the spectral kick, and the poem is
+spoken from zero gravity.  The bamboo forest duel (竹林) is a
+structurally distinct, later scene---玉娇龙 \emph{flies}
+there too, but the phase transition already occurred at the inn
+when the sword entered her hand.
+
+When 玉娇龙 holds the 青冥宝剑, she is at the Lagrange point of
+the 武林 (martial world): the sword confers agenticity, gravity
+vanishes, and reachability is maximal.
+
+李安 sees the physics.  The flying is not fantasy---it is the
+optimal control policy at the switching surface.
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\subsection{Dribble the three bodies}
+
+The abstract diagram (\cref{fig:agenticity}) admits a concrete
+physical instance that makes the three-term structure literally
+visible: \emph{dribbling a ball}.
+
+The ball's three principal inertia axes are the ``three bodies.''
+Gravity pulls the ball toward the ground (the constraint boundary
+$\lambda_1 = 0$).  The hand (the damper $\kappa$) strikes the ball
+at the bottom of each bounce---the Lagrange point where
+$\nabla_{q_*}V = 0$ in the co-moving frame.  The ball is a closed
+manifold $S^2$; the hand's contact point moves on this manifold.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[scale=1.5, >=Stealth]
+  % ═══ Layer 1 (锁 Lock, blue): hitting surface κ ═══
+  % Ground plane — the constraint boundary (parallel view)
+  \fill[water!8] (-4.0, -3.4) rectangle (4.0, -3.0);
+  \draw[water, line width=0.8pt] (-4.0, -3.0) -- (4.0, -3.0);
+  % Hand / paddle — the damper, also Lock (constraint surface)
+  \fill[water!30, rounded corners=2pt]
+    (-1.0, -3.0) rectangle (1.0, -2.75);
+  \draw[water, line width=1pt, rounded corners=2pt]
+    (-1.0, -3.0) rectangle (1.0, -2.75);
+  \node[water, font=\footnotesize] at (0, -2.875) {$\kappa$};
+  \node[water, font=\footnotesize, anchor=east] at (3.9, -3.2)
+    {$\Sigma$};
+
+  % ═══ Layer 2 (玉 Jade, green): volume S² ═══
+  % Ball — the body that exists
+  \begin{scope}[shift={(0, 0.2)}]
+    \shade[ball color=green!30!white, opacity=0.35] (0,0) circle (1.8);
+    \draw[green!60!black, line width=0.8pt] (0,0) circle (1.8);
+    % Longitude lines
+    \foreach \a in {-60,-20,20,60} {
+      \draw[green!50!black, line width=0.2pt, opacity=0.4]
+        (0,0) ellipse ({1.8*cos(\a)} and 1.8);
+    }
+    % Latitude lines
+    \foreach \b in {-0.9, 0, 0.9} {
+      \pgfmathsetmacro{\rad}{1.8*cos(asin(\b/1.8))}
+      \draw[green!50!black, line width=0.2pt, opacity=0.4]
+        (0, \b) ellipse ({\rad} and {0.15*\rad});
+    }
+    \node[green!60!black, font=\small, anchor=south west]
+      at (1.5, 1.4) {$S^2$};
+  \end{scope}
+
+  % ═══ Layer 3 (绳 Rope, red): m*g + ground + state ═══
+  % Gravity direction: point on ball + downward arrow
+  \coordinate (CP) at (0, -1.6);
+  \fill[dao, opacity=0.9] (CP) circle (2.5pt);
+  \node[dao, font=\small, anchor=west] at (0.2, -1.75)
+    {$x(t)$};
+  % Gravity arrow
+  \draw[->, dao, line width=1.8pt]
+    (0, -1.6) -- (0, -2.65)
+    node[midway, right=2pt, font=\small, text=dao] {$m_* g$};
+  % Three inertia axes (the ``three bodies'')
+  \draw[dao, line width=0.6pt, ->] (0,0.2) -- (1.6, 0.2)
+    node[right, font=\scriptsize] {$I_1$};
+  \draw[dao, line width=0.6pt, ->] (0,0.2) -- (0, 1.8)
+    node[above, font=\scriptsize] {$I_2$};
+  \draw[dao, line width=0.6pt, ->] (0,0.2) -- (-0.7, -0.5)
+    node[below left, font=\scriptsize] {$I_3$};
+  % Control force (bang arc, dashed)
+  \draw[->, dao, line width=1.4pt, dashed]
+    (0, -2.75) -- (0, -1.75)
+    node[midway, left=2pt, font=\footnotesize, text=dao] {$u(t)$};
+
+  % ═══ Layer 4 (金 Golden, cyan): operations ═══
+  % ω̂ pseudovector
+  \draw[->, sword, line width=1.6pt]
+    (0, 0.2) -- (1.3, 1.6)
+    node[right, font=\small, text=sword]
+    {$\hat{\omega}$};
+  % ∇_{ω̂} P
+  \coordinate (Q) at (1.1, 1.35);
+  \draw[->, sword, line width=1.2pt]
+    (Q) -- ++(0.9, -0.8)
+    node[right, font=\small, text=sword]
+    {$\nabla_{\hat{\omega}}\!P$};
+
+  % ── Bounce trajectory (parabolic arc) ────────────────
+  \draw[dao, line width=0.5pt, dashed, opacity=0.5]
+    plot[smooth, domain=-1.4:1.4, samples=30]
+    ({\x + 2.5}, {-0.6*\x*\x + 1.0});
+
+  % ── Arc type annotations ─────────────────────────────
+  \node[font=\scriptsize, text=black!60, anchor=west,
+        text width=2.8cm, align=left]
+    at (-3.9, 2.0)
+    {\textbf{singular arc}\\[1pt]
+     ball in free flight\\
+     $\rho = 0,\;\sim\!90\%$};
+  \node[font=\scriptsize, text=black!60, anchor=west,
+        text width=2.8cm, align=left]
+    at (-3.9, -2.0)
+    {\textbf{bang arc}\\[1pt]
+     hand strikes ball\\
+     $\rho \gg 1,\;\sim\!10\%$};
+
+  % ── Brackets ─────────────────────────────────────────
+  \draw[black!40, line width=0.4pt, decorate,
+        decoration={brace, amplitude=4pt}]
+    (-3.95, 1.8) -- (-3.95, -0.8)
+    node[midway, left=5pt, font=\scriptsize, text=black!50] {};
+  \draw[black!40, line width=0.4pt, decorate,
+        decoration={brace, amplitude=4pt, mirror}]
+    (-3.95, -1.2) -- (-3.95, -3.1)
+    node[midway, left=5pt, font=\scriptsize, text=black!50] {};
+
+  % ── Layer legend ─────────────────────────────────────
+  \begin{scope}[shift={(4.0, 1.8)}]
+    \node[anchor=west, font=\scriptsize, text=sword]
+      at (0, 0) {\textbf{金}\; $\hat{\omega},\,\nabla_{\hat{\omega}}P$};
+    \node[anchor=west, font=\scriptsize, text=dao]
+      at (0, -0.5) {\textbf{绳}\; $x(t),\,m_*g,\,u(t)$};
+    \node[anchor=west, font=\scriptsize, text=green!50!black]
+      at (0, -1.0) {\textbf{玉}\; $S^2$};
+    \node[anchor=west, font=\scriptsize, text=water]
+      at (0, -1.5) {\textbf{锁}\; $\kappa,\,\Sigma$};
+  \end{scope}
+\end{tikzpicture}
+
+\medskip
+
+\caption{Dribble the three bodies (ground-level parallel view).
+Layered construction:
+\textcolor{water}{\textbf{锁}~Lock} (blue): the hitting surface
+$\kappa$ (damper) and the ground plane $\Sigma = \{\rho = 1\}$---the
+constraint boundary where contact is decided.
+\textcolor{green!50!black}{\textbf{玉}~Jade} (green): the ball as
+a closed manifold $S^2$---the body that exists.  The three
+principal inertia axes $\textcolor{dao}{I_1, I_2, I_3}$ are the
+``three bodies.''
+\textcolor{dao}{\textbf{绳}~Rope} (red): gravity $m_*g$ (the
+drift $A$), the current state $x(t)$ on $S^2$, and the control
+force $u(t)$ (dashed, bang arc only).  The Rope acts: it binds
+the ball to the ground via gravity, and the agent acts on the
+ball via the paddle.
+\textcolor{sword}{\textbf{金}~Golden} (cyan): the pseudovector
+$\hat{\omega} \in \mathfrak{so}(3)$ and $\nabla_{\hat{\omega}}P$---
+the sword: simultaneously the gravity direction, the policy
+gradient, and the score function.  On singular arcs ($\rho = 0$,
+${\sim}90\%$), the ball flies freely; on bang arcs ($\rho \gg 1$,
+${\sim}10\%$), the hand strikes at the Lagrange point.
+\Cref{fig:agenticity} is the bird's-eye view of the same structure;
+this figure is the ground-level view.}
+\label{fig:dribble}
+\end{figure}
+
+The dribble makes the three-term decomposition
+(\cref{thm:3b-damper}) physically immediate:
+\begin{enumerate}[label=\textup{(\Roman*)}]
+  \item \textbf{Gravity}: the ball falls.
+  \item \textbf{Least action}: the hand follows the ball's parabolic
+  arc (singular arc, free flight).
+  \item \textbf{Spectral kick}: the hand strikes the ball at the
+  bottom of the bounce (bang arc), where $\nabla_{q_*}V = 0$ in the
+  co-moving frame and all control authority is freed for the
+  spectral kick.
+\end{enumerate}
+The bang-singular structure is visible to the naked eye: the hand
+is in contact for ${\sim}10\%$ of the bounce cycle (bang) and in
+free flight for ${\sim}90\%$ (singular).  The Kakeya condition
+(\cref{prop:3b-kakeya}) says: to dribble the ball in every
+direction on the court, the reachable set of the hand must be
+full-dimensional in $\R^3$---one cannot dribble for free.
+
+\subsection{Contact modes as force balance}
+
+The dribble picture gives a precise physical definition of the
+contact modes.  At each contact point, exactly two forces compete:
+\emph{attraction} (gravity pulling the ball toward the ground) and
+\emph{repulsion} (the hand pushing back).  Define the order
+parameter
+\begin{equation}\label{eq:3b-rho}
+  \rho \;=\; \frac{F_{\mathrm{repulsion}}}{F_{\mathrm{attraction}}}.
+\end{equation}
+The contact mode is determined by $\rho$ alone:
+
+\begin{center}
+\begin{tabular}{@{}lcll@{}}
+\toprule
+\textbf{Regime} & $\rho$ & \textbf{Mode} & \textbf{Arc type} \\
+\midrule
+Attraction wins & $\rho < 1$ & Separating &
+  Singular (free flight) \\
+Phase transition & $\rho = 1$ & Sliding &
+  Switching surface $\Sigma$ \\
+Repulsion wins & $\rho > 1$ & Sticking &
+  Bang (spectral kick) \\
+Existence & $\rho \to \infty$ & Clamped &
+  Attached body \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The three-mode table of \cref{sec:3b-mppi} is recovered:
+separating ($\rho < 1$, $w_i = 0$), sliding ($\rho \approx 1$,
+$w_i = k_n + \mu k_n$), sticking ($\rho > 1$,
+$w_i = k_n + k_t$).  But the dribble formulation adds the
+fourth regime: \emph{existence}.  When $\rho \to \infty$, the
+contact is no longer a contact---the ball is clamped to the hand.
+The three ``bodies'' (inertia axes) become rigidly attached to the
+agent $\kappa$, and $\lambda_1 \to \infty$.  The spectral
+constraint $\lambda_1 \ge \epsilon$ is trivially satisfied.  No
+control is needed: the object \emph{exists} as part of the agent.
+
+The phase transition at $\rho = 1$ is the switching surface
+$\Sigma$ of the bang-singular structure: attraction equals
+repulsion, the Lagrange point of the grasp.  This is the point
+where the hand must decide---push harder (bang) or release
+(singular).  The entire MPPI sampling reduces from $3^n$ discrete
+modes to sampling over the continuous parameter $\rho$ at each
+contact point.
+
+\begin{remark}[Two forces, one transition]
+\label{rem:3b-twoforces}
+Every contact in nature is a competition between attraction and
+repulsion.  Gravity pulls; the hand pushes.  The Pauli exclusion
+principle prevents collapse; electromagnetic attraction prevents
+escape.  The dribble picture strips the contact mode classification
+to its essence: there is only one phase transition, and it occurs
+at $\rho = 1$.  Everything else---the friction cone, the signed
+distance function, the contact Jacobian---is parameterisation of
+the neighbourhood of this transition.
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section{Implementation: the physics-backend isomorphism}
+\label{sec:3b-mujoco}
+
+The gravity damper OCP admits two implementations that share the
+same controller but differ in the physics backend.  The point is
+not that both work---the point is that they \emph{must} work,
+because the controller reads only $\rho$.
+
+\subsection{Backend~1: hand-rolled Euler--Lagrange}
+
+Three point masses in $\R^3$, interacting via Newtonian gravity.
+The Euler--Lagrange equations are integrated by symplectic Euler:
+\[
+  M\ddot{q} \;=\; -\nabla V(q) \;+\; B\,u,
+\]
+where $V(q) = -\sum_{i<j} Gm_im_j/\|q_i - q_j\|$ and $B$
+selects the damper.  The controller monitors $\lambda_1(L_G)$ and
+applies the three-term control law \eqref{eq:3b-threeterm}.
+
+The order parameter is the tidal coupling ratio:
+\[
+  \rho_{*j}
+  \;=\; \frac{w_{*j}}{\bar{w}_{\mathrm{body}}}
+  \;=\; \frac{Gm_* m_j / \|q_* - q_j\|^3}
+             {\tfrac{1}{|E_0|}\sum_{(i,k)\in E_0} Gm_im_k / \|q_i - q_k\|^3},
+\]
+where $E_0$ are the body--body edges.  When $\rho_{*j} < 1$, the
+damper is losing tidal authority over body $j$---the spectral kick
+fires.
+
+The simulation code is in \texttt{grjl/threebody\_damper.py} (v1.0,
+$\lambda_1$-triggered) and \texttt{grjl2/threebody\_rho.py} (v2.0,
+$\rho$-triggered):
+\begin{verbatim}
+  python grjl/threebody_damper.py --headless
+  python grjl2/threebody_rho.py --solver reactive --headless
+\end{verbatim}
+
+\subsection{Backend~2: MuJoCo contact dynamics}
+\label{sec:3b-dribble-mujoco}
+
+Replace the hand-rolled gravity with MuJoCo's contact-aware
+Euler--Lagrange integrator~\cite{mujoco}:
+\[
+  M(q)\ddot{q} + C(q,\dot{q})\dot{q}
+  \;=\; \tau + J_c^\top\lambda_c,
+\]
+where $J_c^\top\lambda_c$ is the contact wrench computed by MuJoCo's
+constraint solver (complementarity, friction cone, restitution---all
+handled by \texttt{mj\_step()}).  The scene is the dribble of
+\cref{fig:dribble}: a ball with non-uniform inertia
+($I_1 \neq I_2 \neq I_3$, the ``three bodies'') bounced by a paddle
+(the damper $\kappa$) above a ground plane.
+
+The controller is a thin loop that reads the contact force from
+MuJoCo's sensor data:
+\[
+  \rho(t) \;=\; \frac{F_{\mathrm{paddle}}(t)}{m\,g}.
+\]
+Everything else---the three-term decomposition, the bang-singular
+switching, the spectral kick---is identical.  The controller does
+not call any MuJoCo-specific function beyond reading sensor values
+and writing actuator targets.
+
+The simulation code is in \texttt{grjl2/dribble\_controller.py}:
+\begin{verbatim}
+  python grjl2/dribble_controller.py --headless
+\end{verbatim}
+
+\subsection{The isomorphism}
+
+The two backends are related by the following dictionary:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Backend 1} (gravity) & \textbf{Backend 2} (MuJoCo) \\
+\midrule
+EL equation & $M\ddot{q} = -\nabla V + Bu$ &
+  $M(q)\ddot{q} + C\dot{q} = \tau + J_c^\top\lambda_c$ \\
+Integrator & symplectic Euler & \texttt{mj\_step()} \\
+``Three bodies'' & point masses $m_1,m_2,m_3$ &
+  inertia axes $I_1,I_2,I_3$ \\
+Damper $\kappa$ & controlled mass $m_*$ & paddle actuator \\
+Constraint boundary & mass gap $\lambda_1 = 0$ & ground plane \\
+$F_{\text{attraction}}$ & body--body tidal coupling &
+  gravity $mg$ \\
+$F_{\text{repulsion}}$ & damper--body tidal coupling &
+  paddle contact force \\
+\midrule
+\textbf{Order parameter} & \multicolumn{2}{c}{$\rho
+  = F_{\text{repulsion}} / F_{\text{attraction}}$} \\
+\textbf{Control law} & \multicolumn{2}{c}{three-term:
+  gravity $+$ least action $+$ spectral kick} \\
+\textbf{Invariant} & \multicolumn{2}{c}{$\lambda_1 \ge \epsilon$
+  (spectral gap)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The top half of the table changes between backends; the bottom half
+does not.  This is the precise claim: \emph{the controller is a
+functor from the category of Euler--Lagrange systems to the category
+of bang-singular control laws, with $\rho$ as the natural
+transformation.}  Swapping the physics backend---from Newtonian
+gravity to MuJoCo contact dynamics, or to any other system admitting
+a force balance---changes only the source object.  The image
+(the three-term control, the spectral gap, the bang-singular
+structure) is preserved.
+
+\begin{remark}[What MuJoCo actually contributes]
+\label{rem:3b-mujoco-role}
+MuJoCo contributes exactly one thing: the constraint solver that
+computes $J_c^\top\lambda_c$.  This is the contact
+Euler--Lagrange equation---the normal force, friction cone,
+restitution, and complementarity conditions that determine whether
+the ball bounces, slides, or sticks.  The controller does not need
+to know \emph{how} MuJoCo computes this.  It reads the resulting
+$F_{\mathrm{paddle}}$ from the sensor, divides by $mg$, and
+obtains $\rho$.  The entire complexity of contact mechanics is
+absorbed into the physics backend; the controller sees only the
+order parameter.
+\end{remark}
+
+\begin{remark}[Validation chains]\label{rem:validation-chains}
+\textcolor{sword}{Two independent chains validate the framework.
+Each chain proceeds from axioms to observable, with the
+physics backend as the only engine-specific component.}
+
+\medskip\noindent
+\textbf{Chain A} (Embodied: XML $\to$ 翻手为云覆手为雨).
+\begin{gather*}
+  \underbrace{\texttt{dribble\_\{down,up\}.xml}}_{\text{scene}}
+  \;\xrightarrow{\;\texttt{mj\_step}(m,d)\;}
+  \underbrace{q(t),\; \dot{q}(t)}_{\text{sensor}}
+  \;\xrightarrow{\;\rho = |\ddot{q}_z/g + 1|\;}
+  \underbrace{\text{DualDribbleController}}_{\text{three-term}}
+  \\[4pt]
+  \xrightarrow{\;\mathcal{G}\;}
+  \underbrace{\text{拍球}\;\|\;\text{颠球}}_{\text{ground duality}}
+\end{gather*}
+The XML defines the entire physics: ball inertia, ground plane,
+paddle actuators, contact parameters.  The call
+\texttt{mj\_step(model, data)} is the \emph{only}
+engine-specific line; replacing MuJoCo with any contact-aware
+Euler--Lagrange integrator changes nothing above $\rho$.
+\Cref{fig:agenticity} is the bird's-eye projection (翻手为云);
+\cref{fig:dribble} is the ground-level projection (覆手为雨).
+
+\medskip\noindent
+\textbf{Chain B} (Analytical: three-body $\to$ spectral gap).
+\[
+  \underbrace{m_1, m_2, m_3,\; G}_{\text{masses + gravity}}
+  \;\xrightarrow{\;\text{RK4 / symplectic}\;}
+  \underbrace{q(t),\;\dot{q}(t)}_{\text{state}}
+  \;\xrightarrow{\;\rho_{*j} = w_{*j}/\bar{w}\;}
+  \underbrace{\text{SpectralPID / reactive}}_{\text{three-term}}
+  \;\xrightarrow[\text{maintained}]{\;\lambda_1 \ge \epsilon\;}
+  \underbrace{\text{grasp}}_{\text{viability}}
+\]
+No XML, no contact solver.  The masses interact via Newtonian
+gravity; the integrator is hand-rolled; the controller monitors
+$\lambda_1(L_G)$ and fires the spectral kick when $\rho_{\min} < 1$.
+
+\medskip\noindent
+\textbf{What the two chains share} (the bottom half of the
+isomorphism table above):
+\begin{enumerate}[label=(\roman*),nosep]
+  \item the order parameter $\rho$,
+  \item the three-term control law (gravity $+$ least action
+    $+$ spectral kick),
+  \item the spectral gap invariant $\lambda_1 \ge \epsilon$.
+\end{enumerate}
+\textbf{What differs} (the top half): the physics backend.
+Chain~A uses MuJoCo contact dynamics; Chain~B uses Newtonian
+gravity.  The controller is a functor: it maps any
+Euler--Lagrange source to the same bang-singular target.
+\end{remark}
+
+\subsection{Force elimination: the kinematic reduction}
+\label{sec:3b-force-elim}
+
+\begin{center}
+\itshape
+I now demonstrate the degrees of freedom of the systems of the
+world.
+\end{center}
+
+\medskip
+
+\noindent
+Newton demonstrated the frame of one system: $F = ma$, force
+determines acceleration, acceleration determines the orbit.  We
+invert the arrow.  Given the mass--inertia matrix $M(q)$---which
+is geometry, fixed by the scene---acceleration determines force.
+Force is therefore not a degree of freedom.  It is a
+\emph{derived quantity}, eliminable from the control law
+entirely.  The true degrees of freedom are kinematic:
+$(q, \dot{q})$.
+
+Every Euler--Lagrange system, regardless of the physics backend,
+has the form
+\begin{equation}\label{eq:3b-el-general}
+  M(q)\,\ddot{q} \;=\; \tau_{\mathrm{ext}}(q, \dot{q}, u),
+\end{equation}
+where $M(q)$ is the mass--inertia matrix and
+$\tau_{\mathrm{ext}}$ collects all external forces
+(gravity, contact wrenches, control inputs, Coriolis/centrifugal
+terms absorbed into the right-hand side).  Crucially, $M(q)$ is
+\emph{determined by geometry alone}: it depends on the mass
+distribution and the kinematic chain, both of which are fixed by
+the scene description (the XML file, the URDF, or the gravitational
+constants $Gm_im_j$).
+
+\begin{theorem}[Force elimination]\label{thm:3b-force-elim}
+Let $(q(t), \dot{q}(t))$ be a trajectory of the EL
+system~\eqref{eq:3b-el-general} with known mass--inertia matrix
+$M(q)$.  Then the generalised force is uniquely determined by the
+kinematics:
+\begin{equation}\label{eq:3b-force-recovery}
+  \tau_{\mathrm{ext}}(t) \;=\; M(q(t))\,\ddot{q}(t).
+\end{equation}
+In particular, the order parameter $\rho$ is a function of
+$(q, \dot{q}, \ddot{q})$ alone:
+\begin{equation}\label{eq:3b-rho-kinematic}
+  \rho(t) \;=\; \frac{F_{\mathrm{repulsion}}(t)}{F_{\mathrm{attraction}}(t)}
+  \;=\; \frac{[\,M(q)\,\ddot{q}\,]_{\mathrm{contact}}}
+             {[\,M(q)\,\ddot{q}\,]_{\mathrm{gravity}}},
+\end{equation}
+where $[\cdot]_{\mathrm{contact}}$ and
+$[\cdot]_{\mathrm{gravity}}$ project onto the contact and
+gravitational components of the wrench respectively.
+\end{theorem}
+
+\begin{proof}
+$M(q)$ is symmetric positive-definite for any physical system
+(it is the Hessian of the kinetic energy with respect to
+$\dot{q}$).  Hence $M(q)$ is invertible at every configuration
+$q$, and \eqref{eq:3b-el-general} gives a bijection between
+$\ddot{q}$ and $\tau_{\mathrm{ext}}$ for fixed $(q, \dot{q})$.
+The projection follows from the linearity of the wrench
+decomposition.
+\end{proof}
+
+\noindent
+The consequence is immediate:
+
+\begin{corollary}[Kinematic controller]\label{cor:3b-kinematic}
+The three-term control law (\cref{thm:3b-damper}) can be
+implemented entirely in kinematic variables
+$(q, \dot{q})$ without ever computing or commanding
+forces.  The controller sets position targets $q^{\mathrm{des}}$;
+the physics backend converts these to forces via the EL equation;
+the resulting contact forces are \emph{observed} (not commanded)
+to compute $\rho$.
+\end{corollary}
+
+\noindent
+This is the structure of both implementations:
+
+\begin{center}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Stage} & \textbf{Variable} & \textbf{Who computes} &
+  \textbf{Domain} \\
+\midrule
+1. Controller output & $q^{\mathrm{des}}(t)$
+  & controller & kinematic \\
+2. Actuator force & $\tau_a = k_p(q^{\mathrm{des}} - q)$
+  & physics backend & dynamic \\
+3. Contact force & $F_c = J_c^\top\lambda_c$
+  & physics backend & dynamic \\
+4. Order parameter & $\rho = F_c / (mg)$
+  & controller (read) & kinematic \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Force appears only in stages~2 and~3, both internal to the physics
+backend.  The controller's interface is purely kinematic: it writes
+$q^{\mathrm{des}}$ and reads $\rho$.  Force is a
+\emph{latent variable}---it mediates between the controller and the
+constraint, but is never part of the control law itself.
+
+\begin{remark}[Force as a gauge variable]
+\label{rem:3b-gauge}
+The relationship between $\ddot{q}$ and $\tau$ via $M(q)$ is
+analogous to a gauge transformation in field theory: the physics is
+in the acceleration (the curvature); the force is the connection
+(the potential).  Different physics backends choose different
+``gauges''---Newtonian gravity uses $\nabla V$, MuJoCo uses
+$J_c^\top\lambda_c$---but the observable $\rho$ is gauge-invariant.
+This is why the same controller works on any EL backend: it reads
+the gauge-invariant quantity.
+\end{remark}
+
+\begin{remark}[Reconciliation of the three $\rho$ definitions]
+\label{rem:3b-rho-reconcile}
+The three definitions of~$\rho$ are gauge-equivalent in the
+sense of \cref{rem:3b-gauge}.  They differ in reference frame,
+not in physics:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \emph{Contact force ratio} (\cref{eq:3b-rho}):
+  $\rho = F_{\mathrm{rep}}/F_{\mathrm{att}}$.
+  Canonical definition.  Zero during free flight (no contact).
+  \item \emph{Tidal coupling ratio}
+  (\cref{sec:3b-dribble-mujoco}):
+  $\rho_{*j} = w_{*j}/\bar{w}_{\mathrm{body}}$.
+  Positive during free flight (gravity persists).  This is
+  a \emph{proxy} for the canonical~$\rho$: it predicts when
+  contact will occur, using the tidal ratio as a leading indicator.
+  \item \emph{Kinematic form} (\cref{eq:3b-rho-kinematic}):
+  $\rho = |\ddot{q}_z/g + 1|$.  Algebraically equivalent
+  to~(i) via the force elimination theorem
+  (\cref{thm:3b-force-elim}).
+\end{enumerate}
+All three agree at the switching surface~$\Sigma$: $\rho = 1$
+is the same event regardless of gauge.  The tidal proxy~(ii)
+is informative between contacts precisely because it monitors
+the approach to~$\Sigma$ before contact forces materialise.
+Chain~B (\cref{rem:validation-chains}) uses the proxy to
+predict $\Sigma$-crossing; the controller's response is
+triggered by the gauge-invariant $\rho = 1$.
+\end{remark}
+
+\subsection{Ground duality: 拍球 and 颠球}
+\label{sec:3b-ground-duality}
+
+The force elimination theorem reveals a deeper symmetry.  Consider
+two dribbling configurations:
+
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+& \textbf{拍球} (dribble down) & \textbf{颠球} (juggle up) \\
+\midrule
+Hand position & above ball & below ball \\
+Strike direction & downward ($-\hat{z}$)
+  & upward ($+\hat{z}$) \\
+Gravity pulls ball & toward ground (below)
+  & toward hand (below) \\
+Bounce surface & ground (below) & hand itself \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Define the \emph{ground reflection} $\mathcal{G}$:
+\begin{equation}\label{eq:3b-ground-dual}
+  \mathcal{G}: \quad
+  z \;\mapsto\; -z, \qquad
+  g \;\mapsto\; -g, \qquad
+  F_{\mathrm{hand}} \;\mapsto\; -F_{\mathrm{hand}}.
+\end{equation}
+Under $\mathcal{G}$, the EL equation transforms as
+\[
+  M\ddot{q} = \tau_{\mathrm{ext}}
+  \quad\xmapsto{\;\mathcal{G}\;}
+  \quad M\ddot{q}' = \tau_{\mathrm{ext}}',
+\]
+where $\ddot{q}' = -\ddot{q}_z$ in the vertical component and
+$\tau_{\mathrm{ext}}' = -\tau_{\mathrm{ext},z}$.  The mass
+matrix $M(q)$ is invariant (it depends on mass distribution,
+not on the direction of gravity).
+
+\begin{proposition}[Ground duality]\label{prop:3b-ground-dual}
+The order parameter $\rho$ is invariant under the ground
+reflection~$\mathcal{G}$:
+\[
+  \rho \;=\; \frac{|F_{\mathrm{hand}}|}{m\,|g|}
+  \;=\; \frac{|{-F_{\mathrm{hand}}}|}{m\,|{-g}|}
+  \;=\; \rho'.
+\]
+The three-term control law, the bang-singular structure, and the
+spectral gap constraint are all preserved.
+\end{proposition}
+
+\begin{proof}
+$\rho$ depends only on magnitudes: $|F_{\mathrm{repulsion}}|$
+and $|F_{\mathrm{attraction}}|$.  The reflection $\mathcal{G}$
+negates both, leaving the ratio unchanged.  The switching surface
+$\Sigma = \{\rho = 1\}$ is therefore $\mathcal{G}$-invariant,
+and the bang-singular decomposition on either side of $\Sigma$
+is preserved.
+\end{proof}
+
+We now make the duality brutally precise.  Define the \emph{primal}
+and \emph{dual} optimal control problems.
+
+\begin{definition}[Primal--dual pair]\label{def:3b-primal-dual}
+Fix the initial state $x_0 = (q(0), \dot{q}(0))$, the horizon $T$,
+the spectral gap $\epsilon > 0$, and the actuation bound $\bar{u}$.
+
+\medskip\noindent
+\textbf{Primal problem $\mathsf{P}$} (拍球: hand above, palm down).
+Gravity $g = -|g|\hat{z}$, hand force
+$F_{\mathrm{hand}} = -|F|\hat{z}$ (downward strike), ground plane
+at $z = 0$:
+\begin{equation}\label{eq:3b-primal}
+  J_{\mathsf{P}}^*
+  \;=\; \min_{u \in \mathcal{U}} \int_0^T \!\Bigl[
+    \mathcal{L}(q, \dot{q}) + \tfrac{\alpha}{2}\|u\|^2
+  \Bigr] dt
+  \quad\text{s.t.}\quad
+  \lambda_1\bigl(L_G(q(t))\bigr) \ge \epsilon
+  \;\;\forall\, t.
+\end{equation}
+
+\medskip\noindent
+\textbf{Dual problem $\mathsf{D}$} (颠球: hand below, palm up).
+Apply the ground reflection $\mathcal{G}$
+(\cref{eq:3b-ground-dual}) to every quantity in $\mathsf{P}$:
+gravity $g' = +|g|\hat{z}$, hand force
+$F_{\mathrm{hand}}' = +|F|\hat{z}$ (upward strike), effective
+ground at $z = z_{\mathrm{hand}}$:
+\begin{equation}\label{eq:3b-dual}
+  J_{\mathsf{D}}^*
+  \;=\; \min_{u' \in \mathcal{U}} \int_0^T \!\Bigl[
+    \mathcal{L}'(q', \dot{q}') + \tfrac{\alpha}{2}\|u'\|^2
+  \Bigr] dt
+  \quad\text{s.t.}\quad
+  \lambda_1\bigl(L_G(q'(t))\bigr) \ge \epsilon
+  \;\;\forall\, t.
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Strong duality: 翻手为云覆手为雨]
+\label{thm:3b-strong-duality}
+Let $u^*(t)$ solve the primal problem~$\mathsf{P}$.  Then
+$u'(t) = \mathcal{G}\,u^*(t)$ solves the dual problem~$\mathsf{D}$,
+and the optimal values coincide:
+\begin{equation}\label{eq:3b-strong-dual}
+  J_{\mathsf{P}}^* \;=\; J_{\mathsf{D}}^*.
+\end{equation}
+Moreover, the three-term decomposition, the bang-singular structure,
+and the switching surface $\Sigma = \{\rho = 1\}$ are preserved
+identically.  In particular:
+\begin{enumerate}[label=\textup{(\roman*)}]
+  \item The costates satisfy $p'(t) = \mathcal{G}\,p(t)$;
+  \item The spectral multiplier satisfies $\mu'(t) = \mu(t)$;
+  \item The optimal control satisfies $u'^*(t) =
+    \mathrm{sat}_{\bar{u}}\bigl(-\frac{1}{\alpha m_*}\,
+    p'_{\dot{q}_*}(t)\bigr)$, i.e.\ the same saturation law;
+  \item The bang fraction $\beta = |\{t : \|u^*\| = \bar{u}\}|/T$
+    is the same in both problems;
+  \item The order parameter $\rho(t)$ is pointwise identical
+    (\cref{prop:3b-ground-dual}).
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+$\mathcal{G}$ is an involution ($\mathcal{G}^2 = \mathrm{id}$) that
+acts on the extended state-costate space
+$(x, p, u, \mu) \in T^*\mathcal{M} \times \mathcal{U} \times
+\R_{\ge 0}$.  We verify that $\mathcal{G}$ preserves every
+ingredient of the Pontryagin system.
+
+\emph{Step~1: Lagrangian invariance.}
+The kinetic energy $T = \frac{1}{2}\sum m_i \|\dot{q}_i\|^2$ is
+quadratic in velocities; $\mathcal{G}$ negates $\dot{q}_z$, so
+$\|\dot{q}\|^2$ is invariant.  The potential
+$V = -\sum G m_i m_j / \|q_i - q_j\|$ depends on pairwise
+distances; $\mathcal{G}$ negates all $z$-components simultaneously,
+so $\|q_i - q_j\|$ is invariant.  Hence
+$\mathcal{L}' = \mathcal{L}$.
+
+\emph{Step~2: Control cost invariance.}
+$\|u'\|^2 = \|\mathcal{G}\,u\|^2 = \|u\|^2$ since $\mathcal{G}$
+is an isometry on $\R^3$ (it negates one component).
+
+\emph{Step~3: Spectral constraint invariance.}
+The graph Laplacian $L_G$ depends on edge weights
+$w_{ij} = G m_i m_j / \|q_i - q_j\|^3$, which depend only on
+pairwise distances.  By Step~1, these are $\mathcal{G}$-invariant.
+Hence $\lambda_1(L_G(q')) = \lambda_1(L_G(q))$, and the constraint
+$\lambda_1 \ge \epsilon$ maps to itself.
+
+\emph{Step~4: Hamiltonian covariance.}
+The control Hamiltonian transforms as
+\[
+  \mathcal{H}'(x',p',u',\mu') = \mathcal{H}(x,p,u,\mu)
+\]
+because every term is $\mathcal{G}$-invariant (Steps~1--3) and the
+symplectic pairing $p \cdot f(x,u)$ transforms covariantly under
+the canonical extension of $\mathcal{G}$.  Therefore, if $(x,p,u,\mu)$
+satisfies the PMP necessary conditions, so does
+$(x',p',u',\mu') = (\mathcal{G}\,x, \mathcal{G}\,p,
+\mathcal{G}\,u, \mu)$.
+
+\emph{Step~5: Optimality.}
+Since $J[\mathcal{G}\,u] = J[u]$ (Steps~1--2), the minimum values
+coincide.  Items (i)--(v) follow from the covariance of the
+Pontryagin system: the costates, multiplier, saturation, bang
+fraction, and $\rho$ are all determined by the Hamiltonian flow,
+which commutes with $\mathcal{G}$.
+\end{proof}
+
+\begin{remark}[What the strong duality theorem says]
+\label{rem:3b-strong-duality}
+\textcolor{sword}{%
+Equation~\eqref{eq:3b-strong-dual} is the mathematical content of
+翻手为云覆手为雨.  It is not a metaphor.  The primal problem
+$\mathsf{P}$ is 拍球 (dribble down: palm over, clouds gather).
+The dual problem $\mathsf{D}$ is 颠球 (juggle up: palm under, rain
+falls).  The ground reflection $\mathcal{G}$ is the duality map.
+Strong duality $J_{\mathsf{P}}^* = J_{\mathsf{D}}^*$ says:
+\emph{it costs exactly the same to dribble down as to juggle up.}
+The five invariants (i)--(v) say: not only the cost, but every
+structural feature of the solution---costates, multiplier,
+switching surface, bang fraction, order parameter---is preserved
+under flipping the hand.  There is no ``easier'' direction.
+The controller that reads $\rho$ cannot distinguish $\mathsf{P}$
+from $\mathsf{D}$.  This is what Du~Fu meant by 纷纷轻薄何须数:
+the transitions come and go, but the invariant $\rho$ persists,
+and it does not know which way is up.}
+\end{remark}
+
+\noindent
+拍球 and 颠球 are therefore the \emph{same controller viewed from
+opposite sides of the ground plane}.  The ``ground'' is not a
+physical surface---it is the constraint boundary $\phi = 0$ in the
+signed distance field.  In~拍球, the ground is below
+($\phi = z_{\mathrm{ball}} - z_{\mathrm{ground}}$); in~颠球,
+the effective ``ground'' is the hand itself, and gravity serves
+as the restoring force that returns the ball to the hand after
+the kick.  The duality is:
+
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+& \textbf{拍球} & \textbf{颠球} \\
+\midrule
+Constraint boundary & ground plane & hand surface \\
+Restoring force & ground reaction & gravity \\
+Kick direction & $-\hat{z}$ (hand pushes down)
+  & $+\hat{z}$ (hand pushes up) \\
+Free flight & ball rises after bounce
+  & ball falls after kick \\
+$\rho = 0$ & ball in air, no contact & ball in air, no contact \\
+$\rho > 1$ & hand striking ball down & hand striking ball up \\
+Controller & \multicolumn{2}{c}{identical modulo $\mathcal{G}$} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[The ground is not a place]
+\label{rem:3b-ground}
+In the abstract framework, ``the ground'' is the zero level set
+of the signed distance function $\phi$, i.e.\ the constraint
+boundary where $\lambda_1 = 0$ if the damper fails.  It is not
+a physical surface---it is the \emph{locus of loss of control}.
+The ground duality says: the agent can work from either side of
+this locus, pushing toward it or pulling away from it, and the
+control law is the same.  What matters is $|\rho|$, not
+the sign of $g$.
+\end{remark}
+
+\begin{remark}[翻手为云，覆手为雨]
+\label{rem:3b-fanshou}
+
+\begin{center}\itshape
+翻手作云覆手雨，纷纷轻薄何须数。
+
+\medskip
+\normalfont\small
+Flip the hand---clouds.  Turn it over---rain.
+
+Those who come and go so lightly, why bother counting them?
+
+\hfill ---~杜甫 (Du Fu), 《贫交行》
+\end{center}
+
+\medskip\noindent
+Du Fu wrote of fair-weather friends.  We read it as a theorem
+about the ground reflection $\mathcal{G}$.
+
+\medskip\noindent
+\textbf{The hand is the agent.}  In~拍球 the palm faces down:
+the hand pushes the ball into the ground, and the ground pushes
+it back.  In~颠球 the palm faces up: the hand catches the ball
+from below, and gravity pulls it back.  Same hand.
+Same five fingers.  Same musculature.  The only difference is the
+sign of $\hat{z}$.  This is the ground reflection
+\eqref{eq:3b-ground-dual}: $z \mapsto -z$, $g \mapsto -g$,
+$F_{\mathrm{hand}} \mapsto -F_{\mathrm{hand}}$.
+
+\medskip\noindent
+\textbf{翻手 is \cref{fig:agenticity}.}  Bird's-eye view: you
+look down at the manifold from above.  The gravitational field
+points into the page~($\bigotimes$).  The hand is between you
+and the ball---palm up, gathering clouds.  The layers build
+upward toward you:
+\begin{enumerate}[label=\arabic*., nosep, leftmargin=2em]
+  \item \textcolor{dao}{\textbf{绳}} (Rope): the gravity field
+    $m_*g$, pointing away from you.
+  \item \textcolor{water}{\textbf{锁}} (Lock): the manifold net
+    $\mathcal{X}$ that catches the state.
+  \item \textcolor{green!50!black}{\textbf{玉}} (Jade): the
+    tetrahedron $\Delta^3$ that exists.
+  \item \textcolor{dao}{\textbf{绳}} (Rope): the state $x(t)$,
+    where the agent stands.
+  \item \textcolor{sword}{\textbf{金}} (Golden): the sword
+    $\hat{\omega}$ and $\nabla_{\hat{\omega}}P$---the operation.
+\end{enumerate}
+
+\medskip\noindent
+\textbf{覆手 is \cref{fig:dribble}.}  Turn the hand over.  Ground
+level, parallel view: you stand beside the ball and look across.
+Gravity points down the page~($\downarrow$).  The hand is above
+or below the ball---palm down, making rain.  The layers stack from
+ground to sky:
+\begin{enumerate}[label=\arabic*., nosep, leftmargin=2em]
+  \item \textcolor{water}{\textbf{锁}} (Lock): the hitting surface
+    $\kappa$ and the ground $\Sigma$.
+  \item \textcolor{green!50!black}{\textbf{玉}} (Jade): the ball
+    $S^2$ that exists.
+  \item \textcolor{dao}{\textbf{绳}} (Rope): $m_*g$ and $x(t)$
+    and $u(t)$---the forces that bind and act.
+  \item \textcolor{sword}{\textbf{金}} (Golden): $\hat{\omega}$
+    and $\nabla_{\hat{\omega}}P$---the same sword.
+\end{enumerate}
+
+\medskip\noindent
+\textbf{The four characters are $\mathcal{G}$-invariant.}
+Under the ground reflection, every layer maps to itself:
+
+\begin{center}
+\begin{tabular}{@{}clcc@{}}
+\toprule
+& \textbf{Layer}
+  & \textbf{翻手} (\cref{fig:agenticity})
+  & \textbf{覆手} (\cref{fig:dribble}) \\
+\midrule
+\textcolor{sword}{\textbf{金}} & sword / operation
+  & $\hat{\omega},\;\nabla_{\hat{\omega}}P$
+  & $\hat{\omega},\;\nabla_{\hat{\omega}}P$ \\
+\textcolor{dao}{\textbf{绳}} & rope / act
+  & $m_*g\;(\bigotimes),\;x(t)$
+  & $m_*g\;(\downarrow),\;x(t),\;u(t)$ \\
+\textcolor{green!50!black}{\textbf{玉}} & jade / exist
+  & $\Delta^3$ & $S^2$ \\
+\textcolor{water}{\textbf{锁}} & lock / support
+  & $\mathcal{X}$ & $\kappa,\;\Sigma$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The \textcolor{sword}{金}~(Golden) row is identical: the operations
+do not know which side of the ground they are on.  This is the
+content of force elimination (\cref{thm:3b-force-elim}): the
+controller reads $(q, \dot{q}, \ddot{q})$, and kinematics is
+$\mathcal{G}$-invariant.  The \textcolor{dao}{绳}~(Rope) row
+gains $u(t)$ in the ground view because the control force becomes
+visible as a separate arrow; in the bird's-eye view it is absorbed
+into the state trajectory.  The \textcolor{green!50!black}{玉}~(Jade)
+row changes shape ($\Delta^3 \leftrightarrow S^2$) but not
+substance: both are the bodies that exist.  The
+\textcolor{water}{锁}~(Lock) row changes instantiation
+($\mathcal{X} \leftrightarrow \kappa$) but not function: both
+are the constraint surface that the dynamics rests on.
+
+\medskip\noindent
+\textbf{纷纷轻薄何须数.}
+\emph{Those who come and go so lightly, why bother counting them.}
+Du Fu's dismissal of the fickle is the bang-singular ratio.  On
+singular arcs (${\sim}90\%$ of the cycle), the ball is in
+weightless flight: $\rho = 0$, no contact, no force, no
+counting needed.  The ball drifts, lightly, through the air---
+轻薄, as Du Fu says.  These arcs are free: they cost nothing.
+
+The drama is in the ${\sim}10\%$.  On bang arcs, $\rho \gg 1$:
+the hand strikes, the switching surface is crossed, the spectral
+kick fires.  But even these transitions are instantaneous---sharp,
+not gradual.  They come and go too quickly to count.  The control
+law does not count bounces; it reads $\rho$ and switches.  何须数.
+
+What endures is not the transitions.  What endures is the
+invariant: $\rho = F_{\mathrm{repulsion}} / F_{\mathrm{attraction}}$.
+The hand flips; the clouds become rain; the ratio persists.
+翻手为云，覆手为雨: the duality is not a symmetry to be
+admired---it is a \emph{gauge redundancy to be eliminated}.
+The ground reflection $\mathcal{G}$ is the gauge transformation.
+The order parameter $\rho$ is the gauge-invariant observable.
+The controller that reads $\rho$ does not know, and need not know,
+whether the palm faces up or down.
+\end{remark}
+
+\begin{remark}[Vibrational friction and the spectral gap]
+\label{rem:3b-superconductor}
+Place an ice block on a high-frequency oscillating table.
+Friction acts at every instant, but the net force averages to
+zero over each period: the block does not move.
+This is \emph{vibrational friction averaging}---a classical
+instance of force elimination (\cref{thm:3b-force-elim}).
+The force (a gauge variable) cancels; the energy dissipation
+(a gauge-invariant quantity) does not: friction is still
+converting kinetic energy to heat at every instant.
+
+The dribbling controller of~\cref{sec:3b-dribble-mujoco} is
+the same mechanism: the ball oscillates between contact
+($\rho > 1$) and free flight ($\rho = 0$), the contact forces
+average over the cycle, and the controller maintains the
+position through bang-singular switching.
+Energy is dissipated at every bounce.
+
+Superconductivity achieves the stronger result.  In a normal
+metal, electrons scatter off lattice vibrations (phonons)---
+friction---producing resistance.  Below the critical temperature
+$T_c$, the \emph{same phonons} mediate Cooper pairing: the
+vibration that caused friction now binds electrons into a
+coherent condensate.  The BCS ground state opens a spectral
+gap $\Delta > 0$.  Below the gap, no scattering states
+exist: dissipation itself ceases, not merely its average.
+
+The structural distinction is the spectral gap:
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+& \textbf{Classical (ice/dribble)}
+& \textbf{Quantum (superconductor)} \\
+\midrule
+Vibration & oscillating table / bounce
+  & phonon \\
+Net force & averages to zero & zero (gap) \\
+Dissipation & \textcolor{dao}{persists} (heat)
+  & \textcolor{water}{ceases} ($\Delta > 0$) \\
+$\lambda_1$ & maintained externally
+  ($\bar{u} \geq \bar{u}^*$)
+  & self-maintained
+  (condensate) \\
+Paper analogue & pre-sword (envelope persists)
+  & resolution (sword eliminated) \\
+\bottomrule
+\end{tabular}
+\end{center}
+The spectral gap $\lambda_1 > 0$ of~\cref{thm:massgap}
+is the same object as the superconducting gap $\Delta > 0$
+in BCS theory: both are the condition under which the system
+resists perturbation without dissipation.
+The gravity damper maintains $\lambda_1 \geq \epsilon$ by
+active control (external energy input); the superconductor
+maintains $\Delta > 0$ by internal coherence (Cooper
+condensate).  In the language of~\cref{def:3b-ustar}: the
+classical system pays $\bar{u}^* > 0$; the quantum system
+achieves $\bar{u}^* = 0$ below~$T_c$.  Hugo's triviality
+(\cref{thm:alien-triviality}) predicts when the gap closes:
+at $d = 4$ in the thermodynamic limit, i.e., at the critical
+dimension of our spacetime.
+\end{remark}
+
+\subsection{Results}
+
+\begin{description}
+  \item[Backend~1 (gravity).]  Without damper: $\lambda_1$ decays
+  to zero within ${\sim}100$ steps.  With damper: $\rho$ crosses
+  $1.0$ at each bang-singular transition (16 phase crossings over
+  $T = 8$\,s).  The PMP solver achieves ${\sim}16\%$ bang fraction,
+  close to the ${\sim}10\%$ prediction.  Cost is finite and
+  concentrated on bang arcs.
+
+  \item[Backend~2 (dribble).]  The ball completes 33 hand-ball
+  contacts over $T = 10$\,s (steady dribbling at ${\sim}3.3$\,Hz).
+  The $\rho(t)$ time series shows clear spikes at each bounce:
+  $\rho = 0$ during free flight (singular arc),
+  $\rho \gg 1$ at contact ($\rho_{\max} \approx 437$, bang arc),
+  with the transition at $\rho = 1$.  Bang fraction
+  ${\sim}8\%$; singular arcs dominate (${\sim}92\%$).
+  The three-term structure is visible to the naked eye.
+
+  \item[Backend~2b (trajectory tracking).]  The kinematic
+  controller~(\cref{cor:3b-kinematic}) steers the dribbled ball along
+  a prescribed planar trajectory (circle, $R = 0.3$\,m,
+  $T_{\mathrm{period}} = 6$\,s).  At each strike, the paddle offsets
+  by $\delta_{\mathrm{xy}} = \alpha\,(x_{\mathrm{traj}} -
+  x_{\mathrm{ball}})$, $\alpha = 0.15$; between strikes, the hand
+  tracks the ball with a clamped correction
+  ($\|\delta\| \le 0.05$\,m) so it never wanders beyond catching
+  range.  Both 拍球 and 颠球 complete the full $T = 10$\,s;
+  mean tracking error $\bar{e}_{\mathrm{xy}} \approx 0.29$\,m
+  (拍球), $0.39$\,m (颠球).  The dribble becomes
+  \emph{manipulation}: transportation of the object along an
+  arbitrary path, under the same controller and the same
+  $\rho$-based switching law.
+\end{description}
+
+\subsection{Tracking error: the three irreducible gaps}
+\label{sec:3b-tracking-error}
+
+The mean tracking error $\bar{e}_{\mathrm{xy}} > 0$ has a
+positive lower bound that cannot be eliminated by tuning
+the controller gains.  Three distinct mechanisms contribute,
+each corresponding to a different structural limitation.
+
+\paragraph{Gap~1: the Nyquist constraint (discrete impulse).}
+The ball can only be steered \emph{at each bounce}.  Between
+bounces it is ballistic: the controller can reposition the paddle
+but cannot exert any force on the ball (singular arc,
+$\rho = 0$).  If the ball bounces $N$ times per trajectory
+period $T_{\mathrm{traj}}$, each correction subtends an arc
+$\Delta\theta = 2\pi / N$.  The tracking error is bounded below
+by the chord length:
+\begin{equation}\label{eq:3b-nyquist}
+  e_{\mathrm{xy}}
+  \;\ge\; R\,\bigl(1 - \cos(\pi/N)\bigr)
+  \;\approx\; \frac{\pi^2 R}{2N^2}
+  \qquad (N \gg 1).
+\end{equation}
+This is the Nyquist constraint applied to impulsive control:
+the control bandwidth is the bounce rate, not the physics rate.
+To halve the tracking error one must quadruple the number of
+bounces per period---equivalently, quadruple the dribbling
+frequency or halve the trajectory speed.
+
+\paragraph{Gap~2: the contact-model mismatch (irreducible).}
+No physics engine exactly models the switching surface
+$\Sigma = \{\rho = 1\}$.  Coulomb friction is non-smooth
+(discontinuous at $\dot{q}_t = 0$); real friction is
+non-convex (Stribeck effect, adhesion, surface deformation).
+Every simulator regularises friction differently:
+\begin{itemize}
+  \item MuJoCo: convex relaxation via \texttt{solref}/\texttt{solimp};
+  \item Bullet: iterative impulse with Baumgarte stabilisation;
+  \item ODE: friction-pyramid approximation.
+\end{itemize}
+The result is that the tangential impulse during a strike
+does not exactly match the paddle offset direction.  The
+coefficient of restitution is emergent from the solver
+parameters, not directly set.  This gap is \emph{irreducible
+in simulation}: it can only be closed by experiment.
+
+\paragraph{Gap~3: the discretisation floor (finite $\Delta t$).}
+The kinematic $\rho$ is computed from finite differences of
+velocity:
+\[
+  \ddot{q}_z(t_k)
+  \;\approx\; \frac{\dot{q}_z(t_k) - \dot{q}_z(t_{k-1})}{\Delta t}.
+\]
+With $\Delta t = 0.002$\,s, the resulting $\rho$ has numerical
+noise of order $\mathcal{O}(\Delta t)$, smoothed by the
+exponential moving average filter ($\alpha = 0.5$) which
+introduces a detection lag of ${\sim}2$--$3$ timesteps.
+This is the floating-point leakage: the $\rho = 1$ surface
+acquires finite width $\sim\!\Delta t$ in the kinematic
+estimate, even though the underlying physics has a sharp
+transition.
+
+\begin{remark}[The sim-to-real gap lives at $\Sigma$]
+\label{rem:3b-sim2real}
+Away from the switching surface ($\rho \ll 1$, free flight),
+the simulation is kinematically exact: the ball follows a
+parabola, and no contact model is invoked.  At $\Sigma$
+($\rho = 1$, contact), all three gaps converge.
+The sim-to-real gap is therefore \emph{localised at the
+phase transition}.  This has a precise analogue: the
+discretisation timestep $\Delta t$ sets the minimum
+observable time unit, while the bounce period $T_b$ sets the
+\emph{reflex arc length}---the interval between successive
+control actions.  The ratio $T_b / \Delta t \approx 150$--$250$
+measures how many observations the agent collects per reflex
+arc.  The agent sees the transition clearly (many samples at
+$\Sigma$), but can only \emph{act} on it once per bounce.
+\end{remark}
+
+% ═══════════════════════════════════════════════════════════
+\section*{Closing: from Newton to the agentic solution}
+\addcontentsline{toc}{section}{Closing: from Newton to the agentic
+solution}
+
+Newton demonstrated the frame of the two-body world: Keplerian
+orbits, closed-form, deterministic.  The three-body problem resisted
+analytical solution for three centuries.  The reason, in our
+framework, is structural: $K_3$ has no king, so mean-field detection
+fails and no passive observer can guarantee viability.
+
+The agentic solution does not resolve the analytical intractability---
+it dissolves it.  The agent does not predict trajectories; it
+maintains the spectral gap.  The complete chain is:
+
+\begin{center}
+\begin{tabular}{@{}rl@{}}
+\textbf{Newton} & Two-body frame: closed-form solution. \\
+\textbf{Diagnosis} & $K_3$ has no cut vertex $\Rightarrow$ no king
+  $\Rightarrow$ $\lambda_1 \to 0$. \\
+\textbf{Design} & Gravity damper: three-term decomposition
+  (\cref{thm:3b-damper}). \\
+\textbf{Pontryagin} & Backend solver: maximum principle $+$ PDP
+  \cite{pdp}. \\
+\textbf{MPPI} & $3^n \to \mathrm{poly}(n)$: sampling replaces
+  enumeration (\cref{thm:3b-mppi}). \\
+\textbf{Cheeger} & $\lambda_1 > \epsilon \Rightarrow$
+  polynomial mixing time (\cref{prop:3b-mixing}). \\
+\textbf{Kakeya} & $\bar{u}^* > 0$ strictly: free stability does not
+  exist (\cref{prop:3b-kakeya}). \\
+\textbf{Agenticity} & $O \leftrightarrow C$ (Kalman), $R$
+  given by $A$ (drift / gravity) (\cref{thm:3b-kalman}). \\
+\textbf{MDP} & $P(x' \mid x, u)$: $\nabla_{\hat{\omega}}P$ =
+  gravity = policy gradient = score (\cref{fig:agenticity}). \\
+\textbf{$\rho$} & Physics-backend isomorphism: same controller,
+  any EL (\cref{sec:3b-mujoco}). \\
+\textbf{$\Sigma$} & Sim-to-real gap localised at phase transition
+  (\cref{sec:3b-tracking-error}).
+\end{tabular}
+\end{center}
+
+The three-body problem has no analytical solution.  It has an
+agentic one.  The agentic solution is not specific to celestial
+mechanics: $P$ is any transition kernel, $A$ is any drift,
+$\lambda_1$ is any spectral gap.  Agenticity is not intrinsic---it
+is conferred by the controller through a reachable, controllable
+path, and the drift is the medium.  草木竹石，皆可為劍.
