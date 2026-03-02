@@ -1,0 +1,784 @@
+\chapter{夏虫运冰}\label{sec:manipulation}
+
+\begin{center}
+\itshape
+夏虫不可以语于冰者，笃于时也。\\[4pt]
+\upshape ---庄子，《秋水》
+\end{center}
+
+\bigskip
+
+The summer insect cannot \emph{discuss} ice---it has never observed
+ice, and its causal domain excludes winter.  But the summer insect can
+\emph{transport} ice, if three conditions hold: (i)~it can observe the
+ice within its field of view (causal observability), (ii)~it can reach
+the ice (kinematic feasibility), and (iii)~it can grasp the ice before
+it melts (information timeliness).  This chapter formalises robotic
+manipulation as 夏虫运冰: the agent (robot arm) transports objects
+(blocks) through the five-phase cycle of the sword lifecycle
+(\cref{thm:lifecycle}), subject to the cognitive boundary of its
+sensors.
+
+The argument proceeds in six stages:
+\begin{enumerate}
+  \item \textbf{Phase structure} (\cref{sec:m-phases}): every
+  manipulation task decomposes into five phases forced by
+  $\rho$ crossing $\Sigma$ twice.
+  \item \textbf{Operator algebra} (\cref{sec:m-operators}): the
+  phase operators form a loop in robot joint space; irreversibility
+  lives in the object.
+  \item \textbf{RANK/NULL decomposition} (\cref{sec:m-ranknull}):
+  task forces are the real part, self-motion is the imaginary part,
+  and their commutator measures dexterity.
+  \item \textbf{Observer} (\cref{sec:m-observer}): the cognitive
+  boundary of a wrist-mounted camera, formalised via causal
+  observability.
+  \item \textbf{Plan generator} (\cref{sec:m-plangen}): the upper
+  level of the two-level architecture---discrete, stochastic,
+  and the only tractable approach.
+  \item \textbf{Training} (\cref{sec:m-training}): measure matching
+  (MMD) is the only reward; conditional flow matching trains the
+  velocity field; the network is a phase-conditioned MLP.
+  \item \textbf{Curriculum} (\cref{sec:m-curriculum}): three
+  orthogonal complexity axes---stack layers, block count, block
+  types---each testing a different capability.
+\end{enumerate}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Phase structure: the five-phase cycle}
+\label{sec:m-phases}
+
+\subsection{The contact order parameter in manipulation}
+
+As in the three-body system (\cref{sec:3b-ocp}), the state of the
+robot--object system is characterised by the contact order parameter
+$\rho$ and the spectral gap $\lambda_1$ of the contact graph
+Laplacian.  The manipulation setting differs from the celestial
+setting in one respect: contact is \emph{binary} (finger either
+touches object or does not), whereas gravitational coupling is
+continuous.  Consequently, $\rho$ transitions sharply at the
+switching surface $\Sigma = \{\rho = 1\}$.
+
+\begin{definition}[Manipulation phases]\label{def:m-phases}
+A single pick--place cycle consists of five phases determined by
+the trajectory of $\rho(t)$:
+\begin{center}
+\begin{tabular}{@{}clccl@{}}
+\toprule
+\textbf{Phase} & \textbf{Robot act} & $\rho$ & $\lambda_1$
+  & \textbf{Arc type} \\
+\midrule
+1 & pick (approach) & $< 1$ & --- & singular \\
+2 & load (contact)  & $\uparrow 1$ & $0 \to \ge\epsilon$
+  & bang \\
+3 & use (transport)  & $> 1$ & $\ge \epsilon$
+  & singular \\
+4 & unload (release) & $\downarrow 1$ & $\ge\epsilon \to 0$
+  & bang \\
+5 & place (retreat)  & $< 1$ & --- & singular \\
+\bottomrule
+\end{tabular}
+\end{center}
+This decomposition is forced: contact is established exactly once
+($\rho$ crosses $\Sigma$ upward) and released exactly once
+($\rho$ crosses $\Sigma$ downward).  No valid manipulation
+trajectory can avoid both crossings.
+\end{definition}
+
+\begin{remark}[Connection to the three-term decomposition]
+\label{rem:m-three-term}
+The three-term structure of \cref{thm:3b-damper} instantiates at
+each phase: Term~(I) is gravity on the object, Term~(II) is the
+minimum-energy trajectory of the robot, and Term~(III) is the
+spectral kick at $\Sigma$.  Phases 1 and 5 are purely
+singular (Term~III $= 0$); phases 2 and 4 are bang arcs
+(Term~III active at $\Sigma$); phase 3 is a singular arc with
+spectral maintenance ($\lambda_1 \ge \epsilon$ enforced).
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Operator algebra: the joint-space loop}
+\label{sec:m-operators}
+
+\subsection{Phase operators}
+
+Each phase has an associated operator on the state space:
+
+\begin{definition}[Phase operators]\label{def:m-operators}
+\leavevmode
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $T_0$ \textbf{(pick):} approach operator. Moves robot from
+  home configuration $q_0$ to pre-grasp pose.  Object unchanged.
+  \item $T_1$ \textbf{(load):} contact-building operator. Crosses
+  $\Sigma$ upward ($\rho \colon {<}\,1 \to {>}\,1$).  Establishes
+  $\lambda_1 \ge \epsilon$.  This is the bang arc.
+  \item $T^*$ \textbf{(use):} the adjoint of $T_1$.  With contact
+  established, the robot transports the object.
+  $T_1$ maps forces to motions (building the grasp); $T^*$ maps
+  motions to forces (exploiting the grasp).  In Kalman terms
+  (\cref{thm:3b-kalman}): $T_1$ is observability, $T^*$ is
+  controllability.
+  \item $T_1^{-1}$ \textbf{(unload):} inverse of loading.
+  Crosses $\Sigma$ downward.  $\lambda_1$ drops below $\epsilon$.
+  \item $T_0^{-1}$ \textbf{(place):} return operator.  The robot
+  deposits the object and retracts to $q_0$.
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Joint-space loop]\label{thm:m-loop}
+The robot cycle closes in joint space:
+\[
+  q_0 \xrightarrow{T_0} q_\mathrm{grasp}
+  \xrightarrow{T_1} q_\mathrm{ready}
+  \xrightarrow{T^*} q_\mathrm{done}
+  \xrightarrow{T_1^{-1}} q_\mathrm{release}
+  \xrightarrow{T_0^{-1}} q_0.
+\]
+The composite operator is the identity on robot state but not on
+object state:
+\begin{align}
+  \pi_\mathrm{robot} \circ
+    (T_0^{-1} \circ T_1^{-1} \circ T^* \circ T_1 \circ T_0)
+    &= \mathrm{Id}_\mathrm{robot}, \label{eq:m-robot-loop} \\
+  \pi_\mathrm{obj} \circ
+    (T_0^{-1} \circ T_1^{-1} \circ T^* \circ T_1 \circ T_0)
+    &\neq \mathrm{Id}_\mathrm{obj}. \label{eq:m-obj-irrev}
+\end{align}
+\end{theorem}
+
+\begin{proof}
+Equation~\eqref{eq:m-robot-loop}: $T_0^{-1}$ is the kinematic
+inverse of $T_0$ (same path reversed in joint space), and
+similarly $T_1^{-1}$ inverts $T_1$ on the robot coordinates.
+The adjoint $T^*$ acts on the object's $SE(3)$ coordinates via
+the contact Jacobian; on the robot's joint coordinates it is a
+diffeomorphism that depends on the grasped object but preserves
+the robot's reachable set.  The composition returns the robot to
+$q_0$.
+
+Equation~\eqref{eq:m-obj-irrev}: $T^*$ transports the object from
+$g_\mathrm{init}$ to $g_\mathrm{target}$, and no subsequent
+operator reverses this.  The object's pose change is the
+irreversible residue of the cycle.
+\end{proof}
+
+\begin{remark}[Separation of concerns]\label{rem:m-separation}
+The robot is cyclic ($q_0 \to q_0$), the object is irreversible
+($g \to g'$), and the $\rho$ trajectory is cyclic
+($0 \to 1 \to {>}1 \to 1 \to 0$).  This separation makes each
+per-block cycle self-contained: the upper-level planner issues
+``do block $k$'' and the cycle executes without residual state
+in the robot.  This is the manipulation analogue of temporal
+irreversibility (\cref{rem:dumu-irreversibility}): the
+pawn-to-sword transition is hysteretic, and in manipulation the
+object's pose change is the irreversible record.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{RANK/NULL decomposition: Re and Im}
+\label{sec:m-ranknull}
+
+\subsection{The task Jacobian}
+
+Let $q \in \R^n$ be the robot's joint configuration ($n = 7$ for
+the Franka Emika Panda) and $x \in SE(3) \cong \R^6$ the task-space
+pose of the end-effector.  The \emph{task Jacobian}
+$J(q) \in \R^{6 \times n}$ maps joint velocities to task-space
+velocities: $\dot{x} = J(q)\,\dot{q}$.
+
+\begin{definition}[Re and Im of manipulation]\label{def:m-reim}
+\leavevmode
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{Re} $= \mathrm{RANK}(J^\top)$: the range of $J^\top$
+  in joint space.  Joint torques in $\mathrm{RANK}(J^\top)$ produce
+  task-space forces---they \emph{do work} on the object.  This is
+  the self-adjoint (real) part: $S = \tfrac{1}{2}(T + T^*)$.
+  \item \textbf{Im} $= \mathrm{NULL}(J)$: the null space of $J$.
+  Joint velocities in $\mathrm{NULL}(J)$ produce no task-space
+  motion---they reconfigure the robot internally (elbow motion,
+  wrist flip) without moving the object.  This is the
+  skew-self-adjoint (imaginary) part: $A = \tfrac{1}{2}(T - T^*)$.
+\end{enumerate}
+\end{definition}
+
+For the Franka Panda: $n = 7$, $\dim(\mathrm{RANK}) = 6$,
+$\dim(\mathrm{NULL}) = 1$.  The single null-space direction is the
+\emph{elbow self-motion}: the elbow swivels without changing the
+hand's pose.
+
+\begin{theorem}[Commutator and dexterity]\label{thm:m-commutator}
+Let $S = \mathrm{RANK}(J^\top)$ and $A = \mathrm{NULL}(J)$.
+Then $[S, A] \neq 0$ if and only if the robot can modulate
+task-space forces by reconfiguring its internal state.
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $[S, A] \neq 0$: \textbf{dexterous manipulation.}  The
+  null-space motion changes the arm's inertia tensor, which
+  changes the torques produced by the same joint commands.
+  The elbow position affects the force at the fingertips.
+  \item $[S, A] = 0$: \textbf{power grasp.}  Internal
+  reconfiguration does not affect task forces.  The arm is
+  kinematically redundant but dynamically non-dexterous.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+The inertia matrix $M(q)$ couples Re and Im: a null-space velocity
+$\dot{q}_\mathrm{null} \in \mathrm{NULL}(J)$ changes $q$, hence
+$M(q)$, hence $J^\top(q) F$ for the same task force $F$.  The
+commutator $[S, A]$ is the linearisation of this coupling:
+\[
+  [S, A]_q = \left.\frac{\partial}{\partial \epsilon}\right|_0
+  \left( J^\top(q + \epsilon\,\dot{q}_\mathrm{null}) F
+  - J^\top(q) F \right).
+\]
+This vanishes if and only if $M(q)$ is independent of the
+null-space coordinates---i.e., the arm's inertia is insensitive
+to elbow position.  For the Franka Panda, $M(q)$ depends on all
+7 joint angles, so $[S, A] \neq 0$ generically.
+\end{proof}
+
+\begin{remark}[Connection to the paper's $T = S + A$ decomposition]
+\label{rem:m-cartesian}
+The Cartesian decomposition $T = S + A$ (self-adjoint plus
+skew-self-adjoint) is standard operator theory.  The physical
+content is: $S$ corresponds to dissipation/friction (time-reversal
+even), $A$ corresponds to inertia/Coriolis (time-reversal odd),
+and $[S, A] \neq 0$ means friction couples to rotation---the
+same mechanism that maintains the spectral gap in
+\cref{rem:3b-superconductor}.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{The robot observer: causal observability}
+\label{sec:m-observer}
+
+\subsection{The cognitive boundary}
+
+A camera mounted near the gripper (wrist camera) is the detector
+$W_\tau$ of the causal observability framework.  The instantiation
+to flat spacetime $\R^3 \times \R^1$ is:
+
+\begin{center}
+\begin{tabular}{@{}lp{8cm}@{}}
+\toprule
+\textbf{General} & \textbf{Manipulation} \\
+\midrule
+Spacetime $(M, g)$ & Task environment $\R^3 \times \R^1$, flat \\
+Detector $W_\tau$ & Camera response at end-effector pose $\gamma(\tau)$ \\
+Causal domain $D_\tau = J^-(S_\tau)$ & Field of view from current
+  camera pose \\
+Transfer matrix $T(\theta)$ & Rendering/projection operator (pinhole
+  model + occlusion) \\
+Source $X$ & Block states $\{g_i\} \in SE(3)^N$ \\
+Measurement $Y$ & Image features (depth, RGB, segmentation) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{theorem}[Causal invisibility for manipulation]
+\label{thm:m-invisible}
+A block $B_k$ whose spatial support does not intersect the camera's
+field of view at time $\tau$---i.e.,
+$\mathrm{supp}(B_k) \cap D(q(\tau)) = \varnothing$---is exactly
+invisible to the robot at that instant.  No computation applied to
+the image $Y(\tau)$ can recover $g_k$.
+\end{theorem}
+
+\begin{proof}
+The light rays from $B_k$ do not intersect the detector support
+$S_\tau$ (the camera's sensor area in phase space).  The transfer
+matrix $T(\theta)$ has a zero block for the invisible source.
+This is a direct application of the causal invisibility theorem
+to flat spacetime with finite-aperture detection.
+\end{proof}
+
+\subsection{Observation--action coupling}
+
+Unlike a fixed external camera, the wrist camera moves with the
+robot.  The detector support $S_\tau$ depends on the robot state:
+\[
+  D_\tau = D(q(\tau)) = \mathrm{FOV}(\gamma(q(\tau))).
+\]
+To observe block $B_k$, the robot must move to a pose where
+$B_k \in D(q)$.  To plan a move, the robot needs observations.
+This creates the \emph{active perception loop}: observe $\to$
+plan $\to$ move $\to$ observe.
+
+\begin{remark}[Detection bandwidth in manipulation]
+\label{rem:m-bandwidth}
+The detection function of \cref{prop:detection-derivation}
+is physically realised by the camera:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item Detection bandwidth $B$ = camera resolution $\times$ FOV
+  solid angle: the maximum number of blocks simultaneously
+  monitorable.
+  \item Detection threshold $\tau(\Obs)$ = minimum block size
+  (in pixels) for reliable pose estimation.
+  \item $r \in \mathrm{Im}(\Obs) \iff$ block $r$ occupies
+  $> \tau$ pixels in the current image.
+\end{enumerate}
+\end{remark}
+
+\subsection{Information timeliness}
+
+\begin{proposition}[Condition 4 for manipulation]
+\label{prop:m-timeliness}
+The control loop latency must satisfy
+\begin{equation}\label{eq:m-timeliness}
+  t_\pi \;=\; \underbrace{t_\mathrm{cam}}_{\text{capture}}
+  + \underbrace{t_\mathrm{detect}}_{\text{perception}}
+  + \underbrace{t_\mathrm{plan}}_{\text{planning}}
+  \;\leq\; \Delta t,
+\end{equation}
+where $\Delta t$ is the control loop period.  Violation of
+\eqref{eq:m-timeliness} causes the costate gradient to go stale
+and controllability to be lost.
+\end{proposition}
+
+This is the manipulation instantiation of the ``high-latency
+detection'' failure mode in the domain of applicability table
+(\cref{sec:domain}).
+
+\subsection{Three sensory modalities}
+
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Modality} & \textbf{Detects} & \textbf{Bandwidth}
+  & \textbf{Latency} \\
+\midrule
+Vision (wrist camera) & Block pose $g_i \in SE(3)$
+  & High (megapixels) & Medium (${\sim}30$ ms) \\
+Proprioception (encoders) & Robot state $q, \dot{q}$
+  & Medium (7 joints) & Low (${\sim}1$ ms) \\
+Tactile (F/T sensor) & Contact forces $F_c$
+  & Low (6 DOF) & Low (${\sim}1$ ms) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Vision has the highest bandwidth but the highest latency.
+Tactile has the lowest bandwidth but the lowest latency.  The robot
+fuses all three, weighted by their respective
+$\tau(\Obs)$ thresholds---the multi-channel version of the
+detection function (\cref{eq:detection}).
+
+
+% ═══════════════════════════════════════════════════════════
+\section{The plan generator}\label{sec:m-plangen}
+
+\subsection{Plans and feasibility}
+
+\begin{definition}[Plan]\label{def:m-plan}
+A \emph{plan} for $N$ blocks is an ordered list
+\[
+  P = [(b_1, g_1, \gamma_1, d_1), \;\ldots,\; (b_N, g_N, \gamma_N, d_N)],
+\]
+where $b_i$ is the block index, $g_i \in SE(3)$ the target pose,
+$\gamma_i$ the grasp type, and $d_i \in S^2$ the approach direction.
+\end{definition}
+
+\begin{definition}[Feasibility]\label{def:m-feasible}
+A plan $P$ is \emph{feasible} if it satisfies four constraints
+simultaneously:
+\begin{enumerate}[label=(F\arabic*),nosep]
+  \item \textbf{Topological:} if $b_j$ rests on $b_k$ in the goal,
+  then $b_k$ precedes $b_j$ in $P$.
+  \item \textbf{Stability:} for every prefix $P_{1:i}$, the partial
+  stack is statically stable:
+  $\mathrm{CoM}(P_{1:i}) \in
+  \mathrm{ConvHull}(\mathrm{support}(P_{1:i}))$.
+  \item \textbf{Reachability:} the robot can reach
+  $(g_i, \gamma_i, d_i)$ without colliding with $P_{1:i-1}$.
+  \item \textbf{Observable:} block $b_i$ lies within the camera's
+  field of view from the pre-grasp pose:
+  $b_i \in D(q_{\mathrm{pre},i})$.
+\end{enumerate}
+\end{definition}
+
+Condition~(F4) is the link to the cognitive boundary
+(\cref{thm:m-invisible}): an invisible block cannot be grasped.
+
+\subsection{The two-level architecture}
+
+\begin{theorem}[Intractability of single-level planning]
+\label{thm:m-intractable}
+The joint plan--execute optimisation over $N$ blocks has
+complexity $\Omega(N!)$ in the number of candidate orderings.
+No deterministic algorithm solves both levels in polynomial time.
+\end{theorem}
+
+The two-level architecture breaks the problem:
+
+\begin{definition}[Two-level architecture]\label{def:m-twolevel}
+\leavevmode
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{Upper level} (discrete, stochastic): sample $K$
+  candidate plans from valid topological orders; evaluate each via
+  fast rollout; select by Boltzmann weighting
+  $w^{(k)} = \exp(-J^{(k)}/\eta)$.  This is MPPI
+  (\cref{thm:3b-mppi}) applied to the execution DAG.
+  \item \textbf{Lower level} (continuous, smooth): given a block
+  assignment $(b_i, g_i)$, execute the five-phase cycle via a
+  learned velocity field $v_\theta(x,t)$.  Force is recovered via
+  inverse dynamics: $u = \mathcal{D}(x, v_\theta(x,t))$.
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[Randomness for complexity]
+\label{prop:m-exchange}
+The two-level architecture exchanges exponential time--space
+complexity for polynomial randomness:
+\begin{align}
+  \text{Upper level:}\quad & O(N!) \to O(K \cdot N),
+    \label{eq:m-upper-complex} \\
+  \text{Lower level:}\quad & O(\exp(\dim\,\mu_0)) \to O(M),
+    \label{eq:m-lower-complex}
+\end{align}
+where $K$ is the number of MPPI samples and $M$ the number of
+particles for the velocity field.  The total control-loop cost
+per $\Delta t$ is
+\[
+  \underbrace{K \cdot N \cdot t_\mathrm{rollout}}_{\text{upper}}
+  + \underbrace{t_\mathrm{forward}(\theta)}_{\text{lower}}
+  \;\leq\; \Delta t.
+\]
+\end{proposition}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Training: measure matching is the only reward}
+\label{sec:m-training}
+
+\subsection{Why reward engineering is unnecessary}
+
+The OT-control formulation (\cref{sec:3b-ocp}) transports
+$\mu_0 \to \mu_T$ via velocity field $v_\theta$.  The training
+objective is:
+\begin{equation}\label{eq:m-loss}
+  \mathcal{L}(\theta)
+  = \mathrm{MMD}^2\!\bigl(\mu_T^{\mathrm{achieved}},\;
+    \mu_T^{\mathrm{target}}\bigr),
+\end{equation}
+where $\mathrm{MMD}$ is the maximum mean discrepancy with a
+characteristic kernel $k$ (e.g., Gaussian or Mat\'ern):
+\[
+  \mathrm{MMD}^2(\mu, \nu)
+  = \mathbb{E}[k(x,x')] - 2\,\mathbb{E}[k(x,y)]
+  + \mathbb{E}[k(y,y')],
+  \quad x,x' \sim \mu,\; y,y' \sim \nu.
+\]
+
+\begin{proposition}[MMD as self-regulating reward]
+\label{prop:m-mmd-reward}
+The MMD loss~\eqref{eq:m-loss} automatically encodes three
+reward properties without explicit engineering:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{No reward for known tasks.}  If $v_\theta$ already
+  solves a configuration class, $\mathrm{MMD} \approx 0$ on that
+  class and $\nabla_\theta \mathcal{L} \approx 0$---zero gradient,
+  zero learning signal.
+  \item \textbf{Reward for new tasks.}  On unsolved configurations,
+  $\mathrm{MMD} > 0$ and the gradient points toward improvement.
+  \item \textbf{Penalty for regression.}  If $v_\theta$ forgets a
+  previously solved class, $\mathrm{MMD}$ increases on that class
+  and the gradient penalises the regression.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+Property~(i): $\mathrm{MMD}^2(\mu, \nu) = 0 \iff \mu = \nu$
+for characteristic kernels.  Near the minimum, the Hessian is
+positive semi-definite, so the gradient vanishes.
+Property~(ii): $\mathrm{MMD}^2 > 0$ implies non-zero gradient
+(by smoothness of $k$).  The gradient direction is the kernel
+mean embedding of $\mu_T^{\mathrm{target}} -
+\mu_T^{\mathrm{achieved}}$.
+Property~(iii): $\mathcal{L}$ is evaluated on the full
+distribution $\mu_0$, which includes previously solved
+configurations.  Any regression increases the integral.
+\end{proof}
+
+The plan generator (\cref{sec:m-plangen}) provides
+\emph{persistent excitation} ($\Sigma_X \succ 0$,
+\cref{thm:m-invisible}) by randomising goal configurations.
+Together: PlanGen generates diverse $(X_0, X_T)$ pairs, and
+MMD measures how well $v_\theta$ transports between them.
+No reward shaping, no curriculum-aware bonuses, no progress
+tracking.  \textbf{The measure matching is the only reward.}
+
+\subsection{Training algorithm: conditional flow matching}
+
+The velocity field $v_\theta$ is trained by \emph{conditional
+flow matching} (Lipman et al., 2023):
+
+\begin{definition}[Flow matching loss]\label{def:m-flow-loss}
+Sample a random feasible plan $P$ from PlanGen.  For each block
+$(b_i, g_i)$ in $P$:
+\begin{enumerate}[label=(\arabic*),nosep]
+  \item Sample initial configuration $X_0 \sim \mu_0$.
+  \item Set target $X_T = g_i$ (from the plan).
+  \item Sample time $t \sim \mathrm{Uniform}(0, T)$.
+  \item Interpolate: $X_t = (1 - t/T)\,X_0 + (t/T)\,X_T$
+  (optimal transport interpolation).
+  \item Compute the conditional velocity:
+  $u_t = (X_T - X_0)/T$.
+  \item Loss:
+  $\ell(\theta) = \|v_\theta(X_t, t) - u_t\|^2$.
+\end{enumerate}
+\end{definition}
+
+\begin{remark}[Why flow matching, not RL]
+\label{rem:m-why-flow}
+The five-phase cycle has known structure: the switching surface
+$\Sigma$ is known, the contact phases are deterministic
+(given $\rho$), and the target $g_i$ is specified by the plan.
+There is no exploration--exploitation dilemma: the plan tells
+the robot \emph{what} to do, and the velocity field learns
+\emph{how}.  Reinforcement learning solves the wrong problem
+here---it searches for \emph{what} to do when the answer is
+already given by PlanGen.  The only learning is the smooth
+motor execution, which is a supervised regression from
+$(X_t, t) \to u_t$.
+\end{remark}
+
+\subsection{Network architecture}
+
+The velocity field $v_\theta : \R^d \times [0,T] \to \R^n$
+maps (state, time) to desired joint velocities.
+
+\begin{definition}[Phase-conditioned velocity network]
+\label{def:m-network}
+The input to $v_\theta$ is:
+\[
+  z = (q,\; \dot{q},\; g_\mathrm{target},\; t,\; \phi)
+  \;\in\; \R^{7 + 7 + 6 + 1 + 5} = \R^{26},
+\]
+where $q \in \R^7$ (joint positions), $\dot{q} \in \R^7$
+(joint velocities), $g_\mathrm{target} \in \R^6$ ($SE(3)$ target
+as position + axis-angle), $t \in [0,T]$ (normalised time within
+the current phase), and $\phi \in \{0,1\}^5$ (one-hot phase
+indicator).
+
+The output is $\dot{q}_\mathrm{des} \in \R^7$ (desired joint
+velocities).  Joint torques are recovered via inverse dynamics:
+$u = M(q)\ddot{q}_\mathrm{des} + C(q,\dot{q})\dot{q} + g(q)$,
+using the known robot model.
+\end{definition}
+
+\begin{remark}[Architecture choice]\label{rem:m-arch}
+For $d = 26$ input and $n = 7$ output, a multi-layer perceptron
+(MLP) with sinusoidal time embedding suffices:
+\[
+  v_\theta(z) = W_3\,\sigma(W_2\,\sigma(W_1\,[z;\,
+  \mathrm{emb}(t)] + b_1) + b_2) + b_3,
+\]
+where $\mathrm{emb}(t) = [\sin(\omega_k t), \cos(\omega_k t)]_{k=1}^{K}$
+is the Fourier time embedding and $\sigma$ is a smooth activation
+(SiLU).  The dimension is low enough that transformers and
+diffusion architectures are unnecessary overhead.  The phase
+indicator $\phi$ can either be concatenated (as above) or used as
+a gating signal on the hidden layers.
+\end{remark}
+
+\begin{remark}[Why the architecture is minimal]
+\label{rem:m-minimal}
+The heavy lifting is done by the \emph{structure}, not the network:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item PlanGen handles combinatorial complexity (upper level).
+  \item The five-phase FSM handles mode switching.
+  \item Inverse dynamics handles force computation.
+  \item The known robot model $M(q)$ provides inertial structure.
+\end{enumerate}
+The network $v_\theta$ only learns the residual: the smooth
+interpolation between configurations within a single phase.
+This is a low-dimensional, smooth function---an MLP's natural
+domain.
+\end{remark}
+
+\subsection{Deployment}
+
+At deployment, the full pipeline is:
+\begin{enumerate}[nosep]
+  \item \textbf{Observe:} wrist camera $\to$ block detection $\to$
+  $\{g_i\} \in SE(3)^N$ (\cref{sec:m-observer}).
+  \item \textbf{Plan:} $P^* = \mathrm{MPPI}(\mathrm{PlanGen},
+  K)$---sample $K$ plans, evaluate via fast rollout, select best
+  (\cref{sec:m-plangen}).
+  \item \textbf{Execute:} for each $(b_i, g_i)$ in $P^*$, integrate
+  $\dot{q} = v_\theta(q, \dot{q}, g_i, t, \phi)$ and apply
+  $u = \mathcal{D}(q, \dot{q}, \ddot{q})$.
+  \item \textbf{Monitor:} track $\rho(t)$ from kinematics
+  (\cref{sec:3b-force-elim}) and $\lambda_1$ from the contact
+  Laplacian.  Phase transitions trigger FSM updates to $\phi$.
+  \item \textbf{Return:} robot retracts to $q_0$
+  (\cref{thm:m-loop}).  Repeat for next block.
+\end{enumerate}
+
+The forward pass of $v_\theta$ (a 3-layer MLP) is $O(1)$---a
+single matrix multiply per control step.  The bottleneck is MPPI
+at the upper level: $O(K \cdot N)$ per replan.  Replanning
+frequency is task-dependent: once per block (static scenes) or
+once per control step (dynamic scenes).
+
+\subsection{Inference flow: camera image in, torque out}
+
+The end-to-end inference pipeline at each control step $\Delta t$:
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, minimum height=0.8cm,
+    minimum width=2cm, align=center, font=\small},
+  data/.style={font=\small\itshape},
+  arr/.style={-{Stealth[length=2mm]}, thick},
+  node distance=0.4cm and 0.5cm
+]
+% ── Row 1: Perception ──
+\node[box, fill=water!15] (cam) {Wrist camera};
+\node[data, right=of cam] (img) {image $Y$};
+\node[box, fill=water!15, right=of img] (det) {Block detector\\(CNN)};
+\node[data, right=of det] (poses) {$\{g_i\} \in SE(3)^N$};
+
+\draw[arr] (cam) -- (img);
+\draw[arr] (img) -- (det);
+\draw[arr] (det) -- (poses);
+
+% ── Row 2: Planning ──
+\node[box, fill=dao!15, below=0.8cm of cam] (plan) {PlanGen\\+ MPPI};
+\node[data, right=of plan] (pstar) {$P^* = [(b_i, g_i)]$};
+\node[box, fill=dao!15, right=of pstar] (fsm) {Five-phase\\FSM};
+\node[data, right=of fsm] (phase) {$(g_i, t, \phi)$};
+
+\draw[arr] (poses) -- ++(0,-0.4) -| (plan);
+\draw[arr] (plan) -- (pstar);
+\draw[arr] (pstar) -- (fsm);
+\draw[arr] (fsm) -- (phase);
+
+% ── Row 3: Execution ──
+\node[box, fill=sword!15, below=0.8cm of plan] (vnet)
+  {$v_\theta$ (MLP)};
+\node[data, right=of vnet] (dqdes) {$\dot{q}_\mathrm{des}$};
+\node[box, fill=sword!15, right=of dqdes] (diff) {$\frac{d}{dt}$};
+\node[data, right=of diff] (ddqdes) {$\ddot{q}_\mathrm{des}$};
+
+\draw[arr] (phase) -- ++(0,-0.4) -| (vnet);
+\draw[arr] (vnet) -- (dqdes);
+\draw[arr] (dqdes) -- (diff);
+\draw[arr] (diff) -- (ddqdes);
+
+% ── Row 4: Inverse dynamics ──
+\node[box, fill=caution!15, below=0.8cm of vnet] (invdyn)
+  {Inverse dynamics\\$M(q)\ddot{q} + C\dot{q} + g$};
+\node[data, right=of invdyn, xshift=1cm] (tau)
+  {$\tau \in \R^7$};
+\node[box, fill=caution!15, right=of tau] (robot)
+  {Franka Panda};
+
+\draw[arr] (ddqdes) -- ++(0,-0.4) -| (invdyn);
+\draw[arr] (invdyn) -- (tau);
+\draw[arr] (tau) -- (robot);
+
+% ── Feedback: proprioception ──
+\node[data, below=0.3cm of robot] (enc) {$q, \dot{q}$ (encoders)};
+\draw[arr] (robot) -- (enc);
+\draw[arr, dashed] (enc) -- ++(0,-0.5) -| ([xshift=-0.5cm]vnet.south)
+  -- (vnet.south);
+
+% ── Feedback: rho monitor ──
+\node[box, fill=water!10, below=0.3cm of invdyn] (rho)
+  {$\rho$ monitor};
+\draw[arr, dashed] (enc) -- ++(0,-0.5) -| (rho);
+\draw[arr, dashed] (rho) -- ++(0,0.5) -|
+  ([xshift=-0.3cm]fsm.south) -- (fsm.south);
+
+% ── Labels ──
+\node[anchor=east, font=\footnotesize\bfseries, text=water]
+  at ([xshift=-0.3cm]cam.west) {Perception};
+\node[anchor=east, font=\footnotesize\bfseries, text=dao]
+  at ([xshift=-0.3cm]plan.west) {Planning};
+\node[anchor=east, font=\footnotesize\bfseries, text=sword]
+  at ([xshift=-0.3cm]vnet.west) {Execution};
+\node[anchor=east, font=\footnotesize\bfseries, text=caution]
+  at ([xshift=-0.3cm]invdyn.west) {Actuation};
+
+\end{tikzpicture}
+\end{center}
+
+\begin{remark}[What is learned vs.\ what is known]
+\label{rem:m-learned-known}
+Only two components contain learned parameters:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item The \textbf{block detector} (CNN): image $\to$ block
+  poses.  Standard perception; pre-trained or trained on
+  rendered data.
+  \item The \textbf{velocity field} $v_\theta$ (MLP): state $\to$
+  desired velocities.  Trained by flow matching
+  (\cref{def:m-flow-loss}).
+\end{enumerate}
+Everything else---PlanGen, FSM, inverse dynamics, $\rho$ monitor,
+the robot model $M(q)$---is \emph{known structure}.  The learned
+components are small MLPs operating on low-dimensional inputs.
+This is the force elimination theorem at work: by exploiting the
+known physics, the learning problem collapses to smooth
+function approximation.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Curriculum: three orthogonal axes}\label{sec:m-curriculum}
+
+The natural training curriculum has three independent complexity axes,
+each testing a different capability:
+
+\begin{center}
+\begin{tabular}{@{}lp{3cm}p{3.5cm}p{3.5cm}@{}}
+\toprule
+\textbf{Axis} & \textbf{Tests} & \textbf{Complexity}
+  & \textbf{Paper analogue} \\
+\midrule
+Layers $L$ & Stability, DAG depth & Vertical error amplification
+  & Viability chain depth \\
+Count $N$ & Mean field, MPPI & $N!$ orderings, $\bar{U}$ over $N$
+  & Number of agents $n$ \\
+Types $K_\mathrm{type}$ & Observer, identifiability
+  & Symmetry-breaking & $\tau(\Obs)$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These axes are orthogonal: co-growing them confounds variables.
+The curriculum explores one axis at a time:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item Fix $L = 0$, $K_\mathrm{type} = 1$.  Grow
+  $N = 1, 2, 3, 4$.  (Mean-field scaling.)
+  \item Fix $K_\mathrm{type} = 1$.  Grow $L = 1, 2, 3$.
+  (Stability and DAG depth.)
+  \item Fix $N = 3$, $L = 1$.  Grow
+  $K_\mathrm{type} = 1, 2, 3$.  (Observer and identifiability.)
+  \item Joint growth.  (Integration test.)
+\end{enumerate}
+
+\begin{remark}[Block types test the observer]
+\label{rem:m-types-observer}
+With $K_\mathrm{type} = 1$ (identical cubes), the identifiability
+quotient is maximal: all blocks lie in the same equivalence class,
+and the robot need only track positions.  With
+$K_\mathrm{type} > 1$ (cubes, cylinders, L-shapes), the robot
+must distinguish types visually, and the execution DAG becomes
+shape-dependent (an L-shape cannot support a cylinder on its
+narrow end).  This is where the wrist camera's persistent
+excitation (\cref{thm:m-invisible}) becomes essential.
+\end{remark}
+
+\begin{remark}[Connection to the paper's mean field]
+\label{rem:m-curriculum-meanfield}
+The curriculum levels map onto the paper's complexity hierarchy:
+$N = 1$ (single sword, no mean field); $N = 2$ (mean field
+$\bar{U}$ appears over 2 blocks); $N = 3$ (phase transition:
+which block is the ``sword''?); $N \to \infty$ (full mean-field
+regime of \cref{thm:meanfield}).
+\end{remark}
