@@ -43,9 +43,10 @@ The argument proceeds in eight stages:
   \item \textbf{Training} (\cref{sec:m-training}): measure matching
   (MMD) is the only reward; conditional flow matching trains the
   velocity field; the network is a phase-conditioned MLP.
-  \item \textbf{Curriculum} (\cref{sec:m-curriculum}): three
+  \item \textbf{Curriculum} (\cref{sec:m-curriculum}): four
   orthogonal complexity axes---stack layers, block count, block
-  types---each testing a different capability.
+  types, and adversarial wind---each testing a different
+  capability.
 \end{enumerate}
 
 
@@ -397,6 +398,59 @@ under wind is the physical instantiation of the forcing
 lemma's divergent cost.
 \end{remark}
 
+\subsection{Friction as subdifferential inclusion}
+\label{sec:m-friction-di}
+
+The Coulomb friction law unifies stick, slip, and lift-off
+into a single set-valued inclusion, eliminating the need for
+explicit mode enumeration.
+
+Let $v_{t,j} = J_{t,j}(q)\,v$ be the tangential relative
+velocity at contact~$j$.  The subdifferential of the norm
+$\|\cdot\|$ is:
+\[
+  \partial \|v_t\| =
+  \begin{cases}
+    \{v_t / \|v_t\|\}, & v_t \neq 0, \\
+    \{s : \|s\| \leq 1\}, & v_t = 0.
+  \end{cases}
+\]
+The maximal-dissipation friction law is then:
+\begin{equation}\label{eq:m-friction-di}
+  f_{t,j} \in -\mu_j\,f_{n,j}\;\partial\|v_{t,j}\|.
+\end{equation}
+When $v_{t,j} \neq 0$ (slip), the inclusion selects the unique
+friction force opposing motion.  When $v_{t,j} = 0$ (stick),
+the inclusion yields the full friction disc
+$\|f_{t,j}\| \leq \mu_j f_{n,j}$---static friction is
+\emph{set-valued}, not indeterminate.
+
+Substituting into the robot dynamics
+(\cref{def:m-bilevel}) gives the contact DI:
+\begin{equation}\label{eq:m-contact-di}
+  M(q)\,\dot{v} \in \tau - h(q,v)
+  + J_n(q)^\top f_n + J_t(q)^\top f_t,
+  \quad
+  (f_n, f_t) \in \mathcal{F}(q, v),
+\end{equation}
+where $\mathcal{F}$ encodes non-penetration ($g(q) \geq 0$,
+$f_n \geq 0$, complementarity) and friction
+(\cref{eq:m-friction-di}).
+
+\begin{remark}[Soft--hard limit]\label{rem:m-soft-hard}
+The regularised form
+$f_t \approx -\mu f_n\,v_t / \sqrt{\|v_t\|^2 + \epsilon^2}$
+is differentiable and simulation-friendly.  As
+$\epsilon \to 0$, it recovers the set-valued law
+\eqref{eq:m-friction-di}.  This is the tangential analogue of
+the normal-direction soft--hard limit at the switching surface
+$\Sigma = \{\rho = 1\}$: as the contact stiffness grows,
+the soft penalty recovers the rigid non-penetration constraint.
+The bi-level optimiser (\cref{def:m-bilevel}) uses the soft
+form during trajectory optimisation and verifies force closure
+against the hard law at convergence.
+\end{remark}
+
 
 % ═══════════════════════════════════════════════════════════
 \section{The robot observer: causal observability}
@@ -467,6 +521,10 @@ is physically realised by the camera:
   \item $r \in \mathrm{Im}(\Obs) \iff$ block $r$ occupies
   $> \tau$ pixels in the current image.
 \end{enumerate}
+Mother--daughter consistency (\cref{rem:mother-daughter})
+reduces here to: the predicted block pose (mother) matches
+the pose that would result from one step of free-body dynamics
+(daughter).  A large KL gap signals an unmodelled disturbance.
 \end{remark}
 
 \subsection{Information timeliness}
@@ -748,6 +806,69 @@ This is a low-dimensional, smooth function---an MLP's natural
 domain.
 \end{remark}
 
+\subsection{Risk-locked training and sim-to-real transfer}
+\label{sec:m-rlmd}
+
+The CFM velocity field (\cref{def:m-flow-loss}) is trained by
+supervised regression in simulation.  Two additional layers
+convert it into a deployable controller:
+
+\paragraph{Risk-Locked Mirror Descent (RLMD).}
+Rather than maximising expected reward, RLMD locks the failure
+probability below a threshold~$\delta$ and optimises secondary
+objectives (smoothness, energy) subject to this constraint.
+
+Let $g(x, u)$ be a margin function (positive when safe,
+negative at failure).  For each curriculum level~$\varepsilon_k$
+(\cref{sec:m-curriculum}), RLMD:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item Rolls out $N$ trajectories under perturbation
+  $\varepsilon_k$;
+  \item Computes the soft risk
+  $\hat{R} = \frac{1}{N}\sum_i \sigma(-m_i / \beta)$,
+  where $m_i = \min_t g(x_t^i, u_t^i)$ is the worst-case
+  margin, $\sigma$ is the sigmoid, and $\beta > 0$ is a
+  temperature parameter;
+  \item Computes the action roughness
+  $\hat{S} = \frac{1}{N}\sum_i M^2 \sum_t \|u_{t+1}^i
+  - u_t^i\|^2$ (the Nyquist proxy of
+  \cref{prop:event-lock}~(iii));
+  \item Minimises
+  $\hat{J}(\phi) = \hat{R}(\phi) + \lambda\,\hat{S}(\phi)$
+  subject to the lock $\hat{R} \leq \delta$;
+  \item Advances to $\varepsilon_{k+1}$ only after $\hat{R}
+  \leq \delta$ holds for several consecutive epochs.
+\end{enumerate}
+The output is a policy $\pi_\phi$ whose failure probability
+is locked below~$\delta$ across the full curriculum.
+This is the training-time realisation of
+\cref{prop:event-lock}: the four conditions are enforced by
+construction (viability via the simulator, controllability via
+the MLP capacity, realisability via the roughness penalty,
+event closure via the risk lock).
+
+\paragraph{Actuator net for sim-to-real transfer.}
+The sim-to-real gap concentrates in the actuator channel
+(motor dynamics, contact compliance, latency).  Rather than
+fine-tuning the full policy, we freeze $\pi_\phi$ and train
+a residual actuator net $A_\psi$:
+\[
+  u_{\mathrm{real}} = u_{\mathrm{nom}} + A_\psi(o_t,\,
+  u_{\mathrm{nom}},\, s_{\mathrm{motor}}),
+\]
+where $s_{\mathrm{motor}}$ includes joint velocities, currents,
+and temperatures.  The correction $\Delta u = A_\psi(\cdot)$
+is constrained in amplitude (safety) and roughness (Nyquist),
+and trained on binary event labels from real-world rollouts:
+$y = 1$ (failure) or $y = 0$ (success), supplemented by
+dense margin signals from the simulator
+(\cref{rem:m-forcing}).
+
+The actuator net preserves the theoretical structure:
+the high-level policy $\pi_\phi$ embodies the five-phase
+cycle (\cref{sec:m-phases}); the actuator net only corrects
+the \emph{execution channel}, not the \emph{plan}.
+
 \subsection{Deployment}
 
 At deployment, the full pipeline is:
@@ -923,9 +1044,9 @@ function approximation.
 
 
 % ═══════════════════════════════════════════════════════════
-\section{Curriculum: three orthogonal axes}\label{sec:m-curriculum}
+\section{Curriculum: four orthogonal axes}\label{sec:m-curriculum}
 
-The natural training curriculum has three independent complexity axes,
+The natural training curriculum has four independent complexity axes,
 each testing a different capability:
 
 \begin{center}
@@ -1117,4 +1238,46 @@ impossible.  The physical spacetime $d = 3 + 1 = 4$ is the
 critical dimension at which manipulation is both necessary and
 possible---the same marginality that governs
 \cref{thm:alien-triviality}.
+\end{remark}
+
+\begin{remark}[Four conditions for event-locking in manipulation]
+\label{rem:m-event-lock}
+The event-locking bound (\cref{prop:event-lock}) instantiates
+in this chapter as follows.  Let $E$ = ``all blocks at goal
+poses within tolerance~$\varepsilon$''.  The four conditions
+are:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \emph{Viability} (\cref{sec:m-bilevel}):
+  the viable set is the intersection of joint limits,
+  non-penetration ($g(q) \geq 0$), and force closure
+  ($\lambda_1 > 0$).  The tangential condition is satisfiable
+  by the bi-level controller.
+  \item \emph{Projected controllability}
+  (\cref{sec:m-ranknull}): the RANK/NULL decomposition ensures
+  that the task-space forces span the required directions;
+  the Lie-algebraic rank condition holds generically for
+  $n_{\mathrm{dof}} \geq 6$.
+  \item \emph{Frequency-aligned realisability}
+  (\cref{sec:m-rlmd}): the Nyquist roughness penalty
+  $M^2 \sum \|u_{t+1} - u_t\|^2$ ensures that the learned
+  policy is executable at control frequency~$M$.
+  \item \emph{Event closure} (\cref{sec:m-training}):
+  the MMD loss drives the terminal distribution toward the
+  target; RLMD locks the failure probability
+  $\hat{R} \leq \delta$.
+\end{enumerate}
+Reading the four conditions against the mass-gap equivalence
+(\cref{thm:massgap}): (i)~viability is the open set
+(道---the law that the viable set exists),
+(ii)~controllability is $\lambda_1 > 0$
+(法---the method that keeps the spectral gap open),
+(iii)~Nyquist realisability is the discrete-time sampling
+constraint (器---the instrument that executes),
+(iv)~event closure is the target measure's invariance
+(势---the configuration that locks the outcome).
+The five-phase cycle (\cref{sec:m-phases}) is the trajectory
+through which these four conditions are maintained and
+discharged: viability~(i) persists throughout; controllability~(ii)
+is established during approach; realisability~(iii) is enforced at
+every control step; event closure~(iv) is verified at termination.
 \end{remark}

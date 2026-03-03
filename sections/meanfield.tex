@@ -120,6 +120,29 @@ of the free energy: the system minimises threats to $\Viab(K)$, just
 as a thermodynamic system minimises free energy.
 \end{remark}
 
+\begin{remark}[Mechanism consistency: mother--daughter distributions]
+\label{rem:mother-daughter}
+The fixed-point structure of $T^{\Obs}$ admits a distributional
+interpretation.  Let $q_j$ denote the current belief about
+agent~$j$'s state (the \emph{mother} distribution), and let
+$q_j^{\mathrm{da}}$ denote the pushforward of $q_j$ through
+the mechanism---the state distribution that \emph{would} result
+if agent~$j$ executed its autonomous actuation for one step
+(the \emph{daughter} distribution).  The detection operator
+$T^{\Obs}$ is self-consistent when
+$\mathrm{KL}(q_j \| q_j^{\mathrm{da}})$ is small for all
+monitored agents: the king's belief about what each agent
+\emph{will} do matches what it \emph{would} do.
+
+A phase transition (\cref{prop:phase}) breaks this consistency:
+$\bar{U}$ shifts, the daughter distribution under the new mean
+field diverges from the mother, and the detection threshold
+must re-equilibrate.  The feedback loop of
+\cref{thm:paradox}---elimination $\to$ lower $\bar{U}$ $\to$
+new swords---is precisely the transient before the
+mother--daughter distributions re-align at the new fixed point.
+\end{remark}
+
 \begin{remark}[Validity conditions]\label{rem:meanfield-validity}
 The arithmetic mean~$\bar{U}$ is the operative threshold for
 homogeneous systems where agents draw from comparable control
@@ -158,3 +181,69 @@ The mean-field interpretation resolves several puzzles:
   the chain. The resource remains capable but not \emph{independently}
   capable---it does not deviate from the mean.
 \end{enumerate}
+
+\begin{remark}[Why the axioms suffice]\label{rem:is-ising}
+The viability axiom, the mass-gap equivalence
+(\cref{thm:massgap}), and real linear time are the only
+primitives the theory requires.  Their operational content
+decomposes as:
+\begin{enumerate}[label=(\alph*),nosep]
+  \item \emph{Lattice structure:} agents occupy sites;
+  interactions are nearest-neighbour in the execution graph
+  (the Ising skeleton).
+  \item \emph{Measure:} the state is a probability measure on
+  configurations; the viability kernel $\Viab(K)$ is its
+  support.
+  \item \emph{Mass gap $=$ openness:} $\lambda_1 > 0$ implies
+  the viable phase is an open set in parameter space---robust
+  to small perturbations without fine-tuning.
+  \item \emph{Uniform law of large numbers:} as
+  $n \to \infty$, the empirical mean $\bar{U}$ converges
+  uniformly to its population value; the detection threshold
+  $\tau(\Obs)$ becomes sharp.
+  \item \emph{Real linear time:} the filtration
+  $(\mathcal{F}_t)_{t \ge 0}$ is the causal envelope; it
+  forbids closed time-like loops and makes the forcing lemma
+  (\cref{lem:forcing}) irreversible.
+\end{enumerate}
+No force law is postulated.  What appears as a restoring force
+(the king's reaction to a sword) is the system's regression
+toward the maximum-measure configuration under ULLN---the
+\emph{entropic} pressure of the viable set.  The following
+proposition quantifies the locking precision that these
+primitives guarantee.
+\end{remark}
+
+\begin{proposition}[Event-locking bound]\label{prop:event-lock}
+Let the system satisfy the viability axiom (\cref{ax:viability})
+with finite monitoring bandwidth~$B$ and control frequency~$M$.
+Let $E$ denote a target event on the external
+$\sigma$-algebra, and let $\varepsilon$ parametrise the
+perturbation strength (noise, wind, model error).  If the
+following four conditions hold:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \emph{Viability:} the viable set $\Viab(K)$ is
+  non-empty and the tangential condition is satisfiable;
+  \item \emph{Projected controllability:} the input vector
+  fields, projected onto the viable directions, satisfy the
+  Lie-algebraic rank condition (LARC) near the event surface;
+  \item \emph{Frequency-aligned realisability:} the required
+  control trajectory is realisable within the bandwidth~$M$
+  (the action roughness $\sum \|u_{t+1} - u_t\|^2$ remains
+  bounded under the Nyquist constraint);
+  \item \emph{Event closure:} the event~$E$ is closed under
+  the pushforward of the closed-loop policy~$\pi_\theta$
+  on the external $\sigma$-algebra;
+\end{enumerate}
+then the failure probability satisfies
+\begin{equation}\label{eq:event-lock}
+  1 - p_{\varepsilon,M}(\theta)
+  \;\leq\;
+  C_1\,r(\varepsilon) + \frac{C_2}{M},
+\end{equation}
+where $r(\varepsilon) \to 0$ as $\varepsilon \to 0$
+(perturbation vanishes) and $C_1, C_2 > 0$ depend on the
+system geometry.  In particular,
+$p_{\varepsilon,M}(\theta) \to 1$ as $\varepsilon \to 0$
+and $M \to \infty$.
+\end{proposition}
