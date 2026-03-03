@@ -1,0 +1,90 @@
+<!--
+  Dribble Scene — GRJL 2.0 (拍球, not 颠球)
+
+  Basketball dribble: hand on TOP, pushes ball DOWN.
+  Ground bounces ball back up. Hand meets ball at apex, pushes again.
+
+  Mapping to the thesis:
+    - Ball inertia axes I₁, I₂, I₃ = "three bodies"
+    - Hand (paddle above) = damper κ
+    - Ground = constraint boundary (λ₁ = 0)
+    - ρ = F_hand / (m·g)
+    - Bang arc: hand strikes ball downward (top side)
+    - Singular arc: ball in free flight between hand and ground
+-->
+<mujoco model="dribble">
+  <compiler angle="radian" balanceinertia="true"/>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="Euler">
+    <flag contact="enable"/>
+  </option>
+
+  <default>
+    <geom condim="4" friction="0.8 0.005 0.0001"/>
+    <joint damping="0.1"/>
+  </default>
+
+  <asset>
+    <texture name="grid" type="2d" builtin="checker"
+             width="512" height="512"
+             rgb1="0.2 0.3 0.4" rgb2="0.3 0.4 0.5"/>
+    <material name="grid" texture="grid" texrepeat="8 8"/>
+    <material name="ball_mat" rgba="0.9 0.5 0.1 1"/>
+    <material name="paddle_mat" rgba="0.3 0.6 0.9 0.8"/>
+  </asset>
+
+  <worldbody>
+    <!-- Ground plane (constraint boundary) -->
+    <geom name="ground" type="plane" size="5 5 0.1"
+          material="grid" condim="4"
+          solref="0.004 0.3" solimp="0.95 0.99 0.001"/>
+
+    <!-- Ball: freejoint, non-uniform inertia -->
+    <body name="ball" pos="0 0 0.4">
+      <freejoint name="ball_joint"/>
+      <geom name="ball_geom" type="sphere" size="0.06"
+            mass="0.3" material="ball_mat"
+            solref="0.004 0.3" solimp="0.95 0.99 0.001"
+            condim="4" friction="0.6 0.005 0.0001"/>
+      <!-- Non-uniform inertia: I₁ ≠ I₂ ≠ I₃
+           Triangle inequality satisfied: 0.0004+0.0008 ≥ 0.001 -->
+      <inertial pos="0 0 0" mass="0.3"
+                diaginertia="0.001 0.0008 0.0004"/>
+    </body>
+
+    <!-- Hand / paddle (damper κ): ABOVE the ball -->
+    <body name="paddle_base" pos="0 0 0.8">
+      <joint name="paddle_x" type="slide" axis="1 0 0"
+             range="-2 2" damping="5"/>
+      <joint name="paddle_y" type="slide" axis="0 1 0"
+             range="-2 2" damping="5"/>
+      <joint name="paddle_z" type="slide" axis="0 0 1"
+             range="-0.8 0.5" damping="5"/>
+      <geom name="paddle_geom" type="box" size="0.10 0.10 0.01"
+            mass="0.5" material="paddle_mat"
+            condim="4" friction="1.0 0.005 0.0001"
+            solref="0.003 1" solimp="0.95 0.99 0.001"/>
+      <!-- Touch sensor site on underside of paddle -->
+      <site name="paddle_site" type="box" size="0.10 0.10 0.01"
+            pos="0 0 -0.01" rgba="0 0 0 0"/>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <position name="act_x" joint="paddle_x" kp="200"
+              ctrlrange="-2 2"/>
+    <position name="act_y" joint="paddle_y" kp="200"
+              ctrlrange="-2 2"/>
+    <position name="act_z" joint="paddle_z" kp="200"
+              ctrlrange="-0.8 0.5"/>
+  </actuator>
+
+  <sensor>
+    <framepos name="ball_pos" objtype="body" objname="ball"/>
+    <framequat name="ball_quat" objtype="body" objname="ball"/>
+    <framelinvel name="ball_vel" objtype="body" objname="ball"/>
+    <frameangvel name="ball_angvel" objtype="body" objname="ball"/>
+    <framepos name="paddle_pos" objtype="body" objname="paddle_base"/>
+    <touch name="paddle_touch" site="paddle_site"/>
+  </sensor>
+</mujoco>

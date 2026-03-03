@@ -1,0 +1,110 @@
+<!--
+MuJoCo model for Gravity Damper Manipulation Demo
+顿开金绳，扯断玉锁
+
+Object: box with 3 principal inertia axes = "three bodies"
+Hand: simplified parallel-jaw gripper = damper κ
+Gravity: standard -9.81 m/s²
+Contact: condim=3 (sliding + sticking)
+
+Reference: threebody.tex Section 3b-manipulation (prop:3b-manip)
+-->
+<mujoco model="manipulation_damper">
+  <compiler angle="radian"/>
+
+  <option gravity="0 0 -9.81" timestep="0.002">
+    <flag contact="enable"/>
+  </option>
+
+  <default>
+    <geom condim="3" friction="0.8 0.005 0.0001" solref="0.02 1"
+          solimp="0.9 0.95 0.001"/>
+    <joint damping="0.1"/>
+  </default>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7"
+             rgb2="0 0 0" width="512" height="512"/>
+    <texture name="grid" type="2d" builtin="checker" rgb1="0.2 0.3 0.4"
+             rgb2="0.3 0.4 0.5" width="512" height="512"/>
+    <material name="grid" texture="grid" texrepeat="8 8"/>
+    <material name="object" rgba="0.8 0.2 0.2 1"/>
+    <material name="finger" rgba="0.3 0.3 0.8 1"/>
+    <material name="palm" rgba="0.5 0.5 0.5 1"/>
+  </asset>
+
+  <worldbody>
+    <!-- Ground plane -->
+    <geom type="plane" size="1 1 0.01" material="grid"/>
+    <light pos="0 0 3" dir="0 0 -1" diffuse="1 1 1"/>
+    <light pos="0 -1 2" dir="0 0.5 -1" diffuse="0.5 0.5 0.5"/>
+
+    <!-- Object to manipulate (box = 3 inertia axes = "3 bodies") -->
+    <body name="object" pos="0 0 0.15">
+      <freejoint name="object_joint"/>
+      <geom name="object_geom" type="box" size="0.06 0.04 0.03"
+            mass="0.5" material="object"/>
+      <!-- Inertia axes markers (visual only) -->
+      <site name="axis_x" pos="0.06 0 0" size="0.005" rgba="1 0 0 0.5"/>
+      <site name="axis_y" pos="0 0.04 0" size="0.005" rgba="0 1 0 0.5"/>
+      <site name="axis_z" pos="0 0 0.03" size="0.005" rgba="0 0 1 0.5"/>
+    </body>
+
+    <!-- Gripper (damper κ) -->
+    <body name="gripper_base" pos="0 0 0.3">
+      <!-- Vertical slide for approach -->
+      <joint name="slide_z" type="slide" axis="0 0 1" range="-0.3 0.3"
+             damping="0.5"/>
+      <!-- Horizontal positioning -->
+      <joint name="slide_x" type="slide" axis="1 0 0" range="-0.2 0.2"
+             damping="0.5"/>
+      <joint name="slide_y" type="slide" axis="0 1 0" range="-0.2 0.2"
+             damping="0.5"/>
+
+      <!-- Palm (raised above fingers to not block descent) -->
+      <geom name="palm" type="box" size="0.05 0.06 0.005" pos="0 0 0.01"
+            mass="0.2" material="palm"/>
+
+      <!-- Left finger (drops below palm) -->
+      <body name="finger_left" pos="-0.07 0 -0.04">
+        <joint name="finger_left_joint" type="slide" axis="1 0 0"
+               range="-0.01 0.06"/>
+        <geom name="finger_left_geom" type="box" size="0.008 0.035 0.035"
+              mass="0.05" material="finger"/>
+        <site name="contact_left" pos="0.008 0 0" size="0.003"
+              rgba="1 1 0 0.8"/>
+      </body>
+
+      <!-- Right finger -->
+      <body name="finger_right" pos="0.07 0 -0.04">
+        <joint name="finger_right_joint" type="slide" axis="1 0 0"
+               range="-0.06 0.01"/>
+        <geom name="finger_right_geom" type="box" size="0.008 0.035 0.035"
+              mass="0.05" material="finger"/>
+        <site name="contact_right" pos="-0.008 0 0" size="0.003"
+              rgba="1 1 0 0.8"/>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Gripper positioning (the "orbit" of the damper) -->
+    <position name="act_x" joint="slide_x" kp="200" ctrlrange="-0.2 0.2"/>
+    <position name="act_y" joint="slide_y" kp="200" ctrlrange="-0.2 0.2"/>
+    <position name="act_z" joint="slide_z" kp="500" ctrlrange="-0.3 0.3"/>
+    <!-- Finger actuation (the "thrust" of the damper) -->
+    <position name="act_finger_left" joint="finger_left_joint" kp="500"
+              ctrlrange="-0.01 0.06"/>
+    <position name="act_finger_right" joint="finger_right_joint" kp="500"
+              ctrlrange="-0.06 0.01"/>
+  </actuator>
+
+  <sensor>
+    <!-- Contact force sensors on finger tips -->
+    <touch name="touch_left" site="contact_left"/>
+    <touch name="touch_right" site="contact_right"/>
+    <!-- Object position and orientation -->
+    <framepos name="object_pos" objtype="body" objname="object"/>
+    <framequat name="object_quat" objtype="body" objname="object"/>
+  </sensor>
+</mujoco>

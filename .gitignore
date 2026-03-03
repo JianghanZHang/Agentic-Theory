@@ -5,8 +5,11 @@
 *.synctex.gz
 *.out
 *.toc
+*.xdv
 *.bbl
 *.blg
 *.pdf
+__pycache__/
+*.pyc
 .DS_Store
 grjl4/mujoco_menagerie/
