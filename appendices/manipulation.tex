@@ -19,7 +19,7 @@ manipulation as 夏虫运冰: the agent (robot arm) transports objects
 (\cref{thm:lifecycle}), subject to the cognitive boundary of its
 sensors.
 
-The argument proceeds in six stages:
+The argument proceeds in eight stages:
 \begin{enumerate}
   \item \textbf{Phase structure} (\cref{sec:m-phases}): every
   manipulation task decomposes into five phases forced by
@@ -30,6 +30,10 @@ The argument proceeds in six stages:
   \item \textbf{RANK/NULL decomposition} (\cref{sec:m-ranknull}):
   task forces are the real part, self-motion is the imaginary part,
   and their commutator measures dexterity.
+  \item \textbf{Bi-level structure} (\cref{sec:m-bilevel}):
+  each pick--place cycle nests force closure maintenance (inner)
+  inside trajectory optimisation (outer); grasping is the
+  deliberate creation of a contact singularity.
   \item \textbf{Observer} (\cref{sec:m-observer}): the cognitive
   boundary of a wrist-mounted camera, formalised via causal
   observability.
@@ -253,6 +257,148 @@ same mechanism that maintains the spectral gap in
 
 
 % ═══════════════════════════════════════════════════════════
+\section{Bi-level structure: grasping nested within transport}
+\label{sec:m-bilevel}
+
+The five-phase cycle contains an inner optimisation problem that
+is invisible in the operator notation
+$T_0 \to T_1 \to T^* \to T_1^{-1} \to T_0^{-1}$ but dominates
+the physics.
+
+\begin{definition}[Bi-level pick--place]\label{def:m-bilevel}
+A single pick--place cycle has two coupled optimisation levels:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{Outer (trajectory):} choose a velocity field
+  $v_\theta(x,t)$ that transports the object from $g^A$ to
+  $g^B \in SE(3)$, minimising the OT cost
+  (\cref{sec:3b-ocp}).
+  \item \textbf{Inner (force closure):} at every instant
+  $t \in [t_1, t_4]$ (phases 2--4), choose finger forces
+  $f(t) = (f_L, f_R)$ that maintain the contact graph Laplacian's
+  spectral gap: $\lambda_1(L_G(f)) \geq \varepsilon$.
+\end{enumerate}
+The outer level sets the desired acceleration $\ddot{x}_\mathrm{des}(t)$;
+the inner level must produce forces that satisfy Newton's equation at
+that acceleration while remaining inside the friction cone.
+\end{definition}
+
+\begin{theorem}[Bi-level coupling]\label{thm:m-bilevel}
+The outer trajectory and inner force closure are coupled
+bidirectionally:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \emph{Outer $\to$ inner:} the commanded acceleration
+  $\ddot{x}_\mathrm{des}(t)$ enters the Newton constraint
+  \begin{equation}\label{eq:m-newton}
+    \sum_i f_i = m\bigl(\ddot{x}_\mathrm{des}(t) - g\bigr)
+    + F_\mathrm{wind}(t).
+  \end{equation}
+  Faster trajectories demand larger contact forces, consuming
+  friction margin.
+  \item \emph{Inner $\to$ outer:} force closure feasibility imposes
+  a state-dependent acceleration bound
+  \begin{equation}\label{eq:m-accel-bound}
+    |\ddot{x}_z(t)|
+    \;\leq\;
+    \frac{2\mu_s\, N_\mathrm{max} - |F_\mathrm{wind}^\perp(t)|}{m}
+    - g,
+  \end{equation}
+  where $\mu_s$ is the friction coefficient, $N_\mathrm{max}$ is
+  the maximum actuator normal force, and $F_\mathrm{wind}^\perp$
+  is the wind component perpendicular to the contact normal.
+  This constrains the set of feasible outer trajectories.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+For a parallel-jaw grasp with two symmetric frictional contacts,
+force closure requires that the total friction force span the
+required wrench:
+$\sqrt{f_{t1}^2 + f_{t2}^2} \leq \mu_s f_n$ per contact
+(Coulomb cone), with unilateral constraint $f_n \geq 0$.
+The total vertical friction capacity is $2\mu_s N$, where
+$N = f_n$ is the clamping force.  The vertical load is
+$m|\ddot{x}_z + g| + |F_\mathrm{wind}^\perp|$.  Force closure
+$(\lambda_1 \geq \varepsilon)$ holds iff
+$2\mu_s N \geq m|\ddot{x}_z + g| + |F_\mathrm{wind}^\perp|$.
+Rearranging for the acceleration gives~\eqref{eq:m-accel-bound}.
+\end{proof}
+
+\begin{remark}[Force closure as a contact singularity]
+\label{rem:m-singularity}
+Grasping is the deliberate creation of a \emph{manipulation
+singularity}.  Before contact ($\rho < 1$), the object has 6
+unconstrained DOF in $SE(3)$: the grasp matrix $G$ has rank~0
+(no wrench can be transmitted).  At force closure
+($\lambda_1 \geq \varepsilon$), the frictional contacts span
+the full wrench space: $\mathrm{rank}(G)$ rises to~6 and the
+object's unconstrained DOF drops from~6 to~0.  The switching
+surface $\Sigma = \{\rho = 1\}$ is the bifurcation point where
+this rank transition occurs---the topology of the configuration
+space changes from disconnected (gripper and object independent)
+to connected (one coupled system).
+
+The spectral gap $\lambda_1$ measures the \emph{margin} of the
+singularity: how deeply the system sits inside the force-closure
+manifold.  Wind and inertial loads attempt to restore the
+object's free DOF (break the singularity); the inner
+optimisation maintains it.
+The five-phase cycle is a controlled creation (Phase~2),
+maintenance (Phase~3), and dissolution (Phase~4) of this
+contact singularity.
+
+In the language of the sword lifecycle (\cref{thm:lifecycle}):
+creating the singularity = creating the sword (the object acquires
+autonomous actuation through contact---condition~(1) of
+\cref{def:sword}).  The locked state (Phase~3) = absorption (the
+object is absorbed into the robot's execution graph).  Dissolving
+the singularity = resolving the sword (condition~(1) deactivates
+at release).
+\end{remark}
+
+\begin{remark}[Three-level nesting]\label{rem:m-threelevel}
+The bi-level pick--place sits inside the two-level architecture
+of \cref{sec:m-plangen}:
+\begin{center}
+\begin{tabular}{@{}cllp{5cm}@{}}
+\toprule
+\textbf{Level} & \textbf{Problem} & \textbf{Decides}
+  & \textbf{Complexity} \\
+\midrule
+0 & Task planner & Which block, which order
+  & $O(N!) \to O(K \cdot N)$ via MPPI \\
+1 & Trajectory optimisation & Object path $X(t) \in SE(3)$
+  & Smooth, gradient-based \\
+2 & Force closure & Finger forces $f(t)$
+  & Algebraic, $O(1)$ per timestep \\
+\bottomrule
+\end{tabular}
+\end{center}
+Level~2 is the fastest (a single inequality check).  Level~1 is
+smooth (differentiable through the ODE).  Level~0 is
+combinatorial (sampling-based).  The hierarchy matches the
+detection--actuation separation: Level~0 = detection
+$\Obs$ (what to manipulate), Level~1 = actuation $C(x)$
+(how to move it), Level~2 = viability check (can we hold it?).
+\end{remark}
+
+\begin{remark}[Connection to the forcing lemma]
+\label{rem:m-forcing}
+The inner problem is the manipulation instantiation of
+\cref{lem:forcing}.  If the gripper must maintain force closure
+indefinitely under stochastic wind, the expected cumulative
+friction energy diverges---the wind continuously consumes the
+friction margin $2\mu_s N - m|g| - |F_\mathrm{wind}^\perp|$,
+and the actuator must continuously replenish it.
+\Cref{lem:forcing} guarantees that this cost is unbounded
+over infinite time, forcing the outer trajectory to complete
+the transport in finite time.  The bi-level structure makes
+this forcing mechanism precise: Level~2's shrinking margin
+under wind is the physical instantiation of the forcing
+lemma's divergent cost.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
 \section{The robot observer: causal observability}
 \label{sec:m-observer}
 
@@ -420,7 +566,7 @@ The two-level architecture breaks the problem:
   \item \textbf{Upper level} (discrete, stochastic): sample $K$
   candidate plans from valid topological orders; evaluate each via
   fast rollout; select by Boltzmann weighting
-  $w^{(k)} = \exp(-J^{(k)}/\eta)$.  This is MPPI
+  $w^{(k)} = \exp(-J^{(k)}/\alpha)$.  This is MPPI
   (\cref{thm:3b-mppi}) applied to the execution DAG.
   \item \textbf{Lower level} (continuous, smooth): given a block
   assignment $(b_i, g_i)$, execute the five-phase cycle via a
@@ -456,9 +602,11 @@ per $\Delta t$ is
 
 \subsection{Why reward engineering is unnecessary}
 
-The OT-control formulation (\cref{sec:3b-ocp}) transports
-$\mu_0 \to \mu_T$ via velocity field $v_\theta$.  The training
-objective is:
+The OT-control formulation (\cref{sec:3b-ocp}) transports an
+initial distribution~$\mu_0$ (random feasible configurations
+produced by PlanGen) to a target distribution~$\mu_T$ (the
+corresponding goal configurations) via velocity field $v_\theta$.
+The training objective is:
 \begin{equation}\label{eq:m-loss}
   \mathcal{L}(\theta)
   = \mathrm{MMD}^2\!\bigl(\mu_T^{\mathrm{achieved}},\;
@@ -625,6 +773,52 @@ at the upper level: $O(K \cdot N)$ per replan.  Replanning
 frequency is task-dependent: once per block (static scenes) or
 once per control step (dynamic scenes).
 
+\begin{algorithm}[H]
+\caption{Block stacking: camera image in, torque out}
+\label{alg:m-pipeline}
+\begin{algorithmic}[1]
+\Require Scene with $N$ blocks, Franka Panda at $q_0$,
+  goal configuration $\{g_i^*\}$
+\Ensure All blocks at goal poses within tolerance $\varepsilon$
+\State $\{g_i\} \gets \textsc{Detect}(Y)$
+  \Comment{Wrist camera $\to$ CNN $\to$ block poses in $SE(3)^N$}
+\State $G_{\mathrm{task}} \gets \textsc{BuildDAG}(\{g_i^*\})$
+  \Comment{Dependency DAG from goal config}
+\State $P^* \gets \textsc{MPPI}(G_{\mathrm{task}}, \{g_i\},
+  \{g_i^*\}, K, \alpha)$
+  \Comment{Sample $K$ plans, Boltzmann-weight by cost}
+\For{$(b_k, g_k^*, \gamma_k)$ in $P^*$}
+  \Comment{For each block in topological order}
+  \State $\phi \gets \textsc{Approach}$
+    \Comment{Phase 1: $\rho = 0$}
+  \While{block $b_k$ not at $g_k^*$}
+    \State $q, \dot{q} \gets \textsc{ReadEncoders}()$
+    \State $\rho \gets \|F_{\mathrm{contact}}\| / (m_k g)$
+      \Comment{Kinematic $\rho$ via inverse dynamics residual}
+    \State $\lambda_1 \gets \lambda_1(L_{G_c})$
+      \Comment{Spectral gap of contact graph Laplacian}
+    \State $\phi \gets \textsc{FSM}(\phi, \rho, \lambda_1)$
+      \Comment{Update phase: $\rho$ crossing $\Sigma$,
+        $\lambda_1 \geq \varepsilon$}
+    \State $z \gets (q,\, \dot{q},\, g_k^*,\, t,\, \phi)
+      \in \mathbb{R}^{26}$
+    \State $\dot{q}_{\mathrm{des}} \gets v_\theta(z)$
+      \Comment{Learned velocity field (MLP forward pass)}
+    \State $\ddot{q}_{\mathrm{des}} \gets
+      (\dot{q}_{\mathrm{des}} - \dot{q}_{\mathrm{prev}})
+      / \Delta t$
+      \Comment{Finite difference}
+    \State $\tau \gets M(q)\,\ddot{q}_{\mathrm{des}}
+      + C(q,\dot{q})\,\dot{q} + g(q)$
+      \Comment{Inverse dynamics}
+    \State \textsc{ApplyTorque}$(\tau)$
+  \EndWhile
+  \State \textsc{RetractTo}$(q_0)$
+    \Comment{Robot returns to home: $q(t_5) = q_0$}
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Inference flow: camera image in, torque out}
 
 The end-to-end inference pipeline at each control step $\Delta t$:
@@ -781,4 +975,146 @@ $N = 1$ (single sword, no mean field); $N = 2$ (mean field
 $\bar{U}$ appears over 2 blocks); $N = 3$ (phase transition:
 which block is the ``sword''?); $N \to \infty$ (full mean-field
 regime of \cref{thm:meanfield}).
+\end{remark}
+
+\subsection{Adversarial robustness: 风 (wind)}
+
+Introduce a stochastic wind field $\mathcal{W}(t)$ that applies
+an external wrench to every placed block at each timestep:
+\[
+  F_{\mathrm{wind}}^{(k)}(t)
+  = A_{\mathrm{wind}}(t)\, \hat{n}(t),
+  \qquad
+  A_{\mathrm{wind}} \sim
+  \mathrm{Uniform}(0,\, F_{\max}),
+  \quad
+  \hat{n} \sim S^2,
+\]
+where $A_{\mathrm{wind}}$ is the gust magnitude and $\hat{n}$
+is a random direction on the unit sphere.  In MuJoCo, this is a
+single line: \texttt{data.xfrc\_applied[block\_id] = F\_wind}.
+
+The wind is a sword in the exact sense of \cref{def:sword}:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{Autonomous actuation.}  $U_{\mathcal{W}} \neq
+  \varnothing$: the wind applies force independently of the
+  robot's control.  The robot cannot command the wind.
+  \item \textbf{Observable.}  The wind's effect is observable
+  through two channels: the $\rho$ monitor detects shifting
+  contact forces ($\lambda_1$ drops as a block slides), and
+  the wrist camera detects displaced blocks
+  ($g_k(\tau) \neq g_k^*$).
+\end{enumerate}
+
+\begin{proposition}[Wind couples directly to $\rho$ and
+$\lambda_1$]\label{prop:m-wind}
+Let block $B_k$ be placed at $g_k^*$ with contact graph Laplacian
+$L_{G_c}$ and spectral gap $\lambda_1$.  An external wrench
+$F_{\mathrm{wind}}$ shifts the contact force balance:
+\[
+  \lambda_1'
+  = \lambda_1
+  - \frac{\|F_{\mathrm{wind}}^{\perp}\|}{m_k\, g},
+\]
+where $F_{\mathrm{wind}}^{\perp}$ is the component of
+the wind force perpendicular to the support normal.
+Three regimes:
+\begin{enumerate}[label=(\alph*),nosep]
+  \item $\lambda_1' \geq \varepsilon$: block stable.
+  No action needed.
+  \item $0 < \lambda_1' < \varepsilon$: block sliding.
+  The FSM detects $\lambda_1 < \varepsilon$ and the robot
+  may intervene (regrasp or reposition).
+  \item $\lambda_1' \leq 0$: block toppled.  The contact graph
+  disconnects, $\rho \to 0$ for the toppled block.  The robot
+  detects the topple via the $\rho$ monitor and replans:
+  $P^* \gets \mathrm{MPPI}(G_{\mathrm{task}},
+  \{g_i(\tau)\}, \{g_i^*\}, K, \alpha)$ with updated block
+  state.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+The wind wrench adds a lateral force to the contact equilibrium.
+The contact graph Laplacian edge weights are
+$w_{ij} = k_n \cdot \rho_{ij}$, where $\rho_{ij}$ is the local
+contact force ratio.  The lateral wind reduces the normal force on
+the leeward contact (the finger or table edge facing away from the
+wind), decreasing $w_{ij}$ and hence $\lambda_1$.  When
+$\lambda_1 \leq 0$, the graph disconnects: the block is no longer
+in force closure and topples under gravity.  The $\rho$ monitor
+detects this as a $\Sigma$-crossing ($\rho$ drops through~$1$),
+triggering the FSM to re-enter Phase~1 for the affected block.
+By \cref{alg:m-pipeline}, the DAG is recomputed from the current
+block state; the toppled block re-enters as an unplaced node.
+\end{proof}
+
+\begin{remark}[Training with wind]
+\label{rem:m-wind-training}
+During training, the wind is a stochastic perturbation with
+scheduled intensity:
+\[
+  F_{\max}(\text{epoch})
+  = F_{\max}^{(0)}
+  + (F_{\max}^{(1)} - F_{\max}^{(0)})
+  \cdot \min\!\bigl(1,\;
+  \text{epoch}/\text{epoch}_{\mathrm{anneal}}\bigr).
+\]
+Starting from $F_{\max}^{(0)} = 0$ (no wind) and annealing to
+$F_{\max}^{(1)}$ (e.g., $0.5\,m_k g$, half the block's weight).
+This is \emph{not} a new reward signal---the MMD loss
+(\cref{eq:m-loss}) already penalises any deviation from
+$\mu_T^{\mathrm{target}}$, including wind-induced deviations.
+The wind's sole effect is to broaden the state distribution:
+$\mu_0$ now includes partially toppled stacks.
+The velocity field $v_\theta$ trained on this broadened $\mu_0$
+learns to recover from mid-stack perturbations without any
+reward engineering.
+
+The wind intensity $F_{\max}$ is a fourth curriculum axis,
+orthogonal to the three in \cref{sec:m-curriculum}:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Axis} & \textbf{Symbol} & \textbf{Tests} \\
+\midrule
+Layers & $L$ & Stability, DAG depth \\
+Count & $N$ & Mean field, MPPI scaling \\
+Types & $K_{\mathrm{type}}$ & Observer, identifiability \\
+Wind & $F_{\max}$ & Robustness, recovery \\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{remark}
+
+\begin{remark}[Why the ambient dimension is $d = 4$]
+\label{rem:m-d4}
+Every object in this chapter---the robot's end-effector, each
+block, the wrist camera's field of view---traces a worldline in
+physical spacetime $\R^3 \times \R^1 = \R^4$.  The temporal
+coordinate is the irreversible wall-clock time of
+\cref{rem:di-temporal,rem:temporal}: the robot executes in
+real time, the block falls under real gravity, and the camera
+captures frames at real instants.
+
+The Hausdorff dimension intersection criterion
+(\cref{rem:d4-not-analogy}) applies directly.  The robot's
+execution path and a given block's worldline are each curves of
+Hausdorff dimension~$2$ (Brownian scaling under finite-bandwidth
+control).  Two such curves generically intersect in $\R^d$ iff
+$2 + 2 \geq d$.  At $d = 4$ the intersection is \emph{marginal}:
+the robot cannot passively encounter the block---it must actively
+steer toward it.
+
+This is precisely why Phase~1 (approach) exists: the robot must
+\emph{seek} the $\Sigma$-crossing.  The five-phase cycle
+(\cref{sec:m-phases}) is the structure that the
+$d_c = 4$ marginality forces.  In $d = 3$ (no time axis), the
+robot and block would generically share a point; manipulation
+would require no planning.  In $d = 5$ (extra spatial dimension),
+intersection would be transient; stable grasps would be
+impossible.  The physical spacetime $d = 3 + 1 = 4$ is the
+critical dimension at which manipulation is both necessary and
+possible---the same marginality that governs
+\cref{thm:alien-triviality}.
 \end{remark}

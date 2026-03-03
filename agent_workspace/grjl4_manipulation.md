@@ -1014,6 +1014,270 @@ $\frac{1}{2} u^\top R u$ with $u = \mathcal{D}(x, v_\theta)$.
 
 ---
 
+## 10.5. Bi-level formulation: grasping nested within transport
+
+### The observation (from floating-gripper experiments)
+
+The five-phase pick-place cycle (§2) contains an **inner optimisation
+problem** that is invisible in the operator notation $T_0 \to T_1 \to
+T^* \to T_1^{-1} \to T_0^{-1}$ but dominates the physics.
+
+The outer problem is **trajectory planning**: move the object from
+$g^A \in \text{SE}(3)$ to $g^B \in \text{SE}(3)$.
+
+The inner problem is **force closure maintenance**: at every instant
+$t \in [t_1, t_4]$ (phases 2–4), the gripper must exert finger
+forces $f_L(t), f_R(t)$ such that the contact graph Laplacian's
+spectral gap satisfies $\lambda_1(t) \geq \varepsilon$.
+
+These are coupled: the outer trajectory determines the inertial
+loads the inner grasp must resist, and the inner grasp's feasibility
+constrains the outer trajectory's velocity and acceleration.
+
+### The bi-level programme
+
+$$
+\boxed{
+\begin{aligned}
+\textbf{Outer:} \quad & \min_{v_\theta} \; \mathbb{E}_{X_0 \sim \mu_0}\!\left[\int_0^T L(X_t, v_\theta) \, dt + \Psi(X_T)\right] \\
+& \text{s.t.} \quad \partial_t \mu + \nabla \cdot (\mu v_\theta) = 0 \\
+& \phantom{\text{s.t.}} \quad \lambda_1^*(t) \geq \varepsilon \quad \forall\, t \in [t_1, t_4] \\[6pt]
+\textbf{Inner:} \quad & \lambda_1^*(t) = \max_{f \in \mathcal{F}(t)} \; \lambda_1(L_G(f)) \\
+& \text{s.t.} \quad f \in \text{FC}(\mu_s) : \quad
+  \sqrt{f_{t1}^2 + f_{t2}^2} \leq \mu_s \, f_n \quad \text{(friction cone)} \\
+& \phantom{\text{s.t.}} \quad \sum_i f_i = m(\ddot{x}_\text{des}(t) - g)
+  + F_\text{wind}(t) \quad \text{(Newton)} \\
+& \phantom{\text{s.t.}} \quad f_n \geq 0 \quad \text{(unilateral contact)}
+\end{aligned}
+}
+$$
+
+where:
+- **Outer decision variable:** velocity field $v_\theta(x,t)$
+  determining the object trajectory $X_t$
+- **Inner decision variable:** finger force distribution
+  $f = (f_L, f_R) \in \mathbb{R}^6$ (normal + 2 tangential per finger)
+- **Coupling (outer → inner):** The desired acceleration
+  $\ddot{x}_\text{des}(t) = \dot{v}_\theta + (v_\theta \cdot \nabla) v_\theta$
+  enters the Newton constraint. Fast trajectories
+  demand larger $f_n$, which may exceed actuator limits.
+- **Coupling (inner → outer):** The outer constraint
+  $\lambda_1^*(t) \geq \varepsilon$ restricts the set of feasible
+  trajectories. If no force distribution can maintain $\lambda_1 \geq \varepsilon$
+  at the commanded acceleration, the trajectory is infeasible.
+
+### Force closure as the inner feasibility set
+
+For a parallel-jaw grasp with friction coefficient $\mu_s$, the
+inner problem has a closed-form feasibility condition. The grasp
+wrench space (GWS) is:
+
+$$
+\mathcal{W}_\text{grasp} = \left\{ w = \sum_{i \in \{L,R\}} J_c^{(i)\top} f_i \;\middle|\; f_i \in \text{FC}_i(\mu_s) \right\}
+$$
+
+The object's required wrench at time $t$ is:
+
+$$
+w_\text{req}(t) = \begin{pmatrix} m\,\ddot{x}_\text{des}(t) - m g + F_\text{wind}(t) \\ I\,\dot{\omega}_\text{des}(t) \end{pmatrix}
+$$
+
+**Force closure holds iff** $w_\text{req}(t) \in \text{int}(\mathcal{W}_\text{grasp})$.
+
+For the parallel-jaw case this simplifies to:
+
+$$
+\lambda_1 \geq \varepsilon \quad \Longleftrightarrow \quad
+2\mu_s N(t) \geq m\,|\ddot{x}_z(t) + g| + |F_\text{wind}^\perp(t)|
+$$
+
+where $N(t)$ is the normal clamping force per finger. The factor
+of 2 comes from two symmetric contacts; $|\ddot{x}_z + g|$ is the
+net vertical load; $F_\text{wind}^\perp$ is the wind component
+perpendicular to the contact normal.
+
+### The velocity constraint (how inner limits outer)
+
+Rearranging the force closure condition for the maximum feasible
+vertical acceleration:
+
+$$
+|\ddot{x}_z(t)| \leq \frac{2\mu_s N_\text{max} - |F_\text{wind}^\perp(t)|}{m} - g
+$$
+
+This is a **state-dependent acceleration bound** on the outer
+trajectory. It depends on:
+- $N_\text{max}$: maximum normal force the actuator can exert
+  (gripper kp × finger displacement limit)
+- $\mu_s$: pad-to-block friction coefficient
+- $F_\text{wind}^\perp(t)$: current wind perturbation (stochastic)
+- $m$: block mass (estimated from lift phase: $\hat{m} = \tau_\text{ext}/g$)
+
+**Consequence:** The outer planner cannot command arbitrarily fast
+trajectories. Lift velocity, rotation rate, and descent velocity
+are all bounded by the inner problem's feasibility set. This is
+the coupling that makes the problem genuinely bi-level, not merely
+sequential.
+
+### MuJoCo verification (from floating-gripper experiments)
+
+The floating-gripper test fixture (`scene/floating_gripper.xml`)
+verified the bi-level structure empirically:
+
+| Finding | What it demonstrates |
+|---------|---------------------|
+| Mocap bodies have zero solver velocity → zero friction | The inner problem (friction generation) is **physical**, not numerical. MuJoCo's velocity-level contact solver requires real body velocity to generate friction. |
+| Architecture: mocap → weld → dynamic body → fingers | The weld transfers commanded position to a body that participates in the velocity-level solver. Friction is now generated correctly. |
+| $2\mu N = 15.2$ N $\gg mg = 0.98$ N (margin) | Force closure is easily satisfied statically. The inner problem becomes non-trivial only under dynamics (inertial loads, wind). |
+| Wind at $0.8 mg$ reduces $\lambda_1$ | Wind enters the inner problem as an additive wrench, consuming friction margin. |
+| Instantaneous mocap teleport flings the block | Violating the velocity constraint (inner → outer coupling): the acceleration exceeds what the weld + friction can support. Ramped transitions (`_ramp_mocap`) respect the bound. |
+
+### Flow diagram
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    BI-LEVEL PICK-PLACE                          │
+│                                                                 │
+│  ┌───────────────────────────────────────────────────────────┐  │
+│  │  OUTER LEVEL: Trajectory Optimisation                     │  │
+│  │                                                           │  │
+│  │  min_{v_θ}  E[ ∫ L(X,v) dt + Ψ(X_T) ]                  │  │
+│  │  s.t. continuity equation                                 │  │
+│  │       λ₁*(t) ≥ ε  ∀ t ∈ [t₁, t₄]  ←── from inner       │  │
+│  │                                                           │  │
+│  │  Decides: object pose trajectory X(t) ∈ SE(3)            │  │
+│  │  Outputs: desired acceleration ẍ_des(t)  ───┐            │  │
+│  └─────────────────────────────────────────────┼────────────┘  │
+│                                                 │               │
+│                                                 ▼               │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  INNER LEVEL: Force Closure Maintenance                     ││
+│  │                                                             ││
+│  │  max_f  λ₁(L_G(f))                                        ││
+│  │  s.t. friction cone:  |f_t| ≤ μ f_n                       ││
+│  │       Newton:  Σf = m(ẍ_des - g) + F_wind                 ││
+│  │       unilateral:  f_n ≥ 0                                 ││
+│  │                                                             ││
+│  │  Decides: finger forces f_L(t), f_R(t)                     ││
+│  │  Returns: λ₁*(t) = achievable spectral gap  ───┐           ││
+│  └──────────────────────────────────────────────────┼──────────┘│
+│                                                      │          │
+│                        ┌─────────────────────────────┘          │
+│                        ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────┐│
+│  │  COUPLING                                                   ││
+│  │                                                             ││
+│  │  Outer → Inner:  ẍ_des(t) sets the required wrench         ││
+│  │                  Fast traj → large wrench → harder closure  ││
+│  │                                                             ││
+│  │  Inner → Outer:  λ₁*(t) ≥ ε constrains feasible ẍ         ││
+│  │                  |ẍ_z| ≤ (2μN_max - |F_wind⊥|)/m - g      ││
+│  │                                                             ││
+│  │  Wind → Inner:   F_wind(t) consumes friction margin        ││
+│  │                  Stronger wind → tighter velocity bound     ││
+│  │                                                             ││
+│  │  Mass → Both:    m̂ estimated during lift (instinct)        ││
+│  │                  Enters both Newton eqn and accel bound     ││
+│  └─────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### The three-level nesting (complete picture)
+
+The bi-level pick-place sits *inside* the two-level architecture
+of §7. The complete nesting is:
+
+```
+LEVEL 0 (discrete): Task planner — MPPI over DAG
+  Which block? Which order? Which grasp type?
+  Space: O(N! · G^N)  →  K samples
+     │
+     │  for each block b_i in plan:
+     ▼
+LEVEL 1 (continuous): Trajectory optimisation — OT velocity field
+  How to move block from g^A to g^B?
+  Decides: v_θ(x,t) → acceleration profile ẍ_des(t)
+     │
+     │  at every timestep t:
+     ▼
+LEVEL 2 (algebraic): Force closure maintenance
+  Can the gripper hold the block at this acceleration?
+  Decides: finger forces f(t) s.t. 2μN ≥ m|ẍ + g| + |F_wind|
+  Returns: λ₁*(t) ≥ ε  (feasible) or < ε (infeasible → replan)
+```
+
+Level 2 is the fastest (algebraic, O(1) per timestep).
+Level 1 is smooth (gradient-based, differentiable through ODE).
+Level 0 is combinatorial (sampling-based, non-differentiable).
+
+The hierarchy matches the paper's detection-actuation separation:
+- Level 0 = detection $\mathrm{Obs}$ (what to manipulate)
+- Level 1 = actuation $C(x)$ (how to move it)
+- Level 2 = viability check (can we hold it?)
+
+### Grasping as a manipulation singularity
+
+Force closure is a **contact singularity** — the $\Sigma$-crossing
+creates a topological change in the configuration space.
+
+Before contact ($\rho < 1$): the object has 6 independent DOF in
+$\text{SE}(3)$. The relative-motion Jacobian
+$J_\text{rel}$ between gripper and object has full rank. The
+system is non-singular — gripper and object are independent.
+
+At grasp ($\rho \geq 1$): each frictional point contact constrains
+up to 3 DOF (the friction cone spans 3 directions). Two parallel
+contacts → up to 6 constraints. The rank of the independent
+object-motion space drops:
+
+$$
+\text{rank}(G) : \; 0 \;\xrightarrow{\;\Sigma\;}\; 6
+\qquad\text{(grasp matrix spans full wrench space)}
+$$
+
+| State | rank$(G)$ | Object unconstrained DOF | Physical meaning |
+|-------|-----------|--------------------------|------------------|
+| Pre-contact ($\rho < 1$) | 0 | 6 (free) | Independent dynamics |
+| Partial contact | $0 < r < 6$ | $6-r$ | Can still slide/rotate in unconstrained directions |
+| Force closure ($\lambda_1 \geq \varepsilon$) | 6 | 0 (locked) | No independent motion — **complete singularity** |
+
+This is literally a singularity: the object's unconstrained DOF
+drops discontinuously from 6 to 0 at $\Sigma$ as the grasp
+matrix achieves full rank. The contact constraints merge two
+previously independent bodies into one coupled system. The
+spectral gap $\lambda_1$ measures the **margin** of the
+singularity — how far inside the force-closure manifold the
+system sits.
+
+**The "attaching lock" interpretation:** Force closure is a lock
+that attaches the object to the gripper. The lock's strength is
+$\lambda_1$. Wind and inertial loads attempt to break the lock
+(reduce $\lambda_1$). The inner optimisation problem (Level 2)
+maintains the lock. The robot *deliberately creates* this
+singularity (Phase 2) and *deliberately dissolves* it (Phase 4).
+
+**Connection to the sword lifecycle:** Creating the singularity
+= creating the sword. The object acquires actuation (it can now
+exert forces on the gripper through the contact — condition (1)
+of def:sword). The singularity = the locked state = absorption
+(Phase 3). Dissolving the singularity = resolving the sword.
+The manipulation cycle is a controlled creation and dissolution
+of a contact singularity.
+
+### Connection to the paper's forcing lemma
+
+The inner problem is the manipulation instantiation of
+lem:forcing (results.tex). The forcing lemma says: if a sword
+persists, the king's compensation cost is unbounded over time.
+In manipulation: if the gripper must maintain force closure
+indefinitely under stochastic wind, the expected cumulative
+friction energy diverges — the gripper must eventually place
+the block. The bi-level structure makes this precise: Level 2's
+friction margin shrinks under wind, forcing Level 1 to complete
+the transport in finite time.
+
+---
+
 ## 11. What needs to be built (code-level, for grjl4/)
 
 Following the grjl1 $\to$ grjl2 $\to$ grjl3 progression:

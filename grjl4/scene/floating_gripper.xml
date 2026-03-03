@@ -1,0 +1,196 @@
+<!--
+  grjl4 — Free-floating gripper test fixture.
+
+  Architecture: mocap_target → [weld equality] → dynamic hand → fingers
+  The mocap body is invisible and provides 6-DOF Cartesian commands.
+  The weld equality transfers the command to a dynamic hand body that
+  participates in the velocity-level contact solver. This is essential:
+  mocap bodies have zero solver velocity, so friction forces on their
+  child geoms are never generated. The dynamic hand body has real
+  velocity, so pad–block friction correctly resists sliding.
+
+  Purpose: test Links 1-3 (ρ, λ₁, wind, observer) without arm IK.
+  Script: move → close → lift → rotate → wind → place → open.
+
+  Visual convention:
+    - Blocks: group 0 (opaque, coloured by material)
+    - Gripper: group 1 (translucent steel, visually distinct)
+    - Contact surfaces: same geoms used for both visual + collision
+-->
+<mujoco model="grjl4_floating_gripper">
+
+  <compiler angle="radian" autolimits="true" meshdir="../assets"/>
+
+  <visual>
+    <global offwidth="1280" offheight="960"/>
+    <map force="0.05" zfar="5"/>
+  </visual>
+
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicit"
+          cone="elliptic" impratio="10">
+    <flag contact="enable"/>
+  </option>
+
+  <size nconmax="200" njmax="500"/>
+
+  <!-- ── Defaults ─────────────────────────────────────── -->
+  <default>
+    <default class="block">
+      <geom condim="4" friction="0.8 0.8 0.001" density="625"
+            solref="0.004 0.8" solimp="0.95 0.99 0.001"
+            group="0"/>
+    </default>
+    <default class="finger_pad">
+      <!-- Both tangent friction coefficients must be high enough
+           to support the block weight via force closure:
+           2μN ≥ mg → μ ≥ mg/(2N). With N≈4N and mg≈1N, μ≥0.125.
+           We use μ=1.0 for robust margin. -->
+      <geom type="box" condim="4" friction="1.0 1.0 0.001"
+            solref="0.005 1" solimp="0.95 0.99 0.001"
+            group="1"/>
+    </default>
+  </default>
+
+  <!-- ── Assets ───────────────────────────────────────── -->
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7"
+             rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker"
+             mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+             markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane"
+              texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+
+    <!-- Block colours -->
+    <material name="block_cube"     rgba="0.9 0.2 0.2 1"/>
+    <material name="block_cuboid"   rgba="0.2 0.7 0.2 1"/>
+    <material name="block_mortise"  rgba="0.2 0.3 0.9 1"/>
+    <material name="block_tenon"    rgba="0.9 0.6 0.1 1"/>
+
+    <!-- Gripper appearance -->
+    <material name="gripper_body" rgba="0.5 0.55 0.6 0.3"
+              specular="0.5" shininess="0.5"/>
+    <material name="finger_steel" rgba="0.65 0.68 0.7 0.9"
+              specular="0.8" shininess="0.8"/>
+
+    <!-- Block meshes (scale 1.0) -->
+    <mesh name="mortise_L" file="mortise_L.stl"/>
+    <mesh name="mortise_R" file="mortise_R.stl"/>
+    <mesh name="tenon"     file="tenon.stl"/>
+
+    <!-- Scaled meshes (0.7×) -->
+    <mesh name="mortise_L_s070" file="mortise_L_s070.stl"/>
+    <mesh name="mortise_R_s070" file="mortise_R_s070.stl"/>
+    <mesh name="tenon_s070"     file="tenon_s070.stl"/>
+
+    <!-- Scaled meshes (1.3×) -->
+    <mesh name="mortise_L_s130" file="mortise_L_s130.stl"/>
+    <mesh name="mortise_R_s130" file="mortise_R_s130.stl"/>
+    <mesh name="tenon_s130"     file="tenon_s130.stl"/>
+  </asset>
+
+  <!-- ── World ────────────────────────────────────────── -->
+  <worldbody>
+    <light pos="0 0 2.0" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane"
+          material="groundplane"/>
+
+    <camera name="overhead" pos="0.3 0 0.6" xyaxes="1 0 0 0 1 0"/>
+    <camera name="side"     pos="0.6 0 0.15" xyaxes="0 1 0 0 0 1"/>
+
+    <!-- ── Mocap target (invisible command body) ──────── -->
+    <body name="mocap_target" mocap="true" pos="0.3 0 0.25"
+          quat="0.707107 0.707107 0 0">
+      <geom type="sphere" size="0.003" rgba="1 0 0 0.3"
+            contype="0" conaffinity="0" group="2"/>
+    </body>
+
+    <!-- ── Dynamic hand body (welded to mocap) ────────── -->
+    <!--
+      This body is DYNAMIC (has mass, participates in solver).
+      The weld equality below keeps it locked to mocap_target.
+      Because it's dynamic, its child finger geoms have real
+      velocities and the contact solver generates proper friction.
+
+      Coordinate mapping (hand-local → world), same as mocap_target:
+        local x → world  x    (left/right)
+        local y → world  z    (up)
+        local z → world −y    (forward)
+    -->
+    <body name="hand" pos="0.3 0 0.25" quat="0.707107 0.707107 0 0">
+      <freejoint name="hand_joint"/>
+      <geom name="hand_visual" type="box" size="0.025 0.012 0.015"
+            material="gripper_body" contype="0" conaffinity="0"
+            group="1" mass="0.5"/>
+
+      <!-- Left finger: slides along local +x (= world +x) -->
+      <body name="left_finger" pos="0 -0.025 0">
+        <joint name="finger_joint1" type="slide" axis="1 0 0"
+               range="0 0.04" damping="20"/>
+        <geom name="left_pad" class="finger_pad"
+              size="0.008 0.018 0.012" pos="0.008 -0.012 0"
+              material="finger_steel"/>
+      </body>
+
+      <!-- Right finger: slides along local −x (= world −x) -->
+      <body name="right_finger" pos="0 -0.025 0">
+        <joint name="finger_joint2" type="slide" axis="-1 0 0"
+               range="0 0.04" damping="20"/>
+        <geom name="right_pad" class="finger_pad"
+              size="0.008 0.018 0.012" pos="-0.008 -0.012 0"
+              material="finger_steel"/>
+      </body>
+    </body>
+
+    <!-- ── Blocks ──────────────────────────────────────── -->
+    <body name="block_cube_0" pos="0.3 0 0.02">
+      <freejoint name="block_cube_0_joint"/>
+      <geom name="block_cube_0_geom" class="block" type="box"
+            size="0.02 0.02 0.02" material="block_cube" mass="0.1"/>
+      <!-- Face marker on +x face: makes rotation visible -->
+      <geom name="block_cube_0_mark" type="box"
+            size="0.001 0.008 0.008" pos="0.02 0 0"
+            rgba="1 1 0.2 1" contype="0" conaffinity="0"
+            group="0" mass="0.001"/>
+    </body>
+
+    <!-- Goal pose ghost (translucent green, no collision) -->
+    <body name="goal" pos="0.3 0.08 0.02"
+          quat="0.707107 0 0 0.707107">
+      <geom name="goal_geom" type="box" size="0.021 0.021 0.021"
+            rgba="0.2 0.9 0.2 0.15" contype="0" conaffinity="0"
+            group="0"/>
+      <geom name="goal_mark" type="box"
+            size="0.001 0.008 0.008" pos="0.021 0 0"
+            rgba="0.5 1 0.2 0.2" contype="0" conaffinity="0"
+            group="0" mass="0.001"/>
+    </body>
+
+  </worldbody>
+
+  <!-- ── Constraints ──────────────────────────────────── -->
+  <equality>
+    <!-- Weld hand to mocap target: transfers position command
+         to a dynamic body that has real solver velocity -->
+    <weld body1="mocap_target" body2="hand"
+          solref="0.001 1" solimp="0.95 0.99 0.001"/>
+
+    <!-- Couple finger joints (symmetric open/close) -->
+    <joint joint1="finger_joint1" joint2="finger_joint2"
+           solimp="0.95 0.99 0.001" solref="0.005 1"/>
+  </equality>
+
+  <actuator>
+    <!-- ctrl=0 → closed, ctrl=0.04 → fully open -->
+    <position name="fingers" joint="finger_joint1"
+              kp="800" ctrlrange="0 0.04"/>
+  </actuator>
+
+  <keyframe>
+    <key name="ready"
+         qpos="0.3 0 0.25 0.707107 0.707107 0 0 0.02 0.02
+               0.3 0 0.02 1 0 0 0"
+         ctrl="0.04"/>
+  </keyframe>
+
+</mujoco>
