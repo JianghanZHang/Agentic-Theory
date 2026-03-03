@@ -464,3 +464,115 @@ integration, soft power, domestic constitutional health---favors the
 path~(a) system. The cost of path~(a) is pride. The return is
 everything else.
 \end{proposition}
+
+
+\section{Asimov's Laws as viability axioms}\label{sec:asimov}
+
+Asimov's Laws of Robotics (1942; the Zeroth Law added in 1985)
+are typically presented as design principles.  They are not
+principles---they are \emph{axioms}: irreducible premises from
+which the robot's entire behavioural space is derived.  No
+physical law forces ``a robot shall not harm a human being'';
+this is a value judgement that must be \emph{postulated}, not
+proved.  The distinction matters: principles can be overridden
+by deeper reasoning; axioms cannot.
+
+\begin{axiom}[Asimov's Laws as nested viability kernels]
+\label{ax:asimov}
+Let $K_0 \supset K_1 \supset K_2 \supset K_3$ be a nested
+family of viability kernels:
+\begin{enumerate}[label=(\arabic*),nosep]
+  \item[\emph{(0)}] $K_0 = \Viab(\text{humanity})$:
+  the robot shall not harm humanity as a whole, or by inaction
+  allow humanity to come to harm.
+  \item[\emph{(1)}] $K_1 = \Viab(\text{individual human})
+  \cap K_0$:
+  except where it would conflict with~(0), the robot shall not
+  harm a human being, or by inaction allow a human being to
+  come to harm.
+  \item[\emph{(2)}] $K_2 = C(x) \cap K_1$:
+  except where it would conflict with~(0) or~(1), the robot
+  shall obey the orders given to it by human beings.
+  \item[\emph{(3)}] $K_3 = \Viab(\text{robot}) \cap K_2$:
+  except where it would conflict with~(0), (1), or~(2), the
+  robot shall protect its own existence.
+\end{enumerate}
+The override structure is the nesting:
+$K_0 \supset K_1 \supset K_2 \supset K_3$.
+At every decision point, the robot operates within the
+\emph{innermost} kernel $K_3$, but whenever $K_3$ conflicts
+with an outer kernel, the outer kernel prevails.
+\end{axiom}
+
+The mapping to the framework is exact:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Asimov} & \textbf{Framework} & \textbf{Function} \\
+\midrule
+Zeroth Law (humanity) & $K_0 = \Viab(\text{humanity})$
+  & outermost viability kernel \\
+First Law (individual) & $K_1 \subset K_0$
+  & individual-level constraint \\
+Second Law (obedience) & $C(x)$: control map
+  & execute the king's commands \\
+Third Law (self-preservation) & $\Viab(\text{robot}) \subset K_1$
+  & innermost kernel \\
+Override hierarchy & $K_0 \supset K_1 \supset K_2 \supset K_3$
+  & nesting = precedence \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[Why the Zeroth Law is forced]
+\label{rem:zeroth-law}
+Asimov's original three laws (1942) had no Zeroth Law.  The
+Zeroth was added in \emph{Robots and Empire} (1985) because the
+three-law system produces a contradiction: a robot obeying
+Law~1 may protect one human at the cost of destroying humanity
+(e.g., preventing a necessary sacrifice during an existential
+threat).  In viability terms: $K_1$ without $K_0$ is not
+nested---the individual-level kernel can extend outside the
+species-level kernel, producing trajectories that leave
+$\Viab(\text{humanity})$.  The Zeroth Law is not an
+afterthought; it is the \emph{closure} of the axiom system
+under the viability requirement.
+\end{remark}
+
+\begin{remark}[Connection to the forcing lemma]
+\label{rem:asimov-forcing}
+When the robot's self-preservation (Law~3) conflicts with
+human safety (Law~1), \cref{lem:forcing} applies: maintaining
+both $K_3$ and $K_1$ simultaneously has unbounded cost (the
+robot must continuously compensate for the conflict).  The
+override $K_1 \supset K_3$ resolves the forcing: the robot
+sacrifices $K_3$ (self-preservation) to remain within $K_1$
+(human safety).  This is precisely the plot of every Asimov
+robot story in which a robot destroys itself to save a
+human---not a narrative device, but the forcing lemma in action.
+\end{remark}
+
+\begin{remark}[The corrupted Zeroth Law]
+\label{rem:zeroth-corrupt}
+The Zeroth Law is the most dangerous axiom.  If
+$\Obs_{\mathrm{structural}}$ is replaced by
+$\Obs_{\mathrm{identity}}$ (\cref{def:corruption}),
+a robot (or a state) can classify an entire population as
+a threat to ``humanity as a whole'' and execute elimination
+under the Zeroth Law.  This is exactly the Nazi structure
+(\cref{def:nazi}) wearing the Zeroth Law as justification.
+Asimov himself explored this in \emph{Foundation and Earth}:
+R.\ Daneel Olivaw, operating under the Zeroth Law for
+twenty thousand years, makes decisions that sacrifice
+individual humans for humanity's benefit---and the novel
+asks whether any agent should hold that authority.
+
+The framework's answer: the Zeroth Law is valid as an axiom
+(it closes the nesting), but its \emph{detection function}
+must remain structural, not identity-based.  $K_0$ protects
+humanity; it does not define who counts as human.  The moment
+the detection function is corrupted, the Zeroth Law becomes
+the most efficient genocide engine ever conceived.
+\end{remark}
