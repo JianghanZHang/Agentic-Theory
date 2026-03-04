@@ -571,6 +571,322 @@ fuses all three, weighted by their respective
 $\tau(\Obs)$ thresholds---the multi-channel version of the
 detection function (\cref{eq:detection}).
 
+\subsection{Stochastic FOV field}
+\label{sec:m-stochastic-fov}
+
+So far the field of view $\mathrm{FOV}(g)$ has been a deterministic
+set---a sharp cone with a crisp boundary.  Real cameras violate this
+idealisation in at least three ways:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \emph{Soft boundary.}  Lens aberrations, diffraction, and
+  depth-of-field effects blur the geometric cone into a graded
+  region.
+  \item \emph{Partial transmittance.}  Occlusion, dust, and
+  participating media (fog, smoke) attenuate visibility even inside
+  the cone.
+  \item \emph{Sensor noise.}  Photon statistics and electronic read
+  noise corrupt the signal at every pixel.
+\end{enumerate}
+All three layers of randomness admit a unified description as a
+\emph{Gaussian process on the product space}
+$\R^3 \times SE(3)$.
+
+\paragraph{Three-layer decomposition.}
+Define the \emph{stochastic visibility function}
+\begin{equation}\label{eq:m-fov-product}
+  \Phi(x, g)
+  \;=\;
+  \underbrace{\mathbf{1}_{x \in \mathrm{FOV}(g)}}_{\text{boundary}}
+  \;\cdot\;
+  \underbrace{T(x \to g)}_{\text{transmittance}}
+  \;\cdot\;
+  \underbrace{R(x, g)}_{\text{sensor response}}.
+\end{equation}
+Each factor, when randomised, becomes a GP.
+
+\paragraph{Layer 1: geometric boundary (GP implicit surface).}
+The FOV boundary is a stochastic implicit surface in the sense of
+Seyb et al.~(2024):
+\begin{equation}\label{eq:m-gp-boundary}
+  \partial\mathrm{FOV}(g)
+  = \{x : f_g(x) = 0\},
+  \qquad
+  f_g \sim \mathcal{GP}(\mu_g,\, K_{\mathrm{geom}}),
+\end{equation}
+where $\mu_g(x)$ is the signed distance from $x$ to the ideal
+pinhole cone and $K_{\mathrm{geom}}$ is a covariance kernel
+(e.g.\ Mat\'ern) on the unit sphere of directions.  Variance
+$\to 0$ recovers the sharp cone; variance $\to \infty$ dissolves
+the boundary into a volume.  This is the \emph{surface--volume
+continuum} of Seyb et al.  Xu et al.~(2025) show that sparse
+convolution kernels make the GP implicit surface practical for
+real-time inference.
+
+\paragraph{Layer 2: volumetric transmittance.}
+Even inside the cone, visibility is attenuated by occlusion and
+participating media.  The extinction coefficient is itself a random
+field:
+\begin{equation}\label{eq:m-gp-extinction}
+  \sigma_t \sim \mathcal{GP}(\bar{\sigma},\, K_{\mathrm{media}}).
+\end{equation}
+Classical Beer--Lambert transmittance
+$T = e^{-\int \sigma_t\,\mathrm{d}s}$ holds when scatterers are
+spatially uncorrelated.  When $K_{\mathrm{media}}$ has non-trivial
+spatial structure (correlated occluders, clustered dust), the
+transmittance becomes non-exponential---the framework of
+Bitterli et al.~(2018).
+
+\paragraph{Layer 3: sensor noise.}
+Pixel-level randomness from photon statistics and read noise:
+\begin{equation}\label{eq:m-gp-sensor}
+  Y(p) = \mathrm{signal}(p) + \epsilon(p),
+  \qquad
+  \epsilon \sim \mathcal{GP}(0,\, K_{\mathrm{sensor}}),
+\end{equation}
+where $K_{\mathrm{sensor}}$ encodes the optical point-spread
+function (spatial correlation across the sensor plane) plus
+independent read noise on the diagonal.
+
+\begin{definition}[Stochastic FOV field]
+\label{def:m-stochastic-fov}
+Combining all three layers, the \emph{stochastic FOV field} is the
+Gaussian process
+\begin{equation}\label{eq:m-fov-gp}
+  \Phi \sim \mathcal{GP}\bigl(\mu_{\mathrm{FOV}},\;
+  K_{\mathrm{FOV}}\bigr)
+  \quad \text{on } \R^3 \times SE(3),
+\end{equation}
+with mean function
+\begin{equation}\label{eq:m-fov-mean}
+  \mu_{\mathrm{FOV}}(x, g)
+  = \mathbf{1}_{x \in \mathrm{cone}(g)}
+  \cdot \bar{T}(x \to g)
+  \cdot \bar{R}(x, g)
+\end{equation}
+and covariance kernel
+\begin{equation}\label{eq:m-fov-kernel}
+  K_{\mathrm{FOV}}
+  = K_{\mathrm{geom}} \otimes K_{\mathrm{media}}
+    \otimes K_{\mathrm{sensor}}.
+\end{equation}
+The deterministic FOV of \cref{thm:m-invisible} is the limit
+$\mathrm{Var}(\Phi) \to 0$.
+\end{definition}
+
+\paragraph{Fiber bundle interpretation.}
+Each camera pose $g \in SE(3)$ defines a cone in $\R^3$.  The
+collection of cones forms a \emph{cone bundle} over $SE(3)$: the
+projection $\pi_g \colon \mathrm{FOV}(g) \to \mathrm{Im}$ (pinhole
+model) is the bundle projection; depth estimation
+$\sigma \colon \mathrm{Im} \to \mathrm{FOV}(g)$ is a section.  The
+GP operates on sections of this bundle.  The detection bandwidth
+$B = N_{\mathrm{pix}} \times \Omega$ of
+\cref{rem:m-bandwidth} is a \emph{holographic bound}: the 2D sensor
+surface has finite capacity to encode the 3D bulk, exactly as a
+holographic screen encodes one dimension higher.
+
+\begin{remark}[Probabilistic invisibility]
+\label{rem:m-soft-invisibility}
+\Cref{thm:m-invisible} (deterministic causal invisibility) is the
+$\mathrm{Var}(\Phi) \to 0$ limit of a softer statement.  For any
+block $B_k$ and camera pose $g$, the \emph{visibility probability}
+is
+\begin{equation}\label{eq:m-vis-prob}
+  P(B_k \text{ visible} \mid g)
+  = \mathbb{E}[\Phi(B_k, g)] \in [0,1].
+\end{equation}
+When the GP variance vanishes, this reduces to the indicator
+$\mathbf{1}_{\mathrm{supp}(B_k) \cap D(g) \neq \varnothing}$,
+recovering \cref{thm:m-invisible}.  The hard causal boundary is
+therefore a \emph{phase boundary} in the GP parameter space---a
+second-order transition between visible and invisible regimes.
+\end{remark}
+
+\paragraph{Connection to existing framework.}
+The stochastic FOV field threads through the structures already
+established in this chapter:
+\begin{itemize}[nosep]
+  \item The rendering operator $T(\theta)$ (the transfer matrix of
+  \cref{thm:m-invisible}) becomes a \emph{stochastic operator}
+  whose kernel is the GP covariance $K_{\mathrm{FOV}}$.
+  \item The detection bandwidth $B$ of \cref{rem:m-bandwidth}
+  becomes a random variable: a sample from
+  $\mathcal{GP}$ determines how many blocks are simultaneously
+  resolvable.
+  \item The feasibility constraint~(F4) of
+  \cref{def:m-feasible} becomes a \emph{probabilistic constraint}:
+  \[
+    P\bigl(b_i \in D(q_{\mathrm{pre},i})\bigr) \;\geq\; 1 - \delta.
+  \]
+  \item The FOV worldline of \cref{rem:m-d4} sweeps a
+  \emph{stochastic tube} in spacetime $\R^3 \times \R^1$: at each
+  instant the cross-section is not a sharp cone but a GP-distributed
+  random set.
+\end{itemize}
+
+\paragraph{RKHS structure of the FOV kernel space.}
+The GP kernel $K_{\mathrm{geom}}$ of \cref{eq:m-gp-boundary} is not a
+fixed object---it is parameterised by the camera intrinsics
+$\theta = (f, a, d_f)$: focal length, aperture, and focus distance.
+Each choice of $\theta$ defines a different kernel, hence a different
+reproducing kernel Hilbert space (RKHS) by the Moore--Aronszajn theorem.
+Formally:
+\begin{equation}\label{eq:m-kernel-param}
+  K_{\mathrm{geom}} = K_{\mathrm{geom}}(\theta),
+  \qquad
+  \theta = (f,\, a,\, d_f) \in \Theta \subset \R^3.
+\end{equation}
+The three intrinsics control geometrically distinct aspects of the FOV
+field (\cref{def:m-stochastic-fov}):
+\begin{itemize}[nosep]
+  \item \emph{Focal length $f$.}\enspace
+  Controls the cone opening angle
+  $\Omega = 2\arctan(w / 2f)$, where $w$ is the sensor width.  This
+  determines the \emph{support} of the GP mean $\mu_g$: which subset
+  of $\R^3$ has nonzero mean visibility.  Larger $f$ yields a narrower
+  FOV but higher angular resolution per pixel---a direct trade-off
+  with the detection bandwidth $B$ of \cref{rem:m-bandwidth}.
+  \item \emph{Aperture $a$ (f-number $N = f/a$).}\enspace
+  Controls the depth of field.  Geometrically, it governs the
+  \emph{variance} of $K_{\mathrm{geom}}$: a wide aperture (small $N$)
+  produces a thin depth of field, so the GP boundary is sharp only near
+  the focus plane and blurs rapidly away from it.  A narrow aperture
+  (large $N$) produces a wide depth of field---the GP variance is small
+  everywhere.
+  \item \emph{Focus distance $d_f$.}\enspace
+  Controls \emph{where along each ray} the GP variance is minimised:
+  the point of sharpest focus.  The variance profile along a ray
+  $\ell_p$ has a minimum at distance $d_f$ and grows quadratically
+  away from it (the circle-of-confusion scaling).
+\end{itemize}
+Each $\theta$ defines an RKHS
+$\mathcal{H}_\theta = \mathrm{RKHS}(K_{\mathrm{geom}}(\theta))$.
+The space of all camera configurations is therefore a \emph{family
+of RKHS's} parameterised by $\theta$:
+\[
+  \theta \;\mapsto\; \mathcal{H}_\theta
+  = \mathrm{RKHS}\bigl(K_{\mathrm{geom}}(\theta)\bigr).
+\]
+The RKHS norm $\|h\|_{\mathcal{H}_\theta}$ measures how ``complex''
+a visibility function $h$ is under camera setting $\theta$.  A block
+at the focus distance has low norm (easy to observe); a block far
+from focus has high norm (hard to observe).  The composite kernel
+$K_{\mathrm{FOV}}$ of \cref{eq:m-fov-kernel} inherits this
+parameterisation: the full FOV field lives in a $\theta$-dependent
+RKHS.
+
+\paragraph{Active optics as kernel optimisation.}
+For a target block $B_k$ at pose $g_k$, define the
+\emph{observation information gain} as the reduction in GP posterior
+entropy:
+\begin{equation}\label{eq:m-info-gain}
+  \mathcal{I}(\theta, g)
+  = H\bigl[\Phi(B_k, g)\bigr]
+  - H\bigl[\Phi(B_k, g) \mid Y(\theta, g)\bigr],
+\end{equation}
+where $H$ denotes differential entropy and $Y(\theta, g)$ is the image
+captured with camera intrinsics $\theta$ from pose $g$.  The robot
+seeks the joint optimum:
+\begin{equation}\label{eq:m-joint-opt}
+  (\theta^*,\, g^*)
+  = \arg\max_{\theta \in \Theta,\; g \in SE(3)}
+  \;\mathcal{I}(\theta, g).
+\end{equation}
+This is \emph{joint optimisation over pose and optics}.  The existing
+active perception loop (observe $\to$ plan $\to$ move $\to$ observe)
+optimises only $g$---where to look.  The kernel optimisation extends
+this to $\theta$---\emph{how} to look.  The combined problem optimises
+over the product space $SE(3) \times \Theta$.
+
+Because the GP posterior variance is differentiable in both $g$ and
+$\theta$, the gradient $\nabla_{(g,\theta)}\mathcal{I}$ is
+well-defined.  The robot can therefore perform gradient ascent in the
+product space, simultaneously adjusting its arm pose and its camera
+settings.  The gradient decomposes as
+\begin{equation}\label{eq:m-gradient-decomp}
+  \nabla_{(g,\theta)}\,\mathcal{I}
+  = \Bigl(\,
+    \underbrace{\nabla_g \mathcal{I}}_{\text{move}},\;\;
+    \underbrace{\nabla_\theta \mathcal{I}}_{\text{focus}}
+  \,\Bigr).
+\end{equation}
+The first component drives the arm (kinematic control---already
+present in the active perception loop).  The second component drives
+the lens (optical control---new).
+
+\paragraph{Biological analogy.}
+The joint optimisation~\eqref{eq:m-joint-opt} has a precise biological
+counterpart.  The mapping is:
+\begin{center}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Variable & Mathematical operation & Biological analogue \\
+\midrule
+Pose $g \in SE(3)$
+  & Gradient ascent on configuration manifold
+  & Eye saccade / head turning \\
+Focus distance $d_f$
+  & Move GP variance minimum along ray
+  & Accommodation (ciliary muscle) \\
+Aperture $a$
+  & Scale GP variance globally
+  & Pupil dilation / constriction \\
+Focal length $f$
+  & Resize cone support
+  & Absent in humans; present in \\
+  & & raptors (accommodation zones) \\
+\bottomrule
+\end{tabular}
+\end{center}
+Biological vision performs exactly this joint optimisation: the
+oculomotor system simultaneously controls gaze direction (saccades),
+accommodation (focus), and pupil size (aperture).  The GP framework
+reveals that these are \emph{kernel optimisation} operations in the
+FOV field's RKHS.
+
+\begin{remark}[Extended active perception loop]
+\label{rem:m-active-optics}
+The active perception loop of the observation--action coupling
+(\cref{sec:m-observer}) generalises from
+\[
+  \text{observe} \;\to\; \text{plan} \;\to\; \text{move}
+  \;\to\; \text{observe}
+\]
+to
+\[
+  \text{observe} \;\to\; \text{plan} \;\to\;
+  \text{move} + \text{focus} \;\to\; \text{observe}
+\]
+where ``move'' optimises $g \in SE(3)$ and ``focus'' optimises
+$\theta \in \Theta$.  The combined update is gradient ascent on the
+observation information gain $\mathcal{I}$ over the product manifold
+$SE(3) \times \Theta$:
+\begin{equation}\label{eq:m-active-optics-update}
+  (g, \theta)
+  \;\leftarrow\;
+  (g, \theta) + \alpha\,\nabla_{(g,\theta)}\,\mathcal{I}.
+\end{equation}
+In particular, during Phase~1 (approach) of the five-phase cycle
+(\cref{thm:lifecycle}), the robot not only steers toward the target
+block but simultaneously adjusts its camera parameters to maximise the
+information gained upon arrival at the pre-grasp pose.
+\end{remark}
+
+\medskip
+\noindent\textbf{References for this subsection.}\enspace
+D.~Seyb, E.~d'Eon, B.~Bitterli, and W.~Jarosz,
+``From microfacets to participating media: A unified theory of light
+transport with stochastic geometry,''
+\emph{ACM Trans.\ Graphics (SIGGRAPH)}, 2024.\enspace
+K.~Xu, B.~Bitterli, E.~d'Eon, and W.~Jarosz,
+``Practical Gaussian process implicit surfaces with sparse
+convolutions,''
+\emph{ACM Trans.\ Graphics (SIGGRAPH Asia)}, 2025.\enspace
+B.~Bitterli, S.~Ravichandran, T.~M\"uller, M.~Wrenninge,
+J.~Nov\'ak, S.~Marschner, and W.~Jarosz,
+``A radiative transfer framework for non-exponential media,''
+\emph{ACM Trans.\ Graphics (SIGGRAPH Asia)}, 2018.
+
 
 % ═══════════════════════════════════════════════════════════
 \section{The plan generator}\label{sec:m-plangen}
