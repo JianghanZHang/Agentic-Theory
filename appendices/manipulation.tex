@@ -942,75 +942,108 @@ once per control step (dynamic scenes).
 
 \subsection{Inference flow: camera image in, torque out}
 
-The end-to-end inference pipeline at each control step $\Delta t$:
+The end-to-end inference pipeline at each control step $\Delta t$
+is shown in \cref{fig:m-inference}.
 
-\begin{center}
+\begin{figure}[H]
+\centering
 \begin{tikzpicture}[
-  box/.style={draw, rounded corners, minimum height=0.8cm,
+  box/.style={draw, rounded corners, minimum height=0.85cm,
     minimum width=2cm, align=center, font=\small},
   data/.style={font=\small\itshape},
   arr/.style={-{Stealth[length=2mm]}, thick},
-  node distance=0.4cm and 0.5cm
+  fb/.style={-{Stealth[length=2mm]}, thick, dashed},
+  step right/.initial=1.0cm,   % staircase offset per row
+  row sep/.initial=1.5cm,      % vertical gap between rows
+  node distance=0.5cm and 0.6cm
 ]
+% ── Staircase anchors ──
+\coordinate (R1) at (0,0.9);
+\coordinate (R2) at (1.0,-1.5);
+\coordinate (R3) at (2.0,-3.0);
+\coordinate (R4) at (3.0,-4.5);
+
 % ── Row 1: Perception ──
-\node[box, fill=water!15] (cam) {Wrist camera};
-\node[data, right=of cam] (img) {image $Y$};
-\node[box, fill=water!15, right=of img] (det) {Block detector\\(CNN)};
-\node[data, right=of det] (poses) {$\{g_i\} \in SE(3)^N$};
+\node[box, fill=water!15] at (R1) (cam) {Wrist camera};
+\node[data, right=of cam] (img) {$Y$};
+\node[box, fill=water!15, right=of img] (det) {Block detector};
+\node[data, right=of det] (poses) {$\{g_i\}$};
 
 \draw[arr] (cam) -- (img);
 \draw[arr] (img) -- (det);
 \draw[arr] (det) -- (poses);
 
 % ── Row 2: Planning ──
-\node[box, fill=dao!15, below=0.8cm of cam] (plan) {PlanGen\\+ MPPI};
-\node[data, right=of plan] (pstar) {$P^* = [(b_i, g_i)]$};
+\node[box, fill=dao!15] at (R2) (plan) {PlanGen};
+\node[data, right=of plan] (pstar) {$P^*$};
 \node[box, fill=dao!15, right=of pstar] (fsm) {Five-phase\\FSM};
-\node[data, right=of fsm] (phase) {$(g_i, t, \phi)$};
+\node[data, right=of fsm] (phase) {$\phi$};
 
-\draw[arr] (poses) -- ++(0,-0.4) -| (plan);
+\draw[arr] (poses) -- ++(0,-0.55) -| (plan);
 \draw[arr] (plan) -- (pstar);
 \draw[arr] (pstar) -- (fsm);
 \draw[arr] (fsm) -- (phase);
 
 % ── Row 3: Execution ──
-\node[box, fill=sword!15, below=0.8cm of plan] (vnet)
-  {$v_\theta$ (MLP)};
-\node[data, right=of vnet] (dqdes) {$\dot{q}_\mathrm{des}$};
-\node[box, fill=sword!15, right=of dqdes] (diff) {$\frac{d}{dt}$};
-\node[data, right=of diff] (ddqdes) {$\ddot{q}_\mathrm{des}$};
+\node[box, fill=sword!15] at (R3) (vnet) {$v_\theta$ (MLP)};
+\node[data, right=of vnet] (dqdes) {$\dot{q}$};
+\node[box, fill=sword!15, right=of dqdes] (diff)
+  {$\frac{d}{dt}$};
+\node[data, right=of diff] (ddqdes) {$\ddot{q}$};
 
-\draw[arr] (phase) -- ++(0,-0.4) -| (vnet);
+\draw[arr] (phase) -- ++(0,-0.55) -| (vnet);
 \draw[arr] (vnet) -- (dqdes);
 \draw[arr] (dqdes) -- (diff);
 \draw[arr] (diff) -- (ddqdes);
 
-% ── Row 4: Inverse dynamics ──
-\node[box, fill=caution!15, below=0.8cm of vnet] (invdyn)
-  {Inverse dynamics\\$M(q)\ddot{q} + C\dot{q} + g$};
-\node[data, right=of invdyn, xshift=1cm] (tau)
-  {$\tau \in \R^7$};
+% ── Row 4: Actuation ──
+\node[box, fill=caution!15] at (R4) (invdyn)
+  {Inverse dyn.};
+\node[data, right=of invdyn] (tau) {$\tau$};
 \node[box, fill=caution!15, right=of tau] (robot)
   {Franka Panda};
 
-\draw[arr] (ddqdes) -- ++(0,-0.4) -| (invdyn);
+\draw[arr] (ddqdes) -- ++(0,-0.55) -| (invdyn);
 \draw[arr] (invdyn) -- (tau);
 \draw[arr] (tau) -- (robot);
 
-% ── Feedback: proprioception ──
-\node[data, below=0.3cm of robot] (enc) {$q, \dot{q}$ (encoders)};
+% ── Sensor output ──
+\node[data, below=0.5cm of robot] (enc)
+  {$q, \dot{q}$\; (encoders)};
 \draw[arr] (robot) -- (enc);
-\draw[arr, dashed] (enc) -- ++(0,-0.5) -| ([xshift=-0.5cm]vnet.south)
-  -- (vnet.south);
 
-% ── Feedback: rho monitor ──
-\node[box, fill=water!10, below=0.3cm of invdyn] (rho)
+% ── Rho monitor: right of robot ──
+\node[box, fill=water!10, right=1.2cm of robot] (rho)
   {$\rho$ monitor};
-\draw[arr, dashed] (enc) -- ++(0,-0.5) -| (rho);
-\draw[arr, dashed] (rho) -- ++(0,0.5) -|
-  ([xshift=-0.3cm]fsm.south) -- (fsm.south);
 
-% ── Labels ──
+% ── Routing coordinates ──
+% Junction below enc: shared start for both feedback paths
+\coordinate (J) at ([yshift=-0.4cm]enc.south);
+% Bottom-left corner: left of all boxes, below enc
+\coordinate (BL) at
+  ([xshift=-0.8cm]cam.west |- J);
+
+% ── Feedback 1: enc → rho ──
+%    Down to junction, right, up into rho.south
+\draw[fb] (enc.south) -- (J) -| (rho.south);
+
+% ── Feedback 2: rho → FSM ──
+%    Straight up (far right of all content), left above row 2,
+%    down into fsm.north — avoids crossing φ
+\draw[fb] (rho.north)
+  -- ([yshift=0.7cm]fsm.north -| rho.north)   % up to above fsm
+  -- ([yshift=0.7cm]fsm.north)                 % left above row 2
+  -- (fsm.north);                               % down into fsm
+
+% ── Feedback 3: enc → vnet ──
+%    left, up 1cm, right to vnet.x, up to vnet.south
+\coordinate (P1) at ([yshift=-0.4cm]enc.south);
+\coordinate (P2) at ([xshift=-0.8cm]cam.west |- P1);
+\coordinate (P3) at ([yshift=2.5cm]P2);
+\coordinate (P4) at (P3 -| vnet.south);
+\draw[fb] (enc.south) -- (P1) -- (P2) -- (P3) -- (P4) -- (vnet.south);
+
+% ── Layer labels (in the staircase margin) ──
 \node[anchor=east, font=\footnotesize\bfseries, text=water]
   at ([xshift=-0.3cm]cam.west) {Perception};
 \node[anchor=east, font=\footnotesize\bfseries, text=dao]
@@ -1021,7 +1054,14 @@ The end-to-end inference pipeline at each control step $\Delta t$:
   at ([xshift=-0.3cm]invdyn.west) {Actuation};
 
 \end{tikzpicture}
-\end{center}
+\caption{Inference pipeline: camera image in, torque out.
+  Four layers---perception (水), planning (道), execution (剑),
+  actuation (器)---map a wrist-camera image to joint torques
+  in one control step.  Dashed arrows denote feedback:
+  proprioception closes the velocity loop; the $\rho$~monitor
+  triggers phase transitions.}
+\label{fig:m-inference}
+\end{figure}
 
 \begin{remark}[What is learned vs.\ what is known]
 \label{rem:m-learned-known}
