@@ -614,8 +614,11 @@ The \emph{execution DAG} $G_{\mathrm{task}} = (V, E)$ is the
 directed acyclic graph whose vertices $V = \{v_1, \ldots, v_N\}$
 are sub-goals (block placements) and whose edges $E$ encode
 precedence: $(v_i, v_j) \in E$ iff sub-goal~$v_i$ must be
-completed before $v_j$ can begin.  A \emph{valid plan} is a
-topological order of~$G_{\mathrm{task}}$.
+completed before $v_j$ can begin.
+For each vertex~$v$, write $\operatorname{pa}(v) = \{u : (u,v) \in E\}$
+(parents) and $\operatorname{ch}(v) = \{w : (v,w) \in E\}$ (children).
+A \emph{valid plan} is a topological order
+of~$G_{\mathrm{task}}$.
 \end{definition}
 
 \begin{remark}[DAG layers as mother--daughter chains]

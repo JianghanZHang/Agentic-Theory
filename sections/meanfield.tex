@@ -143,6 +143,66 @@ new swords---is precisely the transient before the
 mother--daughter distributions re-align at the new fixed point.
 \end{remark}
 
+\begin{remark}[From parent--child to mother--daughter]
+\label{rem:parent-daughter-bridge}
+In any DAG the \emph{parent set}
+$\operatorname{pa}(v) = \{u : (u \to v) \in E\}$ encodes
+which nodes may influence~$v$.  In a dynamical system
+supported on the DAG, each node updates via a local
+\emph{causal scan kernel}
+\[
+  X_v(t{+}1) \;\sim\;
+  Q_v\!\bigl(\,\cdot \mid X_{\operatorname{pa}(v)}(t{+}1),\;
+  X_v(t)\bigr),
+\]
+where parents are scanned in topological order so that
+$X_{\operatorname{pa}(v)}(t{+}1)$ is already available when
+$v$ updates.  This is the micro-level dynamics.
+
+When the DAG has a layered structure and nodes within each
+layer are exchangeable, the dependence on individual parent
+states collapses to a dependence on the parent-layer
+\emph{external field} $\eta = \varphi(\mu^{(\ell-1)})$
+(e.g.\ the mean $\bar{U}$ of \cref{prop:phase}).  The kernel
+becomes the \emph{mother--daughter kernel}
+\[
+  Q_\ell\!\bigl(\,\cdot \mid x,\;\eta\bigr),
+\]
+and the layer-wise measure update
+$\mu^{(\ell)}_{t+1} = Q_\ell \sharp\, \mu^{(\ell)}_t$
+is the mean-field flow.  In short: parent--child is the
+graph-theoretic relation; mother--daughter is its
+distributional lift under exchangeability.
+\end{remark}
+
+\begin{remark}[Cut-cycle and the causal mass gap]
+\label{rem:causal-mass-gap}
+Feedback loops---such as the elimination--resurgence cycle of
+\cref{thm:paradox}---appear as cycles in the dependency graph.
+The \emph{cut-cycle principle} resolves this: delay one edge
+by one time step, so that $v$ at time $t{+}1$ depends on $u$
+at time~$t$ rather than $t{+}1$.  The resulting \emph{unrolled
+DAG} (one copy of~$V$ per time step, edges pointing strictly
+forward in time) is acyclic, and the causal scan of
+\cref{rem:parent-daughter-bridge} applies.
+
+On this unrolled DAG, the spectral gap
+$\lambda_1 > 0$ of \cref{thm:massgap} acquires a causal
+interpretation: it is the rate at which correlations decay
+along the causal direction.  Precisely, for local observables
+$F_a, G_b$ separated by causal distance~$d$,
+\[
+  |\operatorname{Cov}(F_a, G_b)|
+  \;\leq\;
+  C\,e^{-\lambda_1\, d}.
+\]
+The mass gap $\lambda_1 > 0$ means finite causal correlation
+length; its closure ($\lambda_1 \to 0$) is the phase
+transition of \cref{prop:phase}---critical slowing down,
+divergent correlation length, and the onset of long-range
+order.
+\end{remark}
+
 \begin{remark}[Validity conditions]\label{rem:meanfield-validity}
 The arithmetic mean~$\bar{U}$ is the operative threshold for
 homogeneous systems where agents draw from comparable control
