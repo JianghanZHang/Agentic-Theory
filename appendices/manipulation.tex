@@ -609,6 +609,30 @@ Condition~(F4) is the link to the cognitive boundary
 
 \subsection{The two-level architecture}
 
+\begin{definition}[Execution DAG]\label{def:m-dag}
+The \emph{execution DAG} $G_{\mathrm{task}} = (V, E)$ is the
+directed acyclic graph whose vertices $V = \{v_1, \ldots, v_N\}$
+are sub-goals (block placements) and whose edges $E$ encode
+precedence: $(v_i, v_j) \in E$ iff sub-goal~$v_i$ must be
+completed before $v_j$ can begin.  A \emph{valid plan} is a
+topological order of~$G_{\mathrm{task}}$.
+\end{definition}
+
+\begin{remark}[DAG layers as mother--daughter chains]
+\label{rem:m-dag-md}
+Each topological layer of $G_{\mathrm{task}}$ instantiates the
+mother--daughter consistency of \cref{rem:mother-daughter}:
+the \emph{mother} distribution at vertex~$v_j$ is the
+predicted state before executing sub-goal~$j$; the
+\emph{daughter} is the pushforward through the manipulation
+action.  An edge $(v_i, v_j)$ means ``$v_i$'s daughter is
+$v_j$'s mother''---the post-condition of one sub-goal is the
+pre-condition of the next.  The DAG's depth is the length of
+the longest such chain, and DAG-wide consistency holds when
+every edge satisfies the KL gap condition of
+\cref{rem:mother-daughter}.
+\end{remark}
+
 \begin{theorem}[Intractability of single-level planning]
 \label{thm:m-intractable}
 The joint plan--execute optimisation over $N$ blocks has
