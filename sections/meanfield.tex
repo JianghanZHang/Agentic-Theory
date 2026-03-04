@@ -146,7 +146,7 @@ mother--daughter distributions re-align at the new fixed point.
 \begin{remark}[From parent--child to mother--daughter]
 \label{rem:parent-daughter-bridge}
 In any DAG the \emph{parent set}
-$\operatorname{pa}(v) = \{u : (u \to v) \in E\}$ encodes
+$\operatorname{pa}(v) = \{u : (u, v) \in E\}$ encodes
 which nodes may influence~$v$.  In a dynamical system
 supported on the DAG, each node updates via a local
 \emph{causal scan kernel}
@@ -307,3 +307,179 @@ system geometry.  In particular,
 $p_{\varepsilon,M}(\theta) \to 1$ as $\varepsilon \to 0$
 and $M \to \infty$.
 \end{proposition}
+
+\begin{definition}[Causality fractal]\label{def:causality-fractal}
+Let $G_{\mathrm{task}} = (V, E)$ be an execution DAG
+(\cref{def:m-dag}) with layered structure
+$V = L_0 \sqcup L_1 \sqcup \cdots$, and let
+$Q_\ell(\cdot \mid x, \eta)$ be the mother--daughter kernel
+of \cref{rem:parent-daughter-bridge}.  The
+\emph{causality fractal} is the triple
+$\mathfrak{F} = (G_\infty,\, Q,\, \lambda_1)$:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $G_\infty = V \times \mathbb{Z}_{\ge 0}$ is the
+  \emph{unrolled DAG} (\cref{rem:causal-mass-gap}): one copy
+  of~$V$ per time step, edges pointing strictly forward;
+  \item $Q$ is the \emph{self-similar kernel}: the same
+  mother--daughter update~$Q_\ell$ acts at every layer under
+  exchangeability (within each thermodynamic phase;
+  at a phase transition the description re-initialises
+  at the new fixed point);
+  \item $\lambda_1 > 0$ is the spectral gap
+  (\cref{thm:massgap}), serving as the contraction ratio.
+\end{enumerate}
+The \emph{mean-field operator}
+$\mathcal{T} \colon \mathcal{P}(\mathcal{X}) \to
+\mathcal{P}(\mathcal{X})$ is the nonlinear pushforward
+\begin{equation}\label{eq:mf-operator}
+  (\mathcal{T}\mu)(A)
+  \;=\;
+  \int_{\mathcal{X}}
+  Q_\ell\!\bigl(A \mid x,\;\varphi(\mu)\bigr)\,\mu(dx),
+\end{equation}
+where $\varphi(\mu)$ is the external field
+(e.g.\ $\bar{U}$ of \cref{prop:phase}).
+\end{definition}
+
+\begin{theorem}[Ergodic convergence on the causality fractal]
+\label{thm:fractal-convergence}
+Let $\mathfrak{F} = (G_\infty, Q, \lambda_1)$ be a causality
+fractal (\cref{def:causality-fractal}) with
+$\lambda_1 > 0$.  Suppose the kernel~$Q_\ell$ satisfies:
+\begin{enumerate}[label=\textup{(A\arabic*)},nosep]
+  \item\label{a:feller} \emph{Feller continuity:}
+  $x \mapsto Q_\ell(\cdot \mid x, \eta)$ is weakly continuous
+  for each~$\eta$;
+  \item\label{a:lip} \emph{Lipschitz external field:}
+  $\varphi \colon \mathcal{P}(\mathcal{X}) \to \mathbb{R}^d$
+  is Lipschitz in the $1$-Wasserstein metric~$W_1$;
+  \item\label{a:doeblin} \emph{Doeblin minorisation:} there
+  exist $\delta > 0$ and a probability measure~$\nu$ such that
+  $Q_\ell(A \mid x, \eta) \ge \delta\,\nu(A)$ for all
+  $x, \eta, A$.
+\end{enumerate}
+Then:
+\begin{enumerate}[label=\textup{(\roman*)},nosep]
+  \item \emph{Existence and uniqueness.}
+  $\mathcal{T}$ has a unique fixed point
+  $\pi \in \mathcal{P}(\mathcal{X})$: \;$\mathcal{T}\pi = \pi$.
+  \item \emph{Geometric event convergence.}
+  For any initial measure~$\mu_0$,
+  \begin{equation}\label{eq:event-conv}
+    W_1(\mathcal{T}^n \mu_0,\;\pi)
+    \;\leq\;
+    (1 - \delta)^{n}\; W_1(\mu_0,\;\pi).
+  \end{equation}
+  \item \emph{Exponential mixing.}
+  For local observables $F_a, G_b$ at causal distance~$d$
+  on~$G_\infty$,
+  \begin{equation}\label{eq:exp-mixing}
+    \lvert\operatorname{Cov}_\pi(F_a, G_b)\rvert
+    \;\leq\;
+    C\,e^{-\lambda_1\, d}.
+  \end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+\ref{a:doeblin} gives Dobrushin's contraction: the
+total-variation coupling between
+$Q_\ell(\cdot \mid x, \eta)$ and
+$Q_\ell(\cdot \mid x', \eta)$ satisfies
+$d_{\mathrm{TV}} \leq 1 - \delta$ for every $x, x'$.
+Combined with \ref{a:lip}, the composed map
+$\mu \mapsto \mathcal{T}\mu$ is a contraction in~$W_1$
+with Lipschitz constant $\kappa \leq 1 - c\,\delta$,
+where $c > 0$ depends on the Lipschitz constant
+of~$\varphi$.
+Since $(\mathcal{P}(\mathcal{X}), W_1)$ is complete
+(the state space~$\mathcal{X}$ is Polish), the Banach
+fixed-point theorem yields~(i) and~(ii).
+
+For~(iii), each time-slice of~$G_\infty$ inherits the
+graph Laplacian of~$G_{\mathrm{task}}$ with the same
+spectral gap~$\lambda_1$; since the inter-layer coupling
+is via the self-similar kernel~$Q$ with uniform bounds,
+the Poincar\'{e} inequality transfers to~$G_\infty$
+(cf.\ \cref{thm:cheeger}).
+Standard results (Martinelli~\cite{martinelli1999},
+Liggett~\cite{liggett2005}) then promote the
+Poincar\'{e} inequality to exponential decay of
+correlations along the causal direction.
+\end{proof}
+
+\begin{corollary}[Event controllability]
+\label{cor:event-controllability}
+Under the hypotheses of \cref{thm:fractal-convergence},
+let $\alpha \in \mathcal{A}$ parametrise the kernel:
+$Q_\ell = Q_\ell^\alpha$, and write $\pi(\alpha)$ for the
+corresponding fixed point.  If
+$\alpha \mapsto \pi(\alpha)$ is Lipschitz with constant
+$L_\pi$ (structural stability), then:
+\begin{enumerate}[label=\textup{(\roman*)},nosep]
+  \item \emph{Steerability.}  For any two viable
+  parameters $\alpha_0, \alpha_1$ and any
+  $\varepsilon > 0$, there exists a parameter
+  trajectory $\alpha(t)$ such that
+  $W_1(\mu_t,\, \pi(\alpha(t))) < \varepsilon$ for
+  all~$t$.
+  \item \emph{Tracking bound.}  If $\alpha(t)$ varies
+  at rate $\|\dot{\alpha}\| \leq \rho$, the tracking
+  error satisfies
+  \begin{equation}\label{eq:tracking}
+    W_1\!\bigl(\mu_t,\;\pi(\alpha(t))\bigr)
+    \;\leq\;
+    \frac{L_\pi\,\rho}{\delta}
+    \;+\;
+    (1 - \delta)^{t}\,W_1(\mu_0,\;\pi(\alpha_0)).
+  \end{equation}
+  \item \emph{Loss at phase transition.}  As
+  $\delta \to 0$ the contraction weakens and the
+  tracking bound~\eqref{eq:tracking} diverges:
+  the system cannot follow control inputs faster than
+  the vanishing mixing rate.  Since $\lambda_1 \to 0$
+  forces $\delta \to 0$ (a disconnected graph cannot
+  satisfy Doeblin minorisation), the phase transition
+  of \cref{prop:phase} entails loss of event
+  controllability.
+\end{enumerate}
+\end{corollary}
+
+\begin{proof}
+At each step the error decomposes as
+\[
+  W_1(\mu_{t+1},\, \pi(\alpha(t{+}1)))
+  \;\leq\;
+  \underbrace{(1 - \delta)\,
+    W_1(\mu_t,\, \pi(\alpha(t)))}_{\text{contraction}}
+  \;+\;
+  \underbrace{L_\pi\,
+    \|\alpha(t{+}1) - \alpha(t)\|}_{\text{target drift}}.
+\]
+Setting $e_t = W_1(\mu_t, \pi(\alpha(t)))$ and
+$\rho = \sup_t \|\alpha(t{+}1) - \alpha(t)\|$, we get
+$e_{t+1} \leq (1 - \delta)\,e_t + L_\pi \rho$.
+Iterating:
+$e_t \leq (1-\delta)^t e_0 + L_\pi \rho
+\sum_{k=0}^{t-1}(1-\delta)^k
+\leq (1-\delta)^t e_0 + L_\pi \rho / \delta$.
+This gives~(ii); (i) follows by choosing
+$\rho < \varepsilon\,\delta / L_\pi$;
+(iii) is immediate from $\delta \to 0$.
+\end{proof}
+
+\begin{remark}[The renormalisation-group interpretation]
+\label{rem:rg}
+The mean-field operator~$\mathcal{T}$
+(\cref{eq:mf-operator}) is a renormalisation-group (RG)
+transformation: each application coarse-grains one causal
+layer of~$G_\infty$.  The fixed point
+$\pi = \mathcal{T}\pi$ is the RG fixed point;
+$\lambda_1$ is the leading relevant eigenvalue; and the
+phase transition $\lambda_1 \to 0$
+(\cref{prop:phase}) is the approach to a critical RG
+fixed point where the system becomes scale-invariant.
+The causality fractal is, precisely, the RG orbit in
+measure space---and \cref{thm:fractal-convergence} says
+this orbit converges whenever the mass gap is open.
+\end{remark}

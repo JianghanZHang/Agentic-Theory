@@ -632,8 +632,15 @@ action.  An edge $(v_i, v_j)$ means ``$v_i$'s daughter is
 $v_j$'s mother''---the post-condition of one sub-goal is the
 pre-condition of the next.  The DAG's depth is the length of
 the longest such chain, and DAG-wide consistency holds when
-every edge satisfies the KL gap condition of
-\cref{rem:mother-daughter}.
+every edge satisfies the mother--daughter consistency of
+\cref{rem:mother-daughter} (small KL divergence between
+predicted and actual distributions).  When this layered structure is
+exchangeable, the chain becomes a causality fractal
+(\cref{def:causality-fractal}): under the regularity
+conditions of \cref{thm:fractal-convergence}, ergodic
+convergence and event controllability
+(\cref{cor:event-controllability}) follow from the spectral
+gap $\lambda_1 > 0$.
 \end{remark}
 
 \begin{theorem}[Intractability of single-level planning]
