@@ -1,0 +1,931 @@
+\chapter{空手接白刃}\label{sec:catching}
+
+\begin{center}
+\itshape
+庖丁为文惠君解牛，手之所触，肩之所倚，\\
+足之所履，膝之所踦，砉然向然，\\
+奏刀騞然，莫不中音。\\[4pt]
+\upshape ---庄子，《养生主》
+\end{center}
+
+\bigskip
+
+Catching inverts manipulation.  In manipulation
+(\cref{sec:manipulation}), the robot approaches a stationary
+object---the summer insect walks toward the ice.  In catching, the
+object approaches the robot: a thrown ball, a tossed tool, a falling
+part.  The object is a \emph{sword} in the precise sense of the
+framework---it has autonomous actuation (gravity plus initial
+velocity), it is observable (camera), and its trajectory intersects
+the king's reachable set.  Catching is path~(a) resolution: upon
+capture, the sword relinquishes autonomy ($U_r \to \varnothing$,
+velocity $\to 0$, object at rest in the gripper).
+
+The key insight is that the catcher's technique is invariant.
+The equivalence principle of general relativity---inertial mass
+equals gravitational mass---implies that the object's free-flight
+trajectory does not depend on its mass.  The controller operates in
+the tangent bundle $TM$, where mass has already cancelled.  The
+catcher does not need to know \emph{what} it is catching.  Like
+庖丁解牛, the blade follows the structure; the hand follows the
+gap.
+
+The argument proceeds in seven stages:
+\begin{enumerate}
+  \item \textbf{Diagnosis} (\cref{sec:c-diagnosis}): the approaching
+  sword---autonomous actuation via Newtonian mechanics.
+  \item \textbf{Equivalence principle} (\cref{sec:c-equivalence}):
+  mass cancellation in $TM$---the controller is universal.
+  \item \textbf{Potential well} (\cref{sec:c-well}): chopstick
+  mechanics---two elastic rods create a harmonic trap.
+  \item \textbf{Capture theorem} (\cref{sec:c-capture}): the
+  topological transition $\lambda_1\colon 0 \to 3$.
+  \item \textbf{Three-term decomposition} (\cref{sec:c-three-term}):
+  predict $+$ intercept $+$ bang.
+  \item \textbf{Kakeya duality} (\cref{sec:c-kakeya}): catching
+  $\leftrightarrow$ maintenance under time reversal.
+  \item \textbf{Implementation} (\cref{sec:c-impl}): MuJoCo
+  simulation and Flexiv Rizon~4 hardware.
+\end{enumerate}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Diagnosis: the approaching sword}
+\label{sec:c-diagnosis}
+
+\subsection{The sword in free flight}
+
+\begin{definition}[Approaching sword]
+\label{def:c-sword}
+An object $r$ in free flight is an \emph{approaching sword} if
+three conditions hold:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $U_r \neq \varnothing$: the object has autonomous actuation
+  via gravity and initial velocity $v_0$;
+  \item $r \in \mathrm{Im}(\Obs)$: the object is observable by the
+  king's sensor (camera);
+  \item $\exists\, t^* < \infty$: the object's trajectory intersects
+  the king's reachable set $\mathrm{Reach}(\kappa)$.
+\end{enumerate}
+\end{definition}
+
+The approaching sword is the purest instantiation of the framework's
+sword concept.  In the main text, ``autonomous actuation'' is
+abstract---an adversary, a competitor, a market force.  Here it is
+literal physics: $F = mg$.  The actuation is Newtonian mechanics
+itself~\cite{newton}.
+
+\begin{proposition}[Sword lifecycle of a thrown object]
+\label{prop:c-lifecycle}
+The approaching sword resolves via path~(a) of the binary fate
+theorem (\cref{thm:lifecycle}): upon capture, $U_r \to \varnothing$
+(velocity $\to 0$, object at rest in the gripper).  Path~(b)
+(elimination) corresponds to deflection or dodging.  No path~(c)
+exists---the object cannot remain in flight indefinitely within
+$\mathrm{Reach}(\kappa)$.
+\end{proposition}
+
+\begin{proof}
+The object follows the parabolic trajectory
+$x(t) = x_0 + v_0 t + \frac{1}{2}g t^2$.  Since $\|g\| > 0$,
+the trajectory is unbounded: $\|x(t)\| \to \infty$ as
+$t \to \infty$.  Therefore the object either intersects
+$\mathrm{Reach}(\kappa)$ at finite $t^*$ (capture or deflection)
+or exits the workspace permanently.  In either case, the sword
+does not persist.
+\end{proof}
+
+\begin{remark}[Connection to the forcing lemma]
+The forcing lemma (\cref{lem:forcing}) states that a persistent
+sword forces the king to act.  Here persistence is bounded by
+physics: gravity ensures that no thrown object persists.  The
+approaching sword is a sword with a built-in deadline $t^*$.
+The catching problem is therefore time-constrained in a way that
+manipulation is not---the summer insect can take its time, but
+the catcher cannot.
+\end{remark}
+
+\subsection{Mapping table}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Catching} & \textbf{Framework} & \textbf{Manipulation} \\
+\midrule
+Thrown object & Sword & Stationary object (passive) \\
+Gravity $+ v_0$ & Autonomous actuation $U_r$ & None (object is passive) \\
+Camera & Detection $\Obs$ & Wrist camera \\
+Catching & Path~(a): relinquish & Phase~2: loading \\
+Dodging & Path~(b): elimination & N/A \\
+Deadline $t^*$ & Forcing & No deadline \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{The equivalence principle}
+\label{sec:c-equivalence}
+
+\subsection{Mass-free trajectory}
+
+\begin{proposition}[Mass-free trajectory]
+\label{prop:c-massfree}
+The trajectory of a thrown object in free flight,
+\[
+  \ddot{x}(t) = g,\qquad
+  x(0) = x_0,\quad \dot{x}(0) = v_0,
+\]
+is independent of mass~$m$.  The intercept point
+$x^* = x(t^*)$ and intercept velocity $v^* = \dot{x}(t^*)$
+depend only on the initial conditions $(x_0, v_0)$ and the
+gravitational acceleration~$g$.
+\end{proposition}
+
+\begin{proof}
+Newton's second law gives $ma = mg$, hence $a = g$
+for all $m > 0$.  The trajectory
+$x(t) = x_0 + v_0 t + \frac{1}{2}g t^2$ and velocity
+$\dot{x}(t) = v_0 + g t$ contain no $m$.
+\end{proof}
+
+\begin{remark}[Galileo's tower]
+This is Galileo's insight at Pisa: all objects fall at the
+same rate.  In general relativity, it becomes the equivalence
+principle---inertial mass equals gravitational mass.  In our
+context: the robot's perception pipeline (camera $\to$
+position $\to$ velocity $\to$ parabolic fit) operates
+entirely in configuration space, where mass has already
+cancelled.  The robot does not need to know what it is
+catching.
+\end{remark}
+
+\subsection{The mass-invariant controller}
+
+\begin{theorem}[Mass-invariant catching]
+\label{thm:c-equivalence}
+Let $\pi\colon (x_{\mathrm{obj}}, \dot{x}_{\mathrm{obj}},
+q, \dot{q}) \mapsto \tau$ be a catching controller that operates
+in the tangent bundle $TM$ of the configuration manifold.
+Then the control policy $\pi$ is invariant under mass rescaling
+$m \to \alpha m$ for all $\alpha > 0$, provided the end-effector
+satisfies the hardware envelope $K > mv_\perp^2/d^2$.
+\end{theorem}
+
+\begin{proof}
+We verify mass cancellation in each of the three stages of
+catching.
+
+\emph{Stage~1: Pre-contact (trajectory prediction).}
+By \cref{prop:c-massfree}, the free-flight trajectory
+$x(t) = x_0 + v_0 t + \frac{1}{2}g t^2$ is mass-free.
+The intercept point $x^*$ and intercept time $t^*$ are
+computed from $(x_0, v_0, g)$ alone.
+
+\emph{Stage~2: Contact (impedance response).}
+At contact, the chopstick pair applies impedance control:
+\[
+  \tau = K(x_d - x) + D(\dot{x}_d - \dot{x}),
+\]
+where $K$ is the spring stiffness and $D$ is the damping
+coefficient.  Both are properties of the end-effector, not
+of the object.  The physical spring absorbs kinetic energy
+$E = \frac{1}{2}mv^2$ via compression
+$\delta = v\sqrt{m/K}$, but the controller does not need
+to know $\delta$---the spring self-adjusts.
+
+\emph{Stage~3: Post-contact (static hold).}
+The grasp quality metric
+$\rho = \|F_{\mathrm{contact}}\| / (mg)$ has both
+numerator and denominator proportional to $m$, so $\rho$
+is mass-invariant.
+\end{proof}
+
+\begin{remark}[Hardware envelope]
+\label{rem:c-envelope}
+The policy $\pi$ is universal within the \emph{hardware design
+envelope}: the set of masses $m$ satisfying $K > mv_\perp^2/d^2$
+(\cref{prop:c-trap}).  The viability window
+$\Delta t_{\mathrm{viable}}$ also depends on $m$ through the
+decay rate $m/(2D)$.  Universality is in the software: the same
+policy catches tennis balls and bowling balls; only the spring
+stiffness differs.
+\end{remark}
+
+\begin{remark}[Connection to the mass gap]
+In the mass-gap theorem (\cref{thm:massgap}), the positivity
+$\lambda_1 > 0$ is equivalent to graph connectivity---it does
+not depend on whether edge weights are large or small, only on
+whether they are positive.  Here, the catching policy does not
+depend on whether the object is heavy or light, only on whether
+it enters the well.  Both are instances of universality from
+connectivity: the qualitative structure (connected vs.\
+disconnected, caught vs.\ uncaught) is robust; the quantitative
+details (specific mass, specific edge weight) determine margins
+but not the outcome.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{The potential well}
+\label{sec:c-well}
+
+\subsection{Chopstick pair}
+
+\begin{definition}[Chopstick pair]
+\label{def:c-chopstick}
+A \emph{chopstick pair} $(C_L, C_R)$ consists of two elastic
+rods, each with:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item rigid base attachment to a gripper finger (no additional
+  degree of freedom);
+  \item a spring-loaded hinge at position $s \in (0, L)$ with
+  stiffness $K$ and damping coefficient $D$;
+  \item a contact tip at position $s = L$.
+\end{enumerate}
+When the chopstick pair is closed to finger separation~$2d$,
+the pair creates a potential field
+\[
+  V_{\mathrm{trap}}(x)
+  = \tfrac{1}{2}K_L\,(x - x_L)^2
+  + \tfrac{1}{2}K_R\,(x - x_R)^2
+\]
+with minimum at the midpoint
+$\bar{x} = \frac{x_L + x_R}{2}$.
+\end{definition}
+
+The chopstick pair is the physical instantiation of the
+potential well.  Two compliant fingers, each with a spring
+hinge, create a region of space where incoming kinetic energy
+is converted to potential energy---the object decelerates,
+reverses, and oscillates until damping brings it to rest.
+
+\subsection{Harmonic trapping}
+
+\begin{proposition}[Harmonic trapping]
+\label{prop:c-trap}
+An object entering the chopstick pair with transverse velocity~$v$
+undergoes damped oscillation:
+\[
+  m\ddot{x} + 2D\dot{x} + 2Kx = 0,
+\]
+with characteristic frequency $\omega = \sqrt{2K/m}$ and decay
+time $\tau_d = m/(2D)$.
+
+The object is trapped (velocity reversal within the well) if
+and only if
+\[
+  \tfrac{1}{2}mv^2 < V_{\mathrm{trap}}(d)
+  = \tfrac{1}{2}K d^2,
+\]
+equivalently, $v < d\sqrt{K/m}$.
+\end{proposition}
+
+\begin{proof}
+The equation of motion follows from superposing the two spring
+forces: $F = -K_L(x - x_L) - K_R(x - x_R) - 2D\dot{x}$.
+With $K_L = K_R = K$ and origin at $\bar{x}$, this reduces to
+$m\ddot{x} + 2D\dot{x} + 2Kx = 0$.  The trapping condition
+is energy conservation: the object's kinetic energy at entry
+must not exceed the potential barrier at the well boundary~$d$.
+\end{proof}
+
+\begin{remark}[Mass in the spring, not in the controller]
+The trapping condition $v < d\sqrt{K/m}$ contains~$m$, but
+this is a constraint on the \emph{spring design}, not on the
+\emph{controller}.  The controller's task is to deliver the
+chopstick tips to the intercept point---the spring does the
+rest.  For a given stiffness~$K$, heavier objects with the
+same velocity require stiffer springs (larger~$K$), but the
+control policy~$\pi$ is identical.  Mass enters the hardware
+specification, not the software.
+\end{remark}
+
+\subsection{Potential well diagram}
+
+\begin{center}
+\begin{tikzpicture}[>=stealth, scale=0.9]
+  % Potential well curve
+  \draw[thick, water] (-3,4) parabola bend (0,0.5) (3,4);
+  \node[water, above] at (0,0.3) {$\bar{x}$};
+
+  % Well boundary markers
+  \draw[dashed, gray] (-2,0) -- (-2,4.2);
+  \draw[dashed, gray] (2,0) -- (2,4.2);
+  \node[below] at (-2,0) {$x_L$};
+  \node[below] at (2,0) {$x_R$};
+
+  % Separation marker
+  \draw[<->] (-2,-0.4) -- (2,-0.4);
+  \node[below] at (0,-0.4) {$2d$};
+
+  % Springs (left and right)
+  \draw[thick, dao, decorate,
+    decoration={coil, segment length=4pt, amplitude=3pt}]
+    (-3.2,2) -- (-2,2);
+  \draw[thick, dao, decorate,
+    decoration={coil, segment length=4pt, amplitude=3pt}]
+    (2,2) -- (3.2,2);
+  \node[dao, left] at (-3.2,2) {$K,D$};
+  \node[dao, right] at (3.2,2) {$K,D$};
+
+  % Gripper fingers
+  \fill[gray!30] (-3.8,0) rectangle (-3.2,4);
+  \fill[gray!30] (3.2,0) rectangle (3.8,4);
+  \node[rotate=90] at (-3.5,2) {\small finger};
+  \node[rotate=90] at (3.5,2) {\small finger};
+
+  % Object trajectory (entering from above)
+  \draw[thick, sword, ->] (0,5.5) -- (0,4.2);
+  \filldraw[sword] (0,4.2) circle (4pt);
+  \node[sword, right] at (0.3,5) {$v_\perp$};
+
+  % Energy level
+  \draw[thin, caution, dashed] (-2.5,3.2) -- (2.5,3.2);
+  \node[caution, right] at (2.5,3.2)
+    {$\frac{1}{2}mv_\perp^2$};
+
+  % Potential label
+  \node[water, left] at (-3,4) {$V_{\mathrm{trap}}(x)$};
+
+  % Axes
+  \draw[->] (-4,0) -- (4,0) node[right] {$x$};
+  \draw[->] (0,0) -- (0,6) node[above] {$V$};
+\end{tikzpicture}
+\end{center}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{The capture theorem}
+\label{sec:c-capture}
+
+This section contains the core theorem of the chapter: the
+\emph{potential well capture theorem}, which characterises the
+topological transition from $\lambda_1 = 0$ (no contact edges)
+to $\lambda_1 > 0$ (closed contact cycle).
+
+\subsection{Viability window}
+
+\begin{definition}[Viability window]
+\label{def:c-viability-window}
+The \emph{viability window} $\Delta t_{\mathrm{viable}}$ is the
+time interval during which the gripper can close to seal the
+potential well:
+\[
+  \Delta t_{\mathrm{viable}}
+  = \frac{x_{\mathrm{escape}}}{\dot{x}_{\mathrm{residual}}},
+\]
+where $x_{\mathrm{escape}}$ is the distance from the object to the
+open end of the well and $\dot{x}_{\mathrm{residual}}$ is the
+object's residual velocity after partial spring absorption.
+\end{definition}
+
+Here $\Delta t_{\mathrm{absorb}}$ denotes the elapsed time
+between the object entering the chopstick well (first spring
+contact) and the gripper beginning to close.  During this
+interval the springs decelerate the object; the gripper
+remains open.
+
+The viability window is the catching analogue of the forcing
+lemma's deadline: the catcher must act before the object escapes
+the open well.  After the springs absorb part of the kinetic
+energy, the object still moves---the well is open at one end.
+The gripper must close before the object exits.
+
+\subsection{The theorem}
+
+\begin{theorem}[Potential well capture --- 势井捕获定理]
+\label{thm:c-capture}
+Let $(C_L, C_R)$ be a chopstick pair with spring stiffness~$K$
+and damping coefficient~$D$, mounted on a gripper with closure
+time $\Delta t_{\mathrm{grip}}$.  An approaching sword with
+transverse velocity $v_\perp$ at the intercept point is captured
+($\lambda_1\colon 0 \to 3$) if and only if three conditions
+hold:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{Well formation:} the arm delivers the chopstick
+  tips to the intercept point before the object arrives:
+  $t_{\mathrm{arm}} < t^*$.
+  \item \textbf{Energy absorption:} the transverse kinetic energy
+  is within the spring capacity:
+  $\frac{1}{2}mv_\perp^2 < \frac{1}{2}Kd^2$.
+  \item \textbf{Timing:} the gripper closes within the viability
+  window:
+  $\Delta t_{\mathrm{grip}} < \Delta t_{\mathrm{viable}}$.
+\end{enumerate}
+Under these conditions, the contact graph undergoes the transition
+\[
+  \bar{K}_3 \;\text{(three isolated nodes)}
+  \xrightarrow{\;\text{gripper bang}\;}
+  C_3 \;\text{(cycle graph)},
+\]
+where $\lambda_1(\bar{K}_3) = 0$ (the graph is disconnected:
+the gripper is open and no rigid contact edges exist) and
+$\lambda_1(C_3) = 3 > 0$ (the cycle has maximal spectral gap
+for three nodes).  During the viability window, the springs
+decelerate the object but do not constitute rigid contact
+edges in the sense of the graph Laplacian
+(\cref{thm:massgap}).
+\end{theorem}
+
+\begin{proof}
+We verify each condition and the resulting topological transition.
+
+\emph{Condition~(i): well formation.}
+This is a reachability condition on the robot arm.  Given the
+intercept point $x^* = x_0 + v_0 t^* + \frac{1}{2}g (t^*)^2$
+computed from \cref{prop:c-massfree}, the arm must solve the
+inverse kinematics $q^* = \mathrm{IK}(x^*)$ and reach $q^*$
+within time~$t^*$.  This is feasible whenever
+$x^* \in \mathrm{Reach}(\kappa)$ and the arm's maximum
+joint velocity exceeds the required trajectory.
+
+\emph{Condition~(ii): energy absorption.}
+By \cref{prop:c-trap}, the chopstick pair traps the object if
+$\frac{1}{2}mv_\perp^2 < \frac{1}{2}Kd^2$.  After entering
+the well, the object undergoes damped oscillation with
+residual velocity
+$\dot{x}_{\mathrm{res}}(t) = v_\perp e^{-Dt/m}$.
+The spring absorbs kinetic energy continuously; total absorption
+occurs as $t \to \infty$, but significant deceleration occurs
+within $\tau_d = m/(2D)$.
+
+\emph{Condition~(iii): timing.}
+After the object enters the well, its residual velocity is
+$\dot{x}_{\mathrm{res}} = v_\perp e^{-D\Delta t_{\mathrm{absorb}}/m}$
+at the moment the gripper begins closing.  The escape distance
+is $x_{\mathrm{escape}} \sim L_{\mathrm{chopstick}}$.
+The viability window is therefore
+\[
+  \Delta t_{\mathrm{viable}}
+  = \frac{L}{\dot{x}_{\mathrm{res}}}
+  = \frac{L}{v_\perp}\, e^{D\Delta t_{\mathrm{absorb}}/m}.
+\]
+For representative parameters ($L \sim 0.1$\,m,
+$v_\perp \sim 1$\,m/s post-absorption),
+$\Delta t_{\mathrm{viable}} \sim 100$\,ms, which exceeds
+typical gripper closure times
+$\Delta t_{\mathrm{grip}} \sim 50$\,ms.
+
+\emph{Topological transition.}
+Before gripper closure, the contact graph has three nodes
+$\{C_L, \mathrm{obj}, C_R\}$ and \emph{no edges}: the gripper
+is open, so neither finger forms a rigid contact with the object,
+and the fingers are not rigidly connected to each other.  The
+graph is the independent set~$\bar{K}_3$, whose Laplacian is the
+zero matrix; in particular $\lambda_1 = 0$
+(\cref{thm:massgap}: disconnected $\Leftrightarrow$
+$\lambda_1 = 0$).  During the viability window, the chopstick
+springs decelerate the object through compliant forces, but
+compliant contact does not constitute a rigid edge.
+
+When the gripper fires (the bang arc), all three rigid contact
+edges form simultaneously:
+$C_L\text{---}\mathrm{obj}$,
+$\mathrm{obj}\text{---}C_R$, and
+$C_L\text{---}C_R$ (through the gripper body).
+The resulting cycle~$C_3$ has Laplacian eigenvalues
+$\{0, 3, 3\}$, so $\lambda_1(C_3) = 3 > 0$~\cite{cheeger}.
+The spectral gap jumps from $0$ to~$3$ in a single discrete
+event: the object is enclosed.
+\end{proof}
+
+\begin{remark}[The bang is the spectral kick]
+The gripper closure is Term~(III) of the three-term
+decomposition---the bang arc.  It is the discrete topological
+event that creates $\lambda_1 = 3$ from $\lambda_1 = 0$---three isolated nodes become a cycle.
+All of catching reduces to delivering Term~(III) at the right
+moment within the viability window.  The singular arc
+(Term~II, arm trajectory) is smooth and continuous; the bang
+arc is discrete and instantaneous.  The spectral gap is born
+in that instant.
+\end{remark}
+
+\begin{remark}[空手接白刃]
+The name 空手接白刃 means ``catching a blade bare-handed.''
+In martial arts, this requires catching the blade between two
+palms at the exact moment of minimal relative velocity---after
+the swing's kinetic energy is partially absorbed by the body's
+compliance, and before the attacker can retract.  This is
+precisely the viability window: the interval between spring
+absorption and object escape.  The martial artist's two palms
+are the chopstick pair; the clap is the gripper bang.
+庖丁's blade finds the gap between sinew and bone; the
+catcher's hands find the gap between arrival and escape.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Three-term decomposition}
+\label{sec:c-three-term}
+
+\begin{theorem}[Catching decomposition]
+\label{thm:c-decomp}
+The optimal catching control decomposes into three terms:
+\[
+  \tau^*(t)
+  = \underbrace{\tau_{\mathrm{predict}}(t)}_{\text{(I)\;gravity/drift}}
+  + \underbrace{\tau_{\mathrm{intercept}}(t)}_{\text{(II)\;least action}}
+  + \underbrace{\tau_{\mathrm{bang}}(t)}_{\text{(III)\;spectral kick}},
+\]
+where:
+\begin{enumerate}[label=(\Roman*),nosep]
+  \item \textbf{Prediction:} analytical solution of the projectile
+  equation $\ddot{x} = g$ yields the intercept point $(x^*, t^*)$.
+  Zero control effort---computation only.
+  \item \textbf{Intercept (singular arc):} minimum-jerk trajectory
+  of the arm to~$x^*$.  Occupies approximately $90\%$ of catching
+  duration.  Smooth, differentiable.
+  \item \textbf{Gripper bang (bang arc):} close gripper at
+  $t = t^* + \Delta t_{\mathrm{absorb}}$.  Discrete, topological.
+  Occupies approximately $10\%$ of duration.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+By the Pontryagin maximum principle, the optimal control
+switches between singular and bang arcs at the switching surface
+$\Sigma = \{\rho = 1\}$.  The Hamiltonian
+\[
+  H = p^\top f(x,u) + \lambda_0 L(x,u)
+\]
+is linear in $u$ on the bang arc (gripper: open/closed) and
+satisfies $\partial H / \partial u = 0$ on the singular arc
+(arm trajectory).  This is the same structure as the gravity
+damper (\cref{thm:3b-damper}): Term~(I) is the
+uncontrolled drift, Term~(II) is the smooth tracking, and
+Term~(III) is the discrete impulse at $\Sigma$.
+\end{proof}
+
+\subsection{Mapping table}
+
+\begin{center}
+\begin{tabular}{@{}lllll@{}}
+\toprule
+\textbf{Term} & \textbf{Three-body} & \textbf{Manipulation}
+  & \textbf{Catching} \\
+\midrule
+(I) Gravity/drift
+  & Gravitational field
+  & Object weight
+  & Projectile trajectory \\
+(II) Least action
+  & Damper tracks apex
+  & Arm approaches object
+  & Arm moves to intercept \\
+(III) Spectral kick
+  & Damper impulse
+  & Gripper close (load)
+  & Gripper bang (capture) \\
+Switching $\Sigma$
+  & $\rho = 1$ contact
+  & $\rho = 1$ grasp
+  & $\rho = 1$ catch \\
+Time fraction (III)
+  & ${\sim}10\%$
+  & ${\sim}10\%$
+  & ${\sim}10\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[Universality of the $10\%$ ratio]
+Across all three instantiations---celestial mechanics,
+tabletop manipulation, and projectile catching---the bang arc
+occupies approximately $10\%$ of the total control duration.
+This is an empirical regularity: the bang arc is the
+topological event (contact creation or destruction), which
+occurs at the codimension-$1$ switching surface $\Sigma$,
+while the singular arc is the smooth approach through the
+interior.  The ${\sim}10\%$ ratio reflects the geometric
+brevity of the transition relative to the approach, though
+the exact fraction depends on hardware timescales (gripper
+closure speed, actuator bandwidth).
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Kakeya duality}
+\label{sec:c-kakeya}
+
+\begin{theorem}[Catching--maintenance duality]
+\label{thm:c-kakeya}
+Let $\mathcal{M}$ denote the maintenance problem (keep
+$\lambda_1 > 0$, prevent escape from the potential well) and
+$\mathcal{C}$ denote the capture problem (achieve $\lambda_1 > 0$,
+trap the object in the potential well).  Then $\mathcal{C}$ and
+$\mathcal{M}$ are related by time reversal:
+\[
+  \mathcal{C} = \mathcal{T} \circ \mathcal{M}
+  \qquad \text{(exact when $D = 0$)},
+\]
+where $\mathcal{T}\colon t \mapsto -t$ is the time-reversal
+operator.  With dissipation ($D > 0$), the duality is
+approximate at the trajectory level but exact at the
+topological level (the contact graph transition is identical).
+\end{theorem}
+
+\begin{proof}
+Consider the time-reversed maintenance problem.  In maintenance,
+the object is inside the well at $t = 0$ with $\lambda_1 > 0$,
+and the controller prevents escape for all $t > 0$.  Under time
+reversal $t \mapsto -t$, the object starts outside the well at
+$t = 0$ with $\lambda_1 = 0$, and the controller must bring it
+inside by $t = t^*$ with $\lambda_1 > 0$.  This is precisely the
+capture problem.
+
+The duality is exact in the conservative case ($D = 0$):
+reversing the velocity trajectory of a successful maintenance
+episode yields a valid capture trajectory.  With dissipation
+($D > 0$), time reversal is approximate---the reversed trajectory
+gains energy rather than losing it---but the topological structure
+(which nodes are connected) is identical.
+\end{proof}
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Property} & \textbf{Maintenance $\mathcal{M}$}
+  & \textbf{Capture $\mathcal{C}$} \\
+\midrule
+Initial $\lambda_1$ & $> 0$ & $= 0$ \\
+Target $\lambda_1$ & $> 0$ (maintain) & $> 0$ (achieve) \\
+Potential well & Exists; prevent escape
+  & Does not exist; must create \\
+Direction & Inside $\to$ stay inside
+  & Outside $\to$ bring inside \\
+Kakeya condition & Free stability impossible
+  & Free capture impossible \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{corollary}[Kakeya condition for catching]
+\label{cor:c-kakeya}
+There exists no passive mechanism that captures all approaching
+swords without active control.  The arm must actively position
+the chopstick pair (Term~II) and actively close the gripper
+(Term~III).  The springs provide passive \emph{absorption} but
+not passive \emph{capture}.
+\end{corollary}
+
+\begin{proof}
+Suppose a passive mechanism (no active control, $\tau = 0$)
+could capture all approaching swords.  Then the potential well
+would need to be pre-positioned at all possible intercept
+points simultaneously.  But the set of intercept points
+$\{x^* : (x_0, v_0) \in \mathcal{S}\}$ for the full set of
+initial conditions~$\mathcal{S}$ has positive measure in
+$\R^3$.  A single passive well occupies zero measure.
+Therefore no passive mechanism suffices.
+
+This is the catching analogue of the Kakeya condition: free
+stability does not exist, free capture does not exist.
+Active control is necessary.
+\end{proof}
+
+\begin{remark}[The trap must come to the sword]
+The Kakeya duality reveals the deep structure: a trap
+placed at a fixed location catches only objects that happen
+to arrive there.  A universal catcher must \emph{move} the
+trap to the predicted intercept point.  This is why
+Term~(II) exists: the singular arc is the transport of the
+potential well through space.  The well is not a place---it
+is an event: the right configuration at the right time.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section{Implementation: Flexiv Rizon~4}
+\label{sec:c-impl}
+
+\subsection{Hardware platform}
+
+The Flexiv Rizon~4 provides the physical substrate:
+\begin{itemize}[nosep]
+  \item 7 degrees of freedom (anthropomorphic arm);
+  \item 1\,kHz real-time control loop (5\,kHz internal servo);
+  \item 0.03\,N force sensing resolution at end-effector;
+  \item 4\,kg payload capacity;
+  \item joint-level torque control interface.
+\end{itemize}
+
+\subsection{Gripper dynamics: bang-bang contact}
+
+The Flexiv gripper is a parallel jaw mechanism driven by a
+gear-and-rack transmission.  Its control is bang-bang:
+\begin{enumerate}[nosep]
+  \item \textbf{Free space} (gripper open): position control
+  drives the jaws to the pre-set aperture.  No contact forces.
+  \item \textbf{Contact ramp-up} (jaws reach object): motor
+  current rises until the force threshold $F_{\mathrm{thresh}}$
+  is reached.  The contact dynamics satisfy the Signorini
+  complementarity condition:
+  \[
+    d \geq 0,\quad F \geq 0,\quad d \cdot F = 0,
+  \]
+  where $d$ is the jaw--object gap and $F$ is the contact force.
+  At contact ($d = 0$), the force ramps to threshold.
+  \item \textbf{Static hold} (mechanical self-lock): the
+  transmission's worm gear is non-backdrivable---once the
+  threshold is reached, the jaws lock mechanically without
+  active motor torque.  The contact graph $C_3$ persists
+  with $\lambda_1 = 3$ at zero energy cost.
+\end{enumerate}
+The bang-bang structure is not a simplification---it is the
+correct model.  The switching surface $\Sigma = \{\rho = 1\}$
+corresponds to $d = 0$ (contact established).  The force
+threshold $F_{\mathrm{thresh}}$ is a Signorini constraint,
+not a PID setpoint.  The mechanical self-lock is the physical
+realisation of spectral gap maintenance: once $\lambda_1 > 0$,
+it persists without control effort.
+
+\begin{remark}[Why not impedance control?]
+Impedance control ($F = M\ddot{x} + B\dot{x} + K(x - x_d)$)
+requires high-bandwidth force sensing and backdrivable
+actuators.  Industrial parallel grippers have neither: the
+worm gear introduces high friction and non-backdrivability.
+For catching, this is an advantage: the non-backdrivability
+\emph{is} the mechanical self-lock that maintains $\lambda_1 > 0$
+after capture.  The compliance needed for energy absorption
+lives in the chopstick springs, not in the gripper actuator.
+The separation is clean: springs absorb (passive compliance),
+gripper locks (active topology change).
+\end{remark}
+
+\subsection{Chopstick end-effector: X-geometry}
+
+The chopstick pair is realised as two carbon-fibre rods
+($L = 150$\,mm, $\varnothing = 3$\,mm) mounted in an
+X-crossing geometry:
+\begin{itemize}[nosep]
+  \item the rods cross at their midpoints, forming an X;
+  \item a torsion spring at the crossing point
+  ($K = 0.5$\,N$\cdot$m/rad,
+  $D = 0.02$\,N$\cdot$m$\cdot$s/rad) provides compliance;
+  \item proximal tips (above crossing) attach to the gripper
+  fingers;
+  \item distal tips (below crossing) form the catching well,
+  with silicone contact pads ($\mu \geq 0.8$).
+\end{itemize}
+The X-geometry converts parallel finger closure (at the
+proximal tips) into well closure at the distal tips via the
+crossing lever arm.  When the gripper is open, the distal
+tips spread apart, creating a funnel that guides the
+incoming object toward the spring.  When the gripper closes
+(bang), the distal tips converge, sealing the well.
+The resulting potential well has depth
+$V_{\mathrm{trap}}(d) = \frac{1}{2}Kd^2 \approx 0.3$\,J
+for $d = 35$\,mm, sufficient to capture objects up to
+$v_\perp \approx 2$\,m/s at $m = 0.15$\,kg.
+
+\subsection{Catching action bound}
+
+\begin{proposition}[Catching action bound]
+\label{prop:c-action-bound}
+The hardware configuration
+$(K, D, d, L, \Delta t_{\mathrm{grip}})$ determines the
+catching envelope.  Define the \emph{energy margin}
+$\eta_E = Kd^2/(mv_\perp^2)$ and the \emph{timing margin}
+$\eta_T = \Delta t_{\mathrm{viable}} /
+\Delta t_{\mathrm{grip}}$.  An approaching sword with
+mass~$m$ and transverse velocity~$v_\perp$ is capturable if
+and only if both margins exceed unity:
+\[
+  \eta_E > 1 \quad\text{and}\quad \eta_T > 1.
+\]
+The product $\eta = \eta_E \cdot \eta_T$ is the
+\emph{catching number}; $\eta > 1$ is necessary but the
+binding constraint is $\min(\eta_E, \eta_T) > 1$.  The
+boundary where the tighter margin equals unity is the
+\emph{action extremum}: the catch that exactly saturates
+the hardware budget.
+\end{proposition}
+
+\begin{proof}
+The trapping condition (\cref{prop:c-trap}) requires
+$\frac{1}{2}mv_\perp^2 < \frac{1}{2}Kd^2$, i.e.\
+$Kd^2/(mv_\perp^2) > 1$.  The timing condition
+(\cref{thm:c-capture}(iii)) requires
+$\Delta t_{\mathrm{grip}} < \Delta t_{\mathrm{viable}}$.
+Capture requires both margins individually: $\eta_E > 1$
+(enough spring to trap) and $\eta_T > 1$ (enough time to
+close).  The product $\eta = \eta_E \cdot \eta_T > 1$ is
+necessary but not sufficient; the binding constraint is
+the smaller margin.
+
+For the Flexiv configuration ($K_{\mathrm{eff}} \approx 490$\,N/m,
+$d = 35$\,mm, $\Delta t_{\mathrm{grip}} = 50$\,ms,
+$L = 150$\,mm), the boundary $\eta = 1$ traces a curve in the
+$(m, v_\perp)$ plane: heavier objects require slower approach
+(stiffer springs widen the envelope), faster objects require
+lighter mass (longer viability window).
+\end{proof}
+
+\begin{remark}[Action as energy $\times$ time]
+The two margins decompose as
+\[
+  \eta_E = \frac{E_{\mathrm{trap}}}{E_{\mathrm{kin}}},
+  \qquad
+  \eta_T = \frac{\Delta t_{\mathrm{viable}}}
+  {\Delta t_{\mathrm{grip}}},
+\]
+where $E_{\mathrm{trap}} = \frac{1}{2}Kd^2$ is the well depth
+and $E_{\mathrm{kin}} = \frac{1}{2}mv_\perp^2$ is the object's
+kinetic energy.  $\eta_E$ is the energy action ratio (can the
+spring absorb the kinetic energy?), $\eta_T$ is the timing
+action ratio (can the gripper close before the object escapes?).
+The catch succeeds when \emph{both} exceed unity.  The
+optimal catch is the one that saturates the tighter margin:
+$\min(\eta_E, \eta_T) = 1$.
+\end{remark}
+
+\subsection{MuJoCo simulation}
+
+The simulation environment models the chopstick mechanics using
+MuJoCo's~\cite{mujoco} native spring-damper system:
+\begin{itemize}[nosep]
+  \item hinge joints with \texttt{stiffness} and \texttt{damping}
+  attributes matching the physical springs;
+  \item \texttt{springref} set to the closed-chopstick angle;
+  \item condim~4 contact model for frictional grasping;
+  \item 2\,ms simulation timestep (500\,Hz).
+\end{itemize}
+
+\subsection{Perception pipeline}
+
+The catching pipeline operates in four stages:
+\begin{enumerate}[nosep]
+  \item RGB-D image $\to$ colour filter $\to$ object
+  segmentation;
+  \item depth map $\to$ 3D position $x(t)$;
+  \item two-frame finite difference $\to$ velocity
+  $\dot{x}(t) \approx (x(t) - x(t - \Delta t))/\Delta t$;
+  \item parabolic fit $\to$ intercept prediction $(x^*, t^*)$
+  via \cref{prop:c-massfree}.
+\end{enumerate}
+The full pipeline runs at 30\,Hz (camera frame rate).
+Prediction latency from image capture to intercept computation
+is approximately 15\,ms.
+
+\subsection{Distillation}
+
+The mathematical controller (Terms~I--III) is distilled into
+a compact policy via MuJoCo rollouts:
+\begin{enumerate}[nosep]
+  \item generate $10^5$ randomised throws (varying $x_0$, $v_0$,
+  object geometry);
+  \item record successful catches as $(s_t, a_t)$ pairs;
+  \item train a phase-conditioned MLP:
+  $\pi_\theta\colon \R^{20} \to \R^7$
+  (20-dim state $\to$ 7-dim joint torque);
+  \item validate on held-out throw distribution.
+\end{enumerate}
+
+\begin{remark}[Distillation as renormalisation]
+Compressing the continuous-time mathematical controller into a
+discrete MLP is a renormalisation group step: the UV theory (full
+state space, infinite precision, continuous time) flows to the IR
+theory (finite network, finite precision, discrete control).
+The spectral gap $\lambda_1 > 0$ is preserved through distillation
+because the topological structure (cycle graph after capture) is
+discrete and robust to approximation errors.  The $C_3$ contact
+graph has $\lambda_1 = 3$, which is a macroscopic gap---no
+continuous deformation of the policy can close it without breaking
+a contact edge.
+\end{remark}
+
+
+% ═══════════════════════════════════════════════════════════
+\section*{Closing: from Newton to the chopstick}
+\addcontentsline{toc}{section}{Closing: from Newton to the chopstick}
+
+Newton demonstrated that all objects fall at the same rate.
+Galileo demonstrated it first, from the tower.  The equivalence
+principle---inertial mass equals gravitational mass---is the
+oldest universality in physics.  We have traced its consequence
+through the full chain:
+
+\begin{center}
+\begin{tabular}{@{}rl@{}}
+\textbf{Newton} & Projectile: $\ddot{x} = g$, mass-free. \\
+\textbf{Equivalence} & The controller operates in $TM$, where
+  $m$ has cancelled (\cref{thm:c-equivalence}). \\
+\textbf{Sword} & The thrown object is an approaching sword
+  (\cref{def:c-sword}). \\
+\textbf{Well} & The chopstick pair creates a potential well
+  (\cref{def:c-chopstick}). \\
+\textbf{Capture} & Topological transition: $\lambda_1\colon 0
+  \to 3$ (\cref{thm:c-capture}). \\
+\textbf{Three terms} & Predict $+$ intercept $+$ bang
+  (\cref{thm:c-decomp}). \\
+\textbf{Kakeya} & No free capture: active control is necessary
+  (\cref{cor:c-kakeya}). \\
+\textbf{Implementation} & Flexiv $+$ chopsticks: the potential
+  well made physical (\cref{sec:c-impl}).
+\end{tabular}
+\end{center}
+
+Catching is the creation of a potential well at the right place
+and time.  The sword enters the well, the well closes, and the
+sword is no longer a sword.
