@@ -36,6 +36,7 @@
 \newcommand{\cK}{\mathcal{K}}
 \newcommand{\cT}{\mathcal{T}}
 \DeclareMathOperator{\ind}{ind}
+\newcommand{\Proj}{\mathsf{Proj}}
 
 \title[Additive and Multiplicative CLT]{Additive and multiplicative central limit theorems:\\ a duality via Fourier analysis on groups}
 \author{Jianghan Zhang}
@@ -43,13 +44,13 @@
 \email{jianghan.zhang.gr@dartmouth.edu}
 \date{\today}
 
-\subjclass[2020]{60F05, 43A25, 60B15, 30H10, 47B35}
-\keywords{Central limit theorem, locally compact abelian groups, Mellin transform, Gaussian measures, heat semigroup, Hardy spaces, Toeplitz operators, Wold decomposition, Szeg\H{o} limit theorem}
+\subjclass[2020]{60F05, 43A25, 60B15, 30H10, 47B35, 22E30}
+\keywords{Central limit theorem, locally compact abelian groups, Mellin transform, Gaussian measures, heat semigroup, Hardy spaces, Toeplitz operators, Wold decomposition, Szeg\H{o} limit theorem, Peter-Weyl theorem}
 
 \begin{document}
 
 \begin{abstract}
-We present a unified treatment of the additive and multiplicative central limit theorems as instances of a single phenomenon on locally compact abelian groups. The classical CLT on $(\R, +)$ and the multiplicative CLT on $(\Rpos, \times)$ are shown to be related by the Fourier--Mellin duality, which arises from the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$. We develop this correspondence at the level of characteristic functions, heat equations, and Gaussian measures, and place it in the general framework of harmonic analysis on LCA groups.
+We present a unified treatment of the additive and multiplicative central limit theorems as instances of a single phenomenon on locally compact abelian groups. The classical CLT on $(\R, +)$ and the multiplicative CLT on $(\Rpos, \times)$ are shown to be related by the Fourier--Mellin duality, which arises from the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$. We develop this correspondence at the level of characteristic functions, heat equations, and Gaussian measures, and place it in the general framework of harmonic analysis on LCA groups. We indicate how the Peter-Weyl decomposition extends the spectral theory to compact non-abelian groups, where the Casimir eigenvalues govern irreversible convergence to equilibrium.
 \end{abstract}
 
 \maketitle
@@ -66,6 +67,434 @@ We develop this perspective in detail, showing how characteristic functions, hea
 \medskip
 \noindent\textbf{Notation.}
 Throughout, $\R$ denotes the reals, $\Rpos = (0, \infty)$ the positive reals, $\bT = \R / \Z$ the circle group, and $\Z$ the integers. For a topological group $G$, we write $\widehat{G}$ for its Pontryagin dual. The Fourier transform (characteristic function) of a probability measure $\mu$ on $G$ is denoted $\widehat{\mu}$. We write $\cF$ for the Fourier transform on $(\R, +)$ and $\cM$ for the Mellin transform on $(\Rpos, \times)$.
+
+%% ============================================================
+\section{Foundations of probability theory}\label{sec:probability}
+
+We recall the measure-theoretic foundations of probability, following Kolmogorov's axiomatization \cite{Billingsley,Durrett}. The purpose of this section is twofold: to fix notation used throughout, and to exhibit the structures---$\sigma$-algebras, measures, conditional expectations---that the Fourier--Mellin duality will later transform.
+
+\begin{definition}[Probability space]\label{def:prob-space}
+A \emph{probability space} is a triple $(\Omega, \cF, P)$ consisting of:
+\begin{enumerate}[label=(\roman*)]
+\item a non-empty set $\Omega$ (the \emph{sample space}),
+\item a $\sigma$-algebra $\cF \subseteq 2^\Omega$ (the \emph{event algebra}),
+\item a measure $P : \cF \to [0,1]$ with $P(\Omega) = 1$ (the \emph{probability measure}).
+\end{enumerate}
+An element $\omega \in \Omega$ is an \emph{outcome}; a set $A \in \cF$ is an \emph{event}.
+\end{definition}
+
+\begin{remark}
+The axioms encode three intuitive requirements. First, $\cF$ is closed under countable set operations, so any statement built from countably many events remains an event. Second, $P(\varnothing) = 0$ and $P(\Omega) = 1$, normalizing certainty. Third, $P$ is \emph{countably additive}: for pairwise disjoint events $A_1, A_2, \ldots \in \cF$,
+\[
+P\!\left(\bigcup_{n=1}^\infty A_n\right) = \sum_{n=1}^\infty P(A_n).
+\]
+Countable additivity is the key axiom; it is what makes the theory non-trivial, distinguishing probability from finitely additive ``charges'' and enabling limiting arguments such as the CLT.
+\end{remark}
+
+\begin{definition}[Random variable]\label{def:rv}
+A \emph{random variable} on $(\Omega, \cF, P)$ is a measurable function $X : (\Omega, \cF) \to (\R, \mathcal{B}(\R))$, where $\mathcal{B}(\R)$ denotes the Borel $\sigma$-algebra. More generally, for a measurable space $(S, \mathcal{S})$, an \emph{$S$-valued random variable} is a measurable map $X : (\Omega, \cF) \to (S, \mathcal{S})$. The \emph{law} (or \emph{distribution}) of $X$ is the pushforward measure $\mu_X = P \circ X^{-1}$ on $(S, \mathcal{S})$.
+\end{definition}
+
+\begin{definition}[Conditional probability]\label{def:cond-prob}
+Let $(\Omega, \cF, P)$ be a probability space and let $B \in \cF$ with $P(B) > 0$. The \emph{conditional probability} of $A \in \cF$ given $B$ is
+\[
+P(A \mid B) \;=\; \frac{P(A \cap B)}{P(B)}.
+\]
+\end{definition}
+
+\begin{remark}
+Conditioning on an event $B$ with $P(B) > 0$ restricts the probability space: the map $A \mapsto P(A \mid B)$ is itself a probability measure on $(\Omega, \cF)$, concentrated on $B$. The definition encodes a selection effect---knowing that $B$ has occurred reweights the sample space.
+\end{remark}
+
+\begin{proposition}[Law of total probability]\label{prop:total-prob}
+Let $B_1, B_2, \ldots$ be a countable partition of $\Omega$ into events of positive probability. Then for any $A \in \cF$,
+\[
+P(A) = \sum_{n=1}^\infty P(A \mid B_n)\, P(B_n).
+\]
+\end{proposition}
+
+\begin{proof}
+Since $A = \bigcup_n (A \cap B_n)$ with the sets $A \cap B_n$ pairwise disjoint,
+\[
+P(A) = \sum_n P(A \cap B_n) = \sum_n P(A \mid B_n)\, P(B_n). \qedhere
+\]
+\end{proof}
+
+\begin{theorem}[Bayes' rule]\label{thm:bayes}
+Let $A, B \in \cF$ with $P(A) > 0$ and $P(B) > 0$. Then
+\begin{equation}\label{eq:bayes}
+P(A \mid B) \;=\; \frac{P(B \mid A)\, P(A)}{P(B)}.
+\end{equation}
+More generally, if $\{A_n\}$ is a countable partition of $\Omega$ with $P(A_n) > 0$ for each $n$, then
+\begin{equation}\label{eq:bayes-partition}
+P(A_k \mid B) \;=\; \frac{P(B \mid A_k)\, P(A_k)}{\displaystyle\sum_n P(B \mid A_n)\, P(A_n)}.
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Equation~\eqref{eq:bayes} follows from the symmetry $P(A \cap B) = P(B \mid A)\, P(A) = P(A \mid B)\, P(B)$. Substituting the law of total probability (\cref{prop:total-prob}) into the denominator yields \eqref{eq:bayes-partition}.
+\end{proof}
+
+\begin{remark}[Bayesian interpretation]
+Bayes' rule inverts the direction of conditioning. In the Bayesian reading, $P(A_k)$ is the \emph{prior} probability of hypothesis $A_k$; $P(B \mid A_k)$ is the \emph{likelihood} of the observed data $B$ under hypothesis $A_k$; and $P(A_k \mid B)$ is the \emph{posterior} probability of $A_k$ given the data. The denominator $P(B) = \sum_n P(B \mid A_n)\, P(A_n)$ is a normalizing constant (the \emph{marginal likelihood} or \emph{evidence}). Bayes' rule is thus the mechanism by which data transforms prior beliefs into posterior beliefs.
+\end{remark}
+
+\begin{definition}[Expectation]\label{def:expectation}
+Let $X$ be a random variable on $(\Omega, \cF, P)$. The \emph{expectation} (or \emph{mean}) of $X$ is the Lebesgue integral
+\[
+E[X] = \int_\Omega X(\omega)\, dP(\omega),
+\]
+provided $\int_\Omega |X|\, dP < \infty$ (i.e., $X \in L^1(\Omega, \cF, P)$). Equivalently, by the change-of-variables formula for pushforward measures,
+\[
+E[X] = \int_\R x\, d\mu_X(x),
+\]
+where $\mu_X = P \circ X^{-1}$ is the law of $X$.
+\end{definition}
+
+\begin{remark}
+The expectation is a linear functional on $L^1(P)$: $E[aX + bY] = aE[X] + bE[Y]$. It is also monotone ($X \leq Y$ a.s.\ implies $E[X] \leq E[Y]$) and continuous under dominated convergence. These three properties---linearity, monotonicity, and continuity---characterize the Lebesgue integral and are the workhorses of probabilistic computation.
+\end{remark}
+
+\begin{remark}[Variance]
+The \emph{variance} $\Var(X) = E\bigl[(X - E[X])^2\bigr] = E[X^2] - (E[X])^2$ measures the spread of $X$ around its mean. It is the quadratic form that appears in the CLT (\cref{thm:add-clt}): the normalization $S_n / \sqrt{n}$ is chosen precisely so that $\Var(S_n / \sqrt{n}) = \sigma^2$ for all $n$.
+\end{remark}
+
+We turn to the central construction: conditional expectation with respect to a sub-$\sigma$-algebra. This is the measure-theoretic generalization of the elementary conditional probability and requires a non-trivial existence theorem.
+
+\begin{definition}[Conditional expectation]\label{def:cond-exp}
+Let $X \in L^1(\Omega, \cF, P)$ and let $\mathcal{G} \subseteq \cF$ be a sub-$\sigma$-algebra. The \emph{conditional expectation} of $X$ given $\mathcal{G}$, denoted $E[X \mid \mathcal{G}]$, is the $P$-a.s.\ unique $\mathcal{G}$-measurable function satisfying
+\begin{equation}\label{eq:cond-exp}
+\int_G E[X \mid \mathcal{G}]\, dP = \int_G X\, dP \qquad \text{for all } G \in \mathcal{G}.
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Existence and uniqueness]\label{thm:cond-exp-exists}
+For any $X \in L^1(\Omega, \cF, P)$ and any sub-$\sigma$-algebra $\mathcal{G} \subseteq \cF$, the conditional expectation $E[X \mid \mathcal{G}]$ exists and is unique $P$-a.s.
+\end{theorem}
+
+\begin{proof}
+Define the signed measure $\nu(G) = \int_G X\, dP$ for $G \in \mathcal{G}$. Then $\nu \ll P|_\mathcal{G}$ (absolute continuity follows from $X \in L^1$). By the Radon--Nikod\'ym theorem, there exists a $\mathcal{G}$-measurable function $f$ with $\nu(G) = \int_G f\, dP$ for all $G \in \mathcal{G}$, unique $P$-a.s. Set $E[X \mid \mathcal{G}] = f$.
+\end{proof}
+
+\begin{remark}[Projection interpretation]
+The conditional expectation $E[X \mid \mathcal{G}]$ is the orthogonal projection of $X$ onto $L^2(\Omega, \mathcal{G}, P)$ when $X \in L^2$. This geometric interpretation illuminates its fundamental properties:
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Tower property}: if $\mathcal{H} \subseteq \mathcal{G} \subseteq \cF$, then $E\bigl[E[X \mid \mathcal{G}] \mid \mathcal{H}\bigr] = E[X \mid \mathcal{H}]$. (Composing two projections onto nested subspaces yields the projection onto the smaller subspace.)
+\item \textbf{Pulling out what is known}: if $Y$ is $\mathcal{G}$-measurable and bounded, then $E[XY \mid \mathcal{G}] = Y \cdot E[X \mid \mathcal{G}]$.
+\item \textbf{Independence}: if $\sigma(X)$ and $\mathcal{G}$ are independent, then $E[X \mid \mathcal{G}] = E[X]$.
+\end{enumerate}
+Property~(iii) is the probabilistic content of orthogonality: independent information is uninformative.
+\end{remark}
+
+\begin{example}[La Gioconda and the lattice of $\sigma$-algebras]\label{ex:gioconda}
+Let $\Omega$ be the set of all paintings entitled ``Mona Lisa'' (La Gioconda)---Leonardo's original at the Louvre, the near-contemporaneous copy at the Museo del Prado, and the countless reproductions produced over five centuries. Equip $\Omega$ with the uniform probability measure and consider three nested sub-$\sigma$-algebras:
+\[
+\mathcal{H} \;\subseteq\; \mathcal{G} \;\subseteq\; \cF,
+\]
+where:
+\begin{enumerate}[label=(\roman*)]
+\item $\mathcal{H} = \sigma(\mathrm{file\; format})$: the coarsest level---an observer sees only that the image is a \texttt{.jpg} file at $960$\,px resolution. At this resolution, Leonardo's original and the Prado copy are \emph{indistinguishable}: they belong to the same $\mathcal{H}$-atom.
+\item $\mathcal{G} = \sigma(\mathrm{author})$: the intermediate level---the observer knows who painted each work. Conditioning on the event $\{\mathrm{painter} = \text{Leonardo}\}$ now picks out a single element of $\Omega$. \emph{The definite article ``the'' in ``THE Mona Lisa'' is a conditional operation}: it is well-defined only relative to a $\sigma$-algebra fine enough to separate the original from its copies.
+\item $\cF$: full provenance---canvas material, pigment chemistry, exhibition history. Every painting is distinguished.
+\end{enumerate}
+
+The tower property reads concretely: if you first identify the painting by authorship ($\mathcal{G}$), then forget the author and retain only the file format ($\mathcal{H}$), you obtain the same answer as if you had consulted only the file format from the start. Information, once discarded, cannot be recovered by re-projection.
+
+The moral is general: a $\sigma$-algebra is not a technicality---it is a \emph{resolution}, a choice of what distinctions the observer can make. Conditional expectation $E[X \mid \mathcal{G}]$ returns the best approximation to $X$ that is visible at the resolution~$\mathcal{G}$. The lattice of sub-$\sigma$-algebras is the lattice of all possible levels of knowledge, and the tower property asserts its internal consistency. In this light, probability theory is not primarily a theory of ``randomness''---it is a theory of \emph{information}. Randomness is not in the phenomenon; it is in the $\sigma$-algebra of the observer.
+\end{example}
+
+\begin{example}[Conditional expectation recovers conditional probability]\label{ex:cond-exp-partition}
+Let $\{B_n\}$ be a countable partition of $\Omega$ into events of positive probability, and let $\mathcal{G} = \sigma(\{B_n\})$ be the $\sigma$-algebra generated by the partition. Then
+\[
+E[X \mid \mathcal{G}](\omega) = \sum_n \frac{E[X \mathbf{1}_{B_n}]}{P(B_n)}\, \mathbf{1}_{B_n}(\omega) = \sum_n E[X \mid B_n]\, \mathbf{1}_{B_n}(\omega).
+\]
+In particular, taking $X = \mathbf{1}_A$ recovers the conditional probability: $E[\mathbf{1}_A \mid \mathcal{G}] = \sum_n P(A \mid B_n)\, \mathbf{1}_{B_n}$.
+\end{example}
+
+\begin{remark}[Measure-theoretic Bayes' rule]\label{rmk:bayes-measure}
+Bayes' rule (\cref{thm:bayes}) extends to the measure-theoretic setting as follows. Let $P$ and $Q$ be two probability measures on $(\Omega, \cF)$ with $Q \ll P$, and let $L = dQ/dP$ be the Radon--Nikod\'ym derivative (the \emph{likelihood ratio}). Then for any sub-$\sigma$-algebra $\mathcal{G} \subseteq \cF$ and any bounded $\cF$-measurable $X$,
+\begin{equation}\label{eq:abstract-bayes}
+E_Q[X \mid \mathcal{G}] = \frac{E_P[XL \mid \mathcal{G}]}{E_P[L \mid \mathcal{G}]} \qquad Q\text{-a.s.}
+\end{equation}
+This is the abstract Bayes formula: it relates the conditional expectation under one measure to that under another, mediated by the likelihood ratio. The elementary Bayes' rule \eqref{eq:bayes} is the special case where $\mathcal{G} = \sigma(\{B_n\})$ and $Q(A) = P(A \mid B)$ for some fixed $B$.
+\end{remark}
+
+\begin{proposition}[Optimality of conditional expectation]\label{prop:cond-exp-optimal}
+Let $Y \in L^2(\Omega, \cF, P)$ and $\mathcal{G} \subseteq \cF$ a sub-$\sigma$-algebra. Among all $\mathcal{G}$-measurable predictors $f \in L^2(\Omega, \mathcal{G}, P)$, the conditional expectation $E[Y \mid \mathcal{G}]$ uniquely minimizes the mean squared error:
+\begin{equation}\label{eq:mse-decomp}
+E[(Y - f)^2] = E[(Y - E[Y \mid \mathcal{G}])^2] + E[(E[Y \mid \mathcal{G}] - f)^2].
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Write $Y - f = (Y - E[Y \mid \mathcal{G}]) + (E[Y \mid \mathcal{G}] - f)$. The first term $\varepsilon = Y - E[Y \mid \mathcal{G}]$ is orthogonal to every element of $L^2(\Omega, \mathcal{G}, P)$ by the defining property of conditional expectation: for any $\mathcal{G}$-measurable $Z \in L^2$,
+\[
+E[\varepsilon \, Z] = E[(Y - E[Y \mid \mathcal{G}]) \, Z] = E[YZ] - E[E[Y \mid \mathcal{G}] \, Z] = 0.
+\]
+The second term $E[Y \mid \mathcal{G}] - f$ is $\mathcal{G}$-measurable, hence in $L^2(\Omega, \mathcal{G}, P)$. By Pythagoras in the Hilbert space $L^2(P)$:
+\[
+\|Y - f\|_2^2 = \|\varepsilon\|_2^2 + \|E[Y \mid \mathcal{G}] - f\|_2^2,
+\]
+which is \eqref{eq:mse-decomp}. The second term vanishes if and only if $f = E[Y \mid \mathcal{G}]$ a.s., giving uniqueness.
+\end{proof}
+
+\begin{corollary}[Monotonicity]\label{cor:monotonicity}
+If $\mathcal{G}_1 \subseteq \mathcal{G}_2 \subseteq \cF$, then $E[(Y - E[Y \mid \mathcal{G}_1])^2] \geq E[(Y - E[Y \mid \mathcal{G}_2])^2]$. Finer $\sigma$-algebra $\to$ lower irreducible error. This is the mathematical content of the \emph{policy improvement theorem}: finer $\sigma$-algebra $\to$ lower projection residual.
+\end{corollary}
+
+\begin{proof}
+Since $\mathcal{G}_1 \subseteq \mathcal{G}_2$, we have $L^2(\Omega, \mathcal{G}_1, P) \subseteq L^2(\Omega, \mathcal{G}_2, P)$. Projecting onto a larger closed subspace can only decrease the residual.
+\end{proof}
+
+\begin{definition}[The GPI category]\label{def:gpi-category}
+Let $(\Omega, \cF, P)$ be a probability space and $Y \in L^2(\Omega, \cF, P)$.
+The \emph{GPI category} $\Proj_Y$ is the thin category (poset category) whose
+objects are sub-$\sigma$-algebras $\mathcal{G} \subseteq \cF$ and whose unique
+morphism $\mathcal{G}_1 \to \mathcal{G}_2$ exists if and only if
+$\mathcal{G}_1 \subseteq \mathcal{G}_2$.
+
+The \emph{residual functor} is the contravariant functor
+\[
+R_Y : \Proj_Y^{\mathrm{op}} \to (\R_{\geq 0}, \geq), \qquad
+R_Y(\mathcal{G}) = \|Y - E[Y \mid \mathcal{G}]\|_2^2.
+\]
+By \cref{cor:monotonicity}, $R_Y$ is a functor: every morphism
+$\mathcal{G}_1 \hookrightarrow \mathcal{G}_2$ in $\Proj_Y$ maps to the
+inequality $R_Y(\mathcal{G}_1) \geq R_Y(\mathcal{G}_2)$ in
+$(\R_{\geq 0}, \geq)$.
+
+The \emph{evaluation functor} is
+\[
+\mathcal{E}_Y : \Proj_Y \to L^2(\Omega, \cF, P), \qquad
+\mathcal{E}_Y(\mathcal{G}) = E[Y \mid \mathcal{G}].
+\]
+A \emph{filtration} $\mathbb{F} = (\mathcal{G}_t)_{t \geq 0}$ with
+$\mathcal{G}_0 \subseteq \mathcal{G}_1 \subseteq \cdots$ is a functor
+$\mathbb{F} : (\mathbb{N}, \leq) \to \Proj_Y$ from the poset category of
+natural numbers.
+\end{definition}
+
+\begin{example}[Generalized policy iteration and the $\sigma$-algebra lattice]\label{ex:ml-sigma}
+We show that the central constructions of reinforcement learning and statistical learning are operations in the GPI category $\Proj_Y$ (\cref{def:gpi-category}). The core objects are the evaluation functor $\mathcal{E}_Y$ (\cref{def:gpi-category}) and an improvement operator $\mathcal{I}$, whose alternation is generalized policy iteration (GPI), a residual-monotone walk on $\Proj_Y$ governed by \cref{prop:cond-exp-optimal}.
+
+\begin{enumerate}[label=(\alph*)]
+
+\item \textbf{The two operators.} Let $Y \in L^2(\Omega, \cF, P)$ be a target random variable (a reward, a label, a future state). Let $\Lambda \subseteq \{\mathcal{G} : \mathcal{G} \subseteq \cF\}$ be the family of sub-$\sigma$-algebras reachable by the agent or model.
+
+\emph{Evaluation operator} $\mathcal{E}$: given a fixed $\mathcal{G} \in \Lambda$, compute the orthogonal projection
+\[
+\mathcal{E}_{\mathcal{G}}[Y] = E[Y \mid \mathcal{G}].
+\]
+By \cref{prop:cond-exp-optimal}, this is the unique minimizer of $E[(Y - f)^2]$ over $f \in L^2(\Omega, \mathcal{G}, P)$. The $\sigma$-algebra is fixed; the function moves.
+
+\emph{Improvement operator} $\mathcal{I}$: given the current projection residual, select a new $\sigma$-algebra $\mathcal{G}' \in \Lambda$ with smaller residual:
+\[
+\mathcal{I}(\mathcal{G}) = \mathcal{G}' \in \Lambda \quad \text{such that} \quad E[(Y - E[Y \mid \mathcal{G}'])^2] \leq E[(Y - E[Y \mid \mathcal{G}])^2].
+\]
+The target is fixed; the $\sigma$-algebra moves.
+
+Note that $\mathcal{I}$ selects a $\sigma$-algebra with smaller \emph{residual}; this does not require $\mathcal{G} \subseteq \mathcal{G}'$ (the new $\sigma$-algebra need not be finer). When the walk is additionally a filtration ($\mathcal{G}_n \subseteq \mathcal{G}_{n+1}$ for all $n$), the stronger convergence of \cref{thm:in-context-gpi} applies---this is the case for in-context learning, where each new token extends the context.
+
+\item \textbf{Generalized policy iteration.} GPI alternates the two operators:
+\[
+\mathcal{G}_0 \xrightarrow{\;\mathcal{E}\;} V_0 \xrightarrow{\;\mathcal{I}\;} \mathcal{G}_1 \xrightarrow{\;\mathcal{E}\;} V_1 \xrightarrow{\;\mathcal{I}\;} \mathcal{G}_2 \xrightarrow{\;\mathcal{E}\;} \cdots
+\]
+where $V_n = E[Y \mid \mathcal{G}_n]$. By \cref{cor:monotonicity}, each improvement step yields
+\[
+\|Y - V_{n+1}\|_2^2 \leq \|Y - V_n\|_2^2.
+\]
+The sequence of projection residuals is non-increasing and bounded below by zero, hence converges. In the finite-state setting, this convergence is achieved in finitely many steps and yields the optimal value function $V^* = E[Y \mid \mathcal{G}^*]$. This is the measure-theoretic skeleton of the \emph{policy improvement theorem}: the monotonicity of orthogonal projections on the lattice is the mechanism underlying the classical Bellman convergence argument.
+
+\item \textbf{Reinforcement learning: the Bellman equation as tower property.} In a Markov decision process $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$, the agent selects actions $A_t$ in states $S_t$, receiving rewards $R_{t+1}$. A policy $\pi$ determines the agent's behavior; the Markov property ensures
+that the value function depends only on the current state, so the relevant
+$\sigma$-algebra is $\sigma(S_t)$, a coarsening of the full trajectory
+$\sigma$-algebra. The \emph{value function} is
+\[
+V^\pi(s) = E^\pi\!\left[\sum_{k=0}^\infty \gamma^k R_{t+k+1} \;\middle|\; S_t = s\right] = E[\mathcal{R}_t \mid \sigma(S_t)],
+\]
+where $\mathcal{R}_t = \sum_{k=0}^\infty \gamma^k R_{t+k+1}$ is the discounted return and $\gamma \in [0,1)$. This is the evaluation operator $\mathcal{E}$ applied to the return.
+
+The \emph{Bellman equation} is the tower property in disguise:
+\begin{equation}\label{eq:bellman}
+V^\pi(s) = E^\pi[R_{t+1} + \gamma\, V^\pi(S_{t+1}) \mid S_t = s].
+\end{equation}
+Writing $\mathcal{G}_t = \sigma(S_t)$, this reads $E[\mathcal{R}_t \mid \mathcal{G}_t] = E\bigl[R_{t+1} + \gamma\, E[\mathcal{R}_{t+1} \mid \mathcal{G}_{t+1}] \mid \mathcal{G}_t\bigr]$---the tower property applied to the return, with the Markov property ensuring $\mathcal{G}_t$ captures the relevant information.
+
+Policy improvement selects $\pi'$ greedy with respect to $V^\pi$: choose $A_t$ to maximize $E[R_{t+1} + \gamma V^\pi(S_{t+1}) \mid S_t, A_t]$. This generates a $\sigma$-algebra $\mathcal{G}_{\pi'}$ that resolves the action-value distinctions $\pi$ left unresolved, and by the same monotonicity principle, $V^{\pi'} \geq V^\pi$
+(the classical policy improvement theorem; the pointwise inequality
+follows from applying the Bellman operator's monotonicity state by state).
+
+\item \textbf{Supervised learning as single-step evaluation.} The static supervised setting is the degenerate case of GPI: no dynamics, no sequential decisions. The joint distribution $(X, Y) \sim P$ is fixed. A model with parameters $\theta$ computes a representation $h_\theta : \mathcal{X} \to \R^d$ generating
+\[
+\mathcal{G}_\theta = \sigma(h_\theta(X)) = \{h_\theta^{-1}(B) : B \in \mathcal{B}(\R^d)\}.
+\]
+Two inputs $x, x'$ with $h_\theta(x) = h_\theta(x')$ are indistinguishable to the model---they belong to the same $\mathcal{G}_\theta$-atom, exactly as the Louvre and Prado Giocondas belong to the same $\mathcal{H}$-atom at 960px (\cref{ex:gioconda}). The evaluation operator gives the optimal readout $E[Y \mid \mathcal{G}_\theta]$; the improvement operator is stochastic gradient descent on $\theta$:
+\begin{equation}\label{eq:ml-fundamental}
+\min_\theta\, E[(Y - E[Y \mid \mathcal{G}_\theta])^2].
+\end{equation}
+There is no alternation---$\mathcal{E}$ and $\mathcal{I}$ are fused into a single optimization. GPI degenerates to gradient descent on the projection residual.
+
+\item \textbf{Architecture $=$ reachable $\sigma$-algebras.} Different architectures constrain which $\sigma$-algebras are reachable:
+\begin{itemize}
+\item A \emph{linear model}: $\mathcal{G}_\theta = \sigma(w^\top X)$---a hyperplane partition. Coarse.
+\item A \emph{CNN}: $\mathcal{G}_\theta$ respects translation equivariance---only translation-invariant distinctions are visible.
+\item A \emph{Transformer} with context length $T$: $\mathcal{G}_\theta = \sigma(h_\theta(x_1, \ldots, x_T))$---the $\sigma$-algebra generated by attending to all positions in the context window.
+\end{itemize}
+Architecture design is the art of choosing which region of the lattice $\Lambda$ to search over.
+
+\item \textbf{Overfitting, underfitting, and regularization.}
+\begin{itemize}
+\item \emph{Underfitting}: $\mathcal{G}_\theta$ is too coarse---important distinctions are invisible. The projection $E[Y \mid \mathcal{G}_\theta]$ has large residual.
+\item \emph{Overfitting}: $\mathcal{G}_\theta$ is too fine on training data---it separates noise from noise. On test data from the same $P$, these spurious distinctions do not hold.
+\item \emph{Regularization} (dropout, weight decay, early stopping) $=$ constraining $\Lambda$, preventing $\mathcal{G}_\theta$ from becoming too fine relative to the sample size.
+\end{itemize}
+
+\item \textbf{Next-token prediction (GPT).} The sequence $(X_1, X_2, \ldots)$ is drawn from $P$. The autoregressive model computes
+\[
+f_\theta(x_1, \ldots, x_t) \approx E[X_{t+1} \mid \sigma(X_1, \ldots, X_t)]
+\]
+for each $t$. This is GPI with a rolling evaluation: at each position, $\mathcal{E}$ projects the next token onto the $\sigma$-algebra generated by the context, and $\mathcal{I}$ updates $\theta$ to reduce the cross-entropy (the KL divergence from the model's conditional to the true conditional). The transformer's attention mechanism parameterizes the map from context to the $\sigma$-algebra $\mathcal{G}_\theta^{(t)}$ that determines what the model ``remembers.''
+
+\item \textbf{World models (JEPA).} A world model predicts future states given current observations. In the framework:
+\[
+\text{JEPA predictor} = E[h_\theta(X_{t+1}) \mid \mathcal{G}_\theta^{(t)}].
+\]
+The key design choice: predict in \emph{representation space} $h_\theta(X_{t+1})$, not in pixel space $X_{t+1}$. This means the target itself lives in a learned $\sigma$-algebra. Both $\mathcal{E}$ and its target co-evolve---the model is simultaneously choosing what to predict and how to predict it. This is joint optimization over two $\sigma$-algebras: GPI where the improvement operator $\mathcal{I}$ moves both the predictor and the target.
+
+\item \textbf{Diffusion models.} The forward process $X_0 \to X_1 \to \cdots \to X_T$ is a Markov chain that progressively destroys information: the mutual information $I(X_0; X_t)$ decreases with $t$, so the conditional expectation $E[f(X_0) \mid X_t]$ becomes coarser as $t$ grows. At $t = T$, the conditional distribution is nearly independent of $X_0$ (pure noise). The reverse (generative) process recovers information step by step---this is GPI run backwards on the lattice. The score function $\nabla_{x_t} \log p(x_t)$ is the gradient of the log-density, and score matching learns to invert each information-destroying step. Generation $=$ climbing from uninformative to informative, one evaluation--improvement pair at a time.
+
+\end{enumerate}
+\end{example}
+
+\begin{remark}[The GPI--measure-theory dictionary]\label{rmk:ml-dictionary}
+The following table summarizes the translation developed in \cref{ex:ml-sigma}.
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabular}{@{}p{0.38\textwidth}p{0.57\textwidth}@{}}
+\hline
+\textbf{AI concept} & \textbf{Measure-theoretic object} \\
+\hline
+Target (reward, label, future state) $Y$ & Random variable in $L^2(\Omega, \cF, P)$ \\
+Evaluation operator $\mathcal{E}$ & Orthogonal projection $E[Y \mid \mathcal{G}]$ \\
+Improvement operator $\mathcal{I}$ & Lattice navigation $\mathcal{G} \mapsto \mathcal{G}'$ \\
+GPI convergence & Monotone walk on $\Lambda$, bounded $\Rightarrow$ converges \\
+Bellman equation & Tower property of conditional expectation \\
+Policy improvement theorem & \cref{cor:monotonicity}: finer $\mathcal{G} \to$ smaller residual \\
+Value function $V^\pi$ & $E[\mathcal{R}_t \mid \sigma(S_t)]$ (projection of return) \\
+\hline
+Learned representation $h_\theta(X)$ & Generator of $\mathcal{G}_\theta = \sigma(h_\theta(X))$ \\
+Architecture constraints & Reachable sub-lattice $\Lambda \subseteq \{\mathcal{G} \subseteq \cF\}$ \\
+Supervised training loss & $E[(Y - E[Y \mid \mathcal{G}_\theta])^2]$ (projection residual) \\
+Training over $\theta$ & Search over $\sigma$-algebras in $\Lambda$ \\
+Overfitting & $\mathcal{G}_\theta$ too fine (separates noise) \\
+Regularization & Constraining $\Lambda$ \\
+\hline
+Next-token prediction & $E[X_{t+1} \mid \sigma(X_1, \ldots, X_t)]$ \\
+World model (JEPA) & $E[h_\theta(X_{t+1}) \mid \mathcal{G}_\theta^{(t)}]$ (joint $\sigma$-algebra opt.) \\
+Diffusion forward & Information destruction: $I(X_0; X_T) \ll I(X_0; X_0)$ \\
+Diffusion reverse & Information recovery: climbing toward finer conditional structure \\
+Generalization & $\mathcal{G}_\theta$ captures structure of $P$, not artifacts \\
+\hline
+GPI category $\Proj_Y$ & Thin category $(\Lambda, \subseteq)$ (\cref{def:gpi-category}) \\
+In-context learning & Filtration $\mathbb{F} : (\mathbb{N}, \leq) \to \Proj_Y$ \\
+In-context convergence & Colimit $\mathcal{G}_\infty$ in $\Proj_Y$ (\cref{thm:in-context-gpi}) \\
+\hline
+\end{tabular}
+\normalsize
+\end{center}
+\medskip
+
+\noindent Every model, every architecture, every training procedure in modern AI is a particular strategy for navigating the lattice of sub-$\sigma$-algebras of $\cF$. Reinforcement learning makes the navigation explicit through the alternation $\mathcal{E} \circ \mathcal{I}$; supervised learning fuses the two into a single gradient step. The lattice itself---and the projection theorem that governs it---is Kolmogorov's, 1933.
+
+\smallskip
+\noindent\textit{Author's note.} Machine learning, as practiced, does not resemble the popular image of ``artificial intelligence''---it resembles $\sigma$-algebra selection. The objects manipulated by gradient descent are not thoughts, beliefs, or goals; they are partitions of a sample space. The questions answered by a trained model are not ``what should I do?''\ but ``which distinctions does the data support?''\ The $\sigma$-algebra lattice is a more faithful portrait of what these systems are and do than any anthropomorphic metaphor.
+\end{remark}
+
+\begin{theorem}[In-context GPI]\label{thm:in-context-gpi}
+Let $Y \in L^2(\Omega, \cF, P)$ and let
+$\mathbb{F} : (\mathbb{N}, \leq) \to \Proj_Y$ be a filtration, with
+$\mathbb{F}(t) = \mathcal{G}_t$ and
+$\mathcal{G}_0 \subseteq \mathcal{G}_1 \subseteq \cdots \subseteq \cF$.
+\begin{enumerate}[label=(\roman*)]
+\item \emph{(Monotone residual.)} The composite
+$R_Y \circ \mathbb{F}^{\mathrm{op}}$ is order-preserving:
+$R_Y(\mathcal{G}_t)$ is non-increasing in $t$.
+
+\item \emph{(Colimit convergence.)} Let
+$\mathcal{G}_\infty = \sigma\!\bigl(\bigcup_{t \geq 0} \mathcal{G}_t\bigr)$
+be the colimit of $\mathbb{F}$ in $\Proj_Y$. Then
+\[
+\mathcal{E}_Y(\mathcal{G}_t) = E[Y \mid \mathcal{G}_t]
+\xrightarrow{\;L^2\;} E[Y \mid \mathcal{G}_\infty]
+= \mathcal{E}_Y(\mathcal{G}_\infty)
+\quad \text{as } t \to \infty.
+\]
+The evaluation functor sends the colimit of the filtration to the
+$L^2$-limit of the projections.
+
+\item \emph{(Terminal projection.)}
+$R_Y(\mathcal{G}_\infty) = \inf_{t \geq 0} R_Y(\mathcal{G}_t)$.
+The colimit achieves the infimum of the residual functor over the image
+of $\mathbb{F}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+(i) is \cref{cor:monotonicity} applied to each inclusion
+$\mathcal{G}_t \subseteq \mathcal{G}_{t+1}$.
+
+(ii) The sequence $V_t = E[Y \mid \mathcal{G}_t]$ is a martingale
+adapted to $(\mathcal{G}_t)$: for $s \leq t$,
+$E[V_t \mid \mathcal{G}_s] = E[Y \mid \mathcal{G}_s] = V_s$ by the tower
+property. Since $\sup_t E[V_t^2] \leq E[Y^2] < \infty$, L\'{e}vy's upward
+theorem \cite[Theorem~4.4.5]{Durrett} gives
+$V_t \to E[Y \mid \mathcal{G}_\infty]$ both a.s.\ and in $L^2$.
+
+(iii) By (ii) and continuity of the $L^2$-norm:
+$R_Y(\mathcal{G}_t) = \|Y - V_t\|_2^2 \to
+\|Y - E[Y \mid \mathcal{G}_\infty]\|_2^2 = R_Y(\mathcal{G}_\infty)$.
+Combined with (i), $R_Y(\mathcal{G}_\infty)$ is the infimum.
+\end{proof}
+
+\begin{remark}[In-context reinforcement learning]\label{rmk:in-context-rl}
+\cref{thm:in-context-gpi} gives the measure-theoretic content of
+\emph{in-context reinforcement learning}: a transformer processing a
+sequence of $(s_k, a_k, r_{k+1})$ tuples builds a filtration
+$\mathcal{G}_t = \sigma(s_1, a_1, r_2, \ldots, s_t)$ within its context
+window. Each new token is a morphism
+$\mathcal{G}_t \hookrightarrow \mathcal{G}_{t+1}$ in $\Proj_Y$. The three
+modes of GPI are distinguished by the role of the improvement operator:
+
+\medskip
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\small
+\begin{tabular}{@{}p{0.22\textwidth}p{0.34\textwidth}p{0.36\textwidth}@{}}
+\hline
+\textbf{Mode} & \textbf{Improvement $\mathcal{I}$} & \textbf{Categorical structure} \\
+\hline
+Classical RL & Explicit: $\pi \to \pi'$ & Endofunctor on $\Proj_Y$ \\
+Supervised learning & Fused: $\nabla_\theta$ on $R_Y(\mathcal{G}_\theta)$ & Search over $\Lambda \subset \mathrm{Ob}(\Proj_Y)$ \\
+In-context RL & Implicit: data extends context & Filtration $\mathbb{F} : (\mathbb{N}, \leq) \to \Proj_Y$ \\
+\hline
+\end{tabular}
+\normalsize
+\end{center}
+\medskip
+
+\noindent In the in-context case, the improvement operator is the identity
+on the filtration---improvement is free, supplied by the data. The
+transformer's forward pass at position $t$ approximates the evaluation
+functor $\mathcal{E}_Y(\mathcal{G}_t)$, and convergence is guaranteed by
+\cref{thm:in-context-gpi}(ii).
+\end{remark}
+
+\begin{remark}[Connection to the CLT framework]
+The foundations reviewed here underlie every result in this paper. The CLT (\cref{thm:add-clt}) concerns the law $\mu_{S_n/\sqrt{n}} = P \circ (S_n/\sqrt{n})^{-1}$ of a normalized sum, whose characteristic function is an expectation: $\varphi_{S_n/\sqrt{n}}(\xi) = E[e^{i\xi S_n/\sqrt{n}}]$. The Fourier transform of a probability measure is nothing but the expectation of a character. The entire duality between the additive and multiplicative CLTs (\cref{thm:mellin-fourier}) rests on the fact that expectation is a linear functional that commutes with the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$.
+\end{remark}
 
 %% ============================================================
 \section{Preliminaries on locally compact abelian groups}
@@ -436,13 +865,15 @@ Part (iii) is immediate: applying the Fourier transform to $\partial_t p_t = \fr
 Summary of the heat semigroup on the three running examples.
 \begin{center}
 \renewcommand{\arraystretch}{1.4}
-\begin{tabular}{lcccc}
-\textbf{Group $G$} & \textbf{Laplacian} & \textbf{Symbol $Q$} & \textbf{Heat equation} & \textbf{Fundamental solution} \\
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\textbf{Group $G$} & \textbf{Laplacian} & \textbf{Symbol $Q$} & \textbf{Heat equation} & \textbf{Fund.\ solution} \\
 \hline
 $(\R, +)$ & $\partial_{xx}$ & $\xi^2$ & $u_t = \tfrac{1}{2}\, u_{xx}$ & Gaussian \\
 $(\Rpos, \times)$ & $(x\partial_x)^2$ & $s^2$ & $u_t = \tfrac{1}{2}D^2 u$ & Log-normal \\
 $(\bT, +)$ & $\partial_{\theta\theta}$ & $4\pi^2 n^2$ & $u_t = \tfrac{1}{2}\, u_{\theta\theta}$ & Wrapped normal ($\vartheta_3$)
 \end{tabular}
+\normalsize
 \end{center}
 \end{example}
 
@@ -676,7 +1107,7 @@ The condition $\int_{\bT} \log f(\theta)\, d\theta > -\infty$ has now appeared i
 \end{enumerate}
 This triple coincidence is structural. The Gaussian is simultaneously the Fourier eigenfunction (\cref{thm:gaussian-fixed}), the heat kernel (\cref{thm:heat-semigroup}), the outer function seed ($c_k = 0$ for $k \neq 0$), and the unique spectral density for which $E(f) = 1$ exactly---\emph{perfect additive--multiplicative alignment}.
 
-The CLT identifies the Gaussian as the universal \emph{attractor}: processes converging to the Gaussian limit necessarily satisfy the Szeg\H{o} condition $\int \log f > -\infty$ (ensuring $G(f) \in (0,\infty)$ and the First Szeg\H{o} Theorem). The Strong Szeg\H{o} regularity $\sum k|c_k|^2 < \infty$ is an \emph{additional} condition---not implied by the CLT per se, but naturally satisfied in its vicinity. Precisely: the class $\{f : \sum k|c_k|^2 < \infty\}$ is an open neighborhood of the constant density $f \equiv \sigma^2$ (the Gaussian fixed point) in the topology of $L^1(\bT)$, and any spectral density with $\log f \in H^{1/2}(\bT)$---the Sobolev space of half-order regularity---lies in this class. Short-memory processes satisfying the CLT (summable correlations, continuous spectral density) generically have $\log f$ of this regularity. The Gaussian fixed point thus sits at the center of the \emph{basin of non-triviality}: the region in spectral density space where cross-theater volume comparisons yield finite, nonzero bounds.
+The CLT identifies the Gaussian as the universal \emph{attractor}: short-memory stationary processes converging to the Gaussian limit generically satisfy the Szeg\H{o} condition $\int \log f > -\infty$ (ensuring $G(f) \in (0,\infty)$ and the First Szeg\H{o} Theorem). The Strong Szeg\H{o} regularity $\sum k|c_k|^2 < \infty$ is an \emph{additional} condition---not implied by the CLT per se, but naturally satisfied in its vicinity. Precisely: the class $\{f : \sum k|c_k|^2 < \infty\}$ is an open neighborhood of the constant density $f \equiv \sigma^2$ (the Gaussian fixed point) in the topology of $L^1(\bT)$, and any spectral density with $\log f \in H^{1/2}(\bT)$---the Sobolev space of half-order regularity---lies in this class. Short-memory processes satisfying the CLT (summable correlations, continuous spectral density) generically have $\log f$ of this regularity. The Gaussian fixed point thus sits at the center of the \emph{basin of non-triviality}: the region in spectral density space where cross-theater volume comparisons yield finite, nonzero bounds.
 \end{remark}
 
 \begin{remark}[Non-trivial versus trivial multiverses]
@@ -724,7 +1155,7 @@ The second row is the image of the first under $\exp_*$ (equivalently, the first
 
 \subsection*{The exponential map as the general bridge}
 
-The Fourier--Mellin duality of Sections~2--4 rests on the group isomorphism $\exp : (\R, +) \to (\Rpos, \times)$, which bridges the ``additive'' world (Lie algebra) and the ``multiplicative'' world (Lie group). This bridge generalizes: every Lie group $G$ with Lie algebra $\mathfrak{g} = T_e G$ admits an \emph{exponential map}
+The Fourier--Mellin duality of Sections~3--5 rests on the group isomorphism $\exp : (\R, +) \to (\Rpos, \times)$, which bridges the ``additive'' world (Lie algebra) and the ``multiplicative'' world (Lie group). This bridge generalizes: every Lie group $G$ with Lie algebra $\mathfrak{g} = T_e G$ admits an \emph{exponential map}
 \[
 \exp : \mathfrak{g} \to G, \qquad \exp(X) = \gamma_X(1),
 \]
@@ -810,6 +1241,564 @@ $\mathfrak{sl}(n)$ & $\to$ & $SL(n)$ & No (local) & Gaussian on $\mathfrak{sl}(n
 
 \noindent In every case, the exponential map $\exp : \mathfrak{g} \to G$ serves as the bridge between the additive (Lie algebra) and multiplicative (Lie group) formulations of the CLT. The abelian case $(\R, +) \to (\Rpos, \times)$ is the unique instance where this bridge is a global isomorphism, making the additive--multiplicative duality exact at all scales.
 
+\subsection*{Spectral decomposition and irreversible convergence}
+
+The preceding discussion treats the non-abelian extension at the level of the exponential map (algebra $\to$ group). We now develop the \emph{spectral} side: how the heat semigroup decomposes via representation theory, and how convergence rates connect back to the Wold decomposition and Szeg\H{o} theory of \cref{sec:hardy}.
+
+\begin{theorem}[Peter-Weyl {\cite[Theorem~4.28]{Hall}}]\label{thm:peter-weyl}
+Let $G$ be a compact Lie group, and let $\widehat{G}$ denote the set of equivalence classes of irreducible unitary representations $(\rho, V_\rho)$ of $G$. Write $d_\rho = \dim V_\rho$.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(Orthogonality.)} The matrix coefficients $\sqrt{d_\rho}\, \rho_{ij}$, ranging over all $[\rho] \in \widehat{G}$ and $1 \leq i, j \leq d_\rho$, form an orthonormal basis of $L^2(G)$ with respect to Haar measure.
+
+\item \textbf{(Isometric decomposition.)} The non-abelian Fourier transform
+\[
+\widehat{f}(\rho) = \int_G f(g)\, \rho(g)^*\, dg \in \operatorname{End}(V_\rho)
+\]
+defines an isometry (Plancherel identity):
+\[
+\|f\|_{L^2(G)}^2 = \sum_{[\rho] \in \widehat{G}} d_\rho\, \|\widehat{f}(\rho)\|_{\mathrm{HS}}^2,
+\]
+where $\|\cdot\|_{\mathrm{HS}}$ is the Hilbert--Schmidt norm.
+
+\item \textbf{(Convolution becomes multiplication.)} For $f_1, f_2 \in L^1(G)$,
+\[
+\widehat{f_1 * f_2}(\rho) = \widehat{f_1}(\rho)\, \widehat{f_2}(\rho).
+\]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Part~(i) follows from Schur orthogonality for compact groups. Part~(ii) is the Peter-Weyl theorem proper. Part~(iii) is immediate from Fubini and the representation property $\rho(gh) = \rho(g)\rho(h)$.
+\end{proof}
+
+For abelian $G$, each $V_\rho$ is one-dimensional ($d_\rho = 1$) and the matrix coefficient $\rho_{11}$ is a character $\chi \in \widehat{G}$. The Peter-Weyl decomposition reduces to the classical Fourier series ($G = \bT$) or Fourier transform ($G = \R$), recovering the framework of Sections~2--5. The non-abelian case is distinguished by $d_\rho > 1$: the Fourier transform is \emph{operator-valued}, and convolution becomes \emph{matrix} multiplication rather than scalar multiplication.
+
+\begin{definition}[Casimir operator]\label{def:casimir}
+Let $G$ be a compact Lie group with Lie algebra $\mathfrak{g}$, equipped with a bi-invariant inner product (e.g., the negative of the Killing form when $G$ is semisimple). Let $\{X_1, \ldots, X_d\}$ be an orthonormal basis of $\mathfrak{g}$. The \emph{Casimir operator} (Laplace--Beltrami operator) on $G$ is
+\[
+\Omega = -\sum_{i=1}^d X_i^2,
+\]
+where each $X_i$ acts on $C^\infty(G)$ as a left-invariant differential operator. By Schur's lemma \cite[Proposition~10.7]{Hall}, $\Omega$ acts on each irreducible representation $V_\rho$ as scalar multiplication:
+\[
+\Omega\big|_{V_\rho} = \lambda_\rho \cdot \operatorname{Id}_{V_\rho}, \qquad \lambda_\rho \geq 0,
+\]
+with $\lambda_\rho = 0$ if and only if $\rho$ is the trivial representation.
+\end{definition}
+
+This is the non-abelian generalization of the Fourier symbol $Q(\chi)$ from \cref{def:laplacian} and \cref{ex:laplacian-symbol}. On $\bT$, $\lambda_n = 4\pi^2 n^2$; on $SO(3)$, $\lambda_\ell = \ell(\ell+1)$ for the spin-$\ell$ representation.
+
+\begin{proposition}[Heat kernel on compact groups]\label{prop:heat-compact}
+Let $G$ be a compact Lie group with Casimir operator $\Omega$. The heat kernel $p_t \in C^\infty(G)$, the fundamental solution of $\partial_t u = -\Omega u$, decomposes as
+\[
+p_t(g) = \sum_{[\rho] \in \widehat{G}} d_\rho\, e^{-\lambda_\rho t}\, \chi_\rho(g), \qquad t > 0,
+\]
+where $\chi_\rho(g) = \operatorname{tr}(\rho(g))$ is the character of~$\rho$. The series converges absolutely and uniformly for $t > 0$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Expand $p_t$ via \cref{thm:peter-weyl}. Since $\Omega$ acts on each $V_\rho$ as $\lambda_\rho \cdot \operatorname{Id}$, the heat equation becomes $\partial_t \widehat{p_t}(\rho) = -\lambda_\rho\, \widehat{p_t}(\rho)$ with solution $\widehat{p_t}(\rho) = e^{-\lambda_\rho t}\, \operatorname{Id}_{V_\rho}$. Taking the trace and summing over $\widehat{G}$ gives the character expansion. Absolute convergence follows from the Weyl dimension formula $d_\rho = O(\lambda_\rho^{d/2})$, ensuring the series converges for $t > 0$; see \cite[\S 3]{Diaconis}.
+\end{proof}
+
+\begin{corollary}[Spectral gap and convergence rate]\label{cor:spectral-gap}
+Let $\lambda_1 > 0$ be the spectral gap of $\Omega$ (the smallest nonzero Casimir eigenvalue). For any initial density $\rho_0 \in L^2(G)$ with $\int_G \rho_0 = 1$,
+\[
+\left\| \rho_t - \frac{1}{\operatorname{vol}(G)} \right\|_{L^2(G)} \leq e^{-\lambda_1 t}\left\| \rho_0 - \frac{1}{\operatorname{vol}(G)} \right\|_{L^2(G)}.
+\]
+Every square-integrable distribution on $G$ converges to Haar measure at exponential rate~$\lambda_1$. For the heat kernel ($\rho_0 = \delta_e$, not in $L^2$), the Plancherel series $\sum_{\rho \neq \mathbf{1}} d_\rho^2\, e^{-2\lambda_\rho t}$ converges for each $t > 0$ and decays at rate $e^{-2\lambda_1 t}$.
+\end{corollary}
+
+\begin{proof}
+Write $f_0 = \rho_0 - 1/\operatorname{vol}(G)$. By Peter--Weyl, $f_0 = \sum_{\rho \neq \mathbf{1}} \widehat{f_0}(\rho)$ with $\|f_0\|_2^2 = \sum_{\rho \neq \mathbf{1}} d_\rho\, \|\widehat{f_0}(\rho)\|_{\mathrm{HS}}^2$. The heat semigroup gives $\widehat{f_t}(\rho) = e^{-\lambda_\rho t}\, \widehat{f_0}(\rho)$, so $\|f_t\|_2^2 = \sum_{\rho \neq \mathbf{1}} d_\rho\, \|\widehat{f_0}(\rho)\|_{\mathrm{HS}}^2\, e^{-2\lambda_\rho t} \leq e^{-2\lambda_1 t}\, \|f_0\|_2^2$.
+\end{proof}
+
+This is the non-abelian analogue of \cref{thm:heat-semigroup}: on $\bT$, $\lambda_1 = 4\pi^2$ and the convergence rate of the Jacobi theta function to~$1$ is $e^{-4\pi^2 t}$ (cf.\ \cref{ex:gaussian-instances}). On $(\R, +)$ (non-compact), the spectral gap vanishes and convergence is polynomial ($t^{-1/2}$)---precisely the CLT rate.
+
+\Cref{prop:heat-compact} treats pure diffusion ($b = 0$). Adding a drift field yields the Fokker--Planck equation on~$G$, whose Peter--Weyl decomposition reveals a fundamental rigidity: diffusion dominates drift in every representation block.
+
+\begin{proposition}[Fokker--Planck equation on compact groups]\label{prop:fpe-compact}
+Let $G$ be a compact Lie group with Casimir operator $\Omega$, and let $b : G \to \mathfrak{g}$ be a smooth drift field. The density $\rho_t$ (with respect to Haar measure) of the stochastic process
+\[
+dg_t = g_t \cdot \bigl(b(g_t)\, dt + \sqrt{2\varepsilon}\, dW_t\bigr), \qquad \varepsilon > 0,
+\]
+satisfies the Fokker--Planck equation
+\begin{equation}\label{eq:fpe-group}
+\partial_t \rho = -\varepsilon\, \Omega\rho - \operatorname{div}_G(\rho\, b),
+\end{equation}
+where $\operatorname{div}_G$ is the Riemannian divergence on~$G$.
+Under the Peter--Weyl decomposition (writing $\pi$ for irreducible
+representations to free $\rho$ for the density):
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Left-invariant drift} ($b \in \mathfrak{g}$ constant). Since left-invariant vector fields are divergence-free with respect to Haar measure, \eqref{eq:fpe-group} becomes $\partial_t \rho = -\varepsilon\, \Omega\rho - X_b\rho$. Taking the non-abelian Fourier transform:
+\[
+\partial_t \widehat{\rho}(\pi) = \bigl(-\varepsilon\, \lambda_\pi\, \operatorname{Id}_{V_\pi} - d\pi(b)\bigr)\, \widehat{\rho}(\pi), \qquad [\pi] \in \widehat{G}.
+\]
+Each irreducible block evolves as an independent $d_\pi \times d_\pi$ matrix ODE. Since $\pi$ is unitary, $d\pi(b)$ is skew-Hermitian, so every eigenvalue of the coefficient matrix has real part $-\varepsilon\lambda_\pi$. The drift rotates the density within each block but cannot prevent diffusive decay.
+
+\item \textbf{General drift} ($b(g)$ state-dependent). The product $\rho \cdot b$ mixes Peter--Weyl blocks via the Clebsch--Gordan coefficients: the evolution of $\widehat{\rho}(\pi)$ depends on $\widehat{\rho}(\sigma)$ for $\sigma \neq \pi$.
+
+\item \textbf{Pure diffusion} ($b = 0$). Recovers \cref{prop:heat-compact}: $\widehat{\rho}_t(\pi) = e^{-\varepsilon\lambda_\pi t}\, \widehat{\rho}_0(\pi)$.
+\end{enumerate}
+In particular, for left-invariant drift, $\|\widehat{\rho}_t(\pi)\|_{\mathrm{HS}} \leq e^{-\varepsilon\lambda_\pi t}\, \|\widehat{\rho}_0(\pi)\|_{\mathrm{HS}}$ for each~$\pi$, so the spectral gap bound of \cref{cor:spectral-gap} is robust: convergence to Haar measure at rate $\varepsilon\lambda_1$ persists regardless of the drift.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The generator of the diffusion is $\mathcal{L}f = -\varepsilon\,\Omega f + X_b f$; the FPE is its $L^2(G)$-adjoint. For left-invariant~$b$, the Fourier transform of $X_b\rho$ is computed by integration by parts against the matrix coefficients: using $X_b[\pi(g)^*] = -d\pi(b)\,\pi(g)^*$ (which follows from unitarity of~$\pi$), one obtains $\widehat{X_b\rho}(\pi) = d\pi(b)\,\widehat{\rho}(\pi)$. The skew-Hermiticity of $d\pi(b)$ then gives the decay estimate via $\operatorname{Re}\,\sigma(-\varepsilon\lambda_\pi\,\operatorname{Id} - d\pi(b)) = \{-\varepsilon\lambda_\pi\}$.
+\end{proof}
+
+\begin{remark}[Irreversibility: the non-abelian Wold analogue]
+The heat semigroup $\{e^{-t\Omega}\}_{t \geq 0}$ on $L^2(G)$ is a contraction semigroup: each representation mode decays monotonically as $e^{-\lambda_\rho t}$, and $\lambda_\rho > 0$ for all non-trivial~$\rho$. This gives the non-abelian analogue of the information loss in the Wold decomposition (\cref{thm:wold}):
+\[
+\renewcommand{\arraystretch}{1.4}
+\begin{array}{lll}
+\hline
+& \textbf{Abelian (\S\ref{sec:hardy})} & \textbf{Non-abelian} \\
+\hline
+\text{State space} & L^2(\bT) & L^2(G) \\
+\text{Decomposition} & \Htwo \oplus (\Htwo)^\perp & \bigoplus_\rho d_\rho\, \operatorname{End}(V_\rho) \\
+\text{Forward operator} & \text{Shift } S & \text{Heat semigroup } e^{-t\Omega} \\
+\text{Information loss} & \ker(S^*) = \operatorname{span}\{1\} & \text{Decay rate } \lambda_\rho \text{ per mode} \\
+\text{Deterministic part} & \mathcal{H}_u = \{0\} \text{ (Szeg\H{o})} & \text{Trivial rep.\ } \rho = \mathbf{1} \text{ (Haar)} \\
+\text{CLT fixed point} & \text{Gaussian density} & \text{Haar measure} \\
+\hline
+\end{array}
+\]
+In both cases, the ``deterministic'' component---the part surviving forward evolution---is the fixed point of the respective semigroup. The Szeg\H{o} condition $\int \log f > -\infty$ (ensuring $\mathcal{H}_u = \{0\}$ in the abelian Wold theorem) is replaced by the spectral gap condition $\lambda_1 > 0$ (ensuring all non-trivial modes decay).
+\end{remark}
+
+\begin{remark}[Non-compact groups: Plancherel theorem and Mackey's machine]
+For non-compact $G$, the Peter-Weyl theorem is replaced by the Plancherel theorem: the sum over $\widehat{G}$ becomes an integral with respect to Plancherel measure $\mu_{\mathrm{Pl}}$ on the tempered dual $\widehat{G}_{\mathrm{temp}}$ \cite[Chapter~7]{Folland}:
+\[
+\|f\|_{L^2(G)}^2 = \int_{\widehat{G}_{\mathrm{temp}}} \|\widehat{f}(\rho)\|_{\mathrm{HS}}^2\, d\mu_{\mathrm{Pl}}(\rho).
+\]
+For semidirect products $G = K \ltimes V$ ($K$ compact, $V$ a vector group), Mackey's theory of induced representations \cite[Chapter~6]{Folland} parametrizes $\widehat{G}$ by orbits of $K$ acting on $\widehat{V}$:
+\begin{enumerate}[label=(\roman*)]
+\item Each orbit $\mathcal{O} \subset \widehat{V}$ with stabilizer $K_\xi$ (the little group at $\xi \in \mathcal{O}$) and irreducible $\sigma$ of $K_\xi$ yields an irreducible $\operatorname{Ind}_{K_\xi \ltimes V}^G(\sigma \otimes e^{i\xi})$ of~$G$.
+\item The Casimir spectrum has both discrete (from $K$) and continuous (from $V$) components.
+\item The spectral gap may vanish: $\Omega$ on $L^2(G)$ typically has continuous spectrum down to~$0$, so convergence to equilibrium is polynomial ($t^{-d/2}$) rather than exponential.
+\end{enumerate}
+\textbf{Example: $\boldsymbol{SE(3) = SO(3) \ltimes \R^3}$.} Here $K = SO(3)$ acts on $\widehat{V} = \R^3$ by rotation. The orbits are spheres $S^2_r$ ($r > 0$) and the origin. The little group at $\xi = (0,0,r)$ is $SO(2)$. Each irreducible of $SE(3)$ is induced from $SO(2) \ltimes \R^3$, parametrized by $(r, m)$ with $r > 0$, $m \in \Z$. The Casimir spectrum is continuous in~$r$ and discrete in~$m$: no spectral gap, polynomial convergence.
+\end{remark}
+
+\begin{remark}[Representation-theoretic decomposition and optimal control]
+The Peter-Weyl decomposition has a precise but limited connection to optimal control on Lie groups. Consider the controlled diffusion on a compact~$G$:
+\[
+dg_t = g_t \cdot \bigl(u(t)\, dt + \sqrt{2\varepsilon}\, dW_t\bigr), \qquad u(t) \in \mathfrak{g},
+\]
+with cost $J = \mathbb{E}\bigl[\int_0^T L(g_t, u_t)\, dt + \Phi(g_T)\bigr]$. The Hamilton--Jacobi--Bellman equation for the value function $V \in C^\infty(G)$ is
+\[
+\partial_t V - \varepsilon\, \Omega V + \min_{u \in \mathfrak{g}}\bigl\{L(g, u) + \langle dV,\, g \cdot u\rangle\bigr\} = 0.
+\]
+In the Peter-Weyl basis, the three terms decompose differently:
+\begin{enumerate}[label=(\roman*)]
+\item The diffusion term $-\varepsilon\, \Omega V$ \textbf{block-diagonalizes}: $\Omega$ acts as $\lambda_\rho$ on each $V_\rho$ (\cref{def:casimir}).
+\item A left-invariant drift $g \cdot X$ acts on $V_\rho$ as the derived representation $d\rho(X)$, a $d_\rho \times d_\rho$ matrix. The free (uncontrolled) dynamics within each block is a \textbf{linear matrix ODE}.
+\item The optimization $\min_u$ and a general cost $L(g, u)$ create \textbf{inter-block coupling}: if $L$ is not a class function (constant on conjugacy classes), its Peter-Weyl expansion mixes different representations.
+\end{enumerate}
+For the special case of left-invariant dynamics with quadratic cost on $\mathfrak{g}$ (the Lie-group analogue of LQR, linear-quadratic regulation), the HJB equation decouples into independent finite-dimensional Riccati equations per representation block. For general nonlinear costs, Peter-Weyl provides an optimal spectral Galerkin basis respecting the group symmetry, but the $\min_u$ coupling remains. The spectral gap $\lambda_1$ (\cref{cor:spectral-gap}) provides an analytic lower bound on the convergence rate of policy evaluation, independently of the policy.
+\end{remark}
+
+\begin{remark}[Rigid-body configuration spaces and spectral truncation]
+The configuration space of a floating-base rigid body with $n$ revolute joints is $Q = SE(3) \times \bT^n$. The FPE--HJB framework (\cref{prop:fpe-compact} and the preceding remark) extends to such products: the Peter--Weyl basis for $L^2(G_1 \times G_2)$ consists of tensor products $\rho_1 \otimes \rho_2$ with Casimir eigenvalue $\lambda_{\rho_1 \otimes \rho_2} = \lambda_{\rho_1} + \lambda_{\rho_2}$.
+
+Two obstructions arise in high dimension. First, $SE(3)$ is non-compact: its Plancherel decomposition has continuous spectrum and no spectral gap, as detailed in the preceding remark on $SE(3)$. Second, on the compact factor $SO(3) \times \bT^n$, the Weyl eigenvalue asymptotics give $O(\Lambda^{(3+n)/2})$ spectral degrees of freedom below a cutoff~$\Lambda$---a curse of dimensionality for any spectral Galerkin truncation of the FPE or HJB equation. Whether the kinematic chain structure (nearest-neighbor coupling in the joint topology, which enforces sparsity in the Peter--Weyl expansion of physical Hamiltonians) can mitigate this growth remains open.
+Alternatively, stochastic methods bypass the spectral curse entirely. Path sampling of the SDE in \cref{prop:fpe-compact} yields Monte Carlo estimates of $\mathbb{E}[\phi(g_t)]$ at rate $O(N^{-1/2})$ for $N$ sample paths and bounded observables $\phi$, independently of $\dim G$---the CLT rate of the present paper. The spectral gap $\lambda_1$ (\cref{cor:spectral-gap}) re-enters as the mixing rate of the sampler, governing the number of effectively independent samples per unit time. In this sense, diffusion provides a \emph{universal} spectral regularization: modes with $\lambda_\rho \gg \varepsilon^{-1}t^{-1}$ are exponentially suppressed by the heat semigroup without being explicitly computed, and the operative complexity bound becomes $N^{-1/2}$ (stochastic, dimension-free) rather than $\Lambda^{(3+n)/2}$ (deterministic, dimension-cursed).
+\end{remark}
+
+\begin{remark}[Hopf--Cole linearization and path-integral control]
+Specialize the HJB equation of the preceding remark to quadratic control cost
+$L(g,u) = q(g) + \tfrac{1}{2}\|u\|_{\mathfrak{g}}^2$.
+The $\min_u$ is a Legendre--Fenchel transform: the minimizer is
+$u^* = -\nabla_{\mathfrak{g}} V$ with minimum value
+$q(g) - \tfrac{1}{2}\|\nabla_{\mathfrak{g}} V\|^2$,
+where $\nabla_{\mathfrak{g}} V$ denotes the gradient of $V$ with respect to
+the inner product on $\mathfrak{g}$.
+The specialized HJB becomes
+\[
+\partial_t V - \varepsilon\,\Omega V + q(g)
+  - \tfrac{1}{2}\|\nabla_{\mathfrak{g}} V\|^2 = 0,
+\quad V(T,g) = \Phi(g).
+\]
+In the deterministic limit $\varepsilon = 0$, the characteristics of the
+resulting Hamilton--Jacobi equation are Euler--Poincar\'e trajectories on
+$\mathfrak{g}$ (equivalently, Lie--Poisson flow on $\mathfrak{g}^*$ via the
+inertia tensor $\mathbb{I}: \mathfrak{g} \to \mathfrak{g}^*$).
+
+\medskip\noindent\textbf{Linearization.}
+The SDE has noise covariance $\Sigma = 2\varepsilon\,\mathrm{Id}_{\mathfrak{g}}$
+and the control cost has $R = \mathrm{Id}_{\mathfrak{g}}$.
+Setting $\lambda = 2\varepsilon$ so that $\lambda R^{-1} = \Sigma$,
+the Hopf--Cole substitution $\psi = e^{-V/(2\varepsilon)}$ exactly cancels the
+quadratic gradient nonlinearity.
+The derivation (chain rule for $\Omega(\log\psi)$, then
+$\|\nabla_{\mathfrak{g}} V\|^2$ cancellation) yields the linearized PDE:
+\[
+\partial_t \psi + (-\varepsilon\,\Omega)\psi
+  - \frac{q}{2\varepsilon}\,\psi = 0,
+\quad \psi(T,g) = e^{-\Phi(g)/(2\varepsilon)}.
+\]
+This is a backward linear PDE---the heat equation on $G$ with killing
+potential $q/(2\varepsilon)$.
+
+\medskip\noindent\textbf{Feynman--Kac representation.}
+Since $-\varepsilon\,\Omega$ is the generator of the uncontrolled diffusion
+$dg_s = g_s \cdot \sqrt{2\varepsilon}\,dW_s$
+(cf.\ proof sketch of \cref{prop:fpe-compact}):
+\[
+\psi(t,g) = \mathbb{E}_g\!\left[
+  \exp\!\left(-\frac{1}{2\varepsilon}\int_t^T q(g_s)\,ds\right)
+  e^{-\Phi(g_T)/(2\varepsilon)}
+\right],
+\]
+where the expectation is over the uncontrolled (pure-diffusion) process
+started at $g_t = g$.
+
+\medskip\noindent\textbf{Optimal control recovery and MPPI.}
+The optimal control is
+$u^*(t,g) = 2\varepsilon\,\nabla_{\mathfrak{g}}\log\psi(t,g)$.
+The nonlinear HJB is replaced by forward sampling of the SDE plus
+exponential reweighting---this is model-predictive path-integral control
+(MPPI) \cite{Kappen,Todorov}.
+The Monte Carlo estimate
+$\hat\psi = \frac{1}{N}\sum_{i=1}^N w^{(i)}$ with weights
+$w^{(i)} = \exp\bigl(-\frac{1}{2\varepsilon}\int q\,ds
+  - \frac{\Phi}{2\varepsilon}\bigr)$
+converges at $O(N^{-1/2})$ for bounded costs, independently of
+$\dim G$---the CLT rate of the present paper.
+
+\medskip\noindent\textbf{Deterministic limit.}
+As $\varepsilon \to 0$, a Schilder-type large-deviation argument (Laplace
+approximation of the Feynman--Kac integral) shows
+$V(t,g) \to \min_u\bigl\{\int_t^T L(g_s,u_s)\,ds + \Phi(g_T)\bigr\}$.
+The minimizing path satisfies the Euler--Lagrange equation; on a Lie group
+with left-invariant kinetic energy, this reduces to the Euler--Poincar\'e
+equation on $\mathfrak{g}$.
+\end{remark}
+
+\begin{proposition}[Forward-only reduction via the exponential bridge]
+\label{prop:forward-only}
+Consider the MPPI estimator for the controlled diffusion on a Lie group~$G$
+described in the preceding remark.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item \textbf{Arithmetic completeness.}
+Every operation in the estimator is a finite composition of three primitives:
+\begin{itemize}[nosep]
+\item $\exp_G : \mathfrak{g} \to G$ \textup{(}Lie group exponential\textup{)},
+\item $\log_G : G \to \mathfrak{g}$ \textup{(}Lie group logarithm\textup{)},
+\item linear algebra \textup{(}matrix multiply-accumulate on
+      $\mathfrak{g} \cong \R^d$\textup{)}.
+\end{itemize}
+No backward differentiation through the dynamics and no other transcendental
+operations are required.
+\item \textbf{Dimension-free convergence.}
+The estimator converges at $O(N^{-1/2})$, independently of $\dim G$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof \textup{(}constructive enumeration\textup{)}]
+We enumerate the four computational stages and verify that each uses only the
+three primitives.
+
+\medskip\noindent\emph{SDE step.}
+$g_{t+h} = g_t \cdot \exp_G\!\bigl(h\,u + \sqrt{2\varepsilon h}\;\xi\bigr)$,
+where $\xi \in \mathfrak{g}$ is Gaussian noise.
+This requires one~$\exp_G$ and one matrix multiply-accumulate (MMA) in
+$\mathfrak{g}$.
+
+\medskip\noindent\emph{Cost evaluation.}
+For a tracking cost $q(g) = \bigl\|\log_G(g^{-1}g_{\mathrm{target}})\bigr\|^2$:
+one~$\log_G$ and one MMA (squared norm in~$\mathfrak{g}$).
+
+\medskip\noindent\emph{Exponential reweighting.}
+$w^{(i)} = \exp\!\bigl(-\mathrm{cost}^{(i)}/(2\varepsilon)\bigr)$:
+one scalar exponential (the $\dim G = 1$ case of $\exp_G$).
+
+\medskip\noindent\emph{Weighted average.}
+$u^* = 2\varepsilon\,\sum_i w^{(i)}\xi^{(i)}\big/\sum_i w^{(i)}$:
+MMA in~$\mathfrak{g}$.
+
+\medskip\noindent
+The weights $w^{(i)}$ are bounded (bounded cost, fixed~$\varepsilon$), so the
+weighted average is a bounded-weight Monte Carlo estimator.  The CLT
+(\cref{thm:add-clt,thm:mult-clt}) gives convergence at $O(N^{-1/2})$,
+independently of~$\dim G$.
+\end{proof}
+
+\begin{remark}[The exponential bridge]
+The proposition's three primitives $\{\exp,\log,\mathrm{MMA}\}$ are the
+computational realization of a single algebraic fact---the exponential
+homomorphism $\exp\colon (+) \to (\times)$---which appears in three guises
+throughout this paper:
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item \emph{Fourier--Mellin duality}
+      (\cref{thm:mellin-fourier}):
+      $\log\colon (\Rpos, \times) \to (\R, +)$ converts multiplicative
+      convolution to additive convolution.
+\item \emph{Hopf--Cole linearization}
+      (preceding remark):
+      $\psi = e^{-V/(2\varepsilon)}$ converts the nonlinear HJB
+      (quadratic $\|\nabla_{\mathfrak{g}} V\|^2$---multiplicative)
+      to the linear heat equation
+      (additive semigroup $e^{t\varepsilon\Omega}$).
+\item \emph{Lie group exponential}:
+      $\exp_G\colon \mathfrak{g} \to G$ converts the linear/additive
+      Lie algebra to the nonlinear/multiplicative group.
+      The Lie--Euler integrator traverses this bridge at every time step.
+\end{enumerate}
+\end{remark}
+
+\begin{remark}[Generalized path integral and Riccati compression]
+The acronym GPI in \cref{thm:in-context-gpi} admits a second reading:
+\emph{Generalized Path Integral}.
+The two readings coincide.
+In the filtration $\mathbb{F}\colon (\mathbb{N},\leq) \to \Proj_Y$
+of \cref{thm:in-context-gpi}, each inclusion
+$\mathcal{G}_t \hookrightarrow \mathcal{G}_{t+1}$ extends the
+$\sigma$-algebra by one datum---a batch of observations in $\R^d$.
+The conditional expectation $E[Y \mid \mathcal{G}_t]$ is the current
+estimate; the residual $R_Y(\mathcal{G}_t) = \|Y - E[Y \mid
+\mathcal{G}_t]\|_2^2$ is the unexplained variance.
+This is the evaluation half.
+
+The MPPI estimator of \cref{prop:forward-only} supplies the
+improvement half: sample $N$ trajectories, assign Boltzmann weights
+$w^{(i)} \propto \exp\!\bigl(-J^{(i)}/\varepsilon\bigr)$, and compute
+the weighted average.
+The Boltzmann reweighting is exactly the exponential bridge applied to
+the path measure---it converts the uniform (prior) measure over
+trajectories to the optimal (posterior) measure, with the cost
+functional $J$ playing the role of the negative log-likelihood.
+Each reweighted sample extends the filtration; convergence at
+$O(N^{-1/2})$ is guaranteed by the CLT
+(\cref{thm:add-clt,thm:mult-clt}), independently of $\dim G$.
+
+\medskip\noindent\textbf{Riccati compression.}
+Specialize to $G = (\R^n, +)$ with linear dynamics
+$\dot x = Ax + Bu$ and quadratic cost
+$\int_0^T (x^\top Q\,x + u^\top R\,u)\,dt$
+(the LQG regime---linear dynamics, quadratic cost, Gaussian noise),
+where $A \in \R^{n \times n}$, $B \in \R^{n \times m}$,
+$Q \succeq 0$, and $R \succ 0$.
+The Feynman--Kac path integral is Gaussian and evaluates in closed
+form; the Boltzmann-weighted average compresses to the matrix Riccati
+ODE:
+\[
+\dot P = A^\top\! P + PA - PBR^{-1}B^\top\! P + Q,
+\]
+where $P(t) \in \R^{n \times n}$ is the cost-to-go matrix and
+$V(x) = x^\top P\, x$ the value function.
+No sampling is needed: the exact solution replaces the Monte Carlo
+estimator entirely, and the filtration convergence of
+\cref{thm:in-context-gpi} is achieved analytically.
+The dual equation (Kalman--Bucy filter) compresses the estimation
+filtration in the same way.
+The CLT rate $O(N^{-1/2})$ of \cref{prop:forward-only} thus quantifies
+the cost of leaving the Riccati regime: on a nonlinear Lie group~$G$
+with non-quadratic cost, the path integral cannot be evaluated
+analytically and one pays $O(N^{-1/2})$ per sample for the Monte Carlo
+approximation.
+\end{remark}
+
+\subsection*{Articulated rigid-body dynamics and the Lie-algebraic factorization}
+
+An articulated mechanism---a tree of $n+1$ rigid bodies connected by joints,
+with body~$0$ as the floating base---provides a concrete test of the framework
+above.
+The configuration space is $Q = SE(3) \times \bT^n$, exactly the product
+considered in the preceding remark, and every step of the classical recursive
+dynamics algorithms is an operation on $\mathfrak{se}(3)$ or its dual
+\cite{Featherstone,MurrayLiSastry}.
+
+\medskip\noindent\textbf{(A) Configuration space and product of exponentials.}
+Label the bodies $0, 1, \ldots, n$ along the kinematic tree.
+Body $i$ has joint angle $\theta_i \in \bT$ and screw axis
+$S_i \in \mathfrak{se}(3)$ (in body frame).
+The pose of body $i$ relative to the world frame is given by the product of
+exponentials:
+\[
+T_i(q)
+= g_0 \, \bar{M}_1 \, e^{S_1 \theta_1} \cdots \bar{M}_i \, e^{S_i \theta_i},
+\]
+where $g_0 \in SE(3)$ is the base pose and
+$\bar{M}_i \in SE(3)$ is the reference-configuration offset of joint $i$.
+
+\medskip\noindent\textbf{(B) Recursive velocity propagation---the adjoint
+representation in action.}
+The body velocity of link $i$ is
+$\mathcal{V}_i^b = T_i^{-1}\dot{T}_i \in \mathfrak{se}(3)$, and it
+satisfies the recursion
+\[
+\mathcal{V}_i^b
+= \mathrm{Ad}_{(e^{S_i\theta_i}\bar{M}_i)^{-1}}\,\mathcal{V}_{i-1}^b
+  + S_i\,\dot{\theta}_i.
+\]
+The recursion is built entirely from the \textbf{adjoint representation}
+$\mathrm{Ad}_g : \mathfrak{se}(3) \to \mathfrak{se}(3)$---the same object
+governing the Peter--Weyl decomposition of $L^2(SE(3))$.
+
+\medskip\noindent\textbf{(C) Spatial inertia and the Euler--Poincar\'e
+equation.}
+Each body $i$ carries a spatial inertia
+$\cM_i \in \mathrm{Sym}^+(\mathfrak{se}(3)^*)$: a $6 \times 6$
+positive-definite matrix in Pl\"ucker coordinates encoding mass, center of
+mass, and rotational inertia.
+The Newton--Euler equation for body $i$ in body frame is
+\[
+\mathcal{F}_i
+= \cM_i\,\dot{\mathcal{V}}_i
+  + \mathrm{ad}^*_{\mathcal{V}_i}\!(\cM_i\,\mathcal{V}_i),
+\]
+where $\mathrm{ad}^*$ is the coadjoint action of $\mathfrak{se}(3)$ on
+$\mathfrak{se}(3)^*$.
+This is exactly the \textbf{Euler--Poincar\'e equation} on $\mathfrak{se}(3)$
+for a single rigid body.
+For a free rigid body ($\mathcal{F} = 0$), writing
+$\mu = \cM\,\mathcal{V} \in \mathfrak{se}(3)^*$ gives
+$\dot{\mu} = \mathrm{ad}^*_{\mathcal{V}}\mu$; the rotational component
+recovers \textbf{Euler's equation} $\dot{\Pi} = \Pi \times \omega$.
+
+\medskip\noindent\textbf{(D) Recursive Newton--Euler Algorithm
+(RNEA)---$O(n)$ inverse dynamics.}
+\begin{itemize}[nosep]
+\item \emph{Forward pass} (root $\to$ leaves): propagate velocities
+  $\mathcal{V}_i$ and accelerations $\dot{\mathcal{V}}_i$ using $\mathrm{Ad}$.
+\item \emph{Backward pass} (leaves $\to$ root): compute body wrenches
+  $\mathcal{F}_i$ via Euler--Poincar\'e, propagate to parents using the
+  coadjoint $\mathrm{Ad}^*$, and project onto joint axes:
+  $\tau_i = S_i^T \mathcal{F}_i$.
+\end{itemize}
+Complexity: $O(n)$---one Euler--Poincar\'e evaluation and one $\mathrm{Ad}$
+transform per body.
+
+\noindent In Lagrangian coordinates \cite{CarpentierMansard}, the inverse dynamics reads
+\begin{equation}\label{eq:lagrangian-eom}
+\tau = M(q)\,\ddot{q} + C(q,\dot{q})\,\dot{q} + g(q)
+  - \sum_i J_i(q)^T f_i^{\mathrm{ext}},
+\end{equation}
+where $M(q) \in \R^{n \times n}$ is the joint-space inertia matrix,
+$C(q,\dot{q})\,\dot{q}$ collects Coriolis and centrifugal terms,
+$g(q)$ is the gravity vector, and $J_i(q)$ is the frame Jacobian at
+which external force $f_i^{\mathrm{ext}}$ is applied.
+RNEA evaluates the right-hand side in $O(n)$; its analytical
+derivatives $\partial\tau/\partial q$, $\partial\tau/\partial\dot{q}$
+are likewise $O(n)$ \cite{CarpentierMansard}.
+
+\medskip\noindent\textbf{(E) Articulated Body Algorithm (ABA)---$O(n)$
+forward dynamics.}
+The ABA computes the forward dynamics---inverting \eqref{eq:lagrangian-eom}
+to obtain $\ddot{q}$ given $(\tau, f^{\mathrm{ext}})$---without forming
+$M$ explicitly.
+The key object is the \emph{articulated-body inertia} $\cM_i^A$, the
+effective inertia of body $i$ and all its descendants accounting for joint
+freedom.
+The recursion (leaves $\to$ root) is
+\[
+\cM_i^A = \cM_i + \!\!\sum_{j \in \mathrm{children}(i)}
+  \mathrm{Ad}_{T_{ji}}^*
+  \!\left(\cM_j^A
+    - \cM_j^A S_j \bigl(S_j^T \cM_j^A S_j\bigr)^{\!-1} S_j^T \cM_j^A
+  \right) \mathrm{Ad}_{T_{ji}}.
+\]
+The inner expression
+$\cM^A - \cM^A S(S^T\cM^A S)^{-1} S^T \cM^A$ is a \textbf{Schur
+complement}---the projection of the inertia onto the space orthogonal to the
+joint axis.
+This is a Riccati recursion on $\mathrm{Sym}^+(\mathfrak{se}(3)^*)$.
+Complexity: $O(n)$.
+
+\medskip\noindent\textbf{(E$'$) Contact forces: recover then eliminate.}
+When the mechanism interacts with the environment, unilateral contacts
+impose constraints $\phi_k(q) \geq 0$ with associated Jacobians
+$J_k^c = \partial\phi_k/\partial q$.
+The contact forces $\lambda_k \geq 0$ satisfy the complementarity
+condition $0 \leq \lambda_k \perp \phi_k(q) \geq 0$ \cite{MenagerCarpentier2025}.
+In the Lagrangian form \eqref{eq:lagrangian-eom}, they enter as
+additional external forces $f_k^{\mathrm{ext}} = \lambda_k\,\hat{n}_k$
+at the contact points.
+
+\medskip\noindent\emph{Recover.}
+Substituting the forward dynamics into the contact constraint
+$\ddot{\phi}_k \geq 0$ yields the \textbf{Delassus system}:
+\[
+G\,\lambda = J^c\, M(q)^{-1}\bigl(\tau - C\dot{q} - g\bigr)
+  + \dot{J}^c\,\dot{q},
+\qquad G = J^c\, M(q)^{-1} (J^c)^T.
+\]
+The Delassus operator $G$ is a Schur complement of the mass matrix
+onto the contact space---the same algebraic structure as the
+articulated-body inertia projection in part~(E).
+
+\medskip\noindent\emph{Eliminate.}
+Once $\lambda$ is recovered, substitute back:
+$\ddot{q} = M^{-1}\bigl(\tau - C\dot{q} - g + (J^c)^T\lambda\bigr)$.
+The contact forces are eliminated from the forward dynamics; what
+remains is branchless arithmetic on $\mathfrak{se}(3)$.
+
+\medskip\noindent\emph{Barrier smoothing.}
+The complementarity condition $0 \leq \lambda \perp \phi \geq 0$ is a
+hard branch.
+Replacing it with a log-barrier potential
+$V_{\mathrm{barrier}}(\phi) = -\varepsilon\log\phi$ yields a smooth
+contact force $\lambda_\varepsilon = \varepsilon / \phi$ that
+approximates the complementarity as $\varepsilon \to 0$.
+(For exact treatment without relaxation, the complementarity can be
+handled as a quadratic program with complementarity
+constraints~\cite{MenagerCarpentier2025}.)
+The ``recover'' step becomes differentiable, and the MPPI estimator
+of \cref{prop:forward-only} samples through the barrier-smoothed
+landscape without branch.
+
+\medskip\noindent\textbf{(F) Lie--Poisson duality: velocity
+$\leftrightarrow$ momentum.}
+The Legendre transform $\mathbb{FL}: \mathfrak{g} \to \mathfrak{g}^*$ via the
+composite inertia tensor maps body velocities to spatial momenta
+\cite{MarsdenRatiu}.
+Euler--Poincar\'e on $\bigoplus_i \mathfrak{se}(3)$ (velocity variables) is
+dual to Lie--Poisson on $\bigoplus_i \mathfrak{se}(3)^*$ (momentum
+variables):
+RNEA computes the Euler--Poincar\'e side; ABA computes the Lie--Poisson side.
+The inertia tensor
+$\cM_i : \mathfrak{se}(3) \to \mathfrak{se}(3)^*$ is the bridge, exactly as
+in the classical duality $\mathfrak{g} \leftrightarrow \mathfrak{g}^*$ of
+geometric mechanics.
+
+\medskip\noindent\textbf{(G) Connection to the paper's spectral and
+stochastic framework.}
+Three connections tie the recursive dynamics to the results of this paper:
+
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Representation-theoretic.}
+The $\mathrm{Ad}$ and $\mathrm{Ad}^*$ in Featherstone's recursions are the
+adjoint and coadjoint representations of $SE(3)$.
+In the Peter--Weyl/Plancherel decomposition of $L^2(SE(3))$, these same
+representations govern how Fourier modes transform under group action.
+The tree topology constrains them to act only between parent--child
+pairs---the ``nearest-neighbor coupling'' that enforces sparsity in the
+Peter--Weyl expansion, as noted in the preceding remark.
+
+\item \emph{Riccati structure.}
+The ABA recursion is a discrete matrix Riccati equation on
+$\mathfrak{se}(3)^*$.
+The per-block Riccati of the HJB remark (for left-invariant quadratic cost)
+is the spectral-domain counterpart: ABA factors the Riccati in the spatial
+domain (tree topology), while Peter--Weyl factors it in the spectral domain
+(representation blocks).
+
+\item \emph{Stochastic extension and MPPI.}
+Adding noise to joint torques or base forces gives an SDE on
+$SE(3) \times \bT^n$.
+The FPE has product Casimir (\cref{prop:fpe-compact}).
+The Hopf--Cole linearization (preceding remark) converts the HJB for the
+articulated system to a Feynman--Kac expectation.
+Each forward sample of the SDE can be computed in $O(n)$ per time step using
+the recursive structure---the tree factorization is preserved under
+randomization.
+The Monte Carlo estimator converges at the CLT rate $O(N^{-1/2})$,
+independently of $n$ and $\dim G = 6 + n$:
+Featherstone provides the $O(n)$ forward simulator; the CLT provides the
+dimension-free convergence guarantee.
+This is the MPPI framework for articulated rigid-body control.
+\end{enumerate}
+
 \subsection*{Free probability}
 In free probability, the role of the Gaussian is taken by the \emph{semicircle distribution} (Wigner), and the free multiplicative analogue is the \emph{Marchenko--Pastur distribution}. The R-transform and S-transform serve as the free analogues of the Fourier and Mellin transforms, respectively, linearizing free additive and free multiplicative convolution. The duality between additive and multiplicative free convolutions mirrors the classical Fourier--Mellin duality studied here, but in a non-commutative setting; see Voiculescu--Dykema--Nica \cite{VDN}.
 
@@ -836,6 +1825,16 @@ A.~B\"ottcher and B.~Silbermann,
 \emph{Analysis of Toeplitz Operators}, 2nd ed.,
 Springer Monographs in Mathematics, Springer, 2006.
 
+\bibitem{CarpentierMansard}
+J.~Carpentier and N.~Mansard.
+\newblock Analytical derivatives of rigid body dynamics algorithms.
+\newblock In \emph{Robotics: Science and Systems~(RSS)}, 2018.
+
+\bibitem{MenagerCarpentier2025}
+E.~M\'enager, A.~Bambade, W.~Jallet, A.~De~Marchi, and J.~Carpentier.
+\newblock Contact-implicit inverse dynamics.
+\newblock Submitted to \emph{IEEE Trans.\ Robotics}, 2025.
+
 \bibitem{Diaconis}
 P.~Diaconis,
 Group representations in probability and statistics,
@@ -850,6 +1849,11 @@ Graduate Texts in Mathematics, vol.~179, Springer, 1998.
 R.~Durrett,
 \emph{Probability: Theory and Examples}, 5th ed.,
 Cambridge University Press, 2019.
+
+\bibitem{Featherstone}
+R.~Featherstone,
+\emph{Rigid Body Dynamics Algorithms},
+Springer, 2008.
 
 \bibitem{Folland}
 G.~B.~Folland,
@@ -881,10 +1885,25 @@ E.~Hewitt and K.~A.~Ross,
 \emph{Abstract Harmonic Analysis}, vol.~I,
 Grundlehren der mathematischen Wissenschaften, vol.~115, Springer, 1963.
 
+\bibitem{Kappen}
+H.~J.~Kappen,
+Path integrals and symmetry breaking for optimal control theory,
+\emph{J.\ Stat.\ Mech.}, 2005:P11011, 2005.
+
+\bibitem{MarsdenRatiu}
+J.~E.~Marsden and T.~S.~Ratiu,
+\emph{Introduction to Mechanics and Symmetry}, 2nd ed.,
+Texts in Applied Mathematics, vol.~17, Springer, 1999.
+
 \bibitem{MochizukiIII}
 S.~Mochizuki,
 Inter-universal Teichm\"uller theory~III: Canonical splittings of the log-theta-lattice,
 \emph{Publ.\ Res.\ Inst.\ Math.\ Sci.} \textbf{57} (2021), 723--1185.
+
+\bibitem{MurrayLiSastry}
+R.~M.~Murray, Z.~Li, and S.~S.~Sastry,
+\emph{A Mathematical Introduction to Robotic Manipulation},
+CRC Press, 1994.
 
 \bibitem{Nikolski}
 N.~K.~Nikolski,
@@ -915,6 +1934,12 @@ AMS Colloquium Publications, vol.~54, 2005.
 B.~Sz.-Nagy, C.~Foias, H.~Bercovici, and L.~K\'erchy,
 \emph{Harmonic Analysis of Operators on Hilbert Space}, 2nd ed.,
 Universitext, Springer, 2010.
+
+\bibitem{Todorov}
+E.~Todorov,
+Linearly-solvable Markov decision problems,
+in \emph{Advances in Neural Information Processing Systems~19} (NIPS),
+2006, pp.~1369--1376.
 
 \bibitem{VDN}
 D.~V.~Voiculescu, K.~J.~Dykema, and A.~Nica,
