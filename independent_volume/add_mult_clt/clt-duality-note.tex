@@ -1,0 +1,926 @@
+\documentclass[12pt]{amsart}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{tikz-cd}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% Theorem environments (shared counter within section)
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Notation
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\tr}{tr}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rpos}{\mathbb{R}_{>0}}
+\newcommand{\bT}{\mathbb{T}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\Htwo}{H^2}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cT}{\mathcal{T}}
+\DeclareMathOperator{\ind}{ind}
+
+\title[Additive and Multiplicative CLT]{Additive and multiplicative central limit theorems:\\ a duality via Fourier analysis on groups}
+\author{Jianghan Zhang}
+\address{Department of Mathematics, Dartmouth College, Hanover, NH 03755}
+\email{jianghan.zhang.gr@dartmouth.edu}
+\date{\today}
+
+\subjclass[2020]{60F05, 43A25, 60B15, 30H10, 47B35}
+\keywords{Central limit theorem, locally compact abelian groups, Mellin transform, Gaussian measures, heat semigroup, Hardy spaces, Toeplitz operators, Wold decomposition, Szeg\H{o} limit theorem}
+
+\begin{document}
+
+\begin{abstract}
+We present a unified treatment of the additive and multiplicative central limit theorems as instances of a single phenomenon on locally compact abelian groups. The classical CLT on $(\R, +)$ and the multiplicative CLT on $(\Rpos, \times)$ are shown to be related by the Fourier--Mellin duality, which arises from the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$. We develop this correspondence at the level of characteristic functions, heat equations, and Gaussian measures, and place it in the general framework of harmonic analysis on LCA groups.
+\end{abstract}
+
+\maketitle
+
+%% ============================================================
+\section*{Introduction}
+
+The classical central limit theorem asserts that normalized sums of independent, identically distributed random variables converge in distribution to a Gaussian. Less commonly discussed is its multiplicative counterpart: normalized products of positive i.i.d.\ random variables converge to a log-normal distribution. These two results are usually proved separately, with the multiplicative version dismissed as a trivial consequence of applying the logarithm.
+
+The purpose of this note is to show that this ``trivial'' reduction is, in fact, an instance of a deep structural duality. The additive and multiplicative CLTs live on different groups---$(\R, +)$ and $(\Rpos, \times)$, respectively---and the logarithm $\log : (\Rpos, \times) \to (\R, +)$ is an isomorphism of locally compact abelian (LCA) groups. The Fourier transform on $(\R, +)$ and the Mellin transform on $(\Rpos, \times)$ are related by this isomorphism, yielding a commutative diagram that encodes the duality precisely.
+
+We develop this perspective in detail, showing how characteristic functions, heat equations, and Gaussian measures transform under the Fourier--Mellin correspondence. We then place these results in the general framework of harmonic analysis on LCA groups, where the ``Gaussian'' on each group is characterized as the unique \emph{probability density} that is a fixed point of the Fourier transform and as the fundamental solution of the associated heat equation.
+
+\medskip
+\noindent\textbf{Notation.}
+Throughout, $\R$ denotes the reals, $\Rpos = (0, \infty)$ the positive reals, $\bT = \R / \Z$ the circle group, and $\Z$ the integers. For a topological group $G$, we write $\widehat{G}$ for its Pontryagin dual. The Fourier transform (characteristic function) of a probability measure $\mu$ on $G$ is denoted $\widehat{\mu}$. We write $\cF$ for the Fourier transform on $(\R, +)$ and $\cM$ for the Mellin transform on $(\Rpos, \times)$.
+
+%% ============================================================
+\section{Preliminaries on locally compact abelian groups}
+
+We recall the basic setup of harmonic analysis on locally compact abelian groups. Standard references include Rudin \cite{Rudin}, Folland \cite{Folland}, and Hewitt--Ross \cite{HewittRoss}.
+
+\begin{definition}\label{def:LCA}
+A \emph{locally compact abelian (LCA) group} is a topological group $G$ that is abelian, Hausdorff, and locally compact. By the Haar theorem \cite[Theorem~2.10]{Folland}, there exists a Radon measure $\mu_G$ on $G$, unique up to positive scalar multiple, that is invariant under translation. This measure is called the \emph{Haar measure} on $G$.
+\end{definition}
+
+\begin{definition}\label{def:dual}
+A \emph{character} of an LCA group $G$ is a continuous group homomorphism $\chi : G \to \bT$, where $\bT = \{z \in \mathbb{C} : |z| = 1\}$ is the circle group under multiplication. The set of all characters forms an LCA group $\widehat{G}$ under pointwise multiplication, called the \emph{Pontryagin dual} of $G$.
+\end{definition}
+
+\begin{example}\label{ex:groups}
+The following table summarizes our three running examples.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lccc}
+\textbf{Group $G$} & \textbf{Haar measure} & \textbf{Dual $\widehat{G}$} & \textbf{Characters} \\
+\hline
+$(\R, +)$ & $dx$ & $\R$ & $\chi_\xi(x) = e^{i\xi x}$ \\
+$(\Rpos, \times)$ & $dx/x$ & $\R$ & $\chi_s(x) = x^{is}$ \\
+$(\bT, +)$ & $d\theta$ & $\Z$ & $\chi_n(\theta) = e^{2\pi i n\theta}$
+\end{tabular}
+\end{center}
+Note that $(\R, +)$ and $(\Rpos, \times)$ have isomorphic duals but are distinct as groups.
+\end{example}
+
+\begin{definition}\label{def:FT}
+Let $\mu$ be a probability measure on an LCA group $G$. The \emph{Fourier transform} (or \emph{characteristic function}) of $\mu$ is the function $\widehat{\mu} : \widehat{G} \to \mathbb{C}$ defined by
+\[
+\widehat{\mu}(\chi) = \int_G \chi(x) \, d\mu(x).
+\]
+\end{definition}
+
+When $G = (\R, +)$, this reduces to the usual characteristic function $\widehat{\mu}(\xi) = \int_\R e^{i\xi x}\, d\mu(x)$. When $G = (\Rpos, \times)$, this gives $\widehat{\mu}(s) = \int_0^\infty x^{is}\, d\mu(x)$, which we call the Mellin transform.
+
+\begin{theorem}[Pontryagin Duality {\cite[Theorem~1.7.2]{Rudin}}]\label{thm:pontryagin}
+For any LCA group $G$, the canonical map $G \to \widehat{\widehat{G}}$ defined by $x \mapsto (\chi \mapsto \chi(x))$ is an isomorphism of topological groups.
+\end{theorem}
+
+\begin{theorem}[L\'evy Continuity Theorem on LCA Groups {\cite[Theorem~VI.4.2]{Parthasarathy}}]\label{thm:levy}
+Let $\{\mu_n\}$ be a sequence of probability measures on an LCA group $G$, and let $\mu$ be a probability measure on $G$. Then $\mu_n \xrightarrow{w} \mu$ if and only if $\widehat{\mu_n}(\chi) \to \widehat{\mu}(\chi)$ for every $\chi \in \widehat{G}$.
+\end{theorem}
+
+%% ============================================================
+\section{The additive central limit theorem}
+
+We work on the group $G = (\R, +)$ with Haar measure $dx$, dual $\widehat{G} = \R$, and characters $\chi_\xi(x) = e^{i\xi x}$.
+
+\begin{theorem}[Classical CLT]\label{thm:add-clt}
+Let $X_1, X_2, \ldots$ be i.i.d.\ real-valued random variables with $E[X_1] = 0$ and $\Var(X_1) = \sigma^2 \in (0, \infty)$. Define $S_n = \sum_{k=1}^n X_k$. Then
+\[
+\frac{S_n}{\sqrt{n}} \xrightarrow{d} \cN(0, \sigma^2).
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\varphi(\xi) = E[e^{i\xi X_1}]$ denote the characteristic function of $X_1$. Since $E[X_1] = 0$ and $E[X_1^2] = \sigma^2 < \infty$, we have the expansion
+\[
+\varphi(\xi) = 1 - \frac{\sigma^2 \xi^2}{2} + o(\xi^2) \quad \text{as } \xi \to 0.
+\]
+By independence, the characteristic function of $S_n / \sqrt{n}$ is
+\[
+\varphi_{S_n/\sqrt{n}}(\xi)
+= \left[\varphi\!\left(\frac{\xi}{\sqrt{n}}\right)\right]^n
+= \left[1 - \frac{\sigma^2 \xi^2}{2n} + o\!\left(\frac{1}{n}\right)\right]^n.
+\]
+Taking $n \to \infty$:
+\[
+\left[1 - \frac{\sigma^2 \xi^2}{2n} + o\!\left(\frac{1}{n}\right)\right]^n \longrightarrow e^{-\sigma^2 \xi^2 / 2},
+\]
+which is the characteristic function of $\cN(0, \sigma^2)$. The conclusion follows from the L\'evy continuity theorem (\cref{thm:levy}).
+\end{proof}
+
+\begin{remark}\label{rmk:gaussian-dual}
+The characteristic function $\xi \mapsto e^{-\sigma^2\xi^2/2}$ is itself a Gaussian function on the dual group $\widehat{\R} \cong \R$. This self-similarity under the Fourier transform is not accidental; it reflects the fact that the Gaussian is an eigenfunction of $\cF$ (see \cref{thm:gaussian-fixed}).
+\end{remark}
+
+\begin{proposition}[Heat equation]\label{prop:heat-add}
+The Gaussian density $p_t(x) = (2\pi t)^{-1/2}\, e^{-x^2/(2t)}$ is the fundamental solution of the heat equation
+\begin{equation}\label{eq:heat-add}
+\partial_t u = \tfrac{1}{2}\, \partial_{xx} u
+\end{equation}
+on $(\R, +)$. In Fourier space, \eqref{eq:heat-add} becomes the ODE
+\begin{equation}\label{eq:heat-add-fourier}
+\partial_t \widehat{u}(\xi) = -\tfrac{\xi^2}{2}\, \widehat{u}(\xi),
+\end{equation}
+with solution $\widehat{u}(t, \xi) = e^{-t\xi^2/2}$. The family $\{p_t\}_{t > 0}$ forms a convolution semigroup: $p_t * p_s = p_{t+s}$.
+\end{proposition}
+
+\begin{proof}
+Apply the Fourier transform to \eqref{eq:heat-add}. Since $\widehat{\partial_{xx} u}(\xi) = (i\xi)^2 \widehat{u}(\xi) = -\xi^2 \widehat{u}(\xi)$, the PDE reduces to the ODE \eqref{eq:heat-add-fourier}, whose unique solution with initial condition $\widehat{u}(0, \xi) = 1$ is $\widehat{u}(t, \xi) = e^{-t\xi^2/2}$. Inverting the Fourier transform yields $p_t$. The semigroup property follows from $e^{-t\xi^2/2} \cdot e^{-s\xi^2/2} = e^{-(t+s)\xi^2/2}$.
+\end{proof}
+
+%% ============================================================
+\section{The multiplicative central limit theorem}
+
+We now work on the group $G = (\Rpos, \times)$ with Haar measure $dx/x$, dual $\widehat{G} = \R$, and characters $\chi_s(x) = x^{is}$.
+
+\begin{definition}\label{def:mellin}
+The \emph{Mellin transform} of a probability measure $\mu$ on $\Rpos$ is
+\[
+\cM[\mu](s) = \int_0^\infty x^{is}\, d\mu(x), \qquad s \in \R.
+\]
+This is the Fourier transform of $\mu$ viewed as a measure on the LCA group $(\Rpos, \times)$.
+\end{definition}
+
+\begin{theorem}[Multiplicative CLT]\label{thm:mult-clt}
+Let $Y_1, Y_2, \ldots$ be i.i.d.\ positive random variables with $E[\log Y_1] = 0$ and $\Var(\log Y_1) = \sigma^2 \in (0, \infty)$. Define $P_n = \prod_{k=1}^n Y_k$. Then
+\[
+P_n^{1/\sqrt{n}} \xrightarrow{d} \operatorname{LogNormal}(0, \sigma^2).
+\]
+\end{theorem}
+
+\begin{proof}
+Set $X_k = \log Y_k$. Then $X_1, X_2, \ldots$ are i.i.d.\ with $E[X_k] = 0$ and $\Var(X_k) = \sigma^2$. Since
+\[
+\log\!\left(P_n^{1/\sqrt{n}}\right) = \frac{1}{\sqrt{n}} \sum_{k=1}^n \log Y_k = \frac{S_n}{\sqrt{n}},
+\]
+\cref{thm:add-clt} gives $S_n/\sqrt{n} \xrightarrow{d} \cN(0, \sigma^2)$. As $\exp : \R \to \Rpos$ is continuous, the continuous mapping theorem yields
+\[
+P_n^{1/\sqrt{n}} = \exp\!\left(\frac{S_n}{\sqrt{n}}\right) \xrightarrow{d} \exp\!\left(\cN(0, \sigma^2)\right) = \operatorname{LogNormal}(0, \sigma^2). \qedhere
+\]
+\end{proof}
+
+\begin{remark}[Normalization]\label{rmk:normalization}
+On $(\R, +)$, the natural scaling is $x \mapsto x/\sqrt{n}$ (division by $\sqrt{n}$). On $(\Rpos, \times)$, the corresponding operation is $y \mapsto y^{1/\sqrt{n}}$ (extraction of the $\sqrt{n}$-th root), since $\log(y^{1/\sqrt{n}}) = (\log y)/\sqrt{n}$. Division on the additive group corresponds to root extraction on the multiplicative group.
+\end{remark}
+
+\begin{proposition}[Multiplicative heat equation]\label{prop:heat-mult}
+The log-normal density (with respect to Lebesgue measure on $\Rpos$)
+\[
+q_t(x) = \frac{1}{x\sqrt{2\pi t}}\, \exp\!\left(-\frac{(\log x)^2}{2t}\right), \qquad x > 0,
+\]
+is the fundamental solution of the heat equation on $(\Rpos, \times)$:
+\begin{equation}\label{eq:heat-mult}
+\partial_t u = \tfrac{1}{2}\, D^2 u, \qquad D = x\partial_x.
+\end{equation}
+Here $D = x\partial_x$ is the Euler operator, which is the left-invariant vector field on $(\Rpos, \times)$.
+\end{proposition}
+
+\begin{proof}
+Set $v(t, y) = u(t, e^y)$. Then $Du(t,x)\big|_{x=e^y} = \partial_y v(t,y)$, and consequently $D^2 u\big|_{x=e^y} = \partial_{yy}v$. Thus \eqref{eq:heat-mult} transforms into the standard heat equation $\partial_t v = \frac{1}{2}\partial_{yy}v$ on $\R$, whose fundamental solution is $p_t(y)$. Substituting $y = \log x$ yields $u(t,x) = q_t(x)$.
+\end{proof}
+
+\begin{remark}\label{rmk:euler-invariant}
+The Euler operator $D = x\partial_x$ is left-invariant on $(\Rpos, \times)$: for any $a > 0$ and smooth $f$,
+\[
+D\big[f(a\,\cdot\,)\big](x) = x\,\frac{d}{dx}f(ax) = ax\,f'(ax) = (Df)(ax),
+\]
+so $D \circ L_a^* = L_a^* \circ D$, where $L_a$ denotes left multiplication by $a$. The operator $D$ generates the one-parameter group of ``dilations'' $x \mapsto x^{e^t} = e^{t\log x}$ and plays the same role on $(\Rpos, \times)$ that $\partial_x$ plays on $(\R, +)$.
+\end{remark}
+
+%% ============================================================
+\section{The Fourier--Mellin duality}
+
+We now establish the central result: the Fourier and Mellin transforms are related by the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$.
+
+\begin{proposition}\label{prop:log-iso}
+The map $\log : (\Rpos, \times) \to (\R, +)$ is an isomorphism of LCA groups. It carries the Haar measure $dx/x$ on $\Rpos$ to the Lebesgue measure $dy$ on $\R$.
+\end{proposition}
+
+\begin{proof}
+\emph{Group homomorphism.} For all $a, b > 0$: $\log(ab) = \log a + \log b$.
+
+\emph{Topological isomorphism.} The map $\log : (0, \infty) \to \R$ is a homeomorphism with continuous inverse $\exp$.
+
+\emph{Haar measure.} Under the substitution $y = \log x$ (i.e., $x = e^y$, $dx = e^y\, dy$):
+\[
+\frac{dx}{x} = \frac{e^y\, dy}{e^y} = dy.
+\]
+Thus $\log_*(dx/x) = dy$, confirming that $\log$ intertwines the respective Haar measures.
+\end{proof}
+
+\begin{theorem}[Mellin--Fourier correspondence]\label{thm:mellin-fourier}
+Let $\mu$ be a probability measure on $(\Rpos, \times)$, and let $\log_*\mu$ denote its pushforward to $(\R, +)$ under $\log$. Then
+\begin{equation}\label{eq:mellin-fourier}
+\cM[\mu](s) = \cF[\log_*\mu](s) \qquad \text{for all } s \in \R.
+\end{equation}
+That is, the following diagram commutes:
+\begin{equation}\label{eq:cd-measures}
+\begin{tikzcd}
+\cP(\Rpos, \times) \arrow[r, "\widehat{(\cdot)}_{\cM}"] \arrow[d, "\log_*"'] & C_b(\R) \arrow[d, "="] \\
+\cP(\R, +) \arrow[r, "\widehat{(\cdot)}_{\cF}"'] & C_b(\R)
+\end{tikzcd}
+\end{equation}
+where $\cP(\cdot)$ denotes the space of probability measures and $C_b(\R)$ the space of bounded continuous functions.
+\end{theorem}
+
+\begin{proof}
+For any $s \in \R$,
+\begin{align*}
+\cM[\mu](s) &= \int_0^\infty x^{is}\, d\mu(x) \\
+&= \int_{-\infty}^{\infty} e^{isy}\, d(\log_*\mu)(y) \qquad \text{(substituting } y = \log x,\; x^{is} = e^{is\log x}\text{)} \\
+&= \cF[\log_*\mu](s). \qedhere
+\end{align*}
+\end{proof}
+
+\begin{corollary}\label{cor:clt-image}
+The multiplicative CLT (\cref{thm:mult-clt}) is the image of the additive CLT (\cref{thm:add-clt}) under the group isomorphism $\exp : (\R, +) \to (\Rpos, \times)$. Specifically, the log-normal distribution is the pushforward of the Gaussian under $\exp$:
+\[
+\operatorname{LogNormal}(0, \sigma^2) = \exp_*\, \cN(0, \sigma^2).
+\]
+\end{corollary}
+
+\begin{remark}[Functoriality]\label{rmk:functoriality}
+\cref{thm:mellin-fourier} is a special case of the functoriality of the Fourier transform on LCA groups. If $\phi : G_1 \to G_2$ is a continuous homomorphism of LCA groups and $\widehat{\phi} : \widehat{G_2} \to \widehat{G_1}$ is the induced dual map $\widehat{\phi}(\chi) = \chi \circ \phi$, then for any probability measure $\mu$ on $G_1$:
+\[
+\widehat{\phi_*\mu}(\chi) = \widehat{\mu}(\chi \circ \phi) = \widehat{\mu}\!\left(\widehat{\phi}(\chi)\right).
+\]
+In our setting, $\phi = \log$ and $\phi^{-1} = \exp$. The dual map $\widehat{\log} : \widehat{(\R,+)} \to \widehat{(\Rpos,\times)}$ sends the character $\chi_s$ of $(\R,+)$ (namely $y \mapsto e^{isy}$) to the character $\chi_s \circ \log$ of $(\Rpos,\times)$ (namely $x \mapsto e^{is\log x} = x^{is}$). Since both duals are identified with $\R$ via the parameter $s$, the dual map is the identity.
+\end{remark}
+
+\begin{proposition}[Duality of heat equations]\label{prop:heat-duality}
+Under the isomorphism $\log : (\Rpos, \times) \to (\R, +)$, the multiplicative heat equation \eqref{eq:heat-mult} is conjugate to the additive heat equation \eqref{eq:heat-add}. The following diagram commutes:
+\begin{equation}\label{eq:cd-heat}
+\begin{tikzcd}[column sep=large, row sep=large]
+\partial_t u = \tfrac{1}{2}D^2 u \;\text{on}\; \Rpos \arrow[r, leftrightarrow, "\cM"] \arrow[d, leftrightarrow, "u(t{,}x) {=} v(t{,}\log x)"'] & \partial_t \widehat{u} = -\tfrac{s^2}{2}\,\widehat{u} \arrow[d, "="] \\
+\partial_t v = \tfrac{1}{2}\,\partial_{yy} v \;\text{on}\; \R \arrow[r, leftrightarrow, "\cF"'] & \partial_t \widehat{v} = -\tfrac{\xi^2}{2}\,\widehat{v}
+\end{tikzcd}
+\end{equation}
+In particular, both heat equations reduce to the same ODE in the frequency domain.
+\end{proposition}
+
+\begin{proof}
+The left vertical arrow is the content of \cref{prop:heat-mult}: the substitution $v(t,y) = u(t, e^y)$ conjugates $D^2 = (x\partial_x)^2$ to $\partial_{yy}$. The horizontal arrows are the Mellin and Fourier transforms, each reducing the respective PDE to the ODE $\partial_t \widehat{w} = -\frac{s^2}{2}\widehat{w}$. The right vertical arrow is the identity because, by \cref{thm:mellin-fourier}, the Mellin transform of $u$ in $x$ equals the Fourier transform of $v$ in $y$.
+\end{proof}
+
+%% ============================================================
+\section{Gaussian measures on LCA groups}
+
+We now place the Gaussian and log-normal distributions in the general framework of Gaussian measures on LCA groups, following Parthasarathy \cite{Parthasarathy} and Heyer \cite{Heyer}.
+
+\begin{definition}[{cf.\ \cite[Definition~VI.3.1]{Parthasarathy}}]\label{def:quadratic}
+A function $Q : \widehat{G} \to \R$ on the Pontryagin dual of an LCA group $G$ is a \emph{non-negative definite quadratic form} if:
+\begin{enumerate}[label=(\roman*)]
+\item $Q$ is continuous and $Q(\chi) \geq 0$ for all $\chi \in \widehat{G}$;
+\item $Q$ satisfies the parallelogram law:
+\[
+Q(\chi_1 \chi_2) + Q(\chi_1 \chi_2^{-1}) = 2Q(\chi_1) + 2Q(\chi_2) \qquad \text{for all } \chi_1, \chi_2 \in \widehat{G};
+\]
+\item $Q(e) = 0$, where $e$ is the identity character.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[{cf.\ \cite[Definition~VI.5.1]{Parthasarathy}}]\label{def:gaussian-lca}
+A probability measure $\gamma$ on an LCA group $G$ is called \emph{Gaussian} if its Fourier transform has the form
+\[
+\widehat{\gamma}(\chi) = \chi(a) \cdot \exp\!\left(-Q(\chi)\right)
+\]
+for some $a \in G$ (the \emph{mean}) and some non-negative definite quadratic form $Q$ on $\widehat{G}$ (the \emph{covariance}).
+\end{definition}
+
+\begin{example}\label{ex:gaussian-instances}
+We verify that \cref{def:gaussian-lca} recovers the classical examples.
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{$G = (\R, +)$.} Here $\widehat{G} = \R$ with $\chi_\xi(x) = e^{i\xi x}$. Setting $a = \mu$ and $Q(\xi) = \sigma^2\xi^2/2$, we obtain $\widehat{\gamma}(\xi) = e^{i\mu\xi - \sigma^2\xi^2/2}$, the characteristic function of $\cN(\mu, \sigma^2)$. The parallelogram law is verified by direct computation:
+\[
+Q(\xi_1 + \xi_2) + Q(\xi_1 - \xi_2) = \tfrac{\sigma^2}{2}\bigl[(\xi_1+\xi_2)^2 + (\xi_1-\xi_2)^2\bigr] = \sigma^2(\xi_1^2 + \xi_2^2) = 2Q(\xi_1) + 2Q(\xi_2).
+\]
+
+\item \textbf{$G = (\Rpos, \times)$.} Here $\widehat{G} = \R$ with $\chi_s(x) = x^{is}$. Setting $a = e^\mu$ and $Q(s) = \sigma^2 s^2/2$ (the same quadratic form as in~(a)), we obtain $\widehat{\gamma}(s) = e^{i\mu s - \sigma^2 s^2/2}$, the Mellin transform of $\operatorname{LogNormal}(\mu, \sigma^2)$. By \cref{thm:mellin-fourier}, the quadratic forms on $\widehat{G} = \R$ are identical in both cases, reflecting the isomorphism of the dual groups.
+
+\item \textbf{$G = (\bT, +)$.} Here $\widehat{G} = \Z$ with $\chi_n(\theta) = e^{2\pi i n\theta}$. Setting $Q(n) = \sigma^2 n^2/2$, we obtain $\widehat{\gamma}(n) = e^{-\sigma^2 n^2/2}$, the Fourier coefficients of the \emph{wrapped normal distribution}. Its density on $[0, 1)$ is
+\[
+f(\theta) = \sum_{k \in \Z} \frac{1}{\sqrt{2\pi}\,\sigma}\, \exp\!\left(-\frac{(\theta - k)^2}{2\sigma^2}\right) = \frac{1}{\sqrt{2\pi}\,\sigma}\,\vartheta_3\!\left(\pi\theta,\, e^{-\sigma^2/2}\right),
+\]
+where $\vartheta_3$ is the Jacobi theta function.
+\end{enumerate}
+\end{example}
+
+\begin{theorem}[Gaussian as Fourier eigenfunction]\label{thm:gaussian-fixed}
+Consider the Plancherel-normalized Fourier transform on $L^2(\R)$:
+\[
+\hat{f}(\xi) = \int_{-\infty}^{\infty} f(x)\, e^{-2\pi i x\xi}\, dx.
+\]
+The function $g(x) = e^{-\pi x^2}$ satisfies $\hat{g} = g$. That is, $g$ is an eigenfunction of $\cF$ with eigenvalue $1$.
+\end{theorem}
+
+\begin{proof}
+Define $h(\xi) = \hat{g}(\xi) = \int_{-\infty}^{\infty} e^{-\pi x^2}\, e^{-2\pi i x\xi}\, dx$. Differentiating under the integral:
+\[
+h'(\xi) = -2\pi i \int_{-\infty}^{\infty} x\, e^{-\pi x^2}\, e^{-2\pi i x\xi}\, dx.
+\]
+Since $-2\pi x\, e^{-\pi x^2} = \frac{d}{dx}\!\left(e^{-\pi x^2}\right)$, we integrate by parts:
+\begin{align*}
+h'(\xi) &= i \int_{-\infty}^{\infty} \frac{d}{dx}\!\left(e^{-\pi x^2}\right) e^{-2\pi i x\xi}\, dx \\
+&= -i \int_{-\infty}^{\infty} e^{-\pi x^2} \cdot (-2\pi i\xi)\, e^{-2\pi i x\xi}\, dx \\
+&= -2\pi\xi \int_{-\infty}^{\infty} e^{-\pi x^2}\, e^{-2\pi i x\xi}\, dx \;=\; -2\pi\xi\, h(\xi).
+\end{align*}
+Thus $h$ satisfies the ODE $h' = -2\pi\xi\, h$ with initial condition $h(0) = \int_{-\infty}^{\infty} e^{-\pi x^2}\, dx = 1$. The unique solution is $h(\xi) = e^{-\pi\xi^2} = g(\xi)$.
+\end{proof}
+
+\begin{remark}\label{rmk:eigenvalues}
+The eigenvalues of the Fourier transform on $L^2(\R)$ are $\{1, -1, i, -i\}$ (since $\cF^4 = \mathrm{id}$), with eigenspaces spanned by the Hermite functions $\psi_n(x) = H_n(\sqrt{2\pi}\, x)\, e^{-\pi x^2}$, where $H_n$ is the $n$-th (probabilist's) Hermite polynomial. Specifically, $\cF[\psi_n] = (-i)^n \psi_n$. The Gaussian $g = \psi_0$ lies in the eigenspace for eigenvalue $1$. This spectral decomposition is intimately connected to the Stone--von Neumann theorem and the metaplectic representation of $\mathrm{SL}(2, \R)$.
+\end{remark}
+
+\begin{remark}\label{rmk:convention-bridge}
+Although \cref{thm:gaussian-fixed} uses the Plancherel normalization (which differs from the probability convention of \cref{def:FT}), the essential content is the same: the Gaussian density and its Fourier transform have the same functional form. In the probability convention, the characteristic function of $\cN(0, \sigma^2)$ is $\varphi(\xi) = e^{-\sigma^2\xi^2/2}$, which is a Gaussian in $\xi$ with ``reciprocal'' variance parameter. The Plancherel normalization is the unique choice that makes the fixed-point identity $\hat{g} = g$ hold \emph{exactly}, without any rescaling.
+\end{remark}
+
+\begin{proposition}[{cf.\ \cite[Theorem~VI.5.11]{Parthasarathy}}]\label{prop:gaussian-characterization}
+A probability measure $\gamma$ on an LCA group $G$ is Gaussian in the sense of \cref{def:gaussian-lca} if and only if it can be represented as the limit
+\[
+\gamma = \lim_{n \to \infty} \mu_{n,1} * \mu_{n,2} * \cdots * \mu_{n,k_n}
+\]
+of convolutions of infinitesimal triangular arrays satisfying appropriate tightness and variance conditions (specifically: the arrays are infinitesimal and uniformly tight; see \cite[Definition~VI.5.1]{Parthasarathy} for precise statements). In particular, Gaussian measures are precisely the possible limits of the CLT on~$G$.
+\end{proposition}
+
+%% ============================================================
+\section{The heat semigroup and Laplacians on LCA groups}
+
+We now unify the heat equation perspective from \cref{prop:heat-add,prop:heat-mult} in the general LCA framework.
+
+\begin{definition}\label{def:laplacian}
+Let $G$ be a connected LCA group with Lie algebra $\mathfrak{g}$. Fix a basis $\{X_1, \ldots, X_d\}$ for $\mathfrak{g}$ and define the \emph{Laplacian} on $G$ by
+\[
+\Delta_G = \sum_{j=1}^d X_j^2,
+\]
+where $X_j$ act as left-invariant differential operators on $C^\infty(G)$. The Laplacian depends on the choice of basis (equivalently, on an inner product on $\mathfrak{g}$), but different choices yield the same qualitative theory.
+\end{definition}
+
+The characters of $G$ are eigenfunctions of $\Delta_G$. Define the \emph{symbol} $Q : \widehat{G} \to [0, \infty)$ by
+\begin{equation}\label{eq:symbol}
+\Delta_G \chi = -Q(\chi) \cdot \chi \qquad \text{for all } \chi \in \widehat{G}.
+\end{equation}
+The function $Q$ is a non-negative definite quadratic form on $\widehat{G}$ in the sense of \cref{def:quadratic}.
+
+\begin{example}\label{ex:laplacian-symbol}
+\begin{enumerate}[label=(\alph*)]
+\item $G = (\R, +)$: $\Delta_G = \partial_{xx}$, $\chi_\xi(x) = e^{i\xi x}$, $\Delta_G \chi_\xi = -\xi^2 \chi_\xi$, so $Q(\xi) = \xi^2$.
+\item $G = (\Rpos, \times)$: $\Delta_G = D^2 = (x\partial_x)^2$, $\chi_s(x) = x^{is}$, $D^2 \chi_s = (is)^2 x^{is} = -s^2 \chi_s$, so $Q(s) = s^2$.
+\item $G = (\bT, +)$: $\Delta_G = \partial_{\theta\theta}$, $\chi_n(\theta) = e^{2\pi i n\theta}$, $\Delta_G \chi_n = -(2\pi n)^2 \chi_n$, so $Q(n) = 4\pi^2 n^2$.
+\end{enumerate}
+\end{example}
+
+\begin{theorem}[Heat semigroup on LCA groups]\label{thm:heat-semigroup}
+Let $G$ be a connected LCA group with Laplacian $\Delta_G$ and symbol $Q$ as in \eqref{eq:symbol}. Define the family of Gaussian measures $\{\gamma_t\}_{t > 0}$ by their Fourier transforms:
+\[
+\widehat{\gamma_t}(\chi) = e^{-tQ(\chi)/2}.
+\]
+Then:
+\begin{enumerate}[label=(\roman*)]
+\item $\{\gamma_t\}_{t \geq 0}$ is a convolution semigroup: $\gamma_t * \gamma_s = \gamma_{t+s}$.
+\item If $\gamma_t$ has a density $p_t$ with respect to Haar measure, then $p_t$ solves the heat equation
+\[
+\partial_t p_t = \tfrac{1}{2}\,\Delta_G\, p_t.
+\]
+\item In Fourier space, the heat equation becomes the family of ODEs (parametrized by $\chi \in \widehat{G}$):
+\[
+\partial_t \widehat{p_t}(\chi) = -\tfrac{1}{2}\, Q(\chi)\, \widehat{p_t}(\chi),
+\]
+with solution $\widehat{p_t}(\chi) = e^{-tQ(\chi)/2}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Part (iii) is immediate: applying the Fourier transform to $\partial_t p_t = \frac{1}{2}\Delta_G p_t$ and using $\widehat{\Delta_G p_t}(\chi) = -Q(\chi)\widehat{p_t}(\chi)$ yields the ODE in (iii), whose solution with $\widehat{p_0} = 1$ is $e^{-tQ(\chi)/2}$. Part (i) follows from the multiplicativity $e^{-tQ/2} \cdot e^{-sQ/2} = e^{-(t+s)Q/2}$ and the injectivity of the Fourier transform on probability measures (\cref{thm:levy}). Part (ii) follows from (iii) by inverting the Fourier transform.
+\end{proof}
+
+\begin{remark}\label{rmk:heat-clt}
+\cref{thm:heat-semigroup} reveals the structural reason the CLT limit is Gaussian: a random walk on $G$, when rescaled, converges to Brownian motion on $G$, whose transition kernel is the heat kernel $p_t$. The Fourier transform diagonalizes $\Delta_G$, reducing the heat PDE to a family of ODEs---one for each character $\chi \in \widehat{G}$---whose solutions are the Gaussian Fourier coefficients $e^{-tQ(\chi)/2}$.
+\end{remark}
+
+\begin{example}\label{ex:heat-summary}
+Summary of the heat semigroup on the three running examples.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcccc}
+\textbf{Group $G$} & \textbf{Laplacian} & \textbf{Symbol $Q$} & \textbf{Heat equation} & \textbf{Fundamental solution} \\
+\hline
+$(\R, +)$ & $\partial_{xx}$ & $\xi^2$ & $u_t = \tfrac{1}{2}\, u_{xx}$ & Gaussian \\
+$(\Rpos, \times)$ & $(x\partial_x)^2$ & $s^2$ & $u_t = \tfrac{1}{2}D^2 u$ & Log-normal \\
+$(\bT, +)$ & $\partial_{\theta\theta}$ & $4\pi^2 n^2$ & $u_t = \tfrac{1}{2}\, u_{\theta\theta}$ & Wrapped normal ($\vartheta_3$)
+\end{tabular}
+\end{center}
+\end{example}
+
+%% ============================================================
+\section{Ergodic interpretation: ensemble versus time averages}
+
+The CLT admits two complementary interpretations, corresponding to the two sides of the ergodic theorem.
+
+\begin{theorem}[Birkhoff Ergodic Theorem {\cite[Theorem~6.2.1]{Durrett}}]\label{thm:birkhoff}
+Let $(\Omega, \mathcal{B}, \mathbb{P}, T)$ be a measure-preserving dynamical system with $T$ ergodic. For any $f \in L^1(\mathbb{P})$,
+\[
+\frac{1}{n}\sum_{k=0}^{n-1} f(T^k \omega) \longrightarrow \int_\Omega f\, d\mathbb{P} \qquad \text{for $\mathbb{P}$-a.e.\ $\omega$}.
+\]
+\end{theorem}
+
+\begin{remark}[i.i.d.\ sequences as ergodic systems]\label{rmk:iid-ergodic}
+An i.i.d.\ sequence $X_1, X_2, \ldots$ with common distribution $\mu$ can be realized on the product space $\Omega = \R^{\mathbb{N}}$ with the left shift $T(\omega_1, \omega_2, \ldots) = (\omega_2, \omega_3, \ldots)$ and the product measure $\mathbb{P} = \mu^{\otimes \mathbb{N}}$. The Kolmogorov zero-one law implies that $T$ is ergodic. Setting $f(\omega) = \omega_1$, the Birkhoff theorem recovers the strong law of large numbers: $\bar{X}_n \to E[X_1]$ a.s.
+\end{remark}
+
+\begin{remark}[Two views of the CLT]\label{rmk:two-views}
+The CLT for $\bar{X}_n = \frac{1}{n}\sum_{k=1}^n X_k$ admits two complementary readings:
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Ensemble (static, spatial).} Fix $n$ and vary the realization $\omega \in \Omega$. The CLT describes the fluctuations of $\bar{X}_n$ around $\mu$: the distribution of $\sqrt{n}(\bar{X}_n - \mu)$ converges to $\cN(0, \sigma^2)$ as $n \to \infty$.
+
+\item \textbf{Temporal (dynamic).} Fix a typical $\omega$ and let $n \to \infty$. The LLN says $\bar{X}_n(\omega) \to \mu$ a.s., describing convergence along a single trajectory.
+\end{enumerate}
+The ensemble CLT describes the \emph{shape} of the fluctuations (Gaussian), while the ergodic theorem guarantees that time averages equal space averages. These are dual aspects of the same structure: the heat semigroup provides the universal transition kernel, and the Fourier transform diagonalizes it whether we sum over space or over time.
+\end{remark}
+
+\begin{remark}[Statistical mechanics]\label{rmk:statmech}
+In the language of statistical mechanics, the ensemble average corresponds to the Gibbs measure (a spatial average over configurations), while the time average corresponds to trajectory averages of a single system. The equality of the two is the content of ergodicity. The Gaussian arising from the CLT is the universal fluctuation law in both pictures. On the multiplicative group, the log-normal distribution governs the analogous fluctuations---for instance, the growth rates in multiplicative processes or the fluctuations of products of random matrices' singular values.
+\end{remark}
+
+%% ============================================================
+\section{Hardy spaces and causal projections}\label{sec:hardy}
+
+The Fourier--Mellin duality of \cref{thm:mellin-fourier} acts on all of $L^2(G)$. But $L^2(G)$ carries a finer structure: an orthogonal decomposition into ``causal'' (forward-propagating) and ``anti-causal'' halves, governed by the \emph{Hardy space}. We show that the $\log$ isomorphism preserves this decomposition, relate the CLT to prediction theory via the Wold decomposition of the time-shift isometry, and identify the Toeplitz algebra as the natural operator-algebraic framework.
+
+\begin{definition}[Hardy spaces on LCA groups]\label{def:hardy-space}
+For each of the three running examples of \cref{ex:groups}, define the \emph{Hardy space} $\Htwo(G) \subset L^2(G)$ as follows.
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{$G = (\R, +)$.} The Hardy space of the real line is
+\[
+\Htwo(\R) = \bigl\{f \in L^2(\R) : \widehat{f}(\xi) = 0 \text{ for a.e.\ } \xi < 0\bigr\}.
+\]
+Equivalently, $f \in \Htwo(\R)$ if and only if $f$ extends to a holomorphic function in the upper half-plane $\mathbb{C}_+ = \{z : \operatorname{Im} z > 0\}$ with
+$\sup_{y > 0} \int_{-\infty}^{\infty} |f(x + iy)|^2\, dx < \infty$
+\cite[Chapter~II]{Garnett}. These are the \emph{causal} signals: their spectral content is one-sided.
+
+\item \textbf{$G = (\Rpos, \times)$.} Define the \emph{multiplicative Hardy space} as the preimage of $\Htwo(\R)$ under the $\log$ isomorphism:
+\[
+\Htwo(\Rpos) = \bigl\{f \in L^2(\Rpos, dx/x) : f \circ \exp \in \Htwo(\R)\bigr\}.
+\]
+Equivalently, $f \in \Htwo(\Rpos)$ if and only if its Mellin transform $\cM[f](s)$ extends analytically to $\operatorname{Im}(s) > 0$ with uniformly bounded $L^2$ norms on horizontal lines \cite[Chapter~4]{Hoffman}. This is the \emph{scale-causal} subspace.
+
+\item \textbf{$G = (\bT, +)$.} The classical Hardy space on the circle is
+\[
+\Htwo(\bT) = \bigl\{f \in L^2(\bT) : \widehat{f}(n) = 0 \text{ for all } n < 0\bigr\}.
+\]
+Equivalently, $f$ extends to a holomorphic function on the open unit disk $\mathbb{D}$ with $\sup_{0 < r < 1} \int_0^1 |f(re^{2\pi i\theta})|^2\, d\theta < \infty$.
+\end{enumerate}
+
+In each case, the ``positive frequencies'' are determined by a choice of ordering on $\widehat{G}$: the standard ordering on $\widehat{G} \cong \R$ (for $G = (\R,+)$ and $G = (\Rpos,\times)$) and the standard ordering on $\widehat{G} = \Z$ (for $G = (\bT,+)$). This ordering encodes a choice of \emph{time direction}---the causality arrow.
+\end{definition}
+
+\begin{proposition}[Hardy decomposition]\label{prop:hardy-decomp}
+For each $G \in \{(\R, +),\, (\Rpos, \times),\, (\bT, +)\}$, the Hilbert space $L^2(G)$ admits the orthogonal decomposition
+\begin{equation}\label{eq:hardy-decomp}
+L^2(G) = \Htwo(G) \oplus \Htwo(G)^\perp,
+\end{equation}
+where $\Htwo(G)^\perp = \{f \in L^2(G) : \widehat{f}(\chi) = 0 \text{ for } \chi \geq 0\}$. The orthogonal projection $P_{\Htwo} : L^2(G) \to \Htwo(G)$ is given in the frequency domain by
+\[
+\widehat{P_{\Htwo} f}(\chi) = \mathbf{1}_{\chi \geq 0}\, \widehat{f}(\chi).
+\]
+\end{proposition}
+
+\begin{proof}
+Write $f = f^+ + f^-$ with $\widehat{f^+} = \mathbf{1}_{\chi \geq 0}\,\widehat{f}$ and $\widehat{f^-} = \mathbf{1}_{\chi < 0}\,\widehat{f}$. Then $f^+ \in \Htwo(G)$, $f^- \in \Htwo(G)^\perp$, and by Parseval's theorem,
+\[
+\langle f^+, f^- \rangle = \int_{\widehat{G}} \widehat{f^+}(\chi)\, \overline{\widehat{f^-}(\chi)}\, d\chi = 0,
+\]
+since the supports of $\widehat{f^+}$ and $\widehat{f^-}$ are disjoint.
+\end{proof}
+
+\begin{theorem}[Fourier--Mellin duality preserves Hardy structure]\label{thm:hardy-duality}
+The isometric isomorphism $\log_* : L^2(\Rpos, dx/x) \to L^2(\R, dy)$ of \cref{prop:log-iso} restricts to an isometric isomorphism
+\[
+\log_* : \Htwo(\Rpos) \xrightarrow{\;\sim\;} \Htwo(\R),
+\]
+and conjugates the Mellin-Hardy projection to the Fourier-Hardy projection:
+\[
+\log_* \circ P_{\Htwo(\Rpos)} = P_{\Htwo(\R)} \circ \log_*.
+\]
+That is, the following diagram commutes:
+\begin{equation}\label{eq:cd-hardy}
+\begin{tikzcd}
+L^2(\Rpos, dx/x) \arrow[r, "P_{\Htwo(\Rpos)}"] \arrow[d, "\log_*"'] & \Htwo(\Rpos) \arrow[d, "\log_*"] \\
+L^2(\R, dy) \arrow[r, "P_{\Htwo(\R)}"'] & \Htwo(\R)
+\end{tikzcd}
+\end{equation}
+This lifts \cref{thm:mellin-fourier} from the full $L^2$ level to the Hardy subspace level.
+\end{theorem}
+
+\begin{proof}
+By \cref{thm:mellin-fourier}, $\cM[f](s) = \cF[\log_* f](s)$ for every $s \in \R$. In particular, $\cM[f](s) = 0$ for $s < 0$ if and only if $\cF[\log_* f](s) = 0$ for $s < 0$, i.e., $f \in \Htwo(\Rpos)$ if and only if $\log_* f \in \Htwo(\R)$. Since $\log_*$ is an isometry (it preserves Haar measure: $dx/x \mapsto dy$), the restriction is an isometric isomorphism. The projection intertwining follows: for any $f \in L^2(\Rpos, dx/x)$,
+\[
+\log_*(P_{\Htwo(\Rpos)} f) = P_{\Htwo(\R)}(\log_* f),
+\]
+because both sides have the same Fourier transform $\mathbf{1}_{s \geq 0}\, \cF[\log_* f](s)$.
+\end{proof}
+
+\begin{definition}[Unilateral shift]\label{def:shift}
+On $\Htwo(\bT)$, define the \emph{unilateral shift} $S : \Htwo(\bT) \to \Htwo(\bT)$ by
+\begin{equation}\label{eq:shift}
+(Sf)(z) = z\, f(z), \qquad \text{equivalently,} \qquad \widehat{(Sf)}(n) = \widehat{f}(n-1) \text{ for } n \geq 0.
+\end{equation}
+Its adjoint satisfies $\widehat{(S^*f)}(n) = \widehat{f}(n+1)$, whence:
+\begin{itemize}
+\item $S^*S = I$ \quad (S is an isometry),
+\item $SS^* = I - \langle \,\cdot\,, \mathbf{1}\rangle\, \mathbf{1} \neq I$ \quad (S is not unitary),
+\item $\ker(S^*) = \operatorname{span}\{\mathbf{1}\}$ \quad (the constant functions).
+\end{itemize}
+On $\Htwo(\R)$, the analogue is the half-line translation $T_a$ ($a > 0$) defined by $\widehat{T_a f}(\xi) = e^{ia\xi}\widehat{f}(\xi)$ for $\xi \geq 0$. On $\Htwo(\Rpos)$, the Mellin-side analogue is the dilation $S_a$ defined by $\widehat{S_a g}(s) = a^{is}\widehat{g}(s)$ for $s \geq 0$. By \cref{thm:hardy-duality}, $\log_*$ conjugates $S_a$ to $T_a$.
+\end{definition}
+
+\begin{theorem}[Wold decomposition {\cite[Chapter~I]{SzNF}}]\label{thm:wold}
+Let $V$ be an isometry on a Hilbert space $\mathcal{H}$. Then
+\begin{equation}\label{eq:wold}
+\mathcal{H} = \left(\bigoplus_{n=0}^{\infty} V^n(\ker V^*)\right) \oplus \mathcal{H}_u, \qquad \mathcal{H}_u = \bigcap_{n \geq 0} V^n \mathcal{H},
+\end{equation}
+where $\mathcal{H}_u$ is the maximal reducing subspace on which $V$ is unitary. The first summand is the \emph{purely non-deterministic} part; the second is the \emph{deterministic} part. For the unilateral shift $S$ on $\Htwo(\bT)$, one has $\mathcal{H}_u = \{0\}$: the shift is purely non-deterministic.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Since $V$ is an isometry, $V^n(\ker V^*)$ and $V^m(\ker V^*)$ are orthogonal for $n \neq m$: if $n > m$, then $V^n(\ker V^*) \subset V^{n}\mathcal{H}$ while $V^m(\ker V^*) \perp V^{m+1}\mathcal{H} \supset V^n\mathcal{H}$. Define $\mathcal{H}_u = \bigcap_{n \geq 0} V^n\mathcal{H}$; this subspace is $V$-invariant, and $V|_{\mathcal{H}_u}$ is surjective (hence unitary) since $V(\mathcal{H}_u) = V\bigl(\bigcap V^n\mathcal{H}\bigr) = \bigcap V^{n+1}\mathcal{H} = \mathcal{H}_u$. For $S$ on $\Htwo(\bT)$: $S^n\Htwo = z^n\Htwo$ and $\bigcap_{n \geq 0} z^n\Htwo = \{0\}$ by the $F.\ $and $M.\ $Riesz theorem.
+\end{proof}
+
+Each layer $V^n(\ker V^*)$ represents information that becomes causally inaccessible after $n$ steps of forward evolution. The decomposition separates \emph{unpredictable innovations} (the direct sum) from the \emph{perfectly predictable} component ($\mathcal{H}_u$).
+
+\begin{proposition}[CLT and prediction theory]\label{prop:clt-prediction}
+Let $\{X_n\}_{n \in \Z}$ be a wide-sense stationary process with spectral density $f \in L^1(\bT)$, $f \geq 0$. Let $V$ act on $\overline{\operatorname{span}}\{X_n : n \in \Z\} \subset L^2(\Omega)$ as the time shift $VX_n = X_{n+1}$.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(Szeg\H{o}--Kolmogorov.)} The process is purely non-deterministic ($\mathcal{H}_u = \{0\}$ in \cref{thm:wold}) if and only if the \emph{Szeg\H{o} condition} holds:
+\[
+\int_0^1 \log f(\theta)\, d\theta > -\infty.
+\]
+
+\item \textbf{(Innovation and outer function.)} When purely non-deterministic, $f$ admits an outer function factorization $f(\theta) = |h(e^{2\pi i\theta})|^2$ with $h \in \Htwo(\bT)$ outer, and the one-step prediction error is
+\[
+\sigma^2 = \exp\left(\int_0^1 \log f(\theta)\, d\theta\right).
+\]
+
+\item \textbf{(CLT link.)} For i.i.d.\ sequences, $f \equiv \sigma^2$ is constant, the Szeg\H{o} condition is trivially satisfied, $\mathcal{H}_u = \{0\}$, and the CLT variance is $\sigma^2$. More generally, the CLT for partial sums of stationary processes holds under Gordin's condition \cite[Theorem~35.5]{Billingsley}, which strengthens pure non-determinism.
+\end{enumerate}
+By \cref{thm:hardy-duality}, the entire prediction-theoretic structure transports to $(\Rpos, \times)$: the multiplicative CLT for products of positive random variables has the same Wold decomposition and Szeg\H{o} condition, with the Mellin spectral density replacing the Fourier spectral density.
+\end{proposition}
+
+\begin{remark}[Toeplitz algebra and Fredholm index]
+For $\varphi \in C(\bT)$, define the \emph{Toeplitz operator} $T_\varphi : \Htwo(\bT) \to \Htwo(\bT)$ by $T_\varphi f = P_{\Htwo}(\varphi f)$. The \emph{Toeplitz algebra} $\cT = C^*(T_\varphi : \varphi \in C(\bT))$ fits into the short exact sequence \cite[Chapter~7]{Douglas}
+\[
+0 \to \cK \to \cT \to C(\bT) \to 0,
+\]
+where $\cK$ denotes the compact operators on $\Htwo(\bT)$. When $\varphi$ is non-vanishing, $T_\varphi$ is Fredholm with index \cite[Chapter~7]{Nikolski}
+\[
+\ind(T_\varphi) = -\operatorname{wind}(\varphi, 0),
+\]
+where $\operatorname{wind}(\varphi, 0)$ is the winding number of $\varphi$ around the origin. The Fourier--Mellin duality of \cref{thm:hardy-duality} induces a corresponding isomorphism of \emph{Mellin--Toeplitz algebras} on $\Htwo(\Rpos)$: defining $T_\varphi^{\cM} g = P_{\Htwo(\Rpos)}(\varphi \cdot g)$, the $\log$ isomorphism conjugates $T_\varphi^{\cM}$ to $T_{\varphi \circ \exp}$, preserving the Fredholm index since $\log$ (being a homeomorphism) preserves winding numbers.
+\end{remark}
+
+\begin{definition}[Toeplitz determinant and geometric mean]\label{def:toeplitz-det}
+For $f \in L^1(\bT)$ with $f > 0$ a.e., define:
+\begin{enumerate}[label=(\alph*)]
+\item The $n \times n$ \emph{Toeplitz matrix} $T_n(f) = (\widehat{f}_{j-k})_{0 \leq j,k \leq n-1}$, i.e., the compression of the multiplication operator $M_f$ to $\operatorname{span}\{1, z, \ldots, z^{n-1}\} \subset \Htwo(\bT)$.
+\item The \emph{Toeplitz determinant} $D_n(f) = \det T_n(f)$.
+\item The \emph{geometric mean} $G(f) = \exp\bigl(\int_0^1 \log f(\theta)\, d\theta\bigr)$, well-defined and positive provided $\log f \in L^1(\bT)$.
+\end{enumerate}
+Note that $D_n(f)$ is a \emph{multiplicative} quantity---the product of eigenvalues of $T_n(f)$, interpreted as the volume of an $n$-dimensional parallelepiped in the ``multiplicative theater.'' The quantity $G(f)$ is the exponential of an \emph{additive} average: $\int \log f$ lives in the ``additive theater.'' The Szeg\H{o} theorems below bridge these two theaters with a rigid, non-trivializing comparison.
+\end{definition}
+
+\begin{theorem}[Szeg\H{o} Limit Theorems {\cite[Chapter~5]{BottcherSilbermann}}]\label{thm:szego}
+Let $f \in L^1(\bT)$ with $f > 0$ a.e.\ and $\log f \in L^1(\bT)$. Write $c_k = \int_0^1 (\log f(\theta))\, e^{-2\pi i k\theta}\, d\theta$ for the Fourier coefficients of $\log f$.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(First Szeg\H{o} Limit Theorem, 1915.)} The geometric mean of the eigenvalues of $T_n(f)$ converges to the exponential of the arithmetic mean of $\log f$:
+\begin{equation}\label{eq:szego-first}
+\lim_{n \to \infty} D_n(f)^{1/n} = G(f).
+\end{equation}
+
+\item \textbf{(Strong Szeg\H{o} Limit Theorem, 1952.)} If additionally $\sum_{k \in \Z} |k|\, |c_k|^2 < \infty$, then
+\begin{equation}\label{eq:szego-strong}
+\lim_{n \to \infty} \frac{D_n(f)}{G(f)^n} = E(f),
+\end{equation}
+where the \emph{Szeg\H{o} constant} is
+\begin{equation}\label{eq:szego-constant}
+E(f) = \exp\!\left(\sum_{k=1}^{\infty} k\, |c_k|^2\right) \in (0, \infty).
+\end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+For~(i): the eigenvalue distribution of $T_n(f)$ converges weakly to $f$ (Szeg\H{o} distribution theorem), so $(1/n)\sum_{j=1}^n \log \lambda_j^{(n)} \to \int_0^1 \log f(\theta)\, d\theta$, giving $D_n(f)^{1/n} \to G(f)$.
+
+For~(ii): write $\log f = c_0 + h + \bar{h}$ where $h = \sum_{k=1}^{\infty} c_k e^{2\pi i k \theta} \in \Htwo(\bT)$ is the \emph{causal part} of $\log f$ --- its Hardy projection (\cref{prop:hardy-decomp}). Then $f = G(f) \cdot |e^h|^2$, and the factorization $f = |G(f)^{1/2}\, e^h|^2$ is precisely the outer function factorization of \cref{prop:clt-prediction}(ii). The Toeplitz determinant factors as
+\[
+D_n(f) = G(f)^n \cdot \det\bigl(T_n(e^h)\, T_n(e^{\bar{h}})\bigr),
+\]
+and the Borodin--Okounkov--Case--Geronimo identity \cite[Chapter~5]{BottcherSilbermann} gives $\det(T_n(e^h)\, T_n(e^{\bar{h}})) \to \exp(\sum_{k=1}^{\infty} k\, |c_k|^2)$. Alternatively, see \cite[Chapter~2]{Simon}.
+\end{proof}
+
+The factorization $\log f = c_0 + h + \bar{h}$ with $h \in \Htwo(\bT)$ is the Hardy decomposition of $\log f$. The causal part $h$ generates the outer function; the constant $c_0 = \int \log f$ generates $G(f) = e^{c_0}$. The Szeg\H{o} constant $E(f)$ therefore measures the ``interaction energy'' between the causal and anti-causal components of $\log f$.
+
+\begin{corollary}[Non-trivial cross-theater volume comparison]\label{cor:nontrivial-volume}
+Under the hypotheses of \cref{thm:szego}(ii),
+\[
+D_n(f) = G(f)^n \cdot E(f) \cdot (1 + o(1)), \qquad 0 < E(f) < \infty.
+\]
+In particular:
+\begin{enumerate}[label=(\roman*)]
+\item The \textbf{multiplicative} volume $D_n(f)$ (determinant, living in the multiplicative theater) is asymptotically determined by the \textbf{additive} quantity $\int \log f$ (living in the additive theater), up to a finite, nonzero, computable correction factor $E(f)$.
+\item The comparison does \textbf{not} trivialize: neither $E(f) = 0$ nor $E(f) = \infty$.
+\item The analogue for non-compact groups proceeds in two steps. First, on $(\R, +)$, the Toeplitz matrices $T_n(f)$ are replaced by truncated \emph{Wiener--Hopf operators} $W_R(a)$ on $L^2(0, R)$, and the Szeg\H{o} asymptotics carry over with $n \to \infty$ replaced by $R \to \infty$ \cite[Chapter~10]{BottcherSilbermann}. Second, the Hardy duality (\cref{thm:hardy-duality}) transports this to $(\Rpos, \times)$: the Mellin-side Wiener--Hopf operator on $\Htwo(\Rpos)$ satisfies the same asymptotics with the same Szeg\H{o} constant, since $\log_*$ is an isometry preserving all spectral data.
+\item For i.i.d.\ sequences ($f \equiv \sigma^2$ constant), $c_k = 0$ for all $k \neq 0$, hence $E(f) = 1$ exactly. The Gaussian is the unique spectral density for which the cross-theater comparison is exact---no correction.
+\end{enumerate}
+\end{corollary}
+
+\begin{remark}[The Szeg\H{o} condition as universal constraint]
+The condition $\int_{\bT} \log f(\theta)\, d\theta > -\infty$ has now appeared in three apparently independent roles:
+\begin{enumerate}
+\item \textbf{Prediction theory} (\cref{prop:clt-prediction}(i)): necessary and sufficient for pure non-determinism ($\mathcal{H}_u = \{0\}$).
+\item \textbf{Central limit theorem} (\cref{prop:clt-prediction}(iii)): necessary for the CLT to hold via Gordin's martingale method for stationary processes with standard $\sqrt{n}$ normalization.
+\item \textbf{Non-trivial volume comparison} (\cref{thm:szego,cor:nontrivial-volume}): necessary for $G(f) \in (0, \infty)$, i.e., for the additive-to-multiplicative bridge to be well-defined.
+\end{enumerate}
+This triple coincidence is structural. The Gaussian is simultaneously the Fourier eigenfunction (\cref{thm:gaussian-fixed}), the heat kernel (\cref{thm:heat-semigroup}), the outer function seed ($c_k = 0$ for $k \neq 0$), and the unique spectral density for which $E(f) = 1$ exactly---\emph{perfect additive--multiplicative alignment}.
+
+The CLT identifies the Gaussian as the universal \emph{attractor}: processes converging to the Gaussian limit necessarily satisfy the Szeg\H{o} condition $\int \log f > -\infty$ (ensuring $G(f) \in (0,\infty)$ and the First Szeg\H{o} Theorem). The Strong Szeg\H{o} regularity $\sum k|c_k|^2 < \infty$ is an \emph{additional} condition---not implied by the CLT per se, but naturally satisfied in its vicinity. Precisely: the class $\{f : \sum k|c_k|^2 < \infty\}$ is an open neighborhood of the constant density $f \equiv \sigma^2$ (the Gaussian fixed point) in the topology of $L^1(\bT)$, and any spectral density with $\log f \in H^{1/2}(\bT)$---the Sobolev space of half-order regularity---lies in this class. Short-memory processes satisfying the CLT (summable correlations, continuous spectral density) generically have $\log f$ of this regularity. The Gaussian fixed point thus sits at the center of the \emph{basin of non-triviality}: the region in spectral density space where cross-theater volume comparisons yield finite, nonzero bounds.
+\end{remark}
+
+\begin{remark}[Non-trivial versus trivial multiverses]
+The Szeg\H{o} Limit Theorems provide a precise framework for comparing quantities across different algebraic universes---the additive theater $(\R, +)$ and the multiplicative theater $(\Rpos, \times)$---while maintaining rigidity. We say that a multiverse of parallel algebraic theaters is \emph{non-trivial} if:
+\begin{enumerate}[label=(\alph*)]
+\item the theaters are connected by \emph{isometric} operators (the Fourier--Mellin duality, \cref{thm:hardy-duality});
+\item the per-step information loss is \emph{bounded} ($\dim \ker S^* = 1$, \cref{thm:wold});
+\item cross-theater volume comparisons yield \emph{finite, nonzero} correction factors ($E(f) \in (0, \infty)$, \cref{thm:szego}(ii)).
+\end{enumerate}
+A multiverse \emph{trivializes} when any condition fails: (a${}'$)~the inter-theater link introduces unbounded indeterminacy, destroying isometry; (b${}'$)~the information loss per step is uncontrolled; (c${}'$)~the volume comparison yields $E(f) = \infty$ or $E(f) = 0$, reducing the cross-theater inequality to $\infty \geq \text{const}$---a tautology with no constraining power.
+
+We offer the following structural analogy, without claiming a formal correspondence between the two frameworks. In the inter-universal Teichm\"uller theory of Mochizuki \cite{MochizukiIII}, an analogous comparison of log-volumes across arithmetically linked Hodge theaters is attempted in Corollary~3.12. As analyzed by Scholze and Stix \cite{ScholzeStix}, the indeterminacies introduced to align the theaters---in particular, the unbounded distortion of the log-shell permitted by Indeterminacy~3---play a role structurally parallel to allowing the spectral density $f$ to vary without the constraint $\sum k |c_k|^2 < \infty$: in both cases, the ``inter-universe comparison'' degenerates because the correction factor ($E(f)$ in our setting, the log-shell distortion in IUT) is unbounded. The resulting inequality trivializes to $\infty \geq \mathrm{const}$.
+
+The difference between a trivial and non-trivial multiverse reduces to a single analytic condition: the finiteness of $E(f)$. This condition is equivalent to $\log f \in H^{1/2}(\bT)$---a regularity generically satisfied by short-memory processes in the CLT regime, but logically independent of the CLT itself. The relationship is mediated by the fixed point: the CLT identifies the Gaussian ($f \equiv \sigma^2$, $E(f) = 1$) as the universal attractor, and the Strong Szeg\H{o} class forms an open basin around it. The central limit theorem, absent from the IUT framework, provides both the attractor and the mechanism that draws spectral densities toward it; the Strong Szeg\H{o} condition delineates the basin within which this attraction yields non-trivial cross-theater bounds. In the language of this paper: Mochizuki constructed a multiverse without a fixed point. The Fourier--Mellin duality (\cref{thm:mellin-fourier}), the Hardy isometry (\cref{thm:hardy-duality}), and the CLT convergence (\cref{prop:clt-prediction}) together ensure that our multiverse \emph{has} a fixed point---the Gaussian---and the Strong Szeg\H{o} regularity, satisfied at and around this fixed point, forces $E(f) < \infty$.
+\end{remark}
+
+\begin{remark}[Connection to viability theory]
+The Hardy decomposition $L^2 = \Htwo \oplus (\Htwo)^\perp$ has a dynamical-systems interpretation connecting to viability theory \cite{Aubin}. The Hardy space $\Htwo$ consists of modes whose spectral support is ``forward''---the \emph{causal} or \emph{viable} modes:
+\begin{itemize}
+\item The viability kernel $\operatorname{Viab}(K)$ of a constraint set $K$ under a differential inclusion $\dot{x} \in F(x)$ \cite[Chapter~4]{Aubin} consists of the initial states from which forward evolution remains in $K$. In the spectral setting, $\Htwo$ plays this role: it consists of functions whose frequency content permits causal (forward-time) evolution.
+\item The spectral gap of $\Delta_G$---equivalently, the CLT convergence rate (cf.\ \cref{thm:heat-semigroup})---governs the rate at which viable trajectories approach the Gaussian equilibrium.
+\item The Wold decomposition's per-step information loss $\ker(V^*)$ captures the irreversibility of causal projection: information about anti-causal modes is lost under forward propagation, analogous to the loss of information across a causal horizon.
+\item The Toeplitz exact sequence $0 \to \cK \to \cT \to C(\bT) \to 0$ encodes the passage from operator-algebraic to commutative descriptions---tracing out the ``anti-causal'' degrees of freedom.
+\end{itemize}
+\end{remark}
+
+\begin{example}[Summary: Hardy spaces on the three groups]\label{ex:hardy-summary}
+\[
+\renewcommand{\arraystretch}{1.4}
+\begin{array}{lllll}
+\hline
+\textbf{Group } G & \Htwo(G) & \textbf{Shift } S & \ker(S^*) & \textbf{Toeplitz symbol} \\
+\hline
+(\R, +) & \widehat{f}(\xi) = 0,\; \xi < 0 & T_a:\; e^{ia\xi}\widehat{f}(\xi) & \text{---} & L^\infty(\R) \cap C_0 \\
+(\Rpos, \times) & \cM[f](s) = 0,\; s < 0 & S_a:\; a^{is}\widehat{g}(s) & \text{---} & L^\infty(\R) \cap C_0 \\
+(\bT, +) & \widehat{f}(n) = 0,\; n < 0 & z\text{-multiplication} & \operatorname{span}\{\mathbf{1}\} & C(\bT) \\
+\hline
+\end{array}
+\]
+The second row is the image of the first under $\exp_*$ (equivalently, the first is the image of the second under $\log_*$), reflecting \cref{thm:hardy-duality}. Here $C_0$ denotes continuous functions vanishing at infinity. On the non-compact groups $(\R, +)$ and $(\Rpos, \times)$, the shift is a one-parameter semigroup $\{T_a\}_{a > 0}$ (resp.\ $\{S_a\}_{a > 1}$) of isometries rather than a single isometry, so the Wold decomposition takes the continuous form (Lax--Phillips scattering theory) and $\ker(S^*)$ is replaced by the infinitesimal generator's defect space---marked ``---'' since it does not reduce to a finite-dimensional subspace.
+\end{example}
+
+%% ============================================================
+\section{Concluding remarks}
+
+\subsection*{The exponential map as the general bridge}
+
+The Fourier--Mellin duality of Sections~2--4 rests on the group isomorphism $\exp : (\R, +) \to (\Rpos, \times)$, which bridges the ``additive'' world (Lie algebra) and the ``multiplicative'' world (Lie group). This bridge generalizes: every Lie group $G$ with Lie algebra $\mathfrak{g} = T_e G$ admits an \emph{exponential map}
+\[
+\exp : \mathfrak{g} \to G, \qquad \exp(X) = \gamma_X(1),
+\]
+where $\gamma_X : \R \to G$ is the unique one-parameter subgroup satisfying $\gamma_X'(0) = X$ \cite[Chapter~3]{Hall}. A crucial distinction separates the abelian and non-abelian settings:
+\begin{itemize}
+\item \textbf{Abelian case.} The map $\exp : (\R, +) \to (\Rpos, \times)$ is a \emph{global} isomorphism. The Fourier--Mellin duality is exact at all scales.
+\item \textbf{Non-abelian case.} The map $\exp : \mathfrak{g} \to G$ is in general only a \emph{local} diffeomorphism near the origin. Globally, it may fail to be injective (due to periodicity, as in $SO(3)$), surjective (as in $SL(2, \R)$), or both.
+\end{itemize}
+The CLT, however, concerns \emph{small fluctuations} near the identity---precisely the regime where $\exp$ is a diffeomorphism. The general picture is:
+
+\begin{center}
+\begin{tikzcd}[column sep=large]
+\text{Gaussian on } \mathfrak{g} \arrow[r, "\exp_*"] & \text{CLT limit on } G \text{ (near $e$)}
+\end{tikzcd}
+\end{center}
+
+\noindent This generalizes \cref{cor:clt-image}: just as $\operatorname{LogNormal} = \exp_*\cN$ on $\Rpos$, the CLT limit on any Lie group is locally the pushforward of a Gaussian on $\mathfrak{g}$ under $\exp$.
+
+\subsection*{Non-abelian groups: $GL(n)$ and the Cartan decomposition}
+
+On non-abelian groups such as $GL(n, \R)$, the Pontryagin dual is replaced by the unitary dual (irreducible unitary representations), and the Fourier transform becomes operator-valued. For products of i.i.d.\ random matrices $M_n = A_1 A_2 \cdots A_n$, the CLT takes a decomposed form via the Cartan ($KAK$) decomposition $GL(n) \cong K \cdot A \cdot K$, where $K = O(n)$ and $A$ consists of positive diagonal matrices:
+\begin{enumerate}[label=(\roman*)]
+\item The ``angular'' part (in $K = O(n)$) converges to Haar measure on $O(n)$---a mixing phenomenon.
+\item The ``radial'' part---the Lyapunov exponents $\lambda_1 \geq \cdots \geq \lambda_n$ parametrizing $A$---satisfies a standard Gaussian CLT on the Cartan subalgebra $\mathfrak{a} \cong \R^n$ \cite{BQ}.
+\end{enumerate}
+After centering, the fluctuations lie in the hyperplane $\sum_i (\lambda_i - \bar{\lambda}) = 0$, which is precisely the Lie algebra $\mathfrak{sl}(n) = \{X \in \mathfrak{gl}(n) : \tr(X) = 0\}$. Thus the centered CLT limit on $GL(n)$ is a Gaussian measure on $\mathfrak{sl}(n)$---not the group $SL(n)$ itself, but its tangent space at the identity. The passage from $\mathfrak{sl}(n)$ to $SL(n)$ is exactly the exponential map $\exp : \mathfrak{sl}(n) \to SL(n)$, extending the abelian bridge $\exp : \R \to \Rpos$ to the matrix setting.
+
+\subsection*{Compact groups: closed-form exponential maps}
+
+On compact groups, the exponential map admits elegant closed forms that make the passage $\mathfrak{g} \to G$ explicit.
+
+\medskip\noindent\textbf{$\boldsymbol{SO(3)}$ and Rodrigues' formula.}
+The Lie algebra $\mathfrak{so}(3)$ consists of $3 \times 3$ skew-symmetric matrices. Via the \emph{hat map} $\widehat{(\cdot)} : \R^3 \to \mathfrak{so}(3)$ defined by $\hat{\mathbf{n}}\mathbf{v} = \mathbf{n} \times \mathbf{v}$, every element of $\mathfrak{so}(3)$ can be written as $\theta\hat{\mathbf{n}}$ for a unit vector $\mathbf{n} \in S^2$ and an angle $\theta \in \R$.
+
+The key algebraic fact is that $\hat{\mathbf{n}}$ (for $\|\mathbf{n}\| = 1$) has eigenvalues $0, +i, -i$, so by the Cayley--Hamilton theorem, it satisfies its characteristic polynomial:
+\begin{equation}\label{eq:cayley-hamilton-so3}
+\hat{\mathbf{n}}^3 + \hat{\mathbf{n}} = 0, \qquad\text{i.e.,}\quad \hat{\mathbf{n}}^3 = -\hat{\mathbf{n}}.
+\end{equation}
+This periodicity causes the matrix exponential series to collapse. Separating even and odd powers:
+\begin{align*}
+\exp(\theta\hat{\mathbf{n}})
+&= \sum_{k=0}^{\infty} \frac{(\theta\hat{\mathbf{n}})^k}{k!} \\
+&= I + \underbrace{\left(\theta - \frac{\theta^3}{3!} + \frac{\theta^5}{5!} - \cdots\right)}_{\displaystyle\sin\theta}\hat{\mathbf{n}} \;+\; \underbrace{\left(\frac{\theta^2}{2!} - \frac{\theta^4}{4!} + \frac{\theta^6}{6!} - \cdots\right)}_{\displaystyle 1 - \cos\theta}\hat{\mathbf{n}}^2.
+\end{align*}
+This yields the \emph{Rodrigues rotation formula}:
+\begin{equation}\label{eq:rodrigues}
+\exp(\theta\hat{\mathbf{n}}) = I + \sin\theta\;\hat{\mathbf{n}} + (1 - \cos\theta)\;\hat{\mathbf{n}}^2.
+\end{equation}
+The infinite series reduces to three terms because the minimal polynomial of $\hat{\mathbf{n}}$ has degree~3; the odd-power terms resum as $\sin\theta$ and the even-power terms as $1 - \cos\theta$.
+
+\medskip\noindent\textbf{$\boldsymbol{SU(2)}$, quaternions, and the double cover.}
+The group $SU(2)$ of $2 \times 2$ unitary matrices with determinant $1$ is diffeomorphic to $S^3 \subset \R^4$ via identification with unit quaternions. Its Lie algebra $\mathfrak{su}(2)$ is identified with the pure imaginary quaternions $\operatorname{Im}(\mathbb{H}) \cong \R^3$.
+
+For a unit vector $\mathbf{n} \in S^2 \subset \operatorname{Im}(\mathbb{H})$, the relation $\mathbf{n}^2 = -1$ (the defining property of imaginary units in $\mathbb{H}$) yields the exponential map via direct application of Euler's formula:
+\begin{equation}\label{eq:quat-exp}
+\exp\!\left(\tfrac{\theta}{2}\,\mathbf{n}\right) = \cos\tfrac{\theta}{2} + \sin\tfrac{\theta}{2}\;\mathbf{n} \;\in\; S^3 \cong SU(2).
+\end{equation}
+This is the quaternionic generalization of $e^{i\alpha} = \cos\alpha + i\sin\alpha$: the proof is identical, with $\mathbf{n}^2 = -1$ replacing $i^2 = -1$.
+
+The factor $\frac{1}{2}$ reflects the double cover $\pi : SU(2) \to SO(3)$, defined by $\pi(q) : \mathbf{v} \mapsto q\mathbf{v}\bar{q}$ for $\mathbf{v} \in \operatorname{Im}(\mathbb{H}) \cong \R^3$. Since $q$ and $-q$ act identically by conjugation, $\ker(\pi) = \{\pm 1\}$. Composing \eqref{eq:quat-exp} with $\pi$ recovers the Rodrigues formula \eqref{eq:rodrigues}: the quaternion $\cos\frac{\theta}{2} + \sin\frac{\theta}{2}\,\mathbf{n}$ maps to the rotation matrix $I + \sin\theta\,\hat{\mathbf{n}} + (1-\cos\theta)\hat{\mathbf{n}}^2$, as can be verified by expanding $q\mathbf{v}\bar{q}$ and using the double-angle identities $\sin\theta = 2\sin\frac{\theta}{2}\cos\frac{\theta}{2}$ and $1 - \cos\theta = 2\sin^2\frac{\theta}{2}$.
+
+\medskip\noindent\textbf{CLT on compact groups.}
+Since $SO(3)$ and $SU(2)$ are compact, repeated convolutions converge to Haar measure (the uniform distribution on $G$) rather than to a Gaussian: a compact group has finite volume, leaving no room for the unbounded fluctuations that a Gaussian requires. However, for \emph{small times}---when the random increments are small perturbations of the identity---the heat kernel $p_t$ on $G$ is well-approximated by the Gaussian on $\mathfrak{g}$ pushed forward by $\exp$:
+\[
+p_t(g) \;\approx\; \frac{1}{(2\pi t)^{d/2}}\, \exp\!\left(-\frac{\|\exp^{-1}(g)\|^2}{2t}\right) \qquad \text{as } t \to 0^+,\; g \to e,
+\]
+where $d = \dim G$ and $\|\cdot\|$ is the norm on $\mathfrak{g}$ induced by the Riemannian metric. As $t \to \infty$, the heat kernel converges to the constant $1/\operatorname{vol}(G)$ (Haar measure). The rate of convergence is governed by the representation theory of $G$; see Diaconis \cite{Diaconis}.
+
+\subsection*{Summary: the exponential map across groups}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{lclll}
+\textbf{Lie algebra $\mathfrak{g}$} & $\xrightarrow{\exp}$ & \textbf{Lie group $G$} & \textbf{$\exp$ global?} & \textbf{CLT limit} \\
+\hline
+$(\R, +)$ & $\to$ & $(\Rpos, \times)$ & Yes (iso.) & Gaussian $\to$ log-normal \\
+$\mathfrak{so}(3) \cong \R^3$ & Rodrigues & $SO(3)$ & No (periodic) & short-time Gaussian \\
+$\mathfrak{su}(2) \cong \R^3$ & Euler & $SU(2) \cong S^3$ & No (compact) & short-time Gaussian \\
+$\mathfrak{sl}(n)$ & $\to$ & $SL(n)$ & No (local) & Gaussian on $\mathfrak{sl}(n)$
+\end{tabular}
+\end{center}
+
+\noindent In every case, the exponential map $\exp : \mathfrak{g} \to G$ serves as the bridge between the additive (Lie algebra) and multiplicative (Lie group) formulations of the CLT. The abelian case $(\R, +) \to (\Rpos, \times)$ is the unique instance where this bridge is a global isomorphism, making the additive--multiplicative duality exact at all scales.
+
+\subsection*{Free probability}
+In free probability, the role of the Gaussian is taken by the \emph{semicircle distribution} (Wigner), and the free multiplicative analogue is the \emph{Marchenko--Pastur distribution}. The R-transform and S-transform serve as the free analogues of the Fourier and Mellin transforms, respectively, linearizing free additive and free multiplicative convolution. The duality between additive and multiplicative free convolutions mirrors the classical Fourier--Mellin duality studied here, but in a non-commutative setting; see Voiculescu--Dykema--Nica \cite{VDN}.
+
+%% ============================================================
+\begin{thebibliography}{99}
+
+\bibitem{Aubin}
+J.-P.~Aubin,
+\emph{Viability Theory}, new ed.,
+Modern Birkh\"auser Classics, Birkh\"auser, 2009.
+
+\bibitem{BQ}
+Y.~Benoist and J.-F.~Quint,
+\emph{Random Walks on Reductive Groups},
+Ergebnisse der Mathematik und ihrer Grenzgebiete, vol.~62, Springer, 2016.
+
+\bibitem{Billingsley}
+P.~Billingsley,
+\emph{Probability and Measure}, 3rd ed.,
+Wiley, New York, 1995.
+
+\bibitem{BottcherSilbermann}
+A.~B\"ottcher and B.~Silbermann,
+\emph{Analysis of Toeplitz Operators}, 2nd ed.,
+Springer Monographs in Mathematics, Springer, 2006.
+
+\bibitem{Diaconis}
+P.~Diaconis,
+Group representations in probability and statistics,
+\emph{IMS Lecture Notes---Monograph Series}, vol.~11, 1988.
+
+\bibitem{Douglas}
+R.~G.~Douglas,
+\emph{Banach Algebra Techniques in Operator Theory}, 2nd ed.,
+Graduate Texts in Mathematics, vol.~179, Springer, 1998.
+
+\bibitem{Durrett}
+R.~Durrett,
+\emph{Probability: Theory and Examples}, 5th ed.,
+Cambridge University Press, 2019.
+
+\bibitem{Folland}
+G.~B.~Folland,
+\emph{A Course in Abstract Harmonic Analysis}, 2nd ed.,
+CRC Press, 2015.
+
+\bibitem{Garnett}
+J.~B.~Garnett,
+\emph{Bounded Analytic Functions}, revised 1st ed.,
+Graduate Texts in Mathematics, vol.~236, Springer, 2007.
+
+\bibitem{Hall}
+B.~C.~Hall,
+\emph{Lie Groups, Lie Algebras, and Representations: An Elementary Introduction}, 2nd ed.,
+Graduate Texts in Mathematics, vol.~222, Springer, 2015.
+
+\bibitem{Hoffman}
+K.~Hoffman,
+\emph{Banach Spaces of Analytic Functions},
+Prentice-Hall, 1962; reprinted Dover, 1988.
+
+\bibitem{Heyer}
+H.~Heyer,
+\emph{Probability Measures on Locally Compact Groups},
+Ergebnisse der Mathematik und ihrer Grenzgebiete, vol.~94, Springer, 1977.
+
+\bibitem{HewittRoss}
+E.~Hewitt and K.~A.~Ross,
+\emph{Abstract Harmonic Analysis}, vol.~I,
+Grundlehren der mathematischen Wissenschaften, vol.~115, Springer, 1963.
+
+\bibitem{MochizukiIII}
+S.~Mochizuki,
+Inter-universal Teichm\"uller theory~III: Canonical splittings of the log-theta-lattice,
+\emph{Publ.\ Res.\ Inst.\ Math.\ Sci.} \textbf{57} (2021), 723--1185.
+
+\bibitem{Nikolski}
+N.~K.~Nikolski,
+\emph{Operators, Functions, and Systems: An Easy Reading}, vols.~1--2,
+Mathematical Surveys and Monographs, AMS, 2002.
+
+\bibitem{Parthasarathy}
+K.~R.~Parthasarathy,
+\emph{Probability Measures on Metric Spaces},
+Academic Press, 1967; reprinted AMS Chelsea, 2005.
+
+\bibitem{Rudin}
+W.~Rudin,
+\emph{Fourier Analysis on Groups},
+Wiley-Interscience, New York, 1962.
+
+\bibitem{ScholzeStix}
+P.~Scholze and J.~Stix,
+Why abc is still a conjecture,
+preprint, 2018.
+
+\bibitem{Simon}
+B.~Simon,
+\emph{Orthogonal Polynomials on the Unit Circle}, 2 vols.,
+AMS Colloquium Publications, vol.~54, 2005.
+
+\bibitem{SzNF}
+B.~Sz.-Nagy, C.~Foias, H.~Bercovici, and L.~K\'erchy,
+\emph{Harmonic Analysis of Operators on Hilbert Space}, 2nd ed.,
+Universitext, Springer, 2010.
+
+\bibitem{VDN}
+D.~V.~Voiculescu, K.~J.~Dykema, and A.~Nica,
+\emph{Free Random Variables},
+CRM Monograph Series, vol.~1, AMS, 1992.
+
+\end{thebibliography}
+
+\end{document}
