@@ -12,4 +12,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+.venv/
+*.npz
+*.egg-info/
 grjl4/mujoco_menagerie/

@@ -1,0 +1,163 @@
+\section{The optimal cycle}\label{sec:cycle}
+
+The results of Sections~1--8 provide the three stages of a closed algebraic loop:
+\[
+M = (\Rpos, \times)
+\xrightarrow{\;\log\;}
+A = (\R, +)
+\xrightarrow{\;\text{Fourier}\;}
+\widehat{A} = (\Z, +)
+\xrightarrow{\;\exp\;}
+M.
+\]
+We now formalize this loop and its obstruction to closure.
+
+\begin{definition}[The additive-multiplicative cycle]\label{def:cycle}
+Let $f \in L^1(\bT)$ with $f > 0$ a.e.\ and $\log f \in L^1(\bT)$. Write
+\[
+c_k = \int_0^1 (\log f(\theta))\, e^{-2\pi i k\theta}\, d\theta, \qquad k \in \Z,
+\]
+for the Fourier coefficients of $\log f$. The \emph{additive-multiplicative cycle} of $f$ consists of:
+\begin{enumerate}[label=(\roman*)]
+\item The \emph{DC component}: $c_0 = \int_0^1 \log f(\theta)\, d\theta$, yielding the geometric mean $G(f) = e^{c_0}$.
+\item The \emph{AC component}: $\{c_k\}_{k \neq 0}$, yielding the \emph{holonomy}
+\begin{equation}\label{eq:holonomy}
+H(f) = \sum_{k=1}^{\infty} k\, |c_k|^2 \in [0, \infty].
+\end{equation}
+\item The \emph{Szeg\H{o} constant}: $E(f) = \exp(H(f)) \in [1, \infty]$.
+\end{enumerate}
+The holonomy $H(f)$ is the one-sided $H^{1/2}(\bT)$ Sobolev seminorm of $\log f$ (summing over positive frequencies; for real-valued $\log f$, this equals $\frac{1}{2}\|\log f\|_{H^{1/2}(\bT)}^2$) and measures the cost of traversing the cycle.
+\end{definition}
+
+\begin{theorem}[Holonomy trichotomy]\label{thm:holonomy-trichotomy}
+Let $f$ be as in \cref{def:cycle}. Then exactly one of the following holds:
+\begin{enumerate}[label=(\roman*)]
+\item $H(f) = 0$, equivalently $E(f) = 1$, if and only if $c_k = 0$ for all $k \geq 1$, if and only if $f$ is constant a.e.\ (the Gaussian spectral density). The cycle closes perfectly.
+\item $0 < H(f) < \infty$, equivalently $1 < E(f) < \infty$: the Strong Szeg\H{o} class. The cycle is non-trivial with finite cost, and $D_n(f) \sim G(f)^n \cdot E(f)$.
+\item $H(f) = \infty$, equivalently $E(f) = \infty$: the cycle breaks. The ratio $D_n(f) / G(f)^n$ diverges or oscillates without a finite limit.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Part~(i) is immediate from the definition: $H(f) = 0$ requires $c_k = 0$ for all $k \geq 1$, so $\log f = c_0$ is constant, hence $f = e^{c_0}$ is constant. Parts~(ii) and~(iii) are the content of the Strong Szeg\H{o} Limit Theorem (\cref{thm:szego} in \S\ref{sec:hardy}).
+\end{proof}
+
+\begin{remark}[The Gaussian as unique fixed point]
+The Gaussian spectral density $f \equiv \sigma^2$ is simultaneously:
+\begin{enumerate}[label=(\alph*)]
+\item the Fourier eigenfunction (\cref{thm:gaussian-fixed}),
+\item the heat kernel (\cref{thm:heat-semigroup}),
+\item the unique outer function seed ($c_k = 0$ for $k \neq 0$),
+\item the unique spectral density with $E(f) = 1$ (\cref{thm:holonomy-trichotomy}(i)).
+\end{enumerate}
+These four characterizations are manifestations of a single fact: the Gaussian is the fixed point of the optimal cycle.
+\end{remark}
+
+\begin{definition}[Constrained optimal cycle]\label{def:optimal-cycle}
+Let $\Omega$ denote the space of spectral densities $f \in L^1(\bT)$ with $f > 0$ a.e.\ and $\log f \in L^1(\bT)$. For each $t \geq 0$, define the \emph{feasible set at lag $t$}:
+\[
+\Omega_t = \bigl\{f \in \Omega : \widehat{f}(k) = r_k \text{ for } |k| \leq t\bigr\},
+\]
+where $r_0, r_1, \ldots$ are given autocovariance values (observed data). The \emph{constrained holonomy} is
+\[
+H_t^* = \inf_{f \in \Omega_t} H(f).
+\]
+The minimizer $f_t^*$, when it exists, is the spectral density of minimum holonomy compatible with the observations.
+\end{definition}
+
+\begin{proposition}[Monotonicity of the constrained cycle]\label{prop:holonomy-monotone}
+In the notation of \cref{def:optimal-cycle}:
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Shrinking feasible sets}: $\Omega_0 \supseteq \Omega_1 \supseteq \Omega_2 \supseteq \cdots$.
+\item \textbf{Monotone holonomy}: $H_0^* \leq H_1^* \leq \cdots \leq H(f_{\mathrm{true}})$, with equality in the limit if $f_{\mathrm{true}} \in \Omega$.
+\item \textbf{Maximum-entropy minimizer}: the minimizer $f_t^*$ is the maximum-entropy spectral density compatible with $r_0, \ldots, r_t$, i.e., the autoregressive AR$(t)$ spectral density (Burg's theorem).
+\item \textbf{Dual convergence}: the prediction error $\sigma_t^2 = \exp\bigl(\int_{\bT} \log f_t^*\bigr)$ decreases monotonically to $\sigma_{\mathrm{true}}^2$, while $H_t^*$ increases monotonically to $H(f_{\mathrm{true}})$---convergence from opposite directions.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Part~(i): each additional constraint $\widehat{f}(t+1) = r_{t+1}$ restricts the feasible set. Part~(ii): immediate from~(i). Part~(iii): among all densities $f$ with prescribed autocovariances $r_0, \ldots, r_t$, the one maximizing $\int \log f$ (equivalently, minimizing the Kullback--Leibler divergence from the uniform density) has $\log f$ of the form $c_0 + \sum_{|k| \leq t} a_k e^{2\pi ik\theta}$, forcing $c_k = 0$ for $|k| > t$; this is the AR$(t)$ density. Part~(iv): $\sigma_t^2 = G(f_t^*) = e^{c_0(f_t^*)}$ decreases as the maximum-entropy estimate sharpens; meanwhile $H_t^*$ increases by~(ii). These are dual aspects of the same convergence: the filtration $\{\Omega_t\}$ is a functor in $\Proj_Y$ (\cref{def:gpi-category}), and the constrained optimization is the evaluation functor applied to the holonomy.
+\end{proof}
+
+\begin{remark}[Connection to GPI]
+The filtration $\mathcal{G}_t = \sigma(r_0, \ldots, r_t)$ generated by observed autocovariances is a functor in $\Proj_Y$ (\cref{def:gpi-category}). The constrained holonomy $H_t^*$ is the evaluation of this functor at the holonomy functional, and its monotonicity (\cref{prop:holonomy-monotone}(ii)) is an instance of the residual monotonicity of \cref{cor:monotonicity}. The dual convergence---prediction error decreasing, holonomy increasing---is the content of the in-context GPI theorem (\cref{thm:in-context-gpi}) applied to the spectral density space.
+\end{remark}
+
+\begin{remark}[Measurement, estimation, and prediction]\label{rem:three-layers}
+The re-cycle operates through three layers, each formalized by the preceding results.
+
+\emph{Layer~1: Measurement.}
+Build the $\sigma$-algebra $\mathcal{G}_t = \sigma(r_0, \ldots, r_t)$ from observed autocovariances. Without measurement, $\mathcal{G} = \{\varnothing, \Omega\}$, and by \cref{prop:cond-exp-optimal}:
+\[
+\mathbb{E}[Y \mid \mathcal{G}] = \mathbb{E}[Y]
+\]
+---the global mean, maximum ignorance. In cycle language: the feasible set $\Omega_0$ is unconstrained, so $H_0^* = 0$ trivially---not because the true density is Gaussian, but because no data constrains the minimizer away from the constant density. The prediction is pure DC: $G(f)$ without $E(f)$.
+
+\emph{Layer~2: Estimation (re-cycle).}
+Each measurement refines $\mathcal{G}_t$. By \cref{cor:monotonicity}, the residual $R_Y(\mathcal{G}_t)$ decreases monotonically. In spectral language: $f_t^*$ (the AR$(t)$ minimizer of \cref{prop:holonomy-monotone}) sharpens, $\nu$ increases, $t_\nu$ thins. This is slow but guaranteed: $O(1/\sqrt{n})$ by the CLT rate.
+
+\emph{Layer~3: Prediction (direct computation).}
+Given the estimated spectral density $f_t^*$, compute consequences exactly---the forward problem on known structure. This layer is only as good as Layer~2: prediction inherits the estimation uncertainty, but the forward computation is exact, so input uncertainty maps to output uncertainty in a fully characterized way.
+
+The closed operational loop
+\[
+\text{Measure}
+\xrightarrow{\;\text{re-cycle}\;}
+\text{Estimate}
+\xrightarrow{\;\text{direct computation}\;}
+\text{Predict}
+\xrightarrow{\;\text{target next observation}\;}
+\text{Measure better}
+\]
+is the optimal cycle applied operationally. Each revolution refines Layer~2: $\nu$ increases, $H$ decreases.
+\end{remark}
+
+\begin{example}[The Student $t$-distribution as canonical re-cycle]\label{ex:student-t}
+\emph{Student $t$ with $\nu$ degrees of freedom is the re-cycle snapshot at observation $\nu$.}
+
+The Student $t_\nu$ family parameterizes the entire re-cycle trajectory with a single real parameter $\nu \in [1, \infty]$:
+\[
+\renewcommand{\arraystretch}{1.4}
+\begin{array}{cclcl}
+\hline
+\nu & \text{Distribution} & H(f_{t_\nu}) & E(f_{t_\nu}) & \text{Cycle state} \\
+\hline
+\nu = 1 & \text{Cauchy} & \infty & \infty & \text{Broken---no finite cycle cost} \\
+1 < \nu < \nu^* & \text{Heavy-tailed } t & \infty & \infty & \text{Still broken---tails too heavy} \\
+\nu = \nu^* & \text{Critical } t & \text{finite (bdry)} & \text{finite} & \text{Szeg\H{o} boundary---cycle just closes} \\
+\nu^* < \nu < \infty & \text{Moderate } t & \text{finite}, > 0 & > 1 & \text{Non-trivial cycle---learning} \\
+\nu \to \infty & \text{Gaussian} & 0 & 1 & \text{Perfect cycle---fixed point} \\
+\hline
+\end{array}
+\]
+\end{example}
+
+\begin{proposition}[Student $t$ convergence along the re-cycle]\label{prop:student-convergence}
+Let $f_{t_\nu}$ denote the spectral density associated to the Student $t_\nu$ distribution.
+\begin{enumerate}[label=(\roman*)]
+\item There exists $\nu^* > 1$ such that $E(f_{t_\nu}) < \infty$ if and only if $\nu > \nu^*$. The critical $\nu^*$ is the threshold where $\log f_{t_\nu}$ first enters $H^{1/2}(\bT)$.
+\item For $\nu > \nu^*$: $H(f_{t_\nu}) = O(1/\nu)$ as $\nu \to \infty$. The convergence rate to the Gaussian fixed point is algebraic.
+\item The unique minimizer of $H$ over the family $\{f_{t_\nu} : \nu > \nu^*\}$ is $\nu = \infty$ (Gaussian), confirming the cycle's unique fixed point.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The spectral density of $t_\nu$ is $f_{t_\nu}(\theta) \propto (1 + \theta^2/\nu)^{-(\nu+1)/2}$ near the origin. For $\nu$ large, $\log f_{t_\nu}(\theta) \approx -\tfrac{\nu+1}{2}\log(1+\theta^2/\nu) \approx -\tfrac{1}{2}\theta^2 + O(\theta^4/\nu)$. The Fourier coefficients $c_k$ of the correction $\log f_{t_\nu} - \log f_{\cN}$ decay as $O(k^{-1}\nu^{-1})$, giving $H(f_{t_\nu}) = \sum k|c_k|^2 = O(1/\nu)$.
+\end{proof}
+
+\begin{remark}[Canonicality]
+The Student $t$ family is canonical because it parameterizes the \emph{entire} re-cycle trajectory with a single real parameter $\nu \in [1, \infty]$. Every other natural family (tempered stable, variance-gamma, generalized hyperbolic) traverses only part of the trichotomy. The $t$-family is the geodesic through holonomy space.
+\end{remark}
+
+\begin{remark}[Only Gauss sees the Gaussian]\label{rem:only-gauss}
+This remark has three layers of meaning.
+
+\emph{Historical.} Gauss understood this object; others used it without seeing it. The name ``normal distribution''---never Gauss's term---encodes the false belief that the Gaussian is the \emph{common case}. It is not. It is the \emph{limit}.
+
+\emph{Mathematical.} $E(f) = 1$ if and only if $f$ is Gaussian (\cref{thm:holonomy-trichotomy}). Only the Gaussian system has zero holonomy. Only the Gaussian sees itself perfectly through the cycle. Every other system incurs loss.
+
+\emph{Epistemological.} $E(f_{t_\nu}) = 1$ requires $\nu = \infty$: the observer must \emph{become} the system. At $\nu = \infty$ you are no longer observing---you are the cycle itself. The map has become the territory.
+
+The CLT does not say ``things converge to normal.'' It says: \emph{the re-cycle converges to the cycle}. The Student $t_\nu$ is the re-cycle at finite time. The Gaussian is the cycle itself. Every actual measurement is $t_\nu$ with some finite $\nu$. The Gaussian is what they approach but none of them are---the $c$ of probability theory: unreachable, structural, defining everything by being the limit nothing reaches.
+\end{remark}
+

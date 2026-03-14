@@ -1,0 +1,389 @@
+\section{Articulated rigid-body dynamics}\label{sec:articulated}
+
+An articulated mechanism---a tree of $n+1$ rigid bodies connected by joints,
+with body~$0$ as the floating base---provides a concrete test of the framework
+above.
+The configuration space is $Q = SE(3) \times \bT^n$, and every step of the classical recursive
+dynamics algorithms is an operation on $\mathfrak{se}(3)$ or its dual
+\cite{Featherstone,MurrayLiSastry}.
+
+\medskip\noindent\textbf{(A) Configuration space and product of exponentials.}
+Label the bodies $0, 1, \ldots, n$ along the kinematic tree.
+Body $i$ has joint angle $\theta_i \in \bT$ and screw axis
+$S_i \in \mathfrak{se}(3)$ (in body frame).
+The pose of body $i$ relative to the world frame is given by the product of
+exponentials:
+\[
+T_i(q)
+= g_0 \, \bar{M}_1 \, e^{S_1 \theta_1} \cdots \bar{M}_i \, e^{S_i \theta_i},
+\]
+where $g_0 \in SE(3)$ is the base pose and
+$\bar{M}_i \in SE(3)$ is the reference-configuration offset of joint $i$.
+
+\medskip\noindent\textbf{(B) Recursive velocity propagation---the adjoint
+representation in action.}
+The body velocity of link $i$ is
+$\mathcal{V}_i^b = T_i^{-1}\dot{T}_i \in \mathfrak{se}(3)$, and it
+satisfies the recursion
+\[
+\mathcal{V}_i^b
+= \mathrm{Ad}_{(e^{S_i\theta_i}\bar{M}_i)^{-1}}\,\mathcal{V}_{i-1}^b
+  + S_i\,\dot{\theta}_i.
+\]
+The recursion is built entirely from the \textbf{adjoint representation}
+$\mathrm{Ad}_g : \mathfrak{se}(3) \to \mathfrak{se}(3)$---the same object
+governing the Peter--Weyl decomposition of $L^2(SE(3))$.
+
+\medskip\noindent\textbf{(C) Spatial inertia and the Euler--Poincar\'e
+equation.}
+Each body $i$ carries a spatial inertia
+$\cM_i \in \mathrm{Sym}^+(\mathfrak{se}(3)^*)$: a $6 \times 6$
+positive-definite matrix in Pl\"ucker coordinates encoding mass, center of
+mass, and rotational inertia.
+The Newton--Euler equation for body $i$ in body frame is
+\[
+\mathcal{F}_i
+= \cM_i\,\dot{\mathcal{V}}_i
+  + \mathrm{ad}^*_{\mathcal{V}_i}\!(\cM_i\,\mathcal{V}_i),
+\]
+where $\mathrm{ad}^*$ is the coadjoint action of $\mathfrak{se}(3)$ on
+$\mathfrak{se}(3)^*$.
+This is exactly the \textbf{Euler--Poincar\'e equation} on $\mathfrak{se}(3)$
+for a single rigid body.
+For a free rigid body ($\mathcal{F} = 0$), writing
+$\mu = \cM\,\mathcal{V} \in \mathfrak{se}(3)^*$ gives
+$\dot{\mu} = \mathrm{ad}^*_{\mathcal{V}}\mu$; the rotational component
+recovers \textbf{Euler's equation} $\dot{\Pi} = \Pi \times \omega$.
+
+\medskip\noindent\textbf{(D) Recursive Newton--Euler Algorithm
+(RNEA)---$O(n)$ inverse dynamics.}
+\begin{itemize}[nosep]
+\item \emph{Forward pass} (root $\to$ leaves): propagate velocities
+  $\mathcal{V}_i$ and accelerations $\dot{\mathcal{V}}_i$ using $\mathrm{Ad}$.
+\item \emph{Backward pass} (leaves $\to$ root): compute body wrenches
+  $\mathcal{F}_i$ via Euler--Poincar\'e, propagate to parents using the
+  coadjoint $\mathrm{Ad}^*$, and project onto joint axes:
+  $\tau_i = S_i^T \mathcal{F}_i$.
+\end{itemize}
+Complexity: $O(n)$---one Euler--Poincar\'e evaluation and one $\mathrm{Ad}$
+transform per body.
+
+\noindent In Lagrangian coordinates \cite{CarpentierMansard}, the inverse dynamics reads
+\begin{equation}\label{eq:lagrangian-eom}
+\tau = M(q)\,\ddot{q} + C(q,\dot{q})\,\dot{q} + g(q)
+  - \sum_i J_i(q)^T f_i^{\mathrm{ext}},
+\end{equation}
+where $M(q) \in \R^{n \times n}$ is the joint-space inertia matrix,
+$C(q,\dot{q})\,\dot{q}$ collects Coriolis and centrifugal terms,
+$g(q)$ is the gravity vector, and $J_i(q)$ is the frame Jacobian at
+which external force $f_i^{\mathrm{ext}}$ is applied.
+RNEA evaluates the right-hand side in $O(n)$; its analytical
+derivatives $\partial\tau/\partial q$, $\partial\tau/\partial\dot{q}$
+are likewise $O(n)$ \cite{CarpentierMansard}.
+
+\medskip\noindent\textbf{(E) Articulated Body Algorithm (ABA)---$O(n)$
+forward dynamics.}
+The ABA computes the forward dynamics---inverting \eqref{eq:lagrangian-eom}
+to obtain $\ddot{q}$ given $(\tau, f^{\mathrm{ext}})$---without forming
+$M$ explicitly.
+The key object is the \emph{articulated-body inertia} $\cM_i^A$, the
+effective inertia of body $i$ and all its descendants accounting for joint
+freedom.
+The recursion (leaves $\to$ root) is
+\[
+\cM_i^A = \cM_i + \!\!\sum_{j \in \mathrm{children}(i)}
+  \mathrm{Ad}_{T_{ji}}^*
+  \!\left(\cM_j^A
+    - \cM_j^A S_j \bigl(S_j^T \cM_j^A S_j\bigr)^{\!-1} S_j^T \cM_j^A
+  \right) \mathrm{Ad}_{T_{ji}}.
+\]
+The inner expression
+$\cM^A - \cM^A S(S^T\cM^A S)^{-1} S^T \cM^A$ is a \textbf{Schur
+complement}---the projection of the inertia onto the space orthogonal to the
+joint axis.
+This is a Riccati recursion on $\mathrm{Sym}^+(\mathfrak{se}(3)^*)$.
+Complexity: $O(n)$.
+
+\medskip\noindent\textbf{(E$'$) Contact forces: recover then eliminate.}
+When the mechanism interacts with the environment, unilateral contacts
+impose constraints $\phi_k(q) \geq 0$ with associated Jacobians
+$J_k^c = \partial\phi_k/\partial q$.
+The contact forces $\lambda_k \geq 0$ satisfy the complementarity
+condition $0 \leq \lambda_k \perp \phi_k(q) \geq 0$ \cite{MenagerCarpentier2025}.
+In the Lagrangian form \eqref{eq:lagrangian-eom}, they enter as
+additional external forces $f_k^{\mathrm{ext}} = \lambda_k\,\hat{n}_k$
+at the contact points.
+
+\medskip\noindent\emph{Recover.}
+Substituting the forward dynamics into the contact constraint
+$\ddot{\phi}_k \geq 0$ yields the \textbf{Delassus system}:
+\[
+G\,\lambda = J^c\, M(q)^{-1}\bigl(\tau - C\dot{q} - g\bigr)
+  + \dot{J}^c\,\dot{q},
+\qquad G = J^c\, M(q)^{-1} (J^c)^T.
+\]
+The Delassus operator $G$ is a Schur complement of the mass matrix
+onto the contact space---the same algebraic structure as the
+articulated-body inertia projection in part~(E).
+
+\medskip\noindent\emph{Eliminate.}
+Once $\lambda$ is recovered, substitute back:
+$\ddot{q} = M^{-1}\bigl(\tau - C\dot{q} - g + (J^c)^T\lambda\bigr)$.
+The contact forces are eliminated from the forward dynamics; what
+remains is branchless arithmetic on $\mathfrak{se}(3)$.
+
+\medskip\noindent\emph{Barrier smoothing.}
+The complementarity condition $0 \leq \lambda \perp \phi \geq 0$ is a
+hard branch.
+Replacing it with a log-barrier potential
+$V_{\mathrm{barrier}}(\phi) = -\varepsilon\log\phi$ yields a smooth
+contact force $\lambda_\varepsilon = \varepsilon / \phi$ that
+approximates the complementarity as $\varepsilon \to 0$.
+(For exact treatment without relaxation, the complementarity can be
+handled as a quadratic program with complementarity
+constraints~\cite{MenagerCarpentier2025}.)
+The MPPI estimator of \cref{prop:forward-only} samples through the barrier-smoothed
+landscape without branch.
+
+\medskip\noindent\emph{Continuous foot height from gait phase.}
+The gait space is $\bT^3$: three phase offsets
+$\varphi = (\varphi_{\mathrm{FL}}, \varphi_{\mathrm{RL}}, \varphi_{\mathrm{RR}})$
+relative to the reference leg (FR at phase~$0$).
+Each $\varphi_k \in [0,1)$ encodes the fraction of a stride period by which
+leg~$k$ leads the reference.
+Define the foot height schedule
+\begin{equation}\label{eq:foot-height}
+h_k(t;\varphi) = h_{\max}\,\Bigl(
+  \tfrac{1}{2} - \tfrac{1}{2}\cos\bigl(
+    2\pi\,\bigl[(t/T_s + \varphi_k) \bmod 1 - \beta\bigr]_+ / (1-\beta)
+  \bigr)
+\Bigr),
+\end{equation}
+where $T_s$ is the stride period, $\beta$ the duty factor, and $[\cdot]_+$
+is the positive part.
+The function $h_k$ is smooth in $\varphi$ (it is a composition of smooth
+periodic functions) and captures the swing trajectory: $h_k = 0$ during
+stance ($\text{cycle position} < \beta$) and $h_k > 0$ during swing.
+The barrier force from the previous paragraph becomes
+$\lambda_k(\varepsilon) = \varepsilon / h_k(t;\varphi)$:
+large when the foot is near the ground ($h_k \to 0^+$), decaying as
+the foot lifts.
+No binary contact mask is needed---the force generation is continuous and
+differentiable in both $\varphi$ and $\varepsilon$.
+
+\medskip\noindent\emph{Impedance realization.}
+The barrier scale $\sigma_k = \lambda_k / (\lambda_k + 1)$ modulates a
+joint-level impedance controller:
+\begin{equation}\label{eq:impedance}
+\tau_k = K_p(\sigma_k)\,(q_k^{\mathrm{des}} - q_k)
+       - K_d(\sigma_k)\,\dot{q}_k,
+\end{equation}
+where the gains interpolate between stance and swing:
+\[
+K_p(\sigma) = K_p^{\mathrm{swing}}
+  + (K_p^{\mathrm{stance}} - K_p^{\mathrm{swing}})\,\sigma, \qquad
+K_d(\sigma) = K_d^{\mathrm{swing}}
+  + (K_d^{\mathrm{stance}} - K_d^{\mathrm{swing}})\,\sigma.
+\]
+Stance legs ($\sigma_k \approx 1$) are stiff: the PD controller presses the
+foot against the ground and the contact solver provides ground reaction forces
+naturally.
+Swing legs ($\sigma_k \approx 0$) compliantly track a foot trajectory derived
+from $h_k(t;\varphi)$.
+The target joint angles $q_k^{\mathrm{des}}$ blend between standing and
+swing-peak configurations proportionally to the normalized foot height
+$h_k / h_{\max}$.
+
+This is an impedance controller in the classical sense: the PD creates a
+virtual spring--damper at each joint, and the barrier scale $\sigma_k$
+continuously modulates the mechanical impedance between rigid support
+(stance) and compliant tracking (swing).
+No explicit force-to-torque mapping (Jacobian transpose) is needed---the
+contact physics is delegated entirely to the rigid-body simulator.
+The barrier parameter $\varepsilon$ thus controls not only the contact force
+distribution and the MPPI temperature, but also the impedance profile of
+the physical controller.
+
+\medskip\noindent\emph{Joint-space renormalization.}
+Define normalized coordinates centered on the standing configuration
+$q_0 \in \R^n$:
+\begin{equation}\label{eq:renormalization}
+\tilde{q}_i = \frac{q_i - q_{0,i}}{r_i}, \qquad
+r_i = \tfrac{1}{2}(q_i^{\max} - q_i^{\min}).
+\end{equation}
+The standing pose maps to $\tilde{q} = 0$, and the impedance target
+\eqref{eq:impedance} for stance is simply $q_k^{\mathrm{des}} = 0$ in
+normalized coordinates.
+The scale $r_i$ is the half-range of joint~$i$; the PD gains become
+uniform across joints with disparate physical ranges (e.g.\ hip
+$[\pm 60^\circ]$ vs.\ thigh $[-90^\circ, +200^\circ]$), eliminating the
+need for per-joint gain tuning.
+
+\medskip\noindent\emph{Joint-limit barrier.}
+Each joint~$i$ has normalized limits $a_i < 0 < b_i$ (asymmetric when
+$q_{0,i}$ is not the midpoint of $[q_i^{\min}, q_i^{\max}]$).
+The joint-limit barrier potential is
+\begin{equation}\label{eq:joint-barrier}
+V_{\mathrm{joint}}(\tilde{q})
+= -\varepsilon \sum_{i=1}^{n}
+  \bigl[\log(\tilde{q}_i - a_i) + \log(b_i - \tilde{q}_i)\bigr],
+\end{equation}
+with gradient (repulsive torque in normalized space):
+\[
+\frac{\partial V_{\mathrm{joint}}}{\partial \tilde{q}_i}
+= -\varepsilon\Bigl[
+  \frac{1}{\tilde{q}_i - a_i} - \frac{1}{b_i - \tilde{q}_i}
+\Bigr].
+\]
+For joints with $q_0 = q_{\mathrm{mid}}$ (symmetric limits, $a = -1$,
+$b = 1$), the barrier reduces to
+$V = -\varepsilon\log(1 - \tilde{q}^2)$.
+The same $\varepsilon$ that controls contact sharpness, MPPI temperature,
+entropic OT regularization, and impedance modulation now also controls
+joint-limit softness---a \emph{quintuple} unification of a single
+barrier/temperature parameter.
+
+\medskip\noindent\emph{Dual $\varepsilon$ unification.}
+The barrier potential $V_{\mathrm{barrier}} = -\varepsilon\log h_k$ and the
+Hopf--Cole linearization $\psi = e^{-V/(2\varepsilon)}$ (\S\ref{sec:mppi})
+share the \emph{same} parameter $\varepsilon$, and this is not a coincidence.
+Both are log-transforms that convert a constrained nonlinear problem into a
+linear one:
+\begin{itemize}[nosep]
+\item The barrier converts the complementarity constraint
+  $0 \leq \lambda \perp h \geq 0$ into the unconstrained potential
+  $V = -\varepsilon\log h$;
+\item Hopf--Cole converts the nonlinear HJB
+  $\partial_t V + q - \tfrac{1}{2}\|\nabla V\|^2 = 0$ into the linear
+  backward heat equation for $\psi$.
+\end{itemize}
+The MPPI cost for a trajectory with gait phase $\varphi$ therefore includes
+the barrier contribution:
+\[
+J(\varphi) = \int_0^T \!\bigl[
+  q(g_t) + \tfrac{1}{2}\|u_t\|^2
+  - \varepsilon\textstyle\sum_k \log h_k(t;\varphi)
+\bigr]\,dt + \Phi(g_T).
+\]
+The Boltzmann weight $w(\varphi) \propto e^{-J(\varphi)/\varepsilon}$
+samples through the barrier-smoothed landscape: as $\varepsilon \to 0$,
+forces sharpen to complementarity \emph{and} the MPPI distribution
+concentrates on the optimal gait---simultaneously.
+The dual ascent on $\varepsilon$ (\cref{sec:cycle}) controls both the
+contact sharpness and the exploration--exploitation tradeoff in a single
+scalar.
+
+\medskip\noindent\textbf{(E$''$) Optimal transport interpretation.}
+The Boltzmann reweighting of \S\ref{sec:mppi},
+$w(\varphi) \propto e^{-J(\varphi)/\varepsilon}$,
+has the structure of an entropic optimal transport coupling.
+In Cuturi's framework \cite{Cuturi2013}, the entropic regularization of the
+Wasserstein distance yields the coupling
+$\pi_\varepsilon(x,y) = a(x)\,b(y)\,e^{-c(x,y)/\varepsilon}$,
+where the Sinkhorn potentials $a, b$ enforce the marginal constraints.
+In the MPPI setting:
+\begin{itemize}[nosep]
+\item the \emph{source} measure is the student-$t$ prior on $\bT^3$
+  (gait phase space);
+\item the \emph{target} is the desired velocity distribution
+  ($\delta_{v^*}$ for tracking);
+\item the \emph{cost} $c(\varphi, v^*) = J(\varphi)$ is the
+  barrier-smoothed trajectory cost;
+\item the \emph{regularization} $\varepsilon$ is the same dual parameter
+  controlling contact sharpness and exploration.
+\end{itemize}
+
+The dual ascent on $\varepsilon$ in \cref{sec:cycle} is a variant of the
+Sinkhorn algorithm: it alternates between evaluating the transport cost
+(forward simulation) and adjusting the regularization to satisfy an entropy
+constraint.
+The compression rate
+$H_{\mathrm{target}} \leftarrow \gamma\,H_{\mathrm{target}}$
+tightens the constraint over iterations, analogous to the annealing
+$\varepsilon \to 0$ in entropic OT \cite{Villani}.
+
+\emph{Locomotion as constrained transport.}
+A walking robot transports its center-of-mass distribution through a
+contact-constrained $SE(3)$ landscape.
+The gait phase $\varphi \in \bT^3$ determines \emph{how} the mass is
+transported---which feet push when---and the height barrier
+$V_{\mathrm{height}} = -\varepsilon\bigl(\log(p_z - z_{\min})
+  + \log(z_{\max} - p_z)\bigr)$
+constrains the transport plan to a feasible corridor.
+The ``skew'' direction is the gait asymmetry:
+the robot does not follow the geodesic in $SE(3)$ but takes a cyclic path
+that accumulates net displacement through periodic contact.
+
+The dual $\varepsilon$ is now a \emph{quintuple} unification:
+\begin{enumerate}[nosep]
+\item contact sharpness ($\lambda_k = \varepsilon/h_k$, barrier force),
+\item exploration temperature ($w \propto e^{-J/\varepsilon}$,
+      Boltzmann weight),
+\item entropic regularization ($\pi_\varepsilon \propto e^{-c/\varepsilon}$,
+      Sinkhorn coupling),
+\item impedance modulation ($K_p(\sigma_k)$, stance/swing interpolation),
+\item joint-limit softness ($V_{\mathrm{joint}} = -\varepsilon\log(\tilde{q}-a)
+      - \varepsilon\log(b-\tilde{q})$, virtual wall).
+\end{enumerate}
+All five converge as $\varepsilon \to 0$: contact forces sharpen to
+complementarity, the MPPI distribution concentrates on the optimal gait,
+the entropic OT coupling converges to the Monge map,
+impedance gains become binary stance/swing,
+and joint limits become hard constraints.
+
+\medskip\noindent\textbf{(F) Lie--Poisson duality: velocity
+$\leftrightarrow$ momentum.}
+The Legendre transform $\mathbb{FL}: \mathfrak{g} \to \mathfrak{g}^*$ via the
+composite inertia tensor maps body velocities to spatial momenta
+\cite{MarsdenRatiu}.
+Euler--Poincar\'e on $\bigoplus_i \mathfrak{se}(3)$ (velocity variables) is
+dual to Lie--Poisson on $\bigoplus_i \mathfrak{se}(3)^*$ (momentum
+variables):
+RNEA computes the Euler--Poincar\'e side; ABA computes the Lie--Poisson side.
+The inertia tensor
+$\cM_i : \mathfrak{se}(3) \to \mathfrak{se}(3)^*$ is the bridge, exactly as
+in the classical duality $\mathfrak{g} \leftrightarrow \mathfrak{g}^*$ of
+geometric mechanics.
+
+\medskip\noindent\textbf{(G) Connection to the spectral and
+stochastic framework.}
+Three connections tie the recursive dynamics to the preceding results (\cref{sec:cycle,sec:spectral}):
+
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Representation-theoretic.}
+The $\mathrm{Ad}$ and $\mathrm{Ad}^*$ in Featherstone's recursions are the
+adjoint and coadjoint representations of $SE(3)$.
+In the Peter--Weyl/Plancherel decomposition of $L^2(SE(3))$, these same
+representations govern how Fourier modes transform under group action.
+The tree topology constrains them to act only between parent--child
+pairs---``nearest-neighbor coupling'' that enforces sparsity in the
+Peter--Weyl expansion.
+
+\item \emph{Riccati structure.}
+The ABA recursion is a discrete matrix Riccati equation on
+$\mathfrak{se}(3)^*$.
+The per-block Riccati of the HJB (\S\ref{sec:hjb}, for left-invariant quadratic cost)
+is the spectral-domain counterpart: ABA factors the Riccati in the spatial
+domain (tree topology), while Peter--Weyl factors it in the spectral domain
+(representation blocks).
+
+\item \emph{Stochastic extension and MPPI.}
+Adding noise to joint torques or base forces gives an SDE on
+$SE(3) \times \bT^n$.
+The Hopf--Cole linearization (\S\ref{sec:mppi}) converts the HJB for the
+articulated system to a Feynman--Kac expectation.
+With barrier-smoothed contact forces
+$\lambda_k = \varepsilon/h_k(t;\varphi)$ (preceding paragraphs),
+the landscape is smooth in both the gait phase
+$\varphi \in \bT^3$ and the diffusion parameter $\varepsilon$:
+no contact mode switching is needed.
+Each forward sample of the SDE can be computed in $O(n)$ per time step using
+the recursive structure---the tree factorization is preserved under
+randomization.
+The Monte Carlo estimator converges at the CLT rate $O(N^{-1/2})$,
+independently of $n$ and $\dim G = 6 + n$:
+Featherstone provides the $O(n)$ forward simulator; the CLT provides the
+dimension-free convergence guarantee.
+This is the MPPI framework for articulated rigid-body control.
+\end{enumerate}
+

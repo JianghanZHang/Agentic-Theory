@@ -1,0 +1,49 @@
+\section{The additive central limit theorem}
+
+We work on the group $G = (\R, +)$ with Haar measure $dx$, dual $\widehat{G} = \R$, and characters $\chi_\xi(x) = e^{i\xi x}$.
+
+\begin{theorem}[Classical CLT]\label{thm:add-clt}
+Let $X_1, X_2, \ldots$ be i.i.d.\ real-valued random variables with $E[X_1] = 0$ and $\Var(X_1) = \sigma^2 \in (0, \infty)$. Define $S_n = \sum_{k=1}^n X_k$. Then
+\[
+\frac{S_n}{\sqrt{n}} \xrightarrow{d} \cN(0, \sigma^2).
+\]
+\end{theorem}
+
+\begin{proof}
+Let $\varphi(\xi) = E[e^{i\xi X_1}]$ denote the characteristic function of $X_1$. Since $E[X_1] = 0$ and $E[X_1^2] = \sigma^2 < \infty$, we have the expansion
+\[
+\varphi(\xi) = 1 - \frac{\sigma^2 \xi^2}{2} + o(\xi^2) \quad \text{as } \xi \to 0.
+\]
+By independence, the characteristic function of $S_n / \sqrt{n}$ is
+\[
+\varphi_{S_n/\sqrt{n}}(\xi)
+= \left[\varphi\!\left(\frac{\xi}{\sqrt{n}}\right)\right]^n
+= \left[1 - \frac{\sigma^2 \xi^2}{2n} + o\!\left(\frac{1}{n}\right)\right]^n.
+\]
+Taking $n \to \infty$:
+\[
+\left[1 - \frac{\sigma^2 \xi^2}{2n} + o\!\left(\frac{1}{n}\right)\right]^n \longrightarrow e^{-\sigma^2 \xi^2 / 2},
+\]
+which is the characteristic function of $\cN(0, \sigma^2)$. The conclusion follows from the L\'evy continuity theorem (\cref{thm:levy}).
+\end{proof}
+
+\begin{remark}\label{rmk:gaussian-dual}
+The characteristic function $\xi \mapsto e^{-\sigma^2\xi^2/2}$ is itself a Gaussian function on the dual group $\widehat{\R} \cong \R$. This self-similarity under the Fourier transform is not accidental; it reflects the fact that the Gaussian is an eigenfunction of $\cF$ (see \cref{thm:gaussian-fixed}).
+\end{remark}
+
+\begin{proposition}[Heat equation]\label{prop:heat-add}
+The Gaussian density $p_t(x) = (2\pi t)^{-1/2}\, e^{-x^2/(2t)}$ is the fundamental solution of the heat equation
+\begin{equation}\label{eq:heat-add}
+\partial_t u = \tfrac{1}{2}\, \partial_{xx} u
+\end{equation}
+on $(\R, +)$. In Fourier space, \eqref{eq:heat-add} becomes the ODE
+\begin{equation}\label{eq:heat-add-fourier}
+\partial_t \widehat{u}(\xi) = -\tfrac{\xi^2}{2}\, \widehat{u}(\xi),
+\end{equation}
+with solution $\widehat{u}(t, \xi) = e^{-t\xi^2/2}$. The family $\{p_t\}_{t > 0}$ forms a convolution semigroup: $p_t * p_s = p_{t+s}$.
+\end{proposition}
+
+\begin{proof}
+Apply the Fourier transform to \eqref{eq:heat-add}. Since $\widehat{\partial_{xx} u}(\xi) = (i\xi)^2 \widehat{u}(\xi) = -\xi^2 \widehat{u}(\xi)$, the PDE reduces to the ODE \eqref{eq:heat-add-fourier}, whose unique solution with initial condition $\widehat{u}(0, \xi) = 1$ is $\widehat{u}(t, \xi) = e^{-t\xi^2/2}$. Inverting the Fourier transform yields $p_t$. The semigroup property follows from $e^{-t\xi^2/2} \cdot e^{-s\xi^2/2} = e^{-(t+s)\xi^2/2}$.
+\end{proof}
+

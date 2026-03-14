@@ -1,0 +1,175 @@
+\section{Spectral decomposition and non-abelian extensions}\label{sec:spectral}
+
+\subsection*{The exponential map as the general bridge}
+
+The Fourier--Mellin duality of Sections~3--5 rests on the group isomorphism $\exp : (\R, +) \to (\Rpos, \times)$, which bridges the ``additive'' world (Lie algebra) and the ``multiplicative'' world (Lie group). This bridge generalizes: every Lie group $G$ with Lie algebra $\mathfrak{g} = T_e G$ admits an \emph{exponential map}
+\[
+\exp : \mathfrak{g} \to G, \qquad \exp(X) = \gamma_X(1),
+\]
+where $\gamma_X : \R \to G$ is the unique one-parameter subgroup satisfying $\gamma_X'(0) = X$ \cite[Chapter~3]{Hall}. A crucial distinction separates the abelian and non-abelian settings:
+\begin{itemize}
+\item \textbf{Abelian case.} The map $\exp : (\R, +) \to (\Rpos, \times)$ is a \emph{global} isomorphism. The Fourier--Mellin duality is exact at all scales.
+\item \textbf{Non-abelian case.} The map $\exp : \mathfrak{g} \to G$ is in general only a \emph{local} diffeomorphism near the origin. Globally, it may fail to be injective (due to periodicity, as in $SO(3)$), surjective (as in $SL(2, \R)$), or both.
+\end{itemize}
+The CLT, however, concerns \emph{small fluctuations} near the identity---precisely the regime where $\exp$ is a diffeomorphism. The general picture is:
+
+\begin{center}
+\begin{tikzcd}[column sep=large]
+\text{Gaussian on } \mathfrak{g} \arrow[r, "\exp_*"] & \text{CLT limit on } G \text{ (near $e$)}
+\end{tikzcd}
+\end{center}
+
+\noindent This generalizes \cref{cor:clt-image}: just as $\operatorname{LogNormal} = \exp_*\cN$ on $\Rpos$, the CLT limit on any Lie group is locally the pushforward of a Gaussian on $\mathfrak{g}$ under $\exp$.
+
+\subsection*{Non-abelian groups: $GL(n)$ and the Cartan decomposition}
+
+On non-abelian groups such as $GL(n, \R)$, the Pontryagin dual is replaced by the unitary dual (irreducible unitary representations), and the Fourier transform becomes operator-valued. For products of i.i.d.\ random matrices $M_n = A_1 A_2 \cdots A_n$, the CLT takes a decomposed form via the Cartan ($KAK$) decomposition $GL(n) \cong K \cdot A \cdot K$, where $K = O(n)$ and $A$ consists of positive diagonal matrices:
+\begin{enumerate}[label=(\roman*)]
+\item The ``angular'' part (in $K = O(n)$) converges to Haar measure on $O(n)$---a mixing phenomenon.
+\item The ``radial'' part---the Lyapunov exponents $\lambda_1 \geq \cdots \geq \lambda_n$ parametrizing $A$---satisfies a standard Gaussian CLT on the Cartan subalgebra $\mathfrak{a} \cong \R^n$ \cite{BQ}.
+\end{enumerate}
+After centering, the fluctuations lie in the hyperplane $\sum_i (\lambda_i - \bar{\lambda}) = 0$, which is precisely the Lie algebra $\mathfrak{sl}(n) = \{X \in \mathfrak{gl}(n) : \tr(X) = 0\}$. Thus the centered CLT limit on $GL(n)$ is a Gaussian measure on $\mathfrak{sl}(n)$---not the group $SL(n)$ itself, but its tangent space at the identity. The passage from $\mathfrak{sl}(n)$ to $SL(n)$ is exactly the exponential map $\exp : \mathfrak{sl}(n) \to SL(n)$, extending the abelian bridge $\exp : \R \to \Rpos$ to the matrix setting.
+
+\subsection*{Summary: the exponential map across groups}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\small
+\begin{tabular}{lclll}
+\textbf{Lie algebra $\mathfrak{g}$} & $\xrightarrow{\exp}$ & \textbf{Lie group $G$} & \textbf{$\exp$ global?} & \textbf{CLT limit} \\
+\hline
+$(\R, +)$ & $\to$ & $(\Rpos, \times)$ & Yes (iso.) & Gaussian $\to$ log-normal \\
+$\mathfrak{so}(3) \cong \R^3$ & Rodrigues & $SO(3)$ & No (periodic) & short-time Gaussian \\
+$\mathfrak{su}(2) \cong \R^3$ & Euler & $SU(2) \cong S^3$ & No (compact) & short-time Gaussian \\
+$\mathfrak{sl}(n)$ & $\to$ & $SL(n)$ & No (local) & Gaussian on $\mathfrak{sl}(n)$
+\end{tabular}
+\end{center}
+
+\noindent In every case, the exponential map $\exp : \mathfrak{g} \to G$ serves as the bridge between the additive (Lie algebra) and multiplicative (Lie group) formulations of the CLT. The abelian case $(\R, +) \to (\Rpos, \times)$ is the unique instance where this bridge is a global isomorphism, making the additive--multiplicative duality exact at all scales.
+
+\subsection*{Spectral decomposition and irreversible convergence}
+
+The preceding discussion treats the non-abelian extension at the level of the exponential map (algebra $\to$ group). We now develop the \emph{spectral} side: how the heat semigroup decomposes via representation theory, and how convergence rates connect back to the Wold decomposition and Szeg\H{o} theory of \cref{sec:hardy}.
+
+\begin{theorem}[Peter-Weyl {\cite[Theorem~4.28]{Hall}}]\label{thm:peter-weyl}
+Let $G$ be a compact Lie group, and let $\widehat{G}$ denote the set of equivalence classes of irreducible unitary representations $(\rho, V_\rho)$ of $G$. Write $d_\rho = \dim V_\rho$.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(Orthogonality.)} The matrix coefficients $\sqrt{d_\rho}\, \rho_{ij}$, ranging over all $[\rho] \in \widehat{G}$ and $1 \leq i, j \leq d_\rho$, form an orthonormal basis of $L^2(G)$ with respect to Haar measure.
+
+\item \textbf{(Isometric decomposition.)} The non-abelian Fourier transform
+\[
+\widehat{f}(\rho) = \int_G f(g)\, \rho(g)^*\, dg \in \operatorname{End}(V_\rho)
+\]
+defines an isometry (Plancherel identity):
+\[
+\|f\|_{L^2(G)}^2 = \sum_{[\rho] \in \widehat{G}} d_\rho\, \|\widehat{f}(\rho)\|_{\mathrm{HS}}^2,
+\]
+where $\|\cdot\|_{\mathrm{HS}}$ is the Hilbert--Schmidt norm.
+
+\item \textbf{(Convolution becomes multiplication.)} For $f_1, f_2 \in L^1(G)$,
+\[
+\widehat{f_1 * f_2}(\rho) = \widehat{f_1}(\rho)\, \widehat{f_2}(\rho).
+\]
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Part~(i) follows from Schur orthogonality for compact groups. Part~(ii) is the Peter-Weyl theorem proper. Part~(iii) is immediate from Fubini and the representation property $\rho(gh) = \rho(g)\rho(h)$.
+\end{proof}
+
+For abelian $G$, each $V_\rho$ is one-dimensional ($d_\rho = 1$) and the matrix coefficient $\rho_{11}$ is a character $\chi \in \widehat{G}$. The Peter-Weyl decomposition reduces to the classical Fourier series ($G = \bT$) or Fourier transform ($G = \R$), recovering the framework of Sections~2--5. The non-abelian case is distinguished by $d_\rho > 1$: the Fourier transform is \emph{operator-valued}, and convolution becomes \emph{matrix} multiplication rather than scalar multiplication.
+
+\begin{definition}[Casimir operator]\label{def:casimir}
+Let $G$ be a compact Lie group with Lie algebra $\mathfrak{g}$, equipped with a bi-invariant inner product (e.g., the negative of the Killing form when $G$ is semisimple). Let $\{X_1, \ldots, X_d\}$ be an orthonormal basis of $\mathfrak{g}$. The \emph{Casimir operator} (Laplace--Beltrami operator) on $G$ is
+\[
+\Omega = -\sum_{i=1}^d X_i^2,
+\]
+where each $X_i$ acts on $C^\infty(G)$ as a left-invariant differential operator. By Schur's lemma \cite[Proposition~10.7]{Hall}, $\Omega$ acts on each irreducible representation $V_\rho$ as scalar multiplication:
+\[
+\Omega\big|_{V_\rho} = \lambda_\rho \cdot \operatorname{Id}_{V_\rho}, \qquad \lambda_\rho \geq 0,
+\]
+with $\lambda_\rho = 0$ if and only if $\rho$ is the trivial representation.
+\end{definition}
+
+This is the non-abelian generalization of the Fourier symbol $Q(\chi)$ from \cref{def:laplacian} and \cref{ex:laplacian-symbol}. On $\bT$, $\lambda_n = 4\pi^2 n^2$; on $SO(3)$, $\lambda_\ell = \ell(\ell+1)$ for the spin-$\ell$ representation.
+
+\begin{proposition}[Heat kernel on compact groups]\label{prop:heat-compact}
+Let $G$ be a compact Lie group with Casimir operator $\Omega$. The heat kernel $p_t \in C^\infty(G)$, the fundamental solution of $\partial_t u = -\Omega u$, decomposes as
+\[
+p_t(g) = \sum_{[\rho] \in \widehat{G}} d_\rho\, e^{-\lambda_\rho t}\, \chi_\rho(g), \qquad t > 0,
+\]
+where $\chi_\rho(g) = \operatorname{tr}(\rho(g))$ is the character of~$\rho$. The series converges absolutely and uniformly for $t > 0$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Expand $p_t$ via \cref{thm:peter-weyl}. Since $\Omega$ acts on each $V_\rho$ as $\lambda_\rho \cdot \operatorname{Id}$, the heat equation becomes $\partial_t \widehat{p_t}(\rho) = -\lambda_\rho\, \widehat{p_t}(\rho)$ with solution $\widehat{p_t}(\rho) = e^{-\lambda_\rho t}\, \operatorname{Id}_{V_\rho}$. Taking the trace and summing over $\widehat{G}$ gives the character expansion. Absolute convergence follows from the Weyl dimension formula $d_\rho = O(\lambda_\rho^{d/2})$, ensuring the series converges for $t > 0$; see \cite[\S 3]{Diaconis}.
+\end{proof}
+
+\begin{corollary}[Spectral gap and convergence rate]\label{cor:spectral-gap}
+Let $\lambda_1 > 0$ be the spectral gap of $\Omega$ (the smallest nonzero Casimir eigenvalue). For any initial density $\rho_0 \in L^2(G)$ with $\int_G \rho_0 = 1$,
+\[
+\left\| \rho_t - \frac{1}{\operatorname{vol}(G)} \right\|_{L^2(G)} \leq e^{-\lambda_1 t}\left\| \rho_0 - \frac{1}{\operatorname{vol}(G)} \right\|_{L^2(G)}.
+\]
+Every square-integrable distribution on $G$ converges to Haar measure at exponential rate~$\lambda_1$. For the heat kernel ($\rho_0 = \delta_e$, not in $L^2$), the Plancherel series $\sum_{\rho \neq \mathbf{1}} d_\rho^2\, e^{-2\lambda_\rho t}$ converges for each $t > 0$ and decays at rate $e^{-2\lambda_1 t}$.
+\end{corollary}
+
+\begin{proof}
+Write $f_0 = \rho_0 - 1/\operatorname{vol}(G)$. By Peter--Weyl, $f_0 = \sum_{\rho \neq \mathbf{1}} \widehat{f_0}(\rho)$ with $\|f_0\|_2^2 = \sum_{\rho \neq \mathbf{1}} d_\rho\, \|\widehat{f_0}(\rho)\|_{\mathrm{HS}}^2$. The heat semigroup gives $\widehat{f_t}(\rho) = e^{-\lambda_\rho t}\, \widehat{f_0}(\rho)$, so $\|f_t\|_2^2 = \sum_{\rho \neq \mathbf{1}} d_\rho\, \|\widehat{f_0}(\rho)\|_{\mathrm{HS}}^2\, e^{-2\lambda_\rho t} \leq e^{-2\lambda_1 t}\, \|f_0\|_2^2$.
+\end{proof}
+
+\noindent\emph{Convention.} The heat equation here is $\partial_t u = -\Omega u = \Delta_G u$ (variance-$2t$ normalization), while \cref{thm:heat-semigroup} uses the probabilistic convention $\partial_t p = \frac{1}{2}\Delta_G p$ (variance-$t$). Setting $\varepsilon = \frac{1}{2}$ in the Fokker--Planck equation below (\cref{prop:fpe-compact}) recovers the latter.
+
+This is the non-abelian analogue of \cref{thm:heat-semigroup}: on $\bT$, $\lambda_1 = 4\pi^2$ and the convergence rate of the Jacobi theta function to~$1$ is $e^{-4\pi^2 t}$ (cf.\ \cref{ex:gaussian-instances}). On $(\R, +)$ (non-compact), the spectral gap vanishes and convergence is polynomial ($t^{-1/2}$)---precisely the CLT rate.
+
+\Cref{prop:heat-compact} treats pure diffusion ($b = 0$). Adding a drift field yields the Fokker--Planck equation on~$G$, whose Peter--Weyl decomposition reveals a fundamental rigidity: diffusion dominates drift in every representation block.
+
+\begin{proposition}[Fokker--Planck equation on compact groups]\label{prop:fpe-compact}
+Let $G$ be a compact Lie group with Casimir operator $\Omega$, and let $b : G \to \mathfrak{g}$ be a smooth drift field. The density $\rho_t$ (with respect to Haar measure) of the stochastic process
+\[
+dg_t = g_t \cdot \bigl(b(g_t)\, dt + \sqrt{2\varepsilon}\, dW_t\bigr), \qquad \varepsilon > 0,
+\]
+satisfies the Fokker--Planck equation
+\begin{equation}\label{eq:fpe-group}
+\partial_t \rho = -\varepsilon\, \Omega\rho - \operatorname{div}_G(\rho\, b),
+\end{equation}
+where $\operatorname{div}_G$ is the Riemannian divergence on~$G$.
+Under the Peter--Weyl decomposition (writing $\pi$ for irreducible
+representations to free $\rho$ for the density):
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Left-invariant drift} ($b \in \mathfrak{g}$ constant). Since left-invariant vector fields are divergence-free with respect to Haar measure, \eqref{eq:fpe-group} becomes $\partial_t \rho = -\varepsilon\, \Omega\rho - X_b\rho$. Taking the non-abelian Fourier transform:
+\[
+\partial_t \widehat{\rho}(\pi) = \bigl(-\varepsilon\, \lambda_\pi\, \operatorname{Id}_{V_\pi} - d\pi(b)\bigr)\, \widehat{\rho}(\pi), \qquad [\pi] \in \widehat{G}.
+\]
+Each irreducible block evolves as an independent $d_\pi \times d_\pi$ matrix ODE. Since $\pi$ is unitary, $d\pi(b)$ is skew-Hermitian, so every eigenvalue of the coefficient matrix has real part $-\varepsilon\lambda_\pi$. The drift rotates the density within each block but cannot prevent diffusive decay.
+
+\item \textbf{General drift} ($b(g)$ state-dependent). The product $\rho \cdot b$ mixes Peter--Weyl blocks via the Clebsch--Gordan coefficients: the evolution of $\widehat{\rho}(\pi)$ depends on $\widehat{\rho}(\sigma)$ for $\sigma \neq \pi$.
+
+\item \textbf{Pure diffusion} ($b = 0$). Recovers \cref{prop:heat-compact}: $\widehat{\rho}_t(\pi) = e^{-\varepsilon\lambda_\pi t}\, \widehat{\rho}_0(\pi)$.
+\end{enumerate}
+In particular, for left-invariant drift, $\|\widehat{\rho}_t(\pi)\|_{\mathrm{HS}} \leq e^{-\varepsilon\lambda_\pi t}\, \|\widehat{\rho}_0(\pi)\|_{\mathrm{HS}}$ for each~$\pi$, so the spectral gap bound of \cref{cor:spectral-gap} is robust: convergence to Haar measure at rate $\varepsilon\lambda_1$ persists regardless of the drift.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The generator of the diffusion is $\mathcal{L}f = -\varepsilon\,\Omega f + X_b f$; the FPE is its $L^2(G)$-adjoint. For left-invariant~$b$, the Fourier transform of $X_b\rho$ is computed by integration by parts against the matrix coefficients: using $X_b[\pi(g)^*] = -d\pi(b)\,\pi(g)^*$ (which follows from unitarity of~$\pi$), one obtains $\widehat{X_b\rho}(\pi) = d\pi(b)\,\widehat{\rho}(\pi)$. The skew-Hermiticity of $d\pi(b)$ then gives the decay estimate via $\operatorname{Re}\,\sigma(-\varepsilon\lambda_\pi\,\operatorname{Id} - d\pi(b)) = \{-\varepsilon\lambda_\pi\}$.
+\end{proof}
+
+\begin{remark}[Irreversibility: the non-abelian Wold analogue]
+The heat semigroup $\{e^{-t\Omega}\}_{t \geq 0}$ on $L^2(G)$ is a contraction semigroup: each representation mode decays monotonically as $e^{-\lambda_\rho t}$, and $\lambda_\rho > 0$ for all non-trivial~$\rho$. This gives the non-abelian analogue of the information loss in the Wold decomposition (\cref{thm:wold}):
+\[
+\renewcommand{\arraystretch}{1.4}
+\begin{array}{lll}
+\hline
+& \textbf{Abelian (\S\ref{sec:hardy})} & \textbf{Non-abelian} \\
+\hline
+\text{State space} & L^2(\bT) & L^2(G) \\
+\text{Decomposition} & \Htwo \oplus (\Htwo)^\perp & \bigoplus_\rho d_\rho\, \operatorname{End}(V_\rho) \\
+\text{Forward operator} & \text{Shift } S & \text{Heat semigroup } e^{-t\Omega} \\
+\text{Information loss} & \ker(S^*) = \operatorname{span}\{1\} & \text{Decay rate } \lambda_\rho \text{ per mode} \\
+\text{Deterministic part} & \mathcal{H}_u = \{0\} \text{ (Szeg\H{o})} & \text{Trivial rep.\ } \rho = \mathbf{1} \text{ (Haar)} \\
+\text{CLT fixed point} & \text{Gaussian density} & \text{Haar measure} \\
+\hline
+\end{array}
+\]
+In both cases, the ``deterministic'' component---the part surviving forward evolution---is the fixed point of the respective semigroup. The Szeg\H{o} condition $\int \log f > -\infty$ (ensuring $\mathcal{H}_u = \{0\}$ in the abelian Wold theorem) is replaced by the spectral gap condition $\lambda_1 > 0$ (ensuring all non-trivial modes decay).
+\end{remark}
+

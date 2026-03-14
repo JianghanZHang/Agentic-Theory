@@ -1,0 +1,51 @@
+\section{Forward-only reduction}\label{sec:forward-only}
+
+\begin{proposition}[Forward-only reduction via the exponential bridge]
+\label{prop:forward-only}
+Consider the MPPI estimator for the controlled diffusion on a Lie group~$G$
+described in \S\ref{sec:mppi}.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item \textbf{Arithmetic completeness.}
+Every operation in the estimator is a finite composition of three primitives:
+\begin{itemize}[nosep]
+\item $\exp_G : \mathfrak{g} \to G$ \textup{(}Lie group exponential\textup{)},
+\item $\log_G : G \to \mathfrak{g}$ \textup{(}Lie group logarithm\textup{)},
+\item linear algebra \textup{(}matrix multiply-accumulate on
+      $\mathfrak{g} \cong \R^d$\textup{)}.
+\end{itemize}
+No backward differentiation through the dynamics and no other transcendental
+operations are required.
+\item \textbf{Dimension-free convergence.}
+The estimator converges at $O(N^{-1/2})$, independently of $\dim G$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof \textup{(}constructive enumeration\textup{)}]
+We enumerate the four computational stages and verify that each uses only the
+three primitives.
+
+\medskip\noindent\emph{SDE step.}
+$g_{t+h} = g_t \cdot \exp_G\!\bigl(h\,u + \sqrt{2\varepsilon h}\;\xi\bigr)$,
+where $\xi \in \mathfrak{g}$ is Gaussian noise.
+This requires one~$\exp_G$ and one matrix multiply-accumulate (MMA) in
+$\mathfrak{g}$.
+
+\medskip\noindent\emph{Cost evaluation.}
+For a tracking cost $q(g) = \bigl\|\log_G(g^{-1}g_{\mathrm{target}})\bigr\|^2$:
+one~$\log_G$ and one MMA (squared norm in~$\mathfrak{g}$).
+
+\medskip\noindent\emph{Exponential reweighting.}
+$w^{(i)} = \exp\!\bigl(-\mathrm{cost}^{(i)}/(2\varepsilon)\bigr)$:
+one scalar exponential (the $\dim G = 1$ case of $\exp_G$).
+
+\medskip\noindent\emph{Weighted average.}
+$u^* = 2\varepsilon\,\sum_i w^{(i)}\xi^{(i)}\big/\sum_i w^{(i)}$:
+MMA in~$\mathfrak{g}$.
+
+\medskip\noindent
+The weights $w^{(i)}$ are bounded (bounded cost, fixed~$\varepsilon$), so the
+weighted average is a bounded-weight Monte Carlo estimator. The CLT
+(\cref{thm:add-clt,thm:mult-clt}) gives convergence at $O(N^{-1/2})$,
+independently of~$\dim G$.
+\end{proof}
+

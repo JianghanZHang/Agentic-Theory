@@ -1,0 +1,88 @@
+\documentclass[12pt]{amsart}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{tikz-cd}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% Theorem environments (shared counter within section)
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Notation
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\ind}{ind}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rpos}{\mathbb{R}_{>0}}
+\newcommand{\bT}{\mathbb{T}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\Htwo}{H^2}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\Proj}{\mathsf{Proj}}
+
+\title[Optimal Cycle Theory]{Optimal Cycle Theory:\\ holonomy of the additive-multiplicative loop\\ via Fourier analysis on groups}
+\author{Jianghan Zhang}
+\address{Department of Mathematics, Dartmouth College, Hanover, NH 03755}
+\email{jianghan.zhang.gr@dartmouth.edu}
+\date{\today}
+
+\subjclass[2020]{60F05, 43A25, 60B15, 30H10, 47B35, 22E30, 11M06, 93C10, 70E55}
+\keywords{Central limit theorem, locally compact abelian groups, Mellin transform, Gaussian measures, heat semigroup, Hardy spaces, Toeplitz operators, Wold decomposition, Szeg\H{o} limit theorem, Peter-Weyl theorem, holonomy, optimal cycle, Student $t$-distribution, Szeg\H{o} exponent, Dirichlet characters, Lie groups, exponential map, MPPI, articulated rigid-body dynamics, Hopf--Cole linearization}
+
+\begin{document}
+
+\begin{abstract}
+We identify a closed algebraic loop---the \emph{optimal cycle}---connecting the multiplicative group $(\Rpos, \times)$, the additive group $(\R, +)$, and the dual group $(\Z, +)$ via the maps $\log$, Fourier series, and $\exp$. The loop carries a holonomy $H(f) = \sum_{k=1}^{\infty} k\,|c_k|^2$, the $H^{1/2}(\bT)$ Sobolev seminorm of the log-spectral density, which vanishes if and only if $f$ is Gaussian. We develop this correspondence at the level of characteristic functions, heat equations, Gaussian measures, Hardy spaces, and Szeg\H{o} limit theorems within the framework of harmonic analysis on LCA groups. We show that the Student $t_\nu$ family parameterizes the entire re-cycle trajectory and establish a $\tfrac{1}{2}$ shift theorem relating the Fourier and Mellin Szeg\H{o} boundaries. Part~II develops applications to optimal control on Lie groups, model-predictive path-integral control (MPPI), and articulated rigid-body dynamics, where the exponential map $\exp : \mathfrak{g} \to G$ serves as the computational bridge throughout.
+\end{abstract}
+
+\maketitle
+
+% Part I: Optimal Cycle Theory
+\input{sections/introduction}
+\input{sections/foundations}
+\input{sections/lca-groups}
+\input{sections/additive-clt}
+\input{sections/multiplicative-clt}
+\input{sections/fourier-mellin}
+\input{sections/gaussian-measures}
+\input{sections/heat-semigroup}
+\input{sections/ergodic}
+\input{sections/optimal-cycle}
+\input{sections/hardy-spaces}
+\input{sections/half-shift}
+\input{sections/spectral-decomp}
+
+% Part II: Lie Group Control
+\input{sections/lie-group-intro}
+\input{sections/compact-groups}
+\input{sections/noncompact-groups}
+\input{sections/hjb}
+\input{sections/mppi}
+\input{sections/forward-only}
+\input{sections/riccati}
+\input{sections/articulated}
+
+% Concluding
+\input{sections/concluding}
+
+\input{bibliography}
+
+\end{document}

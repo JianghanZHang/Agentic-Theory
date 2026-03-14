@@ -1,0 +1,16 @@
+\section{Non-compact groups}\label{sec:noncompact}
+
+\begin{remark}[Plancherel theorem and Mackey's machine]
+For non-compact $G$, the Peter--Weyl theorem (\cref{thm:peter-weyl}) is replaced by the Plancherel theorem: the sum over $\widehat{G}$ becomes an integral with respect to Plancherel measure $\mu_{\mathrm{Pl}}$ on the tempered dual $\widehat{G}_{\mathrm{temp}}$ \cite[Chapter~7]{Folland}:
+\[
+\|f\|_{L^2(G)}^2 = \int_{\widehat{G}_{\mathrm{temp}}} \|\widehat{f}(\rho)\|_{\mathrm{HS}}^2\, d\mu_{\mathrm{Pl}}(\rho).
+\]
+For semidirect products $G = K \ltimes V$ ($K$ compact, $V$ a vector group), Mackey's theory of induced representations \cite[Chapter~6]{Folland} parametrizes $\widehat{G}$ by orbits of $K$ acting on $\widehat{V}$:
+\begin{enumerate}[label=(\roman*)]
+\item Each orbit $\mathcal{O} \subset \widehat{V}$ with stabilizer $K_\xi$ (the little group at $\xi \in \mathcal{O}$) and irreducible $\sigma$ of $K_\xi$ yields an irreducible $\operatorname{Ind}_{K_\xi \ltimes V}^G(\sigma \otimes e^{i\xi})$ of~$G$.
+\item The Casimir spectrum has both discrete (from $K$) and continuous (from $V$) components.
+\item The spectral gap may vanish: $\Omega$ on $L^2(G)$ typically has continuous spectrum down to~$0$, so convergence to equilibrium is polynomial ($t^{-d/2}$) rather than exponential.
+\end{enumerate}
+\textbf{Example: $\boldsymbol{SE(3) = SO(3) \ltimes \R^3}$.} Here $K = SO(3)$ acts on $\widehat{V} = \R^3$ by rotation. The orbits are spheres $S^2_r$ ($r > 0$) and the origin. The little group at $\xi = (0,0,r)$ is $SO(2)$. Each irreducible of $SE(3)$ is induced from $SO(2) \ltimes \R^3$, parametrized by $(r, m)$ with $r > 0$, $m \in \Z$. The Casimir spectrum is continuous in~$r$ and discrete in~$m$: no spectral gap, polynomial convergence.
+\end{remark}
+

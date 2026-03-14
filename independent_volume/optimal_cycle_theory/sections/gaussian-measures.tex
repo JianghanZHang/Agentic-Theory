@@ -1,0 +1,80 @@
+\section{Gaussian measures on LCA groups}
+
+We now place the Gaussian and log-normal distributions in the general framework of Gaussian measures on LCA groups, following Parthasarathy \cite{Parthasarathy} and Heyer \cite{Heyer}.
+
+\begin{definition}[{cf.\ \cite[Definition~VI.3.1]{Parthasarathy}}]\label{def:quadratic}
+A function $Q : \widehat{G} \to \R$ on the Pontryagin dual of an LCA group $G$ is a \emph{non-negative definite quadratic form} if:
+\begin{enumerate}[label=(\roman*)]
+\item $Q$ is continuous and $Q(\chi) \geq 0$ for all $\chi \in \widehat{G}$;
+\item $Q$ satisfies the parallelogram law:
+\[
+Q(\chi_1 \chi_2) + Q(\chi_1 \chi_2^{-1}) = 2Q(\chi_1) + 2Q(\chi_2) \qquad \text{for all } \chi_1, \chi_2 \in \widehat{G};
+\]
+\item $Q(e) = 0$, where $e$ is the identity character.
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[{cf.\ \cite[Definition~VI.5.1]{Parthasarathy}}]\label{def:gaussian-lca}
+A probability measure $\gamma$ on an LCA group $G$ is called \emph{Gaussian} if its Fourier transform has the form
+\[
+\widehat{\gamma}(\chi) = \chi(a) \cdot \exp\!\left(-Q(\chi)\right)
+\]
+for some $a \in G$ (the \emph{mean}) and some non-negative definite quadratic form $Q$ on $\widehat{G}$ (the \emph{covariance}).
+\end{definition}
+
+\begin{example}\label{ex:gaussian-instances}
+We verify that \cref{def:gaussian-lca} recovers the classical examples.
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{$G = (\R, +)$.} Here $\widehat{G} = \R$ with $\chi_\xi(x) = e^{i\xi x}$. Setting $a = \mu$ and $Q(\xi) = \sigma^2\xi^2/2$, we obtain $\widehat{\gamma}(\xi) = e^{i\mu\xi - \sigma^2\xi^2/2}$, the characteristic function of $\cN(\mu, \sigma^2)$. The parallelogram law is verified by direct computation:
+\[
+Q(\xi_1 + \xi_2) + Q(\xi_1 - \xi_2) = \tfrac{\sigma^2}{2}\bigl[(\xi_1+\xi_2)^2 + (\xi_1-\xi_2)^2\bigr] = \sigma^2(\xi_1^2 + \xi_2^2) = 2Q(\xi_1) + 2Q(\xi_2).
+\]
+
+\item \textbf{$G = (\Rpos, \times)$.} Here $\widehat{G} = \R$ with $\chi_s(x) = x^{is}$. Setting $a = e^\mu$ and $Q(s) = \sigma^2 s^2/2$ (the same quadratic form as in~(a)), we obtain $\widehat{\gamma}(s) = e^{i\mu s - \sigma^2 s^2/2}$, the Mellin transform of $\operatorname{LogNormal}(\mu, \sigma^2)$. By \cref{thm:mellin-fourier}, the quadratic forms on $\widehat{G} = \R$ are identical in both cases, reflecting the isomorphism of the dual groups.
+
+\item \textbf{$G = (\bT, +)$.} Here $\widehat{G} = \Z$ with $\chi_n(\theta) = e^{2\pi i n\theta}$. Setting $Q(n) = \sigma^2 n^2/2$, we obtain $\widehat{\gamma}(n) = e^{-\sigma^2 n^2/2}$, the Fourier coefficients of the \emph{wrapped normal distribution}. Its density on $[0, 1)$ is
+\[
+f(\theta) = \sum_{k \in \Z} \frac{1}{\sqrt{2\pi}\,\sigma}\, \exp\!\left(-\frac{(\theta - k)^2}{2\sigma^2}\right) = \frac{1}{\sqrt{2\pi}\,\sigma}\,\vartheta_3\!\left(\pi\theta,\, e^{-\sigma^2/2}\right),
+\]
+where $\vartheta_3$ is the Jacobi theta function.
+\end{enumerate}
+\end{example}
+
+\begin{theorem}[Gaussian as Fourier eigenfunction]\label{thm:gaussian-fixed}
+Consider the Plancherel-normalized Fourier transform on $L^2(\R)$:
+\[
+\hat{f}(\xi) = \int_{-\infty}^{\infty} f(x)\, e^{-2\pi i x\xi}\, dx.
+\]
+The function $g(x) = e^{-\pi x^2}$ satisfies $\hat{g} = g$. That is, $g$ is an eigenfunction of $\cF$ with eigenvalue $1$.
+\end{theorem}
+
+\begin{proof}
+Define $h(\xi) = \hat{g}(\xi) = \int_{-\infty}^{\infty} e^{-\pi x^2}\, e^{-2\pi i x\xi}\, dx$. Differentiating under the integral:
+\[
+h'(\xi) = -2\pi i \int_{-\infty}^{\infty} x\, e^{-\pi x^2}\, e^{-2\pi i x\xi}\, dx.
+\]
+Since $-2\pi x\, e^{-\pi x^2} = \frac{d}{dx}\!\left(e^{-\pi x^2}\right)$, we integrate by parts:
+\begin{align*}
+h'(\xi) &= i \int_{-\infty}^{\infty} \frac{d}{dx}\!\left(e^{-\pi x^2}\right) e^{-2\pi i x\xi}\, dx \\
+&= -i \int_{-\infty}^{\infty} e^{-\pi x^2} \cdot (-2\pi i\xi)\, e^{-2\pi i x\xi}\, dx \\
+&= -2\pi\xi \int_{-\infty}^{\infty} e^{-\pi x^2}\, e^{-2\pi i x\xi}\, dx \;=\; -2\pi\xi\, h(\xi).
+\end{align*}
+Thus $h$ satisfies the ODE $h' = -2\pi\xi\, h$ with initial condition $h(0) = \int_{-\infty}^{\infty} e^{-\pi x^2}\, dx = 1$. The unique solution is $h(\xi) = e^{-\pi\xi^2} = g(\xi)$.
+\end{proof}
+
+\begin{remark}\label{rmk:eigenvalues}
+The eigenvalues of the Fourier transform on $L^2(\R)$ are $\{1, -1, i, -i\}$ (since $\cF^4 = \mathrm{id}$), with eigenspaces spanned by the Hermite functions $\psi_n(x) = H_n(\sqrt{2\pi}\, x)\, e^{-\pi x^2}$, where $H_n$ is the $n$-th (probabilist's) Hermite polynomial. Specifically, $\cF[\psi_n] = (-i)^n \psi_n$. The Gaussian $g = \psi_0$ lies in the eigenspace for eigenvalue $1$. This spectral decomposition is intimately connected to the Stone--von Neumann theorem and the metaplectic representation of $\mathrm{SL}(2, \R)$.
+\end{remark}
+
+\begin{remark}\label{rmk:convention-bridge}
+Although \cref{thm:gaussian-fixed} uses the Plancherel normalization (which differs from the probability convention of \cref{def:FT}), the essential content is the same: the Gaussian density and its Fourier transform have the same functional form. In the probability convention, the characteristic function of $\cN(0, \sigma^2)$ is $\varphi(\xi) = e^{-\sigma^2\xi^2/2}$, which is a Gaussian in $\xi$ with ``reciprocal'' variance parameter. The Plancherel normalization is the unique choice that makes the fixed-point identity $\hat{g} = g$ hold \emph{exactly}, without any rescaling.
+\end{remark}
+
+\begin{proposition}[{cf.\ \cite[Theorem~VI.5.11]{Parthasarathy}}]\label{prop:gaussian-characterization}
+A probability measure $\gamma$ on an LCA group $G$ is Gaussian in the sense of \cref{def:gaussian-lca} if and only if it can be represented as the limit
+\[
+\gamma = \lim_{n \to \infty} \mu_{n,1} * \mu_{n,2} * \cdots * \mu_{n,k_n}
+\]
+of convolutions of infinitesimal triangular arrays satisfying appropriate tightness and variance conditions (specifically: the arrays are infinitesimal and uniformly tight; see \cite[Definition~VI.5.1]{Parthasarathy} for precise statements). In particular, Gaussian measures are precisely the possible limits of the CLT on~$G$.
+\end{proposition}
+

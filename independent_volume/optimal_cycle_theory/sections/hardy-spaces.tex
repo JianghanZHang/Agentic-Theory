@@ -1,0 +1,246 @@
+\section{Hardy spaces and causal projections}\label{sec:hardy}
+
+The Fourier--Mellin duality of \cref{thm:mellin-fourier} acts on all of $L^2(G)$. But $L^2(G)$ carries a finer structure: an orthogonal decomposition into ``causal'' (forward-propagating) and ``anti-causal'' halves, governed by the \emph{Hardy space}. We show that the $\log$ isomorphism preserves this decomposition, relate the CLT to prediction theory via the Wold decomposition of the time-shift isometry, and identify the Toeplitz algebra as the natural operator-algebraic framework.
+
+\begin{definition}[Hardy spaces on LCA groups]\label{def:hardy-space}
+For each of the three running examples of \cref{ex:groups}, define the \emph{Hardy space} $\Htwo(G) \subset L^2(G)$ as follows.
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{$G = (\R, +)$.} The Hardy space of the real line is
+\[
+\Htwo(\R) = \bigl\{f \in L^2(\R) : \widehat{f}(\xi) = 0 \text{ for a.e.\ } \xi < 0\bigr\}.
+\]
+Equivalently, $f \in \Htwo(\R)$ if and only if $f$ extends to a holomorphic function in the upper half-plane $\mathbb{C}_+ = \{z : \operatorname{Im} z > 0\}$ with
+$\sup_{y > 0} \int_{-\infty}^{\infty} |f(x + iy)|^2\, dx < \infty$
+\cite[Chapter~II]{Garnett}. These are the \emph{causal} signals: their spectral content is one-sided.
+
+\item \textbf{$G = (\Rpos, \times)$.} Define the \emph{multiplicative Hardy space} as the preimage of $\Htwo(\R)$ under the $\log$ isomorphism:
+\[
+\Htwo(\Rpos) = \bigl\{f \in L^2(\Rpos, dx/x) : f \circ \exp \in \Htwo(\R)\bigr\}.
+\]
+Equivalently, $f \in \Htwo(\Rpos)$ if and only if its Mellin transform $\cM[f](s)$ extends analytically to $\operatorname{Im}(s) > 0$ with uniformly bounded $L^2$ norms on horizontal lines \cite[Chapter~4]{Hoffman}. This is the \emph{scale-causal} subspace.
+
+\item \textbf{$G = (\bT, +)$.} The classical Hardy space on the circle is
+\[
+\Htwo(\bT) = \bigl\{f \in L^2(\bT) : \widehat{f}(n) = 0 \text{ for all } n < 0\bigr\}.
+\]
+Equivalently, $f$ extends to a holomorphic function on the open unit disk $\mathbb{D}$ with $\sup_{0 < r < 1} \int_0^1 |f(re^{2\pi i\theta})|^2\, d\theta < \infty$.
+\end{enumerate}
+
+In each case, the ``positive frequencies'' are determined by a choice of ordering on $\widehat{G}$: the standard ordering on $\widehat{G} \cong \R$ (for $G = (\R,+)$ and $G = (\Rpos,\times)$) and the standard ordering on $\widehat{G} = \Z$ (for $G = (\bT,+)$). This ordering encodes a choice of \emph{time direction}---the causality arrow.
+\end{definition}
+
+\begin{proposition}[Hardy decomposition]\label{prop:hardy-decomp}
+For each $G \in \{(\R, +),\, (\Rpos, \times),\, (\bT, +)\}$, the Hilbert space $L^2(G)$ admits the orthogonal decomposition
+\begin{equation}\label{eq:hardy-decomp}
+L^2(G) = \Htwo(G) \oplus \Htwo(G)^\perp,
+\end{equation}
+where $\Htwo(G)^\perp = \{f \in L^2(G) : \widehat{f}(\chi) = 0 \text{ for } \chi \geq 0\}$. The orthogonal projection $P_{\Htwo} : L^2(G) \to \Htwo(G)$ is given in the frequency domain by
+\[
+\widehat{P_{\Htwo} f}(\chi) = \mathbf{1}_{\chi \geq 0}\, \widehat{f}(\chi).
+\]
+\end{proposition}
+
+\begin{proof}
+Write $f = f^+ + f^-$ with $\widehat{f^+} = \mathbf{1}_{\chi \geq 0}\,\widehat{f}$ and $\widehat{f^-} = \mathbf{1}_{\chi < 0}\,\widehat{f}$. Then $f^+ \in \Htwo(G)$, $f^- \in \Htwo(G)^\perp$, and by Parseval's theorem,
+\[
+\langle f^+, f^- \rangle = \int_{\widehat{G}} \widehat{f^+}(\chi)\, \overline{\widehat{f^-}(\chi)}\, d\chi = 0,
+\]
+since the supports of $\widehat{f^+}$ and $\widehat{f^-}$ are disjoint.
+\end{proof}
+
+\begin{theorem}[Fourier--Mellin duality preserves Hardy structure]\label{thm:hardy-duality}
+The isometric isomorphism $\log_* : L^2(\Rpos, dx/x) \to L^2(\R, dy)$ of \cref{prop:log-iso} restricts to an isometric isomorphism
+\[
+\log_* : \Htwo(\Rpos) \xrightarrow{\;\sim\;} \Htwo(\R),
+\]
+and conjugates the Mellin-Hardy projection to the Fourier-Hardy projection:
+\[
+\log_* \circ P_{\Htwo(\Rpos)} = P_{\Htwo(\R)} \circ \log_*.
+\]
+That is, the following diagram commutes:
+\begin{equation}\label{eq:cd-hardy}
+\begin{tikzcd}
+L^2(\Rpos, dx/x) \arrow[r, "P_{\Htwo(\Rpos)}"] \arrow[d, "\log_*"'] & \Htwo(\Rpos) \arrow[d, "\log_*"] \\
+L^2(\R, dy) \arrow[r, "P_{\Htwo(\R)}"'] & \Htwo(\R)
+\end{tikzcd}
+\end{equation}
+This lifts \cref{thm:mellin-fourier} from the full $L^2$ level to the Hardy subspace level.
+\end{theorem}
+
+\begin{proof}
+By \cref{thm:mellin-fourier}, $\cM[f](s) = \cF[\log_* f](s)$ for every $s \in \R$. In particular, $\cM[f](s) = 0$ for $s < 0$ if and only if $\cF[\log_* f](s) = 0$ for $s < 0$, i.e., $f \in \Htwo(\Rpos)$ if and only if $\log_* f \in \Htwo(\R)$. Since $\log_*$ is an isometry (it preserves Haar measure: $dx/x \mapsto dy$), the restriction is an isometric isomorphism. The projection intertwining follows: for any $f \in L^2(\Rpos, dx/x)$,
+\[
+\log_*(P_{\Htwo(\Rpos)} f) = P_{\Htwo(\R)}(\log_* f),
+\]
+because both sides have the same Fourier transform $\mathbf{1}_{s \geq 0}\, \cF[\log_* f](s)$.
+\end{proof}
+
+\begin{definition}[Unilateral shift]\label{def:shift}
+On $\Htwo(\bT)$, define the \emph{unilateral shift} $S : \Htwo(\bT) \to \Htwo(\bT)$ by
+\begin{equation}\label{eq:shift}
+(Sf)(z) = z\, f(z), \qquad \text{equivalently,} \qquad \widehat{(Sf)}(n) = \widehat{f}(n-1) \text{ for } n \geq 0.
+\end{equation}
+Its adjoint satisfies $\widehat{(S^*f)}(n) = \widehat{f}(n+1)$, whence:
+\begin{itemize}
+\item $S^*S = I$ \quad (S is an isometry),
+\item $SS^* = I - \langle \,\cdot\,, \mathbf{1}\rangle\, \mathbf{1} \neq I$ \quad (S is not unitary),
+\item $\ker(S^*) = \operatorname{span}\{\mathbf{1}\}$ \quad (the constant functions).
+\end{itemize}
+On $\Htwo(\R)$, the analogue is the half-line translation $T_a$ ($a > 0$) defined by $\widehat{T_a f}(\xi) = e^{ia\xi}\widehat{f}(\xi)$ for $\xi \geq 0$. On $\Htwo(\Rpos)$, the Mellin-side analogue is the dilation $S_a$ defined by $\widehat{S_a g}(s) = a^{is}\widehat{g}(s)$ for $s \geq 0$. By \cref{thm:hardy-duality}, $\log_*$ conjugates $S_a$ to $T_a$.
+\end{definition}
+
+\begin{theorem}[Wold decomposition {\cite[Chapter~I]{SzNF}}]\label{thm:wold}
+Let $V$ be an isometry on a Hilbert space $\mathcal{H}$. Then
+\begin{equation}\label{eq:wold}
+\mathcal{H} = \left(\bigoplus_{n=0}^{\infty} V^n(\ker V^*)\right) \oplus \mathcal{H}_u, \qquad \mathcal{H}_u = \bigcap_{n \geq 0} V^n \mathcal{H},
+\end{equation}
+where $\mathcal{H}_u$ is the maximal reducing subspace on which $V$ is unitary. The first summand is the \emph{purely non-deterministic} part; the second is the \emph{deterministic} part. For the unilateral shift $S$ on $\Htwo(\bT)$, one has $\mathcal{H}_u = \{0\}$: the shift is purely non-deterministic.
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Since $V$ is an isometry, $V^n(\ker V^*)$ and $V^m(\ker V^*)$ are orthogonal for $n \neq m$: if $n > m$, then $V^n(\ker V^*) \subset V^{n}\mathcal{H}$ while $V^m(\ker V^*) \perp V^{m+1}\mathcal{H} \supset V^n\mathcal{H}$. Define $\mathcal{H}_u = \bigcap_{n \geq 0} V^n\mathcal{H}$; this subspace is $V$-invariant, and $V|_{\mathcal{H}_u}$ is surjective (hence unitary) since $V(\mathcal{H}_u) = V\bigl(\bigcap V^n\mathcal{H}\bigr) = \bigcap V^{n+1}\mathcal{H} = \mathcal{H}_u$. For $S$ on $\Htwo(\bT)$: $S^n\Htwo = z^n\Htwo$ and $\bigcap_{n \geq 0} z^n\Htwo = \{0\}$ by the $F.\ $and $M.\ $Riesz theorem.
+\end{proof}
+
+Each layer $V^n(\ker V^*)$ represents information that becomes causally inaccessible after $n$ steps of forward evolution. The decomposition separates \emph{unpredictable innovations} (the direct sum) from the \emph{perfectly predictable} component ($\mathcal{H}_u$).
+
+\begin{proposition}[CLT and prediction theory]\label{prop:clt-prediction}
+Let $\{X_n\}_{n \in \Z}$ be a wide-sense stationary process with spectral density $f \in L^1(\bT)$, $f \geq 0$. Let $V$ act on $\overline{\operatorname{span}}\{X_n : n \in \Z\} \subset L^2(\Omega)$ as the time shift $VX_n = X_{n+1}$.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(Szeg\H{o}--Kolmogorov.)} The process is purely non-deterministic ($\mathcal{H}_u = \{0\}$ in \cref{thm:wold}) if and only if the \emph{Szeg\H{o} condition} holds:
+\[
+\int_0^1 \log f(\theta)\, d\theta > -\infty.
+\]
+
+\item \textbf{(Innovation and outer function.)} When purely non-deterministic, $f$ admits an outer function factorization $f(\theta) = |h(e^{2\pi i\theta})|^2$ with $h \in \Htwo(\bT)$ outer, and the one-step prediction error is
+\[
+\sigma^2 = \exp\left(\int_0^1 \log f(\theta)\, d\theta\right).
+\]
+
+\item \textbf{(CLT link.)} For i.i.d.\ sequences, $f \equiv \sigma^2$ is constant, the Szeg\H{o} condition is trivially satisfied, $\mathcal{H}_u = \{0\}$, and the CLT variance is $\sigma^2$. More generally, the CLT for partial sums of stationary processes holds under Gordin's condition \cite[Theorem~35.5]{Billingsley}, which strengthens pure non-determinism.
+\end{enumerate}
+By \cref{thm:hardy-duality}, the entire prediction-theoretic structure transports to $(\Rpos, \times)$: the multiplicative CLT for products of positive random variables has the same Wold decomposition and Szeg\H{o} condition, with the Mellin spectral density replacing the Fourier spectral density.
+\end{proposition}
+
+\begin{remark}[Toeplitz algebra and Fredholm index]
+For $\varphi \in C(\bT)$, define the \emph{Toeplitz operator} $T_\varphi : \Htwo(\bT) \to \Htwo(\bT)$ by $T_\varphi f = P_{\Htwo}(\varphi f)$. The \emph{Toeplitz algebra} $\cT = C^*(T_\varphi : \varphi \in C(\bT))$ fits into the short exact sequence \cite[Chapter~7]{Douglas}
+\[
+0 \to \cK \to \cT \to C(\bT) \to 0,
+\]
+where $\cK$ denotes the compact operators on $\Htwo(\bT)$. When $\varphi$ is non-vanishing, $T_\varphi$ is Fredholm with index \cite[Chapter~7]{Nikolski}
+\[
+\ind(T_\varphi) = -\operatorname{wind}(\varphi, 0),
+\]
+where $\operatorname{wind}(\varphi, 0)$ is the winding number of $\varphi$ around the origin. The Fourier--Mellin duality of \cref{thm:hardy-duality} induces a corresponding isomorphism of \emph{Mellin--Toeplitz algebras} on $\Htwo(\Rpos)$: defining $T_\varphi^{\cM} g = P_{\Htwo(\Rpos)}(\varphi \cdot g)$, the $\log$ isomorphism conjugates $T_\varphi^{\cM}$ to $T_{\varphi \circ \exp}$, preserving the Fredholm index since $\log$ (being a homeomorphism) preserves winding numbers.
+\end{remark}
+
+\begin{definition}[Toeplitz determinant and geometric mean]\label{def:toeplitz-det}
+For $f \in L^1(\bT)$ with $f > 0$ a.e., define:
+\begin{enumerate}[label=(\alph*)]
+\item The $n \times n$ \emph{Toeplitz matrix} $T_n(f) = (\widehat{f}_{j-k})_{0 \leq j,k \leq n-1}$, i.e., the compression of the multiplication operator $M_f$ to $\operatorname{span}\{1, z, \ldots, z^{n-1}\} \subset \Htwo(\bT)$.
+\item The \emph{Toeplitz determinant} $D_n(f) = \det T_n(f)$.
+\item The \emph{geometric mean} $G(f) = \exp\bigl(\int_0^1 \log f(\theta)\, d\theta\bigr)$, well-defined and positive provided $\log f \in L^1(\bT)$.
+\end{enumerate}
+Note that $D_n(f)$ is a \emph{multiplicative} quantity---the product of eigenvalues of $T_n(f)$, interpreted as the volume of an $n$-dimensional parallelepiped in the ``multiplicative theater.'' The quantity $G(f)$ is the exponential of an \emph{additive} average: $\int \log f$ lives in the ``additive theater.'' The Szeg\H{o} theorems below bridge these two theaters with a rigid, non-trivializing comparison.
+\end{definition}
+
+\begin{theorem}[Szeg\H{o} Limit Theorems {\cite[Chapter~5]{BottcherSilbermann}}]\label{thm:szego}
+Let $f \in L^1(\bT)$ with $f > 0$ a.e.\ and $\log f \in L^1(\bT)$. Write $c_k = \int_0^1 (\log f(\theta))\, e^{-2\pi i k\theta}\, d\theta$ for the Fourier coefficients of $\log f$.
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{(First Szeg\H{o} Limit Theorem, 1915.)} The geometric mean of the eigenvalues of $T_n(f)$ converges to the exponential of the arithmetic mean of $\log f$:
+\begin{equation}\label{eq:szego-first}
+\lim_{n \to \infty} D_n(f)^{1/n} = G(f).
+\end{equation}
+
+\item \textbf{(Strong Szeg\H{o} Limit Theorem, 1952.)} If additionally $\sum_{k \in \Z} |k|\, |c_k|^2 < \infty$, then
+\begin{equation}\label{eq:szego-strong}
+\lim_{n \to \infty} \frac{D_n(f)}{G(f)^n} = E(f),
+\end{equation}
+where the \emph{Szeg\H{o} constant} is
+\begin{equation}\label{eq:szego-constant}
+E(f) = \exp\!\left(\sum_{k=1}^{\infty} k\, |c_k|^2\right) \in (0, \infty).
+\end{equation}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+For~(i): the eigenvalue distribution of $T_n(f)$ converges weakly to $f$ (Szeg\H{o} distribution theorem), so $(1/n)\sum_{j=1}^n \log \lambda_j^{(n)} \to \int_0^1 \log f(\theta)\, d\theta$, giving $D_n(f)^{1/n} \to G(f)$.
+
+For~(ii): write $\log f = c_0 + h + \bar{h}$ where $h = \sum_{k=1}^{\infty} c_k e^{2\pi i k \theta} \in \Htwo(\bT)$ is the \emph{causal part} of $\log f$ --- its Hardy projection (\cref{prop:hardy-decomp}). Then $f = G(f) \cdot |e^h|^2$, and the factorization $f = |G(f)^{1/2}\, e^h|^2$ is precisely the outer function factorization of \cref{prop:clt-prediction}(ii). The Toeplitz determinant factors as
+\[
+D_n(f) = G(f)^n \cdot \det\bigl(T_n(e^h)\, T_n(e^{\bar{h}})\bigr),
+\]
+and the Borodin--Okounkov--Case--Geronimo identity \cite[Chapter~5]{BottcherSilbermann} gives $\det(T_n(e^h)\, T_n(e^{\bar{h}})) \to \exp(\sum_{k=1}^{\infty} k\, |c_k|^2)$. Alternatively, see \cite[Chapter~2]{Simon}.
+\end{proof}
+
+The factorization $\log f = c_0 + h + \bar{h}$ with $h \in \Htwo(\bT)$ is the Hardy decomposition of $\log f$. The causal part $h$ generates the outer function; the constant $c_0 = \int \log f$ generates $G(f) = e^{c_0}$. The Szeg\H{o} constant $E(f)$ therefore measures the ``interaction energy'' between the causal and anti-causal components of $\log f$.
+
+\begin{remark}[Holonomy interpretation]
+In the language of the optimal cycle (\S\ref{sec:cycle}), the Szeg\H{o} constant $E(f) = \exp(H(f))$ is the exponential of the holonomy. The First Szeg\H{o} Theorem states that the DC component $G(f)$ governs the leading asymptotics; the Strong Szeg\H{o} Theorem states that the AC component---the holonomy $H(f) = \sum k|c_k|^2$---governs the subleading correction. The trichotomy of \cref{thm:holonomy-trichotomy} is the classification by whether this correction is trivial ($H = 0$, Gaussian), finite ($0 < H < \infty$, Strong Szeg\H{o} class), or infinite ($H = \infty$, cycle breaks).
+\end{remark}
+
+\begin{corollary}[Non-trivial cross-theater volume comparison]\label{cor:nontrivial-volume}
+Under the hypotheses of \cref{thm:szego}(ii),
+\[
+D_n(f) = G(f)^n \cdot E(f) \cdot (1 + o(1)), \qquad 0 < E(f) < \infty.
+\]
+In particular:
+\begin{enumerate}[label=(\roman*)]
+\item The \textbf{multiplicative} volume $D_n(f)$ (determinant, living in the multiplicative theater) is asymptotically determined by the \textbf{additive} quantity $\int \log f$ (living in the additive theater), up to a finite, nonzero, computable correction factor $E(f)$.
+\item The comparison does \textbf{not} trivialize: neither $E(f) = 0$ nor $E(f) = \infty$.
+\item The analogue for non-compact groups proceeds in two steps. First, on $(\R, +)$, the Toeplitz matrices $T_n(f)$ are replaced by truncated \emph{Wiener--Hopf operators} $W_R(a)$ on $L^2(0, R)$, and the Szeg\H{o} asymptotics carry over with $n \to \infty$ replaced by $R \to \infty$ \cite[Chapter~10]{BottcherSilbermann}. Second, the Hardy duality (\cref{thm:hardy-duality}) transports this to $(\Rpos, \times)$: the Mellin-side Wiener--Hopf operator on $\Htwo(\Rpos)$ satisfies the same asymptotics with the same Szeg\H{o} constant, since $\log_*$ is an isometry preserving all spectral data.
+\item For i.i.d.\ sequences ($f \equiv \sigma^2$ constant), $c_k = 0$ for all $k \neq 0$, hence $E(f) = 1$ exactly. The Gaussian is the unique spectral density for which the cross-theater comparison is exact---no correction.
+\end{enumerate}
+\end{corollary}
+
+\begin{remark}[The Szeg\H{o} condition as universal constraint]
+The condition $\int_{\bT} \log f(\theta)\, d\theta > -\infty$ has now appeared in three apparently independent roles:
+\begin{enumerate}
+\item \textbf{Prediction theory} (\cref{prop:clt-prediction}(i)): necessary and sufficient for pure non-determinism ($\mathcal{H}_u = \{0\}$).
+\item \textbf{Central limit theorem} (\cref{prop:clt-prediction}(iii)): necessary for the CLT to hold via Gordin's martingale method for stationary processes with standard $\sqrt{n}$ normalization.
+\item \textbf{Non-trivial volume comparison} (\cref{thm:szego,cor:nontrivial-volume}): necessary for $G(f) \in (0, \infty)$, i.e., for the additive-to-multiplicative bridge to be well-defined.
+\end{enumerate}
+This triple coincidence is structural. The Gaussian is simultaneously the Fourier eigenfunction (\cref{thm:gaussian-fixed}), the heat kernel (\cref{thm:heat-semigroup}), the outer function seed ($c_k = 0$ for $k \neq 0$), and the unique spectral density for which $E(f) = 1$ exactly---\emph{perfect additive--multiplicative alignment}.
+
+The CLT identifies the Gaussian as the universal \emph{attractor}: short-memory stationary processes converging to the Gaussian limit generically satisfy the Szeg\H{o} condition $\int \log f > -\infty$ (ensuring $G(f) \in (0,\infty)$ and the First Szeg\H{o} Theorem). The Strong Szeg\H{o} regularity $\sum k|c_k|^2 < \infty$ is an \emph{additional} condition---not implied by the CLT per se, but naturally satisfied in its vicinity. Precisely: the class $\{f : \sum k|c_k|^2 < \infty\}$ is an open neighborhood of the constant density $f \equiv \sigma^2$ (the Gaussian fixed point) in the topology of $L^1(\bT)$, and any spectral density with $\log f \in H^{1/2}(\bT)$---the Sobolev space of half-order regularity---lies in this class. Short-memory processes satisfying the CLT (summable correlations, continuous spectral density) generically have $\log f$ of this regularity. The Gaussian fixed point thus sits at the center of the \emph{basin of non-triviality}: the region in spectral density space where cross-theater volume comparisons yield finite, nonzero bounds.
+\end{remark}
+
+\begin{remark}[Non-trivial versus trivial multiverses]
+The Szeg\H{o} Limit Theorems provide a precise framework for comparing quantities across different algebraic universes---the additive theater $(\R, +)$ and the multiplicative theater $(\Rpos, \times)$---while maintaining rigidity. We say that a multiverse of parallel algebraic theaters is \emph{non-trivial} if:
+\begin{enumerate}[label=(\alph*)]
+\item the theaters are connected by \emph{isometric} operators (the Fourier--Mellin duality, \cref{thm:hardy-duality});
+\item the per-step information loss is \emph{bounded} ($\dim \ker S^* = 1$, \cref{thm:wold});
+\item cross-theater volume comparisons yield \emph{finite, nonzero} correction factors ($E(f) \in (0, \infty)$, \cref{thm:szego}(ii)).
+\end{enumerate}
+A multiverse \emph{trivializes} when any condition fails: (a${}'$)~the inter-theater link introduces unbounded indeterminacy, destroying isometry; (b${}'$)~the information loss per step is uncontrolled; (c${}'$)~the volume comparison yields $E(f) = \infty$ or $E(f) = 0$, reducing the cross-theater inequality to $\infty \geq \text{const}$---a tautology with no constraining power.
+
+We offer the following structural analogy, without claiming a formal correspondence between the two frameworks. In the inter-universal Teichm\"uller theory of Mochizuki \cite{MochizukiIII}, an analogous comparison of log-volumes across arithmetically linked Hodge theaters is attempted in Corollary~3.12. As analyzed by Scholze and Stix \cite{ScholzeStix}, the indeterminacies introduced to align the theaters---in particular, the unbounded distortion of the log-shell permitted by Indeterminacy~3---play a role structurally parallel to allowing the spectral density $f$ to vary without the constraint $\sum k |c_k|^2 < \infty$: in both cases, the ``inter-universe comparison'' degenerates because the correction factor ($E(f)$ in our setting, the log-shell distortion in IUT) is unbounded. The resulting inequality trivializes to $\infty \geq \mathrm{const}$.
+
+The difference between a trivial and non-trivial multiverse reduces to a single analytic condition: the finiteness of $E(f)$. This condition is equivalent to $\log f \in H^{1/2}(\bT)$---a regularity generically satisfied by short-memory processes in the CLT regime, but logically independent of the CLT itself. The relationship is mediated by the fixed point: the CLT identifies the Gaussian ($f \equiv \sigma^2$, $E(f) = 1$) as the universal attractor, and the Strong Szeg\H{o} class forms an open basin around it. The central limit theorem, absent from the IUT framework, provides both the attractor and the mechanism that draws spectral densities toward it; the Strong Szeg\H{o} condition delineates the basin within which this attraction yields non-trivial cross-theater bounds. In the language of this paper: Mochizuki constructed a multiverse without a fixed point. The Fourier--Mellin duality (\cref{thm:mellin-fourier}), the Hardy isometry (\cref{thm:hardy-duality}), and the CLT convergence (\cref{prop:clt-prediction}) together ensure that our multiverse \emph{has} a fixed point---the Gaussian---and the Strong Szeg\H{o} regularity, satisfied at and around this fixed point, forces $E(f) < \infty$.
+\end{remark}
+
+\begin{remark}[Connection to viability theory]
+The Hardy decomposition $L^2 = \Htwo \oplus (\Htwo)^\perp$ has a dynamical-systems interpretation connecting to viability theory \cite{Aubin}. The Hardy space $\Htwo$ consists of modes whose spectral support is ``forward''---the \emph{causal} or \emph{viable} modes:
+\begin{itemize}
+\item The viability kernel $\operatorname{Viab}(K)$ of a constraint set $K$ under a differential inclusion $\dot{x} \in F(x)$ \cite[Chapter~4]{Aubin} consists of the initial states from which forward evolution remains in $K$. In the spectral setting, $\Htwo$ plays this role: it consists of functions whose frequency content permits causal (forward-time) evolution.
+\item The spectral gap of $\Delta_G$---equivalently, the CLT convergence rate (cf.\ \cref{thm:heat-semigroup})---governs the rate at which viable trajectories approach the Gaussian equilibrium.
+\item The Wold decomposition's per-step information loss $\ker(V^*)$ captures the irreversibility of causal projection: information about anti-causal modes is lost under forward propagation, analogous to the loss of information across a causal horizon.
+\item The Toeplitz exact sequence $0 \to \cK \to \cT \to C(\bT) \to 0$ encodes the passage from operator-algebraic to commutative descriptions---tracing out the ``anti-causal'' degrees of freedom.
+\end{itemize}
+\end{remark}
+
+\begin{example}[Summary: Hardy spaces on the three groups]\label{ex:hardy-summary}
+\[
+\renewcommand{\arraystretch}{1.4}
+\begin{array}{lllll}
+\hline
+\textbf{Group } G & \Htwo(G) & \textbf{Shift } S & \ker(S^*) & \textbf{Toeplitz symbol} \\
+\hline
+(\R, +) & \widehat{f}(\xi) = 0,\; \xi < 0 & T_a:\; e^{ia\xi}\widehat{f}(\xi) & \text{---} & L^\infty(\R) \cap C_0 \\
+(\Rpos, \times) & \cM[f](s) = 0,\; s < 0 & S_a:\; a^{is}\widehat{g}(s) & \text{---} & L^\infty(\R) \cap C_0 \\
+(\bT, +) & \widehat{f}(n) = 0,\; n < 0 & z\text{-multiplication} & \operatorname{span}\{\mathbf{1}\} & C(\bT) \\
+\hline
+\end{array}
+\]
+The second row is the image of the first under $\exp_*$ (equivalently, the first is the image of the second under $\log_*$), reflecting \cref{thm:hardy-duality}. Here $C_0$ denotes continuous functions vanishing at infinity. On the non-compact groups $(\R, +)$ and $(\Rpos, \times)$, the shift is a one-parameter semigroup $\{T_a\}_{a > 0}$ (resp.\ $\{S_a\}_{a > 1}$) of isometries rather than a single isometry, so the Wold decomposition takes the continuous form (Lax--Phillips scattering theory) and $\ker(S^*)$ is replaced by the infinitesimal generator's defect space---marked ``---'' since it does not reduce to a finite-dimensional subspace.
+\end{example}
+

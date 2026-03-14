@@ -1,0 +1,74 @@
+\section{The Fourier--Mellin duality}
+
+We now establish the central result: the Fourier and Mellin transforms are related by the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$.
+
+\begin{proposition}\label{prop:log-iso}
+The map $\log : (\Rpos, \times) \to (\R, +)$ is an isomorphism of LCA groups. It carries the Haar measure $dx/x$ on $\Rpos$ to the Lebesgue measure $dy$ on $\R$.
+\end{proposition}
+
+\begin{proof}
+\emph{Group homomorphism.} For all $a, b > 0$: $\log(ab) = \log a + \log b$.
+
+\emph{Topological isomorphism.} The map $\log : (0, \infty) \to \R$ is a homeomorphism with continuous inverse $\exp$.
+
+\emph{Haar measure.} Under the substitution $y = \log x$ (i.e., $x = e^y$, $dx = e^y\, dy$):
+\[
+\frac{dx}{x} = \frac{e^y\, dy}{e^y} = dy.
+\]
+Thus $\log_*(dx/x) = dy$, confirming that $\log$ intertwines the respective Haar measures.
+\end{proof}
+
+\begin{theorem}[Mellin--Fourier correspondence]\label{thm:mellin-fourier}
+Let $\mu$ be a probability measure on $(\Rpos, \times)$, and let $\log_*\mu$ denote its pushforward to $(\R, +)$ under $\log$. Then
+\begin{equation}\label{eq:mellin-fourier}
+\cM[\mu](s) = \cF[\log_*\mu](s) \qquad \text{for all } s \in \R.
+\end{equation}
+That is, the following diagram commutes:
+\begin{equation}\label{eq:cd-measures}
+\begin{tikzcd}
+\cP(\Rpos, \times) \arrow[r, "\widehat{(\cdot)}_{\cM}"] \arrow[d, "\log_*"'] & C_b(\R) \arrow[d, "="] \\
+\cP(\R, +) \arrow[r, "\widehat{(\cdot)}_{\cF}"'] & C_b(\R)
+\end{tikzcd}
+\end{equation}
+where $\cP(\cdot)$ denotes the space of probability measures and $C_b(\R)$ the space of bounded continuous functions.
+\end{theorem}
+
+\begin{proof}
+For any $s \in \R$,
+\begin{align*}
+\cM[\mu](s) &= \int_0^\infty x^{is}\, d\mu(x) \\
+&= \int_{-\infty}^{\infty} e^{isy}\, d(\log_*\mu)(y) \qquad \text{(substituting } y = \log x,\; x^{is} = e^{is\log x}\text{)} \\
+&= \cF[\log_*\mu](s). \qedhere
+\end{align*}
+\end{proof}
+
+\begin{corollary}\label{cor:clt-image}
+The multiplicative CLT (\cref{thm:mult-clt}) is the image of the additive CLT (\cref{thm:add-clt}) under the group isomorphism $\exp : (\R, +) \to (\Rpos, \times)$. Specifically, the log-normal distribution is the pushforward of the Gaussian under $\exp$:
+\[
+\operatorname{LogNormal}(0, \sigma^2) = \exp_*\, \cN(0, \sigma^2).
+\]
+\end{corollary}
+
+\begin{remark}[Functoriality]\label{rmk:functoriality}
+\cref{thm:mellin-fourier} is a special case of the functoriality of the Fourier transform on LCA groups. If $\phi : G_1 \to G_2$ is a continuous homomorphism of LCA groups and $\widehat{\phi} : \widehat{G_2} \to \widehat{G_1}$ is the induced dual map $\widehat{\phi}(\chi) = \chi \circ \phi$, then for any probability measure $\mu$ on $G_1$:
+\[
+\widehat{\phi_*\mu}(\chi) = \widehat{\mu}(\chi \circ \phi) = \widehat{\mu}\!\left(\widehat{\phi}(\chi)\right).
+\]
+In our setting, $\phi = \log$ and $\phi^{-1} = \exp$. The dual map $\widehat{\log} : \widehat{(\R,+)} \to \widehat{(\Rpos,\times)}$ sends the character $\chi_s$ of $(\R,+)$ (namely $y \mapsto e^{isy}$) to the character $\chi_s \circ \log$ of $(\Rpos,\times)$ (namely $x \mapsto e^{is\log x} = x^{is}$). Since both duals are identified with $\R$ via the parameter $s$, the dual map is the identity.
+\end{remark}
+
+\begin{proposition}[Duality of heat equations]\label{prop:heat-duality}
+Under the isomorphism $\log : (\Rpos, \times) \to (\R, +)$, the multiplicative heat equation \eqref{eq:heat-mult} is conjugate to the additive heat equation \eqref{eq:heat-add}. The following diagram commutes:
+\begin{equation}\label{eq:cd-heat}
+\begin{tikzcd}[column sep=large, row sep=large]
+\partial_t u = \tfrac{1}{2}D^2 u \;\text{on}\; \Rpos \arrow[r, leftrightarrow, "\cM"] \arrow[d, leftrightarrow, "u(t{,}x) {=} v(t{,}\log x)"'] & \partial_t \widehat{u} = -\tfrac{s^2}{2}\,\widehat{u} \arrow[d, "="] \\
+\partial_t v = \tfrac{1}{2}\,\partial_{yy} v \;\text{on}\; \R \arrow[r, leftrightarrow, "\cF"'] & \partial_t \widehat{v} = -\tfrac{\xi^2}{2}\,\widehat{v}
+\end{tikzcd}
+\end{equation}
+In particular, both heat equations reduce to the same ODE in the frequency domain.
+\end{proposition}
+
+\begin{proof}
+The left vertical arrow is the content of \cref{prop:heat-mult}: the substitution $v(t,y) = u(t, e^y)$ conjugates $D^2 = (x\partial_x)^2$ to $\partial_{yy}$. The horizontal arrows are the Mellin and Fourier transforms, each reducing the respective PDE to the ODE $\partial_t \widehat{w} = -\frac{s^2}{2}\widehat{w}$. The right vertical arrow is the identity because, by \cref{thm:mellin-fourier}, the Mellin transform of $u$ in $x$ equals the Fourier transform of $v$ in $y$.
+\end{proof}
+

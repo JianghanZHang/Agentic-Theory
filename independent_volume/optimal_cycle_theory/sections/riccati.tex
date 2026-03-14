@@ -1,0 +1,44 @@
+\section{Generalized path integral and Riccati compression}\label{sec:riccati}
+
+\begin{remark}[Generalized path integral and Riccati compression]
+The acronym GPI in the in-context GPI theorem (\cref{thm:in-context-gpi}) admits a second reading:
+\emph{Generalized Path Integral}.
+The two readings coincide.
+
+The MPPI estimator of \cref{prop:forward-only} supplies the
+improvement half: sample $N$ trajectories, assign Boltzmann weights
+$w^{(i)} \propto \exp\!\bigl(-J^{(i)}/\varepsilon\bigr)$, and compute
+the weighted average.
+The Boltzmann reweighting is exactly the exponential bridge applied to
+the path measure---it converts the uniform (prior) measure over
+trajectories to the optimal (posterior) measure, with the cost
+functional $J$ playing the role of the negative log-likelihood.
+Convergence at $O(N^{-1/2})$ is guaranteed by the CLT
+(\cref{thm:add-clt,thm:mult-clt}), independently of $\dim G$.
+
+\medskip\noindent\textbf{Riccati compression.}
+Specialize to $G = (\R^n, +)$ with linear dynamics
+$\dot x = Ax + Bu$ and quadratic cost
+$\int_0^T (x^\top Q\,x + u^\top R\,u)\,dt$
+(the LQG regime),
+where $A \in \R^{n \times n}$, $B \in \R^{n \times m}$,
+$Q \succeq 0$, and $R \succ 0$.
+The Feynman--Kac path integral is Gaussian and evaluates in closed
+form; the Boltzmann-weighted average compresses to the matrix Riccati
+ODE:
+\[
+\dot P = A^\top\! P + PA - PBR^{-1}B^\top\! P + Q,
+\]
+where $P(t) \in \R^{n \times n}$ is the cost-to-go matrix and
+$V(x) = x^\top P\, x$ the value function.
+No sampling is needed: the exact solution replaces the Monte Carlo
+estimator entirely.
+The dual equation (Kalman--Bucy filter) compresses the estimation
+filtration in the same way.
+The CLT rate $O(N^{-1/2})$ of \cref{prop:forward-only} thus quantifies
+the cost of leaving the Riccati regime: on a nonlinear Lie group~$G$
+with non-quadratic cost, the path integral cannot be evaluated
+analytically and one pays $O(N^{-1/2})$ per sample for the Monte Carlo
+approximation.
+\end{remark}
+

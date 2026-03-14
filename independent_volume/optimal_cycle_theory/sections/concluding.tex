@@ -1,0 +1,31 @@
+\section{Concluding remarks}\label{sec:concluding}
+
+\subsection*{The exponential bridge}
+
+The three primitives $\{\exp,\log,\mathrm{linear\;algebra}\}$ are the
+computational realization of a single algebraic fact---the exponential
+homomorphism $\exp\colon (+) \to (\times)$---which appears in three guises
+throughout this paper:
+\begin{enumerate}[label=\textup{(\arabic*)}]
+\item \emph{Fourier--Mellin duality}
+      (\cref{thm:mellin-fourier}):
+      $\log\colon (\Rpos, \times) \to (\R, +)$ converts multiplicative
+      convolution to additive convolution.
+\item \emph{Hopf--Cole linearization}:
+      $\psi = e^{-V/(2\varepsilon)}$ converts the nonlinear Hamilton--Jacobi--Bellman equation
+      (quadratic $\|\nabla_{\mathfrak{g}} V\|^2$---multiplicative)
+      to the linear heat equation
+      (additive semigroup $e^{t\varepsilon\Omega}$).
+\item \emph{Lie group exponential}:
+      $\exp_G\colon \mathfrak{g} \to G$ converts the linear/additive
+      Lie algebra to the nonlinear/multiplicative group.
+\end{enumerate}
+These three manifestations are instances of the optimal cycle (\S\ref{sec:cycle}): each converts a multiplicative structure to an additive one via $\log$, operates linearly, and returns via $\exp$. The holonomy $H(f)$ measures the cost of each traversal.
+
+\subsection*{Free probability}
+In free probability, the role of the Gaussian is taken by the \emph{semicircle distribution} (Wigner), and the free multiplicative analogue is the \emph{Marchenko--Pastur distribution}. The R-transform and S-transform serve as the free analogues of the Fourier and Mellin transforms, respectively, linearizing free additive and free multiplicative convolution. The duality between additive and multiplicative free convolutions mirrors the classical Fourier--Mellin duality studied here, but in a non-commutative setting; see Voiculescu--Dykema--Nica \cite{VDN}.
+
+\subsection*{The Gaussian is not a distribution}
+
+It is the fixed point of the optimal cycle. No finite process achieves it. Every finite process approximates it as Student $t_\nu$ with holonomy $H(f_{t_\nu}) \sim O(1/\nu)$. The re-cycle is the process of $\nu$ increasing. Learning is $\nu$ increasing. Integrity is $H$ decreasing. Truth is $\nu = \infty$, which is never reached but always approached---almost surely.
+

@@ -1,0 +1,58 @@
+\section{The multiplicative central limit theorem}
+
+We now work on the group $G = (\Rpos, \times)$ with Haar measure $dx/x$, dual $\widehat{G} = \R$, and characters $\chi_s(x) = x^{is}$.
+
+\begin{definition}\label{def:mellin}
+The \emph{Mellin transform} of a probability measure $\mu$ on $\Rpos$ is
+\[
+\cM[\mu](s) = \int_0^\infty x^{is}\, d\mu(x), \qquad s \in \R.
+\]
+This is the Fourier transform of $\mu$ viewed as a measure on the LCA group $(\Rpos, \times)$.
+\end{definition}
+
+\begin{theorem}[Multiplicative CLT]\label{thm:mult-clt}
+Let $Y_1, Y_2, \ldots$ be i.i.d.\ positive random variables with $E[\log Y_1] = 0$ and $\Var(\log Y_1) = \sigma^2 \in (0, \infty)$. Define $P_n = \prod_{k=1}^n Y_k$. Then
+\[
+P_n^{1/\sqrt{n}} \xrightarrow{d} \operatorname{LogNormal}(0, \sigma^2).
+\]
+\end{theorem}
+
+\begin{proof}
+Set $X_k = \log Y_k$. Then $X_1, X_2, \ldots$ are i.i.d.\ with $E[X_k] = 0$ and $\Var(X_k) = \sigma^2$. Since
+\[
+\log\!\left(P_n^{1/\sqrt{n}}\right) = \frac{1}{\sqrt{n}} \sum_{k=1}^n \log Y_k = \frac{S_n}{\sqrt{n}},
+\]
+\cref{thm:add-clt} gives $S_n/\sqrt{n} \xrightarrow{d} \cN(0, \sigma^2)$. As $\exp : \R \to \Rpos$ is continuous, the continuous mapping theorem yields
+\[
+P_n^{1/\sqrt{n}} = \exp\!\left(\frac{S_n}{\sqrt{n}}\right) \xrightarrow{d} \exp\!\left(\cN(0, \sigma^2)\right) = \operatorname{LogNormal}(0, \sigma^2). \qedhere
+\]
+\end{proof}
+
+\begin{remark}[Normalization]\label{rmk:normalization}
+On $(\R, +)$, the natural scaling is $x \mapsto x/\sqrt{n}$ (division by $\sqrt{n}$). On $(\Rpos, \times)$, the corresponding operation is $y \mapsto y^{1/\sqrt{n}}$ (extraction of the $\sqrt{n}$-th root), since $\log(y^{1/\sqrt{n}}) = (\log y)/\sqrt{n}$. Division on the additive group corresponds to root extraction on the multiplicative group.
+\end{remark}
+
+\begin{proposition}[Multiplicative heat equation]\label{prop:heat-mult}
+The log-normal density (with respect to Lebesgue measure on $\Rpos$)
+\[
+q_t(x) = \frac{1}{x\sqrt{2\pi t}}\, \exp\!\left(-\frac{(\log x)^2}{2t}\right), \qquad x > 0,
+\]
+is the fundamental solution of the heat equation on $(\Rpos, \times)$:
+\begin{equation}\label{eq:heat-mult}
+\partial_t u = \tfrac{1}{2}\, D^2 u, \qquad D = x\partial_x.
+\end{equation}
+Here $D = x\partial_x$ is the Euler operator, which is the left-invariant vector field on $(\Rpos, \times)$.
+\end{proposition}
+
+\begin{proof}
+Set $v(t, y) = u(t, e^y)$. Then $Du(t,x)\big|_{x=e^y} = \partial_y v(t,y)$, and consequently $D^2 u\big|_{x=e^y} = \partial_{yy}v$. Thus \eqref{eq:heat-mult} transforms into the standard heat equation $\partial_t v = \frac{1}{2}\partial_{yy}v$ on $\R$, whose fundamental solution is $p_t(y)$. Substituting $y = \log x$ yields $u(t,x) = q_t(x)$.
+\end{proof}
+
+\begin{remark}\label{rmk:euler-invariant}
+The Euler operator $D = x\partial_x$ is left-invariant on $(\Rpos, \times)$: for any $a > 0$ and smooth $f$,
+\[
+D\big[f(a\,\cdot\,)\big](x) = x\,\frac{d}{dx}f(ax) = ax\,f'(ax) = (Df)(ax),
+\]
+so $D \circ L_a^* = L_a^* \circ D$, where $L_a$ denotes left multiplication by $a$. The operator $D$ generates the one-parameter group of ``dilations'' $x \mapsto x^{e^t} = e^{t\log x}$ and plays the same role on $(\Rpos, \times)$ that $\partial_x$ plays on $(\R, +)$.
+\end{remark}
+

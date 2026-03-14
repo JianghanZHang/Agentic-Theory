@@ -1,0 +1,37 @@
+\section*{Introduction}
+
+This paper identifies a closed algebraic loop---the \emph{additive-multiplicative cycle}---connecting three locally compact abelian groups:
+\[
+M = (\Rpos, \times)
+\xrightarrow{\;\log\;}
+A = (\R, +)
+\xrightarrow{\;\text{Fourier}\;}
+\widehat{A} = (\Z, +)
+\xrightarrow{\;\exp\;}
+M.
+\]
+A positive spectral density $f > 0$ on $\bT$ enters the cycle in the multiplicative theater $M$. The logarithm $\log f$ moves it into the additive theater $A$. The Fourier transform decomposes $\log f$ into coefficients $\{c_k\}_{k \in \Z}$. The exponential $G(f) = e^{c_0}$ recovers the geometric mean (the DC component), but the \emph{AC} component carries an obstruction to closing the loop perfectly: the \emph{holonomy}
+\[
+H(f) = \sum_{k=1}^{\infty} k\,|c_k|^2,
+\]
+the one-sided $H^{1/2}(\bT)$ Sobolev seminorm of $\log f$ (positive frequencies only; $= \tfrac{1}{2}\|\log f\|_{H^{1/2}}^2$ for real-valued $\log f$). The Szeg\H{o} constant $E(f) = \exp(H(f))$ is the finite correction factor in the Strong Szeg\H{o} Limit Theorem: $D_n(f) \sim G(f)^n \cdot E(f)$ (the Toeplitz determinant $D_n(f)$ is defined in \S\ref{sec:hardy}).
+
+The holonomy satisfies a trichotomy (\cref{thm:holonomy-trichotomy}):
+\begin{enumerate}[label=(\roman*)]
+\item $H(f) = 0$ if and only if $f$ is constant (Gaussian spectral density)---the cycle closes perfectly;
+\item $0 < H(f) < \infty$---the Strong Szeg\H{o} class: a non-trivial cycle with finite cost;
+\item $H(f) = \infty$---the cycle breaks.
+\end{enumerate}
+The Gaussian is simultaneously the Fourier eigenfunction, the heat kernel, the outer function seed, and the unique density with $E(f) = 1$. It is not a distribution observed in nature; it is the \emph{fixed point} of the cycle. Every finite process approximates it as the Student $t_\nu$ distribution with holonomy $H \sim O(1/\nu)$ (\cref{ex:student-t}).
+
+The constrained optimal cycle (\cref{def:optimal-cycle}) considers the infimum $H_t^* = \inf_{f \in \Omega_t} H(f)$ over spectral densities matching observations up to lag $t$. The minimizer is the maximum-entropy AR$(t)$ density (Burg), and the sequence $H_0^* \leq H_1^* \leq \cdots \leq H(f_{\mathrm{true}})$ is monotone non-decreasing---learning is holonomy increasing.
+
+A genuinely new computation emerges from the Jacobian of the cycle's first map. The Szeg\H{o} exponent on the Fourier side converges for $\sigma > 1$ (the PNT zero-free line), while on the Mellin side it converges for $\sigma > \tfrac{1}{2}$ (the GRH critical line). The shift $\sigma_M^* = \sigma_{\bT}^* - \tfrac{1}{2}$ arises from the Haar measure correction $dx/x \to dy$ under $\log$ (\cref{thm:half-shift}).
+
+\paragraph{Schr\"odinger's Cat.}
+A spectral density $f > 0$ enters the cycle alive in the multiplicative theater. The logarithm $\log f$ puts it into the box (the additive theater). The Fourier transform opens the box: $E(f) = 1$ (alive, Gaussian), $1 < E(f) < \infty$ (alive, non-trivial), $E(f) = \infty$ (dead, Dirac). The cycle is the experiment; $E(f)$ is the measurement.
+
+\medskip
+\noindent\textbf{Notation.}
+Throughout, $\R$ denotes the reals, $\Rpos = (0, \infty)$ the positive reals, $\bT = \R / \Z$ the circle group, and $\Z$ the integers. For a topological group $G$, we write $\widehat{G}$ for its Pontryagin dual. The Fourier transform (characteristic function) of a probability measure $\mu$ on $G$ is denoted $\widehat{\mu}$. We write $\cF$ for the Fourier transform on $(\R, +)$ and $\cM$ for the Mellin transform on $(\Rpos, \times)$. The holonomy $H(f) = \sum_{k=1}^{\infty} k\,|c_k|^2$ and Szeg\H{o} constant $E(f) = e^{H(f)}$ are the paper's central objects.
+

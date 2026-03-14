@@ -1,0 +1,41 @@
+\section{Closed-form exponential maps on compact groups}\label{sec:compact}
+
+On compact groups, the exponential map admits elegant closed forms that make the passage $\mathfrak{g} \to G$ explicit.
+
+\medskip\noindent\textbf{$\boldsymbol{SO(3)}$ and Rodrigues' formula.}
+The Lie algebra $\mathfrak{so}(3)$ consists of $3 \times 3$ skew-symmetric matrices. Via the \emph{hat map} $\widehat{(\cdot)} : \R^3 \to \mathfrak{so}(3)$ defined by $\hat{\mathbf{n}}\mathbf{v} = \mathbf{n} \times \mathbf{v}$, every element of $\mathfrak{so}(3)$ can be written as $\theta\hat{\mathbf{n}}$ for a unit vector $\mathbf{n} \in S^2$ and an angle $\theta \in \R$.
+
+The key algebraic fact is that $\hat{\mathbf{n}}$ (for $\|\mathbf{n}\| = 1$) has eigenvalues $0, +i, -i$, so by the Cayley--Hamilton theorem, it satisfies its characteristic polynomial:
+\begin{equation}\label{eq:cayley-hamilton-so3}
+\hat{\mathbf{n}}^3 + \hat{\mathbf{n}} = 0, \qquad\text{i.e.,}\quad \hat{\mathbf{n}}^3 = -\hat{\mathbf{n}}.
+\end{equation}
+This periodicity causes the matrix exponential series to collapse. Separating even and odd powers:
+\begin{align*}
+\exp(\theta\hat{\mathbf{n}})
+&= \sum_{k=0}^{\infty} \frac{(\theta\hat{\mathbf{n}})^k}{k!} \\
+&= I + \underbrace{\left(\theta - \frac{\theta^3}{3!} + \frac{\theta^5}{5!} - \cdots\right)}_{\displaystyle\sin\theta}\hat{\mathbf{n}} \;+\; \underbrace{\left(\frac{\theta^2}{2!} - \frac{\theta^4}{4!} + \frac{\theta^6}{6!} - \cdots\right)}_{\displaystyle 1 - \cos\theta}\hat{\mathbf{n}}^2.
+\end{align*}
+This yields the \emph{Rodrigues rotation formula}:
+\begin{equation}\label{eq:rodrigues}
+\exp(\theta\hat{\mathbf{n}}) = I + \sin\theta\;\hat{\mathbf{n}} + (1 - \cos\theta)\;\hat{\mathbf{n}}^2.
+\end{equation}
+The infinite series reduces to three terms because the minimal polynomial of $\hat{\mathbf{n}}$ has degree~3; the odd-power terms resum as $\sin\theta$ and the even-power terms as $1 - \cos\theta$.
+
+\medskip\noindent\textbf{$\boldsymbol{SU(2)}$, quaternions, and the double cover.}
+The group $SU(2)$ of $2 \times 2$ unitary matrices with determinant $1$ is diffeomorphic to $S^3 \subset \R^4$ via identification with unit quaternions. Its Lie algebra $\mathfrak{su}(2)$ is identified with the pure imaginary quaternions $\operatorname{Im}(\mathbb{H}) \cong \R^3$.
+
+For a unit vector $\mathbf{n} \in S^2 \subset \operatorname{Im}(\mathbb{H})$, the relation $\mathbf{n}^2 = -1$ (the defining property of imaginary units in $\mathbb{H}$) yields the exponential map via direct application of Euler's formula:
+\begin{equation}\label{eq:quat-exp}
+\exp\!\left(\tfrac{\theta}{2}\,\mathbf{n}\right) = \cos\tfrac{\theta}{2} + \sin\tfrac{\theta}{2}\;\mathbf{n} \;\in\; S^3 \cong SU(2).
+\end{equation}
+This is the quaternionic generalization of $e^{i\alpha} = \cos\alpha + i\sin\alpha$: the proof is identical, with $\mathbf{n}^2 = -1$ replacing $i^2 = -1$.
+
+The factor $\frac{1}{2}$ reflects the double cover $\pi : SU(2) \to SO(3)$, defined by $\pi(q) : \mathbf{v} \mapsto q\mathbf{v}\bar{q}$ for $\mathbf{v} \in \operatorname{Im}(\mathbb{H}) \cong \R^3$. Since $q$ and $-q$ act identically by conjugation, $\ker(\pi) = \{\pm 1\}$. Composing \eqref{eq:quat-exp} with $\pi$ recovers the Rodrigues formula \eqref{eq:rodrigues}: the quaternion $\cos\frac{\theta}{2} + \sin\frac{\theta}{2}\,\mathbf{n}$ maps to the rotation matrix $I + \sin\theta\,\hat{\mathbf{n}} + (1-\cos\theta)\hat{\mathbf{n}}^2$, as can be verified by expanding $q\mathbf{v}\bar{q}$ and using the double-angle identities $\sin\theta = 2\sin\frac{\theta}{2}\cos\frac{\theta}{2}$ and $1 - \cos\theta = 2\sin^2\frac{\theta}{2}$.
+
+\medskip\noindent\textbf{CLT on compact groups.}
+Since $SO(3)$ and $SU(2)$ are compact, repeated convolutions converge to Haar measure (the uniform distribution on $G$) rather than to a Gaussian: a compact group has finite volume, leaving no room for the unbounded fluctuations that a Gaussian requires. However, for \emph{small times}---when the random increments are small perturbations of the identity---the heat kernel $p_t$ on $G$ is well-approximated by the Gaussian on $\mathfrak{g}$ pushed forward by $\exp$:
+\[
+p_t(g) \;\approx\; \frac{1}{(2\pi t)^{d/2}}\, \exp\!\left(-\frac{\|\exp^{-1}(g)\|^2}{2t}\right) \qquad \text{as } t \to 0^+,\; g \to e,
+\]
+where $d = \dim G$ and $\|\cdot\|$ is the norm on $\mathfrak{g}$ induced by the Riemannian metric. As $t \to \infty$, the heat kernel converges to the constant $1/\operatorname{vol}(G)$ (Haar measure). The rate of convergence is governed by the representation theory of $G$; see Diaconis \cite{Diaconis}.
+

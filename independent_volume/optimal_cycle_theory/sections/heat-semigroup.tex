@@ -1,0 +1,70 @@
+\section{The heat semigroup and Laplacians on LCA groups}
+
+We now unify the heat equation perspective from \cref{prop:heat-add,prop:heat-mult} in the general LCA framework.
+
+\begin{definition}\label{def:laplacian}
+Let $G$ be a connected LCA group with Lie algebra $\mathfrak{g}$. Fix a basis $\{X_1, \ldots, X_d\}$ for $\mathfrak{g}$ and define the \emph{Laplacian} on $G$ by
+\[
+\Delta_G = \sum_{j=1}^d X_j^2,
+\]
+where $X_j$ act as left-invariant differential operators on $C^\infty(G)$. The Laplacian depends on the choice of basis (equivalently, on an inner product on $\mathfrak{g}$), but different choices yield the same qualitative theory.
+\end{definition}
+
+The characters of $G$ are eigenfunctions of $\Delta_G$. Define the \emph{symbol} $Q : \widehat{G} \to [0, \infty)$ by
+\begin{equation}\label{eq:symbol}
+\Delta_G \chi = -Q(\chi) \cdot \chi \qquad \text{for all } \chi \in \widehat{G}.
+\end{equation}
+The function $Q$ is a non-negative definite quadratic form on $\widehat{G}$ in the sense of \cref{def:quadratic}.
+
+\begin{example}\label{ex:laplacian-symbol}
+\begin{enumerate}[label=(\alph*)]
+\item $G = (\R, +)$: $\Delta_G = \partial_{xx}$, $\chi_\xi(x) = e^{i\xi x}$, $\Delta_G \chi_\xi = -\xi^2 \chi_\xi$, so $Q(\xi) = \xi^2$.
+\item $G = (\Rpos, \times)$: $\Delta_G = D^2 = (x\partial_x)^2$, $\chi_s(x) = x^{is}$, $D^2 \chi_s = (is)^2 x^{is} = -s^2 \chi_s$, so $Q(s) = s^2$.
+\item $G = (\bT, +)$: $\Delta_G = \partial_{\theta\theta}$, $\chi_n(\theta) = e^{2\pi i n\theta}$, $\Delta_G \chi_n = -(2\pi n)^2 \chi_n$, so $Q(n) = 4\pi^2 n^2$.
+\end{enumerate}
+\end{example}
+
+\begin{theorem}[Heat semigroup on LCA groups]\label{thm:heat-semigroup}
+Let $G$ be a connected LCA group with Laplacian $\Delta_G$ and symbol $Q$ as in \eqref{eq:symbol}. Define the family of Gaussian measures $\{\gamma_t\}_{t > 0}$ by their Fourier transforms:
+\[
+\widehat{\gamma_t}(\chi) = e^{-tQ(\chi)/2}.
+\]
+Then:
+\begin{enumerate}[label=(\roman*)]
+\item $\{\gamma_t\}_{t \geq 0}$ is a convolution semigroup: $\gamma_t * \gamma_s = \gamma_{t+s}$.
+\item If $\gamma_t$ has a density $p_t$ with respect to Haar measure, then $p_t$ solves the heat equation
+\[
+\partial_t p_t = \tfrac{1}{2}\,\Delta_G\, p_t.
+\]
+\item In Fourier space, the heat equation becomes the family of ODEs (parametrized by $\chi \in \widehat{G}$):
+\[
+\partial_t \widehat{p_t}(\chi) = -\tfrac{1}{2}\, Q(\chi)\, \widehat{p_t}(\chi),
+\]
+with solution $\widehat{p_t}(\chi) = e^{-tQ(\chi)/2}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Part (iii) is immediate: applying the Fourier transform to $\partial_t p_t = \frac{1}{2}\Delta_G p_t$ and using $\widehat{\Delta_G p_t}(\chi) = -Q(\chi)\widehat{p_t}(\chi)$ yields the ODE in (iii), whose solution with $\widehat{p_0} = 1$ is $e^{-tQ(\chi)/2}$. Part (i) follows from the multiplicativity $e^{-tQ/2} \cdot e^{-sQ/2} = e^{-(t+s)Q/2}$ and the injectivity of the Fourier transform on probability measures (\cref{thm:levy}). Part (ii) follows from (iii) by inverting the Fourier transform.
+\end{proof}
+
+\begin{remark}\label{rmk:heat-clt}
+\cref{thm:heat-semigroup} reveals the structural reason the CLT limit is Gaussian: a random walk on $G$, when rescaled, converges to Brownian motion on $G$, whose transition kernel is the heat kernel $p_t$. The Fourier transform diagonalizes $\Delta_G$, reducing the heat PDE to a family of ODEs---one for each character $\chi \in \widehat{G}$---whose solutions are the Gaussian Fourier coefficients $e^{-tQ(\chi)/2}$.
+\end{remark}
+
+\begin{example}\label{ex:heat-summary}
+Summary of the heat semigroup on the three running examples.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\textbf{Group $G$} & \textbf{Laplacian} & \textbf{Symbol $Q$} & \textbf{Heat equation} & \textbf{Fund.\ solution} \\
+\hline
+$(\R, +)$ & $\partial_{xx}$ & $\xi^2$ & $u_t = \tfrac{1}{2}\, u_{xx}$ & Gaussian \\
+$(\Rpos, \times)$ & $(x\partial_x)^2$ & $s^2$ & $u_t = \tfrac{1}{2}D^2 u$ & Log-normal \\
+$(\bT, +)$ & $\partial_{\theta\theta}$ & $4\pi^2 n^2$ & $u_t = \tfrac{1}{2}\, u_{\theta\theta}$ & Wrapped normal ($\vartheta_3$)
+\end{tabular}
+\normalsize
+\end{center}
+\end{example}
+

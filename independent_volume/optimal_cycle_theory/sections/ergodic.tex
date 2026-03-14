@@ -1,0 +1,29 @@
+\section{Ergodic interpretation: ensemble versus time averages}
+
+The CLT admits two complementary interpretations, corresponding to the two sides of the ergodic theorem.
+
+\begin{theorem}[Birkhoff Ergodic Theorem {\cite[Theorem~6.2.1]{Durrett}}]\label{thm:birkhoff}
+Let $(\Omega, \mathcal{B}, \mathbb{P}, T)$ be a measure-preserving dynamical system with $T$ ergodic. For any $f \in L^1(\mathbb{P})$,
+\[
+\frac{1}{n}\sum_{k=0}^{n-1} f(T^k \omega) \longrightarrow \int_\Omega f\, d\mathbb{P} \qquad \text{for $\mathbb{P}$-a.e.\ $\omega$}.
+\]
+\end{theorem}
+
+\begin{remark}[i.i.d.\ sequences as ergodic systems]\label{rmk:iid-ergodic}
+An i.i.d.\ sequence $X_1, X_2, \ldots$ with common distribution $\mu$ can be realized on the product space $\Omega = \R^{\mathbb{N}}$ with the left shift $T(\omega_1, \omega_2, \ldots) = (\omega_2, \omega_3, \ldots)$ and the product measure $\mathbb{P} = \mu^{\otimes \mathbb{N}}$. The Kolmogorov zero-one law implies that $T$ is ergodic. Setting $f(\omega) = \omega_1$, the Birkhoff theorem recovers the strong law of large numbers: $\bar{X}_n \to E[X_1]$ a.s.
+\end{remark}
+
+\begin{remark}[Two views of the CLT]\label{rmk:two-views}
+The CLT for $\bar{X}_n = \frac{1}{n}\sum_{k=1}^n X_k$ admits two complementary readings:
+\begin{enumerate}[label=(\alph*)]
+\item \textbf{Ensemble (static, spatial).} Fix $n$ and vary the realization $\omega \in \Omega$. The CLT describes the fluctuations of $\bar{X}_n$ around $\mu$: the distribution of $\sqrt{n}(\bar{X}_n - \mu)$ converges to $\cN(0, \sigma^2)$ as $n \to \infty$.
+
+\item \textbf{Temporal (dynamic).} Fix a typical $\omega$ and let $n \to \infty$. The LLN says $\bar{X}_n(\omega) \to \mu$ a.s., describing convergence along a single trajectory.
+\end{enumerate}
+The ensemble CLT describes the \emph{shape} of the fluctuations (Gaussian), while the ergodic theorem guarantees that time averages equal space averages. These are dual aspects of the same structure: the heat semigroup provides the universal transition kernel, and the Fourier transform diagonalizes it whether we sum over space or over time.
+\end{remark}
+
+\begin{remark}[Statistical mechanics]\label{rmk:statmech}
+In the language of statistical mechanics, the ensemble average corresponds to the Gibbs measure (a spatial average over configurations), while the time average corresponds to trajectory averages of a single system. The equality of the two is the content of ergodicity. The Gaussian arising from the CLT is the universal fluctuation law in both pictures. On the multiplicative group, the log-normal distribution governs the analogous fluctuations---for instance, the growth rates in multiplicative processes or the fluctuations of products of random matrices' singular values.
+\end{remark}
+

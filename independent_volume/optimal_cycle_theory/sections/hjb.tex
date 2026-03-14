@@ -1,0 +1,22 @@
+\section{Optimal control on Lie groups}\label{sec:hjb}
+
+By \cref{def:casimir}, the Casimir operator $\Omega$ acts on each irreducible $V_\rho$ as $\lambda_\rho \cdot \mathrm{Id}$, and the spectral gap (\cref{cor:spectral-gap}) gives exponential convergence $\|\rho_t - 1/\mathrm{vol}(G)\| \leq e^{-\lambda_1 t}$. We now state the control problem.
+
+\begin{remark}[Representation-theoretic decomposition and optimal control]
+The Peter--Weyl decomposition has a precise but limited connection to optimal control on Lie groups. Consider the controlled diffusion on a compact~$G$:
+\[
+dg_t = g_t \cdot \bigl(u(t)\, dt + \sqrt{2\varepsilon}\, dW_t\bigr), \qquad u(t) \in \mathfrak{g},
+\]
+with cost $J = \mathbb{E}\bigl[\int_0^T L(g_t, u_t)\, dt + \Phi(g_T)\bigr]$. The Hamilton--Jacobi--Bellman equation for the value function $V \in C^\infty(G)$ is
+\[
+\partial_t V - \varepsilon\, \Omega V + \min_{u \in \mathfrak{g}}\bigl\{L(g, u) + \langle dV,\, g \cdot u\rangle\bigr\} = 0.
+\]
+In the Peter--Weyl basis, the three terms decompose differently:
+\begin{enumerate}[label=(\roman*)]
+\item The diffusion term $-\varepsilon\, \Omega V$ \textbf{block-diagonalizes}: $\Omega$ acts as $\lambda_\rho$ on each $V_\rho$ (\cref{def:casimir}).
+\item A left-invariant drift $g \cdot X$ acts on $V_\rho$ as the derived representation $d\rho(X)$, a $d_\rho \times d_\rho$ matrix. The free (uncontrolled) dynamics within each block is a \textbf{linear matrix ODE}.
+\item The optimization $\min_u$ and a general cost $L(g, u)$ create \textbf{inter-block coupling}: if $L$ is not a class function (constant on conjugacy classes), its Peter--Weyl expansion mixes different representations.
+\end{enumerate}
+For the special case of left-invariant dynamics with quadratic cost on $\mathfrak{g}$ (the Lie-group analogue of LQR), the HJB equation decouples into independent finite-dimensional Riccati equations per representation block. For general nonlinear costs, Peter--Weyl provides an optimal spectral Galerkin basis respecting the group symmetry, but the $\min_u$ coupling remains. The spectral gap $\lambda_1$ (\cref{cor:spectral-gap}) provides an analytic lower bound on the convergence rate of policy evaluation, independently of the policy.
+\end{remark}
+

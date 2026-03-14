@@ -1,0 +1,44 @@
+\section{Preliminaries on locally compact abelian groups}
+
+We recall the basic setup of harmonic analysis on locally compact abelian groups. Standard references include Rudin \cite{Rudin}, Folland \cite{Folland}, and Hewitt--Ross \cite{HewittRoss}.
+
+\begin{definition}\label{def:LCA}
+A \emph{locally compact abelian (LCA) group} is a topological group $G$ that is abelian, Hausdorff, and locally compact. By the Haar theorem \cite[Theorem~2.10]{Folland}, there exists a Radon measure $\mu_G$ on $G$, unique up to positive scalar multiple, that is invariant under translation. This measure is called the \emph{Haar measure} on $G$.
+\end{definition}
+
+\begin{definition}\label{def:dual}
+A \emph{character} of an LCA group $G$ is a continuous group homomorphism $\chi : G \to \bT$, where $\bT = \{z \in \mathbb{C} : |z| = 1\}$ is the circle group under multiplication. The set of all characters forms an LCA group $\widehat{G}$ under pointwise multiplication, called the \emph{Pontryagin dual} of $G$.
+\end{definition}
+
+\begin{example}\label{ex:groups}
+The following table summarizes our three running examples.
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lccc}
+\textbf{Group $G$} & \textbf{Haar measure} & \textbf{Dual $\widehat{G}$} & \textbf{Characters} \\
+\hline
+$(\R, +)$ & $dx$ & $\R$ & $\chi_\xi(x) = e^{i\xi x}$ \\
+$(\Rpos, \times)$ & $dx/x$ & $\R$ & $\chi_s(x) = x^{is}$ \\
+$(\bT, +)$ & $d\theta$ & $\Z$ & $\chi_n(\theta) = e^{2\pi i n\theta}$
+\end{tabular}
+\end{center}
+Note that $(\R, +)$ and $(\Rpos, \times)$ have isomorphic duals but are distinct as groups.
+\end{example}
+
+\begin{definition}\label{def:FT}
+Let $\mu$ be a probability measure on an LCA group $G$. The \emph{Fourier transform} (or \emph{characteristic function}) of $\mu$ is the function $\widehat{\mu} : \widehat{G} \to \mathbb{C}$ defined by
+\[
+\widehat{\mu}(\chi) = \int_G \chi(x) \, d\mu(x).
+\]
+\end{definition}
+
+When $G = (\R, +)$, this reduces to the usual characteristic function $\widehat{\mu}(\xi) = \int_\R e^{i\xi x}\, d\mu(x)$. When $G = (\Rpos, \times)$, this gives $\widehat{\mu}(s) = \int_0^\infty x^{is}\, d\mu(x)$, which we call the Mellin transform.
+
+\begin{theorem}[Pontryagin Duality {\cite[Theorem~1.7.2]{Rudin}}]\label{thm:pontryagin}
+For any LCA group $G$, the canonical map $G \to \widehat{\widehat{G}}$ defined by $x \mapsto (\chi \mapsto \chi(x))$ is an isomorphism of topological groups.
+\end{theorem}
+
+\begin{theorem}[L\'evy Continuity Theorem on LCA Groups {\cite[Theorem~VI.4.2]{Parthasarathy}}]\label{thm:levy}
+Let $\{\mu_n\}$ be a sequence of probability measures on an LCA group $G$, and let $\mu$ be a probability measure on $G$. Then $\mu_n \xrightarrow{w} \mu$ if and only if $\widehat{\mu_n}(\chi) \to \widehat{\mu}(\chi)$ for every $\chi \in \widehat{G}$.
+\end{theorem}
+

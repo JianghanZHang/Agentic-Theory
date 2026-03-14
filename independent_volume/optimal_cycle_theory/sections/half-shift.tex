@@ -1,0 +1,58 @@
+\section{The $\frac{1}{2}$ shift}\label{sec:half-shift}
+
+The Hardy--Szeg\H{o} machinery of the preceding section lives on the Fourier side (the circle $\bT$). The Fourier--Mellin duality (\cref{thm:mellin-fourier}) transports it to the Mellin side ($\Rpos$), but the change of Haar measure introduces a systematic shift in the convergence threshold. We make this precise.
+
+\begin{definition}[Szeg\H{o} exponents for Dirichlet characters]\label{def:szego-exponent}
+Let $\chi$ be a primitive Dirichlet character mod~$q$. For $\sigma > 0$, define the Fourier coefficients $c_n = \chi(n)/n^\sigma$ and the associated Szeg\H{o} exponents:
+\begin{align}
+S_{\bT}(\sigma) &= \sum_{\substack{n=1 \\ (n,q)=1}}^{\infty} n\,|c_n|^2 = \sum_{\substack{n=1 \\ (n,q)=1}}^{\infty} \frac{1}{n^{2\sigma - 1}}
+\qquad\text{(Fourier-side)}, \label{eq:fourier-szego} \\
+S_M(\sigma) &= \sum_{\substack{n=1 \\ (n,q)=1}}^{\infty} \frac{\log n}{n^{2\sigma}}
+\qquad\text{(Mellin-side)}. \label{eq:mellin-szego}
+\end{align}
+Here $S_{\bT}$ is the holonomy \eqref{eq:holonomy} applied to the log-spectral density with coefficients $c_n$; $S_M$ is the corresponding quantity on the Mellin side after the Haar measure correction $dx/x \to dy$.
+\end{definition}
+
+\begin{theorem}[The $\frac{1}{2}$ shift]\label{thm:half-shift}
+Let $\chi$, $S_{\bT}$, $S_M$ be as in \cref{def:szego-exponent}. Define the Szeg\H{o} thresholds
+\[
+\sigma_{\bT}^* = \inf\{\sigma > 0 : S_{\bT}(\sigma) < \infty\}, \qquad
+\sigma_M^* = \inf\{\sigma > 0 : S_M(\sigma) < \infty\}.
+\]
+Then:
+\begin{enumerate}[label=(\roman*)]
+\item $S_{\bT}(\sigma) < \infty$ if and only if $\sigma > 1$. Hence $\sigma_{\bT}^* = 1$.
+\item $S_M(\sigma) < \infty$ if and only if $\sigma > \tfrac{1}{2}$. Hence $\sigma_M^* = \tfrac{1}{2}$.
+\item $\sigma_M^* = \sigma_{\bT}^* - \tfrac{1}{2}$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+For~(i): $S_{\bT}(\sigma) = \sum_{(n,q)=1} n^{-(2\sigma-1)}$. By comparison with the full Dirichlet series $\sum n^{-(2\sigma-1)}$, this converges if and only if $2\sigma - 1 > 1$, i.e., $\sigma > 1$.
+
+For~(ii): $S_M(\sigma) = \sum_{(n,q)=1} (\log n)/n^{2\sigma}$. The factor $\log n$ grows slower than any positive power of $n$, so $(\log n)/n^{2\sigma} \leq n^{-(2\sigma - \epsilon)}$ for any $\epsilon > 0$ and $n$ large enough. Thus $S_M(\sigma) < \infty$ whenever $2\sigma > 1$, i.e., $\sigma > \tfrac{1}{2}$. Conversely, for $\sigma \leq \tfrac{1}{2}$, $n^{-2\sigma} \geq n^{-1}$ and $(\log n)/n^{2\sigma} \geq (\log n)/n$, which diverges.
+
+Part~(iii) is immediate from~(i) and~(ii).
+\end{proof}
+
+\begin{remark}[Jacobian mechanism]
+The shift arises from the Jacobian of $\log : (\Rpos, dx/x) \to (\R, dy)$. On the Fourier side, the Sobolev weight $n$ in the holonomy $\sum n|c_n|^2$ counts the ``cost per frequency.'' On the Mellin side, the Haar measure $dx/x$ introduces a factor $1/n$ relative to Lebesgue measure $dy$, converting the weight $n$ to $(\log n)/n$. The net effect: the series $\sum n \cdot n^{-2\sigma}$ (Fourier) has threshold $\sigma = 1$; the series $\sum (\log n) \cdot n^{-2\sigma}$ (Mellin) has threshold $\sigma = \tfrac{1}{2}$.
+\end{remark}
+
+\begin{remark}[Number-theoretic observation]
+The threshold $\sigma_{\bT}^* = 1$ is the line $\operatorname{Re}(s) = 1$---the boundary of the zero-free region established by the prime number theorem. The threshold $\sigma_M^* = \tfrac{1}{2}$ is the line $\operatorname{Re}(s) = \tfrac{1}{2}$---the critical line of the Generalized Riemann Hypothesis.
+
+These are the same Szeg\H{o} boundary viewed from dual theaters: the Fourier theater (where the holonomy $H$ is computed) and the Mellin theater (where the multiplicative structure lives). The $\tfrac{1}{2}$ shift is a consequence of the group isomorphism $\log$, not of any property of zeros of $L$-functions.
+
+\emph{Disclaimer.} This is a structural observation about Szeg\H{o} exponents; it does not constitute a proof of any statement about zeros of $L$-functions.
+\end{remark}
+
+\begin{remark}[Complement and Dirac]
+At the Szeg\H{o} boundary, $E(f) = \infty$ and hence $1/E(f) = 0$: the cycle breaks, producing a Dirac mass. This has complementary manifestations on the two sides:
+\begin{itemize}
+\item \emph{Fourier side.} The pole of $\zeta(s)$ at $s = 1$ contributes the main term $x$ in the prime counting function---the DC component, a Dirac mass at frequency zero.
+\item \emph{Mellin side.} The zeros of $\zeta(s)$ on the critical line contribute oscillatory corrections $x^\rho / \rho$, each a Dirac atom in the spectral decomposition of the Chebyshev function.
+\end{itemize}
+The Szeg\H{o} boundary is the locus where additive and multiplicative number theory exchange their singular structures.
+\end{remark}
+
