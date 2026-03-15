@@ -1,0 +1,892 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xeCJK}
+\setCJKmainfont{STSong}
+\setCJKsansfont{STHeiti}
+\setCJKmonofont{STFangsong}
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{tikz}
+\usetikzlibrary{trees,positioning,arrows.meta,decorations.pathreplacing,calc}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\tcbuselibrary{breakable,skins}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black}
+
+% Colors
+\definecolor{storyblue}{RGB}{230,242,255}
+\definecolor{mathgreen}{RGB}{232,248,232}
+\definecolor{warnred}{RGB}{255,235,235}
+\definecolor{ideayellow}{RGB}{255,250,230}
+\definecolor{deepblue}{RGB}{40,80,140}
+
+% Custom boxes
+\newtcolorbox{storybox}[1][]{
+  colback=storyblue, colframe=deepblue!60,
+  fonttitle=\sffamily\bfseries, title={#1},
+  arc=3pt, boxrule=0.8pt, breakable
+}
+\newtcolorbox{mathbox}[1][]{
+  colback=mathgreen, colframe=green!40!black,
+  fonttitle=\sffamily\bfseries, title={#1},
+  arc=3pt, boxrule=0.8pt, breakable
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=warnred, colframe=red!50!black,
+  fonttitle=\sffamily\bfseries, title={#1},
+  arc=3pt, boxrule=0.8pt, breakable
+}
+\newtcolorbox{ideabox}[1][]{
+  colback=ideayellow, colframe=orange!60!black,
+  fonttitle=\sffamily\bfseries, title={#1},
+  arc=3pt, boxrule=0.8pt, breakable
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+\title{\sffamily\Huge 我来教你概率论！\\[6pt]
+\large —— 从一道「不可思议」的题开始}
+\author{张江涵\\\small\texttt{jianghan.zhang.gr@dartmouth.edu}}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\vspace{-1cm}
+
+\begin{center}
+\textit{\small 这不是一份讲怎么算的教案。这是一份讲「为什么要这么算」的教案。}
+\end{center}
+
+\vspace{0.5cm}
+
+%% ============================================================
+\section*{题目}
+
+\begin{storybox}[原题]
+用血清甲胎蛋白法诊断肝癌：如果患者真的患有肝癌，诊断出肝癌的概率为~0.95；如果患者没有患肝癌，诊断出不是肝癌的概率为~0.9。假设人群中肝癌患病率为~0.0004。
+
+现在李强在体检中被诊断为患有肝癌。请问：他实际患有肝癌的概率是多少？
+\end{storybox}
+
+标准答案是 $\dfrac{19}{5017} \approx 0.38\%$。
+
+对，不到百分之一。验血说他有肝癌，但他真的有的可能性不到百分之一。
+
+如果你觉得这个答案不可思议——好，这就是这道题真正想教你的东西。
+
+%% ============================================================
+\section*{第一部分：一个学校的故事}
+
+不要急着算。先跟我想象一个场景。
+
+\begin{storybox}[想象一所超大的学校]
+你的学校有 \textbf{10000} 个学生。
+
+其中 \textbf{4 个人}得了一种病（但他们自己不知道）。\\
+其余 \textbf{9996 个人}是健康的。
+
+所有人看起来都一样。你分不出谁有病谁没病。
+\end{storybox}
+
+先画一张图来感受一下这个学校：
+
+\begin{center}
+\begin{tikzpicture}
+  % 10000 people as a 100x100 grid of tiny dots, but that's too many
+  % Instead: 250 dots (each dot = 40 people), 50 wide x 5 tall
+  \node[font=\sffamily\bfseries, anchor=south] at (6.25, 2.8) {10000 个人（每个方块 = 40 人）};
+  \foreach \r in {0,...,4} {
+    \foreach \c in {0,...,49} {
+      \fill[storyblue!60] ({\c*0.25}, {-\r*0.4}) rectangle ++(0.2, 0.3);
+    }
+  }
+  % Overwrite the first dot as red (= 4 sick people, but 1 dot = 40 people, so we mark 1 dot)
+  \fill[red!70] ({0*0.25}, {0*0.4}) rectangle ++(0.2, 0.3);
+
+  % Arrow pointing to the red dot
+  \draw[-{Stealth[length=5pt]}, thick, red!70!black] (-0.8, 0.8) -- (0.05, 0.4);
+  \node[font=\small\sffamily\bfseries, text=red!70!black, anchor=south] at (-0.8, 0.8) {有病的：4 人};
+
+  % Label for blue
+  \node[font=\small\sffamily, text=deepblue, anchor=west] at (13, -0.6) {健康的};
+  \node[font=\small\sffamily, text=deepblue, anchor=west] at (13, -1.1) {9996 人};
+\end{tikzpicture}
+\end{center}
+
+看到那个红色的小方块了吗？在一大片蓝色里几乎找不到。\textbf{有病的人就是这么少。}记住这个画面。
+
+现在学校请来一个医生，给每个人做一次检查。这个检查挺厉害的，但不完美：
+
+\begin{itemize}[leftmargin=2em]
+  \item 如果你\textbf{真的有病}，检查有 95\% 的概率说「你有病」。（漏掉 5\%）
+  \item 如果你\textbf{没有病}，检查有 90\% 的概率说「你没事」。（但有 10\% 的概率\textbf{搞错}，说你有病）
+\end{itemize}
+
+\subsection*{检查完了，我们来数人头}
+
+\begin{storybox}[数人头]
+\textbf{4 个真的有病的人：}
+\begin{itemize}
+  \item 检查说「有病」的：$4 \times 0.95 \approx$ \textbf{3.8 人}
+  \item 检查说「没事」的：$4 \times 0.05 \approx$ 0.2 人（漏网了）
+\end{itemize}
+
+\textbf{9996 个没有病的人：}
+\begin{itemize}
+  \item 检查说「没事」的：$9996 \times 0.9 \approx$ \textbf{8996 人}
+  \item 检查说「有病」的：$9996 \times 0.1 \approx$ \textbf{999.6 人}（被冤枉了！）
+\end{itemize}
+\end{storybox}
+
+\begin{warnbox}[等等——3.8 个人是什么意思？真的有 0.8 个人吗？]
+当然不是。没有谁是 0.8 个人。
+
+\textbf{3.8 人}的意思是：如果你\textbf{重复}做很多很多次这个实验——每次都是 4 个病人去检查——有时候 4 个全被查出来，有时候只查出 3 个。\textbf{平均下来}，每次查出来的人数是 3.8。
+
+就像说「中国家庭平均有 1.7 个孩子」——没有哪家真的有 0.7 个孩子，但\textbf{平均值}就是这个数。
+
+数学家管这种「平均下来会是多少」叫\textbf{期望值}（expected value）。你不需要记这个名字，只需要知道：\textbf{小数点后面的数字不是在说有零点几个人，而是在说平均会发生多少。}
+\end{warnbox}
+
+看到关键了吗？被检查说「有病」的一共有多少人？
+
+$$\underbrace{3.8}_{\text{真有病}} + \underbrace{999.6}_{\text{被冤枉}} \approx \textbf{1003 人}$$
+
+李强就在这 1003 个人里面。在这群人里，真正有病的只有不到 4 个。
+
+$$\text{李强真的有病的概率} = \frac{3.8}{1003.4} = \frac{19}{5017} \approx 0.38\%$$
+
+\begin{center}
+\begin{tikzpicture}
+  % Title
+  \node[font=\sffamily\bfseries, anchor=south] at (6, 3.8) {被检查说「有病」的 1003 个人里，到底谁是真的？};
+
+  % The big bar: 1003 people total, width = 12cm
+  % Truly sick: 3.8/1003.4 ≈ 0.38%, so width ≈ 0.045cm — too thin to see!
+  % Let's make it visible: use 0.25cm for the sick part (exaggerated but labeled)
+
+  % False positives bar (the vast majority)
+  \fill[orange!25] (0.25, 0) rectangle (12, 2.5);
+  \draw[thick, orange!60!black] (0.25, 0) rectangle (12, 2.5);
+
+  % True positives bar (tiny sliver on the left)
+  \fill[red!60] (0, 0) rectangle (0.25, 2.5);
+  \draw[thick, red!70!black] (0, 0) rectangle (0.25, 2.5);
+
+  % Grid lines to show scale: each unit ≈ 100 people
+  \foreach \x in {1.2, 2.4, 3.6, 4.8, 6.0, 7.2, 8.4, 9.6, 10.8} {
+    \draw[gray!30] (\x, 0) -- (\x, 2.5);
+  }
+
+  % Brace and label for true positives
+  \draw[decorate, decoration={brace, amplitude=5pt, raise=3pt}, thick, red!70!black]
+    (0, 2.5) -- (0.25, 2.5) node[midway, above=8pt, font=\small\sffamily, text=red!70!black] {};
+  \node[above=0.4cm, font=\sffamily\bfseries, text=red!70!black, anchor=south west] at (-0.3, 2.5)
+    {真有病：$\approx$ 4 人};
+  \draw[-{Stealth[length=4pt]}, thick, red!70!black] (0.9, 3.3) -- (0.15, 2.7);
+
+  % Brace and label for false positives
+  \draw[decorate, decoration={brace, amplitude=8pt, raise=3pt}, thick, orange!60!black]
+    (0.25, 2.5) -- (12, 2.5) node[midway, above=12pt, font=\sffamily\bfseries, text=orange!60!black]
+    {没有病，被冤枉的：$\approx$ 1000 人};
+
+  % Bottom label
+  \node[font=\small\sffamily, text=gray] at (6, -0.5) {每一列 $\approx$ 100 人};
+
+  % Callout: 李强
+  \node[draw, rounded corners, fill=ideayellow, font=\sffamily, inner sep=4pt] (lq) at (6, -1.5)
+    {李强在这 1003 人里面。你觉得他在红色那一小条里的可能性大吗？};
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.3cm}
+看到了吗？红色那一小条几乎看不见。\textbf{这就是 0.38\%。}
+
+\begin{warnbox}[为什么直觉会错？]
+你的直觉可能是：「95\% 的检出率，李强被查出来了，那他大概率有病吧？」
+
+错了。因为你忘了一件事：\textbf{有病的人太少了}——只有万分之四。
+
+检查的 10\% 误报率打在 9996 个健康人身上，制造出约 1000 个「假警报」。\\
+而真正有病的人一共就 4 个，就算全部被查出来也就 4 个。
+
+假警报的数量淹没了真信号。这就是为什么 95\% 的检出率 $\neq$ 你有 95\% 的可能有病。
+
+\textbf{这两个 95\% 说的不是同一件事。}
+\end{warnbox}
+
+%% ============================================================
+\section*{第 1.5 部分：先验、后验，和一张全景图}
+
+刚才我们其实做了一件很重要的事。让我给它起两个名字：
+
+\begin{ideabox}[两个名字]
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{先验}（Prior）——在检查\textbf{之前}，你对「李强有没有病」的判断。\\
+  此时你只知道人群中有万分之四的人有病。所以：先验 = \textbf{0.04\%}。
+
+  \item \textbf{后验}（Posterior）——在看到检查结果\textbf{之后}，你对「李强有没有病」的更新判断。\\
+  现在你知道了他检查是阳性。所以：后验 = \textbf{0.38\%}。
+\end{itemize}
+
+从先验到后验，就是用新信息\textbf{更新}了你的判断。检查帮了忙——概率从 0.04\% 升到 0.38\%，涨了快 10 倍——但因为先验太低了，涨完还是很小。
+\end{ideabox}
+
+\subsection*{把整个故事画在一张图上}
+
+下面这张图里，\textbf{每个格子的面积就是它的概率}。面积越大，人数越多。
+
+\begin{center}
+\begin{tikzpicture}[scale=1]
+  % Total width = 14cm, total height = 7cm
+  % Left column: sick (4/10000 = 0.04%), width = 0.06 * 14 ≈ too thin
+  % We exaggerate: sick column width = 1.2cm, healthy = 12.8cm
+  % But label the true proportions
+
+  % ==== GRID LAYOUT (PacMan style: all positions named) ====
+
+  % Diagram origin and dimensions
+  \coordinate (ORIGIN) at (1.8, 0);     % left edge of diagram
+  \def\sickW{0.9}                        % sick column width (exaggerated)
+  \def\totalW{9.5}                       % total width (shorter to fit right labels)
+  \def\totalH{5.5}                       % total height
+  \def\splitY{0.28}                      % positive/negative split (sick col: 5%)
+  \def\healthSplitY{4.95}                % positive/negative split (healthy col: 90%)
+
+  % ---- Named corners of the four cells ----
+  \pgfmathsetmacro{\sickR}{1.8+\sickW}         % right edge of sick column
+  \pgfmathsetmacro{\rightE}{1.8+\totalW}        % right edge of diagram
+  \pgfmathsetmacro{\midHealthX}{(\sickR+\rightE)/2}  % center of healthy column
+  \pgfmathsetmacro{\topY}{\totalH}
+  \pgfmathsetmacro{\midDiagX}{(1.8+\rightE)/2} % center of whole diagram
+
+  % Key named positions (the "map")
+  \coordinate (SickBL)  at (1.8, 0);
+  \coordinate (SickTR)  at (\sickR, \topY);
+  \coordinate (SplitL)  at (1.8, \splitY);
+  \coordinate (SplitR)  at (\rightE, \healthSplitY);
+  \coordinate (HealthBR) at (\rightE, 0);
+
+  % ==== DRAW FOUR CELLS ====
+
+  % Cell A: Sick + Negative (bottom-left, tiny)
+  \fill[red!15] (1.8, 0) rectangle (\sickR, \splitY);
+  \draw[thick, red!40!black] (1.8, 0) rectangle (\sickR, \splitY);
+
+  % Cell B: Sick + Positive (top-left, the key cell)
+  \fill[red!60] (1.8, \splitY) rectangle (\sickR, \topY);
+  \draw[thick, red!70!black] (1.8, \splitY) rectangle (\sickR, \topY);
+
+  % Cell C: Healthy + Negative (bottom-right, huge)
+  \fill[storyblue!40] (\sickR, 0) rectangle (\rightE, \healthSplitY);
+  \draw[thick, deepblue!40] (\sickR, 0) rectangle (\rightE, \healthSplitY);
+
+  % Cell D: Healthy + Positive (top-right, the trap)
+  \fill[orange!35] (\sickR, \healthSplitY) rectangle (\rightE, \topY);
+  \draw[thick, orange!60!black] (\sickR, \healthSplitY) rectangle (\rightE, \topY);
+
+  % ==== COLUMN HEADERS (above diagram — no brace needed) ====
+
+  % Sick column header — centered above red column
+  \coordinate (SickColMid) at ({(1.8+\sickR)/2}, {\topY+0.3});
+  \draw[decorate, decoration={brace, amplitude=4pt, raise=2pt}, thick, red!70!black]
+    (1.8, \topY) -- (\sickR, \topY);
+  \node[font=\footnotesize\sffamily\bfseries, text=red!70!black, anchor=south]
+    at (SickColMid) {有病：4 人};
+
+  % Healthy column header — centered above blue/orange column
+  \coordinate (HealthColMid) at (\midHealthX, {\topY+0.3});
+  \draw[decorate, decoration={brace, amplitude=4pt, raise=2pt}, thick, deepblue!70]
+    (\sickR, \topY) -- (\rightE, \topY);
+  \node[font=\footnotesize\sffamily\bfseries, text=deepblue!70, anchor=south]
+    at (HealthColMid) {没有病：9996 人};
+
+  % ==== ROW LABELS (left side — single column, no overlap) ====
+
+  % Row label: positive (upper row) — in left corridor, clear of diagram edge
+  \coordinate (PosRowLabel) at (0.7, {(\healthSplitY+\topY)/2});
+  \node[font=\footnotesize\sffamily\bfseries, text=orange!60!black, rotate=90, anchor=south]
+    at (PosRowLabel) {检查说「有病」};
+
+  % Row label: negative (lower row)
+  \coordinate (NegRowLabel) at (0.7, {\healthSplitY/2});
+  \node[font=\footnotesize\sffamily, text=gray, rotate=90, anchor=south]
+    at (NegRowLabel) {检查说「没事」};
+
+  % ==== CELL LABELS (inside or via callout from clear corridors) ====
+
+  % Cell B: True positive — callout from LEFT CORRIDOR, above midpoint
+  \coordinate (TPcallout) at (0, 4.2);   % left corridor, high up
+  \coordinate (TPtarget)  at ({1.8+\sickW/2}, 3.5); % center of red cell
+  \node[font=\small\sffamily\bfseries, text=red!70!black, align=right, anchor=east]
+    (tplabel) at (TPcallout) {真有病 + 查出来了\\[2pt]\textbf{3.8 人}（真阳性）};
+  % Route: horizontal right from label to target
+  \draw[-{Stealth[length=4pt]}, thick, red!70!black]
+    (tplabel.east) -- (TPtarget);
+
+  % Cell A: False negative — callout from below
+  \coordinate (FNlabel) at ({(1.8+\sickR)/2}, -0.6);
+  \node[font=\tiny\sffamily, text=red!40!black] at (FNlabel) {漏掉 0.2 人};
+
+  % Cell D: False positive — number only inside, label outside right
+  \node[font=\sffamily\bfseries, text=orange!60!black]
+    at (\midHealthX, {(\healthSplitY+\topY)/2}) {999.6 人};
+
+  \coordinate (FPcallout) at ({\rightE+0.3}, {(\healthSplitY+\topY)/2});
+  \node[font=\small\sffamily, text=orange!60!black, align=left, anchor=west]
+    (fplabel) at (FPcallout) {被冤枉了\\（假阳性）};
+
+  % Cell C: True negative — number only inside, label outside right
+  \node[font=\sffamily\bfseries, text=deepblue!70]
+    at (\midHealthX, {\healthSplitY/2}) {8996.4 人};
+
+  \coordinate (TNcallout) at ({\rightE+0.3}, {\healthSplitY/2});
+  \node[font=\small\sffamily, text=deepblue!70, align=left, anchor=west]
+    (tnlabel) at (TNcallout) {正确说没事\\（真阴性）};
+
+  % ==== TOP BANNER: "李强在这一行里" ====
+  \coordinate (BannerPos) at (\midDiagX, {\topY+1.2});
+  \node[font=\small\sffamily, anchor=south] at (BannerPos)
+    {$\longleftarrow$ \quad \textbf{李强在这一行里（阳性）}};
+
+  % ==== DASHED BOX highlighting positive row ====
+  \draw[ultra thick, red!80!black, dashed]
+    ({1.8-0.06}, {\splitY-0.04}) rectangle ({\rightE+0.06}, {\topY+0.04});
+
+  % ==== BOTTOM CALLOUT BOXES ====
+  \coordinate (Callout1) at (\midDiagX, -1.2);
+  \coordinate (Callout2) at (\midDiagX, -2.0);
+  \node[draw, rounded corners, fill=ideayellow, font=\sffamily, inner sep=5pt, anchor=north]
+    at (Callout1) {先验：整张图里，红色列 vs 蓝色列 $\to$ 4 : 9996};
+  \node[draw, rounded corners, fill=ideayellow, font=\sffamily, inner sep=5pt, anchor=north]
+    at (Callout2) {后验：虚线框里，红色块 vs 橙色块 $\to$ 3.8 : 999.6};
+\end{tikzpicture}
+\end{center}
+
+\begin{mathbox}[怎么读这张图]
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{整张图} = 全部 10000 个人。面积 = 人数。
+  \item \textbf{左边红色窄列} = 4 个有病的人。右边蓝色/橙色宽列 = 9996 个没病的。
+  \item \textbf{虚线框内}（上面一整行）= 被检查说「有病」的人。\\
+    这是医生看到的世界——他只能看到这一行。
+  \item 在虚线框内，\textbf{红色那一小块} = 真有病的（3.8 人），\textbf{橙色那一大块} = 被冤枉的（999.6 人）。
+\end{itemize}
+
+\textbf{先验}就是看整张图的列宽比（红色列很窄）。\\
+\textbf{后验}就是只看虚线框那一行，看里面红色和橙色的面积比（红色更窄）。
+
+概率不是一个数字。概率是\textbf{面积的比例}——而比例取决于你在看哪一块。
+\end{mathbox}
+
+\begin{storybox}[每一个数字是怎么来的（不需要任何公式）]
+你只需要记住题目给的三个信息，然后\textbf{画图、填数、读答案}。
+
+\textbf{题目给你的三个数：}
+\begin{enumerate}[leftmargin=2em]
+  \item 人群中有病的比例：$\dfrac{4}{10000}$（万分之四）
+  \item 有病的人，检查查出来的概率：$95\%$
+  \item 没病的人，检查搞错的概率：$10\%$
+\end{enumerate}
+
+\textbf{第一步：分两列——有病 vs 没病}
+$$10000 \text{ 人} \;\xrightarrow{\text{分两列}}\; \underbrace{4 \text{ 人}}_{\text{有病}} \;+\; \underbrace{9996 \text{ 人}}_{\text{没病}}$$
+
+\textbf{第二步：每列各自切一刀——检查结果}
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{4.5cm}p{5.5cm}}
+\textbf{有病那一列（4 人）：} & \textbf{没病那一列（9996 人）：} \\
+\hline
+查出来了：$4 \times 95\% = \textbf{3.8}$ & 搞错了：$9996 \times 10\% = \textbf{999.6}$ \\
+漏掉了：$4 \times 5\% = 0.2$ & 正确说没事：$9996 \times 90\% = 8996.4$ \\
+\end{tabular}
+\end{center}
+
+这四个数就是面积图里四个格子的面积。
+
+\textbf{第三步：看阳性那一行，数人头}
+$$\text{阳性的总人数} = 3.8 + 999.6 = \textbf{1003.4 人}$$
+
+\textbf{第四步：在阳性那一行里，真有病的占多少？}
+$$\frac{3.8}{1003.4} = \frac{19}{5017} \approx \textbf{0.38\%}$$
+
+\textbf{结束。}
+
+没有用到任何公式。没有 $P(A|B) = \frac{P(B|A) \cdot P(A)}{P(B)}$ 这种东西。
+
+你做的事情就是：\textbf{画一个表格，填四个数，然后看比例}。只要你理解了这张图为什么长这样，你随时都能从头画出来——不用背。
+\end{storybox}
+
+\subsection*{这张图和「维恩图」有什么不同？}
+
+你可能在学校见过这种图——两个圈交叉在一起：
+
+\begin{center}
+\begin{tikzpicture}[scale=0.8]
+  \begin{scope}
+    \clip (0,0) circle (1.5);
+    \fill[red!25] (0,0) circle (1.5);
+    \fill[purple!30] (1.8,0) circle (1.5); % overlap region
+  \end{scope}
+  \begin{scope}
+    \clip (1.8,0) circle (1.5);
+    \fill[blue!20] (1.8,0) circle (1.5);
+    \fill[purple!30] (0,0) circle (1.5); % overlap region
+  \end{scope}
+  \draw[thick] (0,0) circle (1.5);
+  \draw[thick] (1.8,0) circle (1.5);
+  \node[font=\small\sffamily] at (-0.7, 0) {有病};
+  \node[font=\small\sffamily] at (2.5, 0) {阳性};
+  \node[font=\small\sffamily\bfseries] at (0.9, 0) {都是};
+  \node[font=\sffamily\bfseries, anchor=south] at (0.9, 2) {维恩图};
+\end{tikzpicture}
+\hspace{2cm}
+\begin{tikzpicture}[scale=0.8]
+  \fill[red!50] (0,0) rectangle (0.3, 2.5);
+  \fill[orange!30] (0.3, 0) rectangle (4, 0.35);
+  \fill[storyblue!40] (0.3, 0.35) rectangle (4, 2.5);
+  \fill[red!70] (0, 2.5) rectangle (0.3, 2.85);
+  \fill[orange!40] (0.3, 2.5) rectangle (4, 2.85);
+  \draw[thick] (0,0) rectangle (4, 2.85);
+  \draw[thick] (0.3, 0) -- (0.3, 2.85);
+  \draw[thick] (0, 2.5) -- (4, 2.5);
+  \node[font=\sffamily\bfseries, anchor=south] at (2, 3) {面积图（我们画的）};
+\end{tikzpicture}
+\end{center}
+
+\begin{warnbox}[维恩图的问题]
+维恩图告诉你\textbf{谁和谁有重叠}——但两个圈画得差不多大。
+
+这会骗你的眼睛：你看到「有病」和「阳性」的重叠区，觉得挺大的。
+
+但事实上，「有病」的人只有 4 个，「阳性」的人有 1003 个——它们的大小差了 250 倍！维恩图完全看不出来。
+
+\textbf{面积图的好处：大小就是概率。}你一眼就能看到红色窄列有多窄——这就是为什么我们需要一个有「测度」（面积）的图，而不只是一个画圈圈的图。
+\end{warnbox}
+
+\subsection*{发明这套理论的人}
+
+\begin{storybox}[一个叫 Kolmogorov 的俄罗斯数学家]
+1903 年，一个男孩出生在俄罗斯。他叫 \textbf{Andrey Kolmogorov}（柯尔莫哥洛夫）。他从小由姨妈带大，很早就表现出对数学的天赋——据说他小学时就发现了一些数字规律，比好多大人都早。
+
+Kolmogorov 上大学的时候，被莫斯科大学一个数学圈子吸引了。这群人的领袖是一位很有魅力的老师叫卢津（Luzin）。学生们给自己的小团体起了个绰号叫「卢津塔尼亚」——把老师的名字和一战中被击沉的著名邮轮卢西塔尼亚号拼在了一起。他们课后经常聚在一起吐槽数学。在他们嘴里：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{ll}
+偏微分方程 (partial differential equations) & $\rightarrow$ 「偏不尊重方程」\\
+有限差分 (finite differences) & $\rightarrow$ 「美梦差分」\\
+\textbf{概率论} (probability theory) & $\rightarrow$ \textbf{「不幸论」}(theory of misfortune)\\
+\end{tabular}
+\end{center}
+
+为什么概率论被叫成「不幸论」？因为那时候它真的很惨——理论根基不牢，悖论到处都是，数学家们经常为「概率到底是什么」吵架。
+
+那时候有三拨人，每拨人对「概率是什么」的理解都不一样：
+\begin{itemize}[leftmargin=2em]
+  \item \textbf{第一拨}说：概率就是「数数」——有利情况除以总情况。（但如果情况有无穷多个呢？比如在圆上随机取一点？）
+  \item \textbf{第二拨}说：概率就是「做实验」——抛一万次硬币，看正面出现的频率。（但你永远不可能真的抛无穷次。）
+  \item \textbf{第三拨}说：概率就是「你有多相信」——一种主观判断。（但不同人的判断不同，怎么做数学？）
+\end{itemize}
+
+他们用同一个词「概率」，说的其实不是同一件事。所以经常吵得不可开交。
+
+\textbf{1889 年}，一个法国数学家 Bertrand（贝特朗）出了一道题：「在圆里随机画一条弦，弦长大于边长的概率是多少？」他用三种不同的方法得到三个不同的答案。所有人都傻了——同一道题，三个答案，到底谁对？\footnote{这就是你们卷子上的第 8 题。那道题的答案写的是 $2/3$，但其实三个答案都对——取决于你怎么定义「随机」。}
+
+这个问题困扰了数学界整整 44 年。
+
+\textbf{1933 年}，30 岁的 Kolmogorov 写了一本薄薄的小书（只有几十页），叫《概率论的基础》。他说：
+
+\begin{center}
+\textit{「别吵了。你们吵架是因为你们没说清楚前提。}\\
+\textit{从今天开始，谁要谈概率，先把三件事写清楚：}\\[4pt]
+\textit{$\Omega$——什么事情可能发生？}\\
+\textit{$\mathcal{F}$——你能区分什么？（你的 $\sigma$-代数）}\\
+\textit{$P$——你怎么分配概率？（面积怎么算？）}\\[4pt]
+\textit{写清楚了这三件事，所有争论都会消失。}\\
+\textit{写不清楚，你的问题就没有意义。」}
+\end{center}
+
+就这么简单。\textbf{三条规则，几十页纸，解决了困扰数学界半个世纪的争论。}「不幸论」从此变成了真正的数学。
+
+从那以后，全世界的数学家都用 Kolmogorov 的方法来谈概率。贝特朗的悖论也不再是悖论了——因为三种方法对应三个不同的 $(\Omega, \mathcal{F}, P)$，所以它们本来就不是同一个问题。
+\end{storybox}
+
+\begin{ideabox}[给你的启示]
+Kolmogorov 不是比别人更会算。他是比别人更会\textbf{问}——他问的是：「我们在谈什么之前，应该先说清楚什么？」
+
+这也是为什么今天我们不只是教你算 $\frac{19}{5017}$。我们要教你在算之前先问：
+
+\textbf{$\Omega$ 是什么？$\mathcal{F}$ 是什么？$P$ 是什么？}
+
+\textbf{能问出这三个问题的人，比能算出答案的人走得更远。}
+\end{ideabox}
+
+%% ============================================================
+\section*{第二部分：两个方向的问题}
+
+刚才发生的事情有一个很重要的结构。让我们慢慢来。
+
+\begin{ideabox}[两个听起来很像、但完全不同的问题]
+\begin{enumerate}[label=\textbf{(\Alph*)}]
+  \item \textbf{已知}一个人有病，检查说「有病」的概率是多少？\\
+        \hspace*{2em}答：95\%。这是题目告诉你的。
+  \item \textbf{已知}检查说「有病」，这个人真的有病的概率是多少？\\
+        \hspace*{2em}答：0.38\%。这是我们刚刚算出来的。
+\end{enumerate}
+\end{ideabox}
+
+(A) 和 (B) 长得很像，但答案差了 250 倍。
+
+为什么？因为它们的\textbf{方向}不同：
+
+\begin{center}
+\begin{tikzpicture}[>={Stealth[length=6pt]}, node distance=4cm]
+  \node[draw, rounded corners, fill=storyblue, minimum width=3cm, minimum height=1cm, font=\sffamily, align=center] (real) {真实状态\\（有病/没病）};
+  \node[draw, rounded corners, fill=ideayellow, minimum width=3cm, minimum height=1cm, font=\sffamily, align=center, right=of real] (test) {检查结果\\（阳性/阴性）};
+  \draw[->, thick, deepblue] (real) -- node[above, font=\small\sffamily] {(A) 从原因到结果} (test);
+  \draw[->, thick, red!70!black] (test) to[bend right=30] node[below, font=\small\sffamily] {(B) 从结果猜原因} (real);
+\end{tikzpicture}
+\end{center}
+
+(A) 是\textbf{从原因到结果}——容易，题目直接告诉了你。\\
+(B) 是\textbf{从结果猜原因}——难，需要考虑\textbf{所有可能的原因}。
+
+记住这件事：\textbf{反过来想，概率会完全不同。}
+
+%% ============================================================
+\section*{第三部分：什么是「你知道的」？}
+
+\vspace{0.2cm}
+
+现在我要跟你说一个更深的东西。不需要用到任何公式，只需要你跟着想。
+
+\begin{ideabox}[三个人看同一所学校]
+还是那个 10000 人的学校。现在有三个人站在旁边看：
+\begin{enumerate}[label=\textbf{(\arabic*)}]
+  \item \textbf{大自然}：他知道每个人是有病还是没病。
+  \item \textbf{医生}：他只知道每个人的检查结果（阳性或阴性）。
+  \item \textbf{路人}：他什么都不知道，只知道这个学校有 10000 个人。
+\end{enumerate}
+\end{ideabox}
+
+这三个人如果被问同一个问题——「李强有病的概率是多少？」——他们的答案完全不同：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lll}
+\textbf{谁} & \textbf{他知道什么} & \textbf{他的回答} \\
+\hline
+路人 & 什么都不知道 & $\dfrac{4}{10000} = 0.04\%$ \\[6pt]
+医生 & 知道检查结果是「阳性」 & $\dfrac{3.8}{1003.4} \approx 0.38\%$ \\[6pt]
+大自然 & 知道谁真的有病 & 0\% 或 100\%，确定的 \\
+\end{tabular}
+\end{center}
+
+\textbf{同一个人，同一个问题，三个不同的答案。谁对？}
+
+\begin{mathbox}[关键的领悟]
+\textbf{三个人都对。}因为他们手上的\textbf{信息不同}。
+
+概率不是一个东西「本身的性质」——概率是\textbf{你}在\textbf{你的信息}下做出的判断。
+
+信息不同，判断就不同，概率就不同。\textbf{三个都是对的。}
+\end{mathbox}
+
+%% ============================================================
+\section*{第四部分：切西瓜}
+
+我们可以用一个很简单的画面来理解这三个人的区别。
+
+想象 10000 个学生站在操场上，从天上往下看是一整块。
+
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  % 路人
+  \node[font=\sffamily\bfseries] at (0, 3.2) {路人看到的};
+  \draw[thick, fill=storyblue!50] (0,0) ellipse (2.2 and 1.5);
+  \node[font=\small] at (0,0) {10000 个人（一整块）};
+  \node[font=\small\sffamily, text=gray] at (0,-2) {不能切。什么也区分不了。};
+
+  % 医生
+  \node[font=\sffamily\bfseries] at (6.5, 3.2) {医生看到的};
+  \draw[thick, fill=warnred!50] (5.2,0) ellipse (1.3 and 1.5);
+  \draw[thick, fill=mathgreen!50] (7.8,0) ellipse (1.3 and 1.5);
+  \node[font=\small, text width=1.8cm, align=center] at (5.2,0) {阳性\\$\approx$1003人};
+  \node[font=\small, text width=1.8cm, align=center] at (7.8,0) {阴性\\$\approx$8997人};
+  \node[font=\small\sffamily, text=gray] at (6.5,-2) {切了一刀。分成两块。};
+
+  % 大自然
+  \node[font=\sffamily\bfseries] at (13, 3.2) {大自然看到的};
+  \foreach \i in {0,...,3} {
+    \foreach \j in {0,...,2} {
+      \pgfmathsetmacro{\x}{12 + \i*0.7}
+      \pgfmathsetmacro{\y}{-1 + \j*0.9}
+      \draw[thick, fill=ideayellow!60] (\x, \y) circle (0.25);
+    }
+  }
+  \node[font=\small] at (13.2, -0.1) {...};
+  \node[font=\small\sffamily, text=gray] at (13,-2) {切成 10000 块。每个人都分开了。};
+\end{tikzpicture}
+\end{center}
+
+\begin{mathbox}[一个重要的概念]
+你手上有多少信息，就决定了你能把世界\textbf{切成多少块}。
+
+\begin{itemize}[leftmargin=2em]
+  \item 信息越少 $\rightarrow$ 切得越粗 $\rightarrow$ 每一块里面混了很多不同的情况 $\rightarrow$ 你的判断越不确定
+  \item 信息越多 $\rightarrow$ 切得越细 $\rightarrow$ 每一块里面的情况越单纯 $\rightarrow$ 你的判断越准
+\end{itemize}
+
+在数学里，这个「你能怎么切世界」的东西，有一个正式的名字：\\
+\centerline{\textbf{\sffamily\large $\sigma$-代数}（sigma algebra，读作 sigma 代数）。}
+\end{mathbox}
+
+%% ============================================================
+\section*{第五部分：什么是 $\sigma$-代数？}
+
+别被名字吓到。它就是一个\textbf{规则}，规定了「你能把世界切成哪些块」。
+
+\begin{ideabox}[$\sigma$-代数的三条规则]
+假设你面前有一群人（比如操场上的 10000 人）。
+你有一种「切法」——一堆你能分出来的组。这些组需要满足三条规则：
+
+\begin{enumerate}[label=\textbf{规则 \arabic*：}, leftmargin=4em]
+  \item \textbf{「全部」和「没有」一定在里面。}\\
+  你至少能说「所有人」和「没有人」。（这是废话，但数学需要写下来。）
+
+  \item \textbf{你能说「不是」。}\\
+  如果你能分出「阳性」这一组，那你一定也能分出「不是阳性（=阴性）」这一组。
+
+  \item \textbf{你能说「或者」，而且可以一直说下去。}\\
+  如果你能分出「A 组」和「B 组」，那你一定也能分出「A 或 B」这一组。不管有多少组，你都能合并。
+\end{enumerate}
+\end{ideabox}
+
+就这么三条。看起来简单，但它确保了一件重要的事：你能用「与、或、非」自由地组合你知道的信息，不会产生矛盾。
+
+\subsection*{回到三个人}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.8}
+\begin{tabular}{lp{9cm}}
+\textbf{谁} & \textbf{他的 $\sigma$-代数（他能切出的块）} \\
+\hline
+路人 & 只有 $\{\text{全部}, \text{没有}\}$。切不了。\\
+      & \textit{\small 他只知道有 10000 个人，仅此而已。} \\
+医生 & $\{\text{全部}, \text{没有}, \text{阳性那群人}, \text{阴性那群人}\}$。切了一刀。\\
+      & \textit{\small 他能区分阳性和阴性，但分不清阳性里谁真有病。} \\
+大自然 & 所有可能的分法。每个人都能单独分出来。\\
+      & \textit{\small 他什么都知道，所以什么问题都能回答。} \\
+\end{tabular}
+\end{center}
+
+\begin{mathbox}[为什么这东西重要？]
+因为数学家发现，\textbf{如果你不先说清楚你的 $\sigma$-代数是什么，``概率''这两个字就没有意义}。
+
+还记得那道「在圆里随机画一条弦」的题吗？那道题之所以有三个不同的答案，就是因为它没有说清楚 $\sigma$-代数——也就是说，它没有说清楚「随机」到底是在什么意义下的随机。
+
+\textbf{「随机」不是一个自带意义的词。它的意义取决于你怎么定义「可能性的世界」和「你能做什么区分」。}
+\end{mathbox}
+
+%% ============================================================
+\section*{第 5.5 部分：三门问题——标准答案没告诉你的事}
+
+有了 $\sigma$-代数，我们来拆解另一道著名的题。这道题曾经让全世界的数学教授吵成一团。
+
+\begin{storybox}[三门问题（Monty Hall Problem）]
+电视节目里有三扇门。一扇后面是车（大奖），两扇后面是山羊（谢谢参与）。
+
+你选了 \textbf{1 号门}。
+
+主持人（他\textbf{知道}车在哪里）打开了 \textbf{3 号门}——里面是山羊。
+
+他问你：\textbf{「要不要换到 2 号门？」}
+\end{storybox}
+
+\begin{center}
+\begin{tikzpicture}[door/.style={draw, thick, minimum width=1.6cm, minimum height=2.2cm, font=\sffamily}]
+  \node[door, fill=ideayellow!50] (d1) at (0,0) {\Large ?};
+  \node[door, fill=ideayellow!50] (d2) at (3,0) {\Large ?};
+  \node[door, dashed, fill=gray!15] (d3) at (6,0) {\small 山羊};
+  \node[font=\sffamily\bfseries, below=0.2cm] at (d1.south) {1 号门};
+  \node[font=\sffamily\bfseries, below=0.2cm] at (d2.south) {2 号门};
+  \node[font=\sffamily\bfseries, below=0.2cm] at (d3.south) {3 号门};
+  \node[font=\small\sffamily, above=0.2cm, text=deepblue] at (d1.north) {$\uparrow$ 你选的};
+  \node[font=\small\sffamily, above=0.2cm, text=red!70!black] at (d3.north) {$\uparrow$ 打开了};
+\end{tikzpicture}
+\end{center}
+
+标准答案：\textbf{换！}换了赢的概率是 $\frac{2}{3}$。
+
+很多人不服：「明明剩两扇门了，凭什么不是一半一半？」
+
+\subsection*{数人头：玩 300 次}
+
+还是老办法——数人头。想象你把这个游戏玩 300 次，每次车\textbf{随机}放在一扇门后面，你每次都选 1 号门：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{llll}
+\textbf{车在哪} & \textbf{次数} & \textbf{主持人开哪扇} & \textbf{你换了之后} \\
+\hline
+1 号门（你选的） & 100 次 & 2 号或 3 号都行 & 换了 $\rightarrow$ \textbf{输} \\
+2 号门 & 100 次 & 只能开 3 号 & 换到 2 号 $\rightarrow$ \textbf{赢！} \\
+3 号门 & 100 次 & 只能开 2 号 & 换到 3 号 $\rightarrow$ \textbf{赢！} \\
+\end{tabular}
+\end{center}
+
+为什么主持人「只能」开某扇门？因为\textbf{他知道车在哪}——他永远不会打开有车的门，也不会打开你选的门。
+
+换了：300 次里赢 200 次 $= \frac{2}{3}$。到这里为止，标准答案没错。
+
+\textbf{但标准答案没告诉你最重要的一件事。}
+
+\subsection*{视角一：你（选手）}
+
+你的 $\sigma$-代数很小——你不知道车在哪。
+
+\begin{ideabox}[你的先验和后验]
+\textbf{先验}（选门之前）：三扇门各 $\frac{1}{3}$。你什么都不知道。
+
+主持人开了 3 号门。他的行为告诉你什么？
+\begin{itemize}[leftmargin=2em]
+  \item 如果车在 1 号门：他可以开 2 号或 3 号，他选了开 3 号。
+  \item 如果车在 2 号门：他\textbf{只能}开 3 号（1 号是你的，2 号有车）。
+  \item 如果车在 3 号门：他\textbf{绝不会}开 3 号。但他开了！所以这不可能。
+\end{itemize}
+
+\textbf{后验}（看到他开 3 号门之后）：\\
+1 号门 $\frac{1}{3}$，2 号门 $\frac{2}{3}$，3 号门 $0$。\textbf{换！}
+\end{ideabox}
+
+\subsection*{视角二：主持人}
+
+主持人从一开始就知道车在哪。他的 $\sigma$-代数是\textbf{最大的}——他能看穿每一扇门。
+
+对他来说，2 号门后面有没有车？不是 $\frac{2}{3}$——是 \textbf{0\% 或 100\%}，确定的。他根本不需要算概率。
+
+\textbf{同一扇 2 号门。选手说 $\frac{2}{3}$，主持人说 100\%。}谁对？\textbf{都对。}信息不同，$\sigma$-代数不同，概率就不同。
+
+和路人、医生、大自然的故事一模一样。
+
+\subsection*{这才是真正的秘密}
+
+现在想象：不是主持人，而是一个\textbf{路过的小朋友}什么都不知道，随手推开了 3 号门——碰巧里面是山羊。
+
+这时候你该换吗？
+
+\textbf{不用。$\frac{1}{2}$ 对 $\frac{1}{2}$，换不换一样。}
+
+我们还是数人头。同样 300 次游戏，但这次是\textbf{不知道车在哪的小朋友}来开门。小朋友随便在 2 号和 3 号里选一扇开：
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{p{2cm}p{1.5cm}p{4cm}p{2.5cm}}
+\textbf{车在哪} & \textbf{次数} & \textbf{小朋友开 3 号门的结果} & \textbf{换了之后} \\
+\hline
+1 号门 & $\sim$50 次 & 3 号是山羊 $\checkmark$ & 换到 2 号 $\rightarrow$ \textbf{输} \\
+2 号门 & $\sim$50 次 & 3 号是山羊 $\checkmark$ & 换到 2 号 $\rightarrow$ \textbf{赢} \\
+3 号门 & $\sim$50 次 & 3 号是\textbf{车}！根本不算 & — \\
+\end{tabular}
+\end{center}
+
+小朋友开 3 号门看到山羊的情况里：50 次车在 1 号，50 次车在 2 号——\textbf{正好一半一半}。
+
+\begin{warnbox}[同样的动作，不同的概率]
+主持人打开 3 号门，看到山羊 $\rightarrow$ 换了赢 $\frac{2}{3}$。\\
+小朋友打开 3 号门，看到山羊 $\rightarrow$ 换了赢 $\frac{1}{2}$。
+
+一模一样的场景。一模一样的结果。但概率完全不同。
+
+为什么？因为\textbf{主持人知道车在哪}——他故意避开了有车的门。他的行为本身就是\textbf{信息}。
+
+而小朋友什么都不知道。他碰巧开到了山羊——这是运气，不是信息。
+\end{warnbox}
+
+\begin{mathbox}[三门问题真正的教训]
+所有「标准解答」都只告诉你「换了是 $\frac{2}{3}$」。
+
+但它们很少告诉你：\textbf{这个 $\frac{2}{3}$ 取决于主持人知道车在哪里。}换个不知道的人来开门，答案就变成 $\frac{1}{2}$。
+
+一模一样的门，一模一样的山羊，换个人来做，概率就完全不同。
+
+这不是数字游戏。这就是 $\sigma$-代数的力量——\textbf{谁知道什么，决定了概率是什么。}
+
+现在你理解了为什么 Kolmogorov 说：写不清楚 $(\Omega, \mathcal{F}, P)$，你的问题就没有意义。
+\end{mathbox}
+
+%% ============================================================
+\section*{第六部分：如果医生做了更多检查呢？}
+
+\begin{storybox}[更多信息 = 切得更细]
+假设那 1003 个「阳性」的人又做了一次更精密的检查（比如 CT）。CT 的准确率更高：
+\begin{itemize}
+  \item 真有病 $\rightarrow$ 99\% 说有病
+  \item 没有病 $\rightarrow$ 95\% 说没事（5\% 误报）
+\end{itemize}
+
+现在「阳性」那一块又被\textbf{切了一刀}：
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={draw, rounded corners, minimum height=0.8cm, font=\small\sffamily, inner sep=5pt},
+  arr/.style={-{Stealth[length=5pt]}, thick},
+]
+  \node[box, fill=storyblue!50, minimum width=2.5cm] (root) {10000 个人};
+  \node[box, fill=warnred!50, below left=1.5cm and 1.5cm of root] (pos) {阳性 $\approx$1003};
+  \node[box, fill=mathgreen!50, below right=1.5cm and 1.5cm of root] (neg) {阴性 $\approx$8997};
+  \node[box, fill=red!30, below left=1.5cm and 0.5cm of pos, font=\tiny\sffamily] (ctpos) {CT也阳性 $\approx$54};
+  \node[box, fill=orange!20, below right=1.5cm and 0.5cm of pos, font=\tiny\sffamily] (ctneg) {CT阴性 $\approx$949};
+  \draw[arr] (root) -- node[left, font=\tiny\sffamily] {验血阳性} (pos);
+  \draw[arr] (root) -- node[right, font=\tiny\sffamily] {验血阴性} (neg);
+  \draw[arr] (pos) -- (ctpos);
+  \draw[arr] (pos) -- (ctneg);
+\end{tikzpicture}
+\end{center}
+
+每多一次检查，世界就多被切一刀。你的 $\sigma$-代数就变大了。你的判断就更准了。
+\end{storybox}
+
+数学家管这个「越切越细」的过程叫 \textbf{filtration}（过滤）。就像筛子越来越细，杂质慢慢被滤掉。
+
+\vspace{0.3cm}
+
+%% ============================================================
+\section*{总结：你真正学到了什么}
+
+\begin{mathbox}[三件事]
+\begin{enumerate}[label=\textbf{\arabic*.}, leftmargin=2em, itemsep=8pt]
+  \item \textbf{反过来想，概率会完全不同。}\\
+  「有病所以检查阳性」和「检查阳性所以有病」是两个不同的问题。差 250 倍。
+
+  \item \textbf{概率取决于你有多少信息。}\\
+  路人、医生、大自然面对同一个人，给出不同的概率——三个都对。因为他们的信息不同，他们的「世界的切法」（$\sigma$-代数）不同。
+
+  \item \textbf{在说「概率是多少」之前，先说清楚你知道什么。}\\
+  这就是为什么数学家在谈概率之前，要先写下 $(\Omega, \mathcal{F}, P)$：\\
+  $\Omega$ = 所有可能发生的事情（10000 个人）\\
+  $\mathcal{F}$ = 你能做的区分（你的 $\sigma$-代数，你能怎么切）\\
+  $P$ = 你在每一块上分配的「相信程度」（概率）\\[4pt]
+  少了任何一个，「概率」都没有意义。
+\end{enumerate}
+\end{mathbox}
+
+\vspace{1cm}
+\begin{center}
+\textit{\small 这道题的标准答案是 $\frac{19}{5017}$。}\\[4pt]
+\textit{\small 但如果你理解了上面这些，你学到的东西比整张卷子 28 道题加起来都多。}
+\end{center}
+
+\vfill
+\begin{center}
+\footnotesize\sffamily\color{gray}
+写给一个正在学概率的小朋友。\\
+概率论很酷的。学会了你会发现，世界比你以为的有趣得多。加油！
+\end{center}
+
+\end{document}

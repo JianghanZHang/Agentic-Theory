@@ -1,0 +1,597 @@
+\documentclass[12pt]{amsart}
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+\usepackage{tikz-cd}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% Theorem environments (shared counter within section)
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+% Notation
+\DeclareMathOperator{\Var}{Var}
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\ind}{ind}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Rpos}{\mathbb{R}_{>0}}
+\newcommand{\bT}{\mathbb{T}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cP}{\mathcal{P}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\Htwo}{H^2}
+\newcommand{\Proj}{\mathsf{Proj}}
+
+\title[Lie Group Control]{Lie group control and articulated dynamics:\\
+applications of the additive-multiplicative duality}
+\author{Jianghan Zhang}
+\address{Department of Mathematics, Dartmouth College, Hanover, NH 03755}
+\email{jianghan.zhang.gr@dartmouth.edu}
+\date{\today}
+
+\subjclass[2020]{22E30, 93C10, 70E55, 60B15}
+\keywords{Lie groups, exponential map, MPPI, articulated rigid-body dynamics, Featherstone algorithms, Hopf--Cole linearization}
+
+\begin{document}
+
+\begin{abstract}
+This companion volume to \emph{Optimal Cycle Theory} \cite{OCT} develops the applications of the Fourier--Mellin duality and Peter--Weyl spectral decomposition to optimal control on Lie groups, model-predictive path-integral control (MPPI), and articulated rigid-body dynamics. The exponential map $\exp : \mathfrak{g} \to G$ serves as the computational bridge throughout: it converts the additive Lie algebra to the multiplicative group, linearizes the Hamilton--Jacobi--Bellman equation via the Hopf--Cole substitution, and enables forward-only sampling at the CLT rate $O(N^{-1/2})$ independently of dimension.
+\end{abstract}
+
+\maketitle
+
+%% ============================================================
+\section{Closed-form exponential maps on compact groups}\label{sec:compact}
+
+On compact groups, the exponential map admits elegant closed forms that make the passage $\mathfrak{g} \to G$ explicit.
+
+\medskip\noindent\textbf{$\boldsymbol{SO(3)}$ and Rodrigues' formula.}
+The Lie algebra $\mathfrak{so}(3)$ consists of $3 \times 3$ skew-symmetric matrices. Via the \emph{hat map} $\widehat{(\cdot)} : \R^3 \to \mathfrak{so}(3)$ defined by $\hat{\mathbf{n}}\mathbf{v} = \mathbf{n} \times \mathbf{v}$, every element of $\mathfrak{so}(3)$ can be written as $\theta\hat{\mathbf{n}}$ for a unit vector $\mathbf{n} \in S^2$ and an angle $\theta \in \R$.
+
+The key algebraic fact is that $\hat{\mathbf{n}}$ (for $\|\mathbf{n}\| = 1$) has eigenvalues $0, +i, -i$, so by the Cayley--Hamilton theorem, it satisfies its characteristic polynomial:
+\begin{equation}\label{eq:cayley-hamilton-so3}
+\hat{\mathbf{n}}^3 + \hat{\mathbf{n}} = 0, \qquad\text{i.e.,}\quad \hat{\mathbf{n}}^3 = -\hat{\mathbf{n}}.
+\end{equation}
+This periodicity causes the matrix exponential series to collapse. Separating even and odd powers:
+\begin{align*}
+\exp(\theta\hat{\mathbf{n}})
+&= \sum_{k=0}^{\infty} \frac{(\theta\hat{\mathbf{n}})^k}{k!} \\
+&= I + \underbrace{\left(\theta - \frac{\theta^3}{3!} + \frac{\theta^5}{5!} - \cdots\right)}_{\displaystyle\sin\theta}\hat{\mathbf{n}} \;+\; \underbrace{\left(\frac{\theta^2}{2!} - \frac{\theta^4}{4!} + \frac{\theta^6}{6!} - \cdots\right)}_{\displaystyle 1 - \cos\theta}\hat{\mathbf{n}}^2.
+\end{align*}
+This yields the \emph{Rodrigues rotation formula}:
+\begin{equation}\label{eq:rodrigues}
+\exp(\theta\hat{\mathbf{n}}) = I + \sin\theta\;\hat{\mathbf{n}} + (1 - \cos\theta)\;\hat{\mathbf{n}}^2.
+\end{equation}
+The infinite series reduces to three terms because the minimal polynomial of $\hat{\mathbf{n}}$ has degree~3; the odd-power terms resum as $\sin\theta$ and the even-power terms as $1 - \cos\theta$.
+
+\medskip\noindent\textbf{$\boldsymbol{SU(2)}$, quaternions, and the double cover.}
+The group $SU(2)$ of $2 \times 2$ unitary matrices with determinant $1$ is diffeomorphic to $S^3 \subset \R^4$ via identification with unit quaternions. Its Lie algebra $\mathfrak{su}(2)$ is identified with the pure imaginary quaternions $\operatorname{Im}(\mathbb{H}) \cong \R^3$.
+
+For a unit vector $\mathbf{n} \in S^2 \subset \operatorname{Im}(\mathbb{H})$, the relation $\mathbf{n}^2 = -1$ (the defining property of imaginary units in $\mathbb{H}$) yields the exponential map via direct application of Euler's formula:
+\begin{equation}\label{eq:quat-exp}
+\exp\!\left(\tfrac{\theta}{2}\,\mathbf{n}\right) = \cos\tfrac{\theta}{2} + \sin\tfrac{\theta}{2}\;\mathbf{n} \;\in\; S^3 \cong SU(2).
+\end{equation}
+This is the quaternionic generalization of $e^{i\alpha} = \cos\alpha + i\sin\alpha$: the proof is identical, with $\mathbf{n}^2 = -1$ replacing $i^2 = -1$.
+
+The factor $\frac{1}{2}$ reflects the double cover $\pi : SU(2) \to SO(3)$, defined by $\pi(q) : \mathbf{v} \mapsto q\mathbf{v}\bar{q}$ for $\mathbf{v} \in \operatorname{Im}(\mathbb{H}) \cong \R^3$. Since $q$ and $-q$ act identically by conjugation, $\ker(\pi) = \{\pm 1\}$. Composing \eqref{eq:quat-exp} with $\pi$ recovers the Rodrigues formula \eqref{eq:rodrigues}: the quaternion $\cos\frac{\theta}{2} + \sin\frac{\theta}{2}\,\mathbf{n}$ maps to the rotation matrix $I + \sin\theta\,\hat{\mathbf{n}} + (1-\cos\theta)\hat{\mathbf{n}}^2$, as can be verified by expanding $q\mathbf{v}\bar{q}$ and using the double-angle identities $\sin\theta = 2\sin\frac{\theta}{2}\cos\frac{\theta}{2}$ and $1 - \cos\theta = 2\sin^2\frac{\theta}{2}$.
+
+\medskip\noindent\textbf{CLT on compact groups.}
+Since $SO(3)$ and $SU(2)$ are compact, repeated convolutions converge to Haar measure (the uniform distribution on $G$) rather than to a Gaussian: a compact group has finite volume, leaving no room for the unbounded fluctuations that a Gaussian requires. However, for \emph{small times}---when the random increments are small perturbations of the identity---the heat kernel $p_t$ on $G$ is well-approximated by the Gaussian on $\mathfrak{g}$ pushed forward by $\exp$:
+\[
+p_t(g) \;\approx\; \frac{1}{(2\pi t)^{d/2}}\, \exp\!\left(-\frac{\|\exp^{-1}(g)\|^2}{2t}\right) \qquad \text{as } t \to 0^+,\; g \to e,
+\]
+where $d = \dim G$ and $\|\cdot\|$ is the norm on $\mathfrak{g}$ induced by the Riemannian metric. As $t \to \infty$, the heat kernel converges to the constant $1/\operatorname{vol}(G)$ (Haar measure). The rate of convergence is governed by the representation theory of $G$; see Diaconis \cite{Diaconis}.
+
+%% ============================================================
+\section{Non-compact groups}\label{sec:noncompact}
+
+\begin{remark}[Plancherel theorem and Mackey's machine]
+For non-compact $G$, the Peter--Weyl theorem (Theorem~12.1 of \cite{OCT}) is replaced by the Plancherel theorem: the sum over $\widehat{G}$ becomes an integral with respect to Plancherel measure $\mu_{\mathrm{Pl}}$ on the tempered dual $\widehat{G}_{\mathrm{temp}}$ \cite[Chapter~7]{Folland}:
+\[
+\|f\|_{L^2(G)}^2 = \int_{\widehat{G}_{\mathrm{temp}}} \|\widehat{f}(\rho)\|_{\mathrm{HS}}^2\, d\mu_{\mathrm{Pl}}(\rho).
+\]
+For semidirect products $G = K \ltimes V$ ($K$ compact, $V$ a vector group), Mackey's theory of induced representations \cite[Chapter~6]{Folland} parametrizes $\widehat{G}$ by orbits of $K$ acting on $\widehat{V}$:
+\begin{enumerate}[label=(\roman*)]
+\item Each orbit $\mathcal{O} \subset \widehat{V}$ with stabilizer $K_\xi$ (the little group at $\xi \in \mathcal{O}$) and irreducible $\sigma$ of $K_\xi$ yields an irreducible $\operatorname{Ind}_{K_\xi \ltimes V}^G(\sigma \otimes e^{i\xi})$ of~$G$.
+\item The Casimir spectrum has both discrete (from $K$) and continuous (from $V$) components.
+\item The spectral gap may vanish: $\Omega$ on $L^2(G)$ typically has continuous spectrum down to~$0$, so convergence to equilibrium is polynomial ($t^{-d/2}$) rather than exponential.
+\end{enumerate}
+\textbf{Example: $\boldsymbol{SE(3) = SO(3) \ltimes \R^3}$.} Here $K = SO(3)$ acts on $\widehat{V} = \R^3$ by rotation. The orbits are spheres $S^2_r$ ($r > 0$) and the origin. The little group at $\xi = (0,0,r)$ is $SO(2)$. Each irreducible of $SE(3)$ is induced from $SO(2) \ltimes \R^3$, parametrized by $(r, m)$ with $r > 0$, $m \in \Z$. The Casimir spectrum is continuous in~$r$ and discrete in~$m$: no spectral gap, polynomial convergence.
+\end{remark}
+
+%% ============================================================
+\section{Optimal control on Lie groups}\label{sec:hjb}
+
+We recall the key spectral objects from the parent paper before stating the control problem.
+
+\begin{definition}[Casimir operator; cf.\ Definition~12.2 of {\cite{OCT}}]\label{def:casimir}
+Let $G$ be a compact Lie group with Lie algebra $\mathfrak{g}$, equipped with a bi-invariant inner product. Let $\{X_1, \ldots, X_d\}$ be an orthonormal basis of $\mathfrak{g}$. The \emph{Casimir operator} on $G$ is
+\[
+\Omega = -\sum_{i=1}^d X_i^2,
+\]
+where each $X_i$ acts on $C^\infty(G)$ as a left-invariant differential operator. By Schur's lemma, $\Omega$ acts on each irreducible representation $V_\rho$ as scalar multiplication: $\Omega|_{V_\rho} = \lambda_\rho \cdot \operatorname{Id}_{V_\rho}$, with $\lambda_\rho = 0$ if and only if $\rho$ is the trivial representation.
+\end{definition}
+
+\begin{corollary}[Spectral gap; cf.\ Corollary~12.3 of {\cite{OCT}}]\label{cor:spectral-gap}
+Let $\lambda_1 > 0$ be the smallest nonzero Casimir eigenvalue. For any initial density $\rho_0 \in L^2(G)$ with $\int_G \rho_0 = 1$,
+\[
+\left\| \rho_t - \frac{1}{\operatorname{vol}(G)} \right\|_{L^2(G)} \leq e^{-\lambda_1 t}\left\| \rho_0 - \frac{1}{\operatorname{vol}(G)} \right\|_{L^2(G)}.
+\]
+\end{corollary}
+
+\begin{remark}[Representation-theoretic decomposition and optimal control]
+The Peter--Weyl decomposition has a precise but limited connection to optimal control on Lie groups. Consider the controlled diffusion on a compact~$G$:
+\[
+dg_t = g_t \cdot \bigl(u(t)\, dt + \sqrt{2\varepsilon}\, dW_t\bigr), \qquad u(t) \in \mathfrak{g},
+\]
+with cost $J = \mathbb{E}\bigl[\int_0^T L(g_t, u_t)\, dt + \Phi(g_T)\bigr]$. The Hamilton--Jacobi--Bellman equation for the value function $V \in C^\infty(G)$ is
+\[
+\partial_t V - \varepsilon\, \Omega V + \min_{u \in \mathfrak{g}}\bigl\{L(g, u) + \langle dV,\, g \cdot u\rangle\bigr\} = 0.
+\]
+In the Peter--Weyl basis, the three terms decompose differently:
+\begin{enumerate}[label=(\roman*)]
+\item The diffusion term $-\varepsilon\, \Omega V$ \textbf{block-diagonalizes}: $\Omega$ acts as $\lambda_\rho$ on each $V_\rho$ (\cref{def:casimir}).
+\item A left-invariant drift $g \cdot X$ acts on $V_\rho$ as the derived representation $d\rho(X)$, a $d_\rho \times d_\rho$ matrix. The free (uncontrolled) dynamics within each block is a \textbf{linear matrix ODE}.
+\item The optimization $\min_u$ and a general cost $L(g, u)$ create \textbf{inter-block coupling}: if $L$ is not a class function (constant on conjugacy classes), its Peter--Weyl expansion mixes different representations.
+\end{enumerate}
+For the special case of left-invariant dynamics with quadratic cost on $\mathfrak{g}$ (the Lie-group analogue of LQR), the HJB equation decouples into independent finite-dimensional Riccati equations per representation block. For general nonlinear costs, Peter--Weyl provides an optimal spectral Galerkin basis respecting the group symmetry, but the $\min_u$ coupling remains. The spectral gap $\lambda_1$ (\cref{cor:spectral-gap}) provides an analytic lower bound on the convergence rate of policy evaluation, independently of the policy.
+\end{remark}
+
+%% ============================================================
+\section{Hopf--Cole linearization and path-integral control}\label{sec:mppi}
+
+\begin{remark}[Rigid-body configuration spaces and spectral truncation]
+The configuration space of a floating-base rigid body with $n$ revolute joints is $Q = SE(3) \times \bT^n$. The Peter--Weyl basis for $L^2(G_1 \times G_2)$ consists of tensor products $\rho_1 \otimes \rho_2$ with Casimir eigenvalue $\lambda_{\rho_1 \otimes \rho_2} = \lambda_{\rho_1} + \lambda_{\rho_2}$.
+
+Two obstructions arise in high dimension. First, $SE(3)$ is non-compact: its Plancherel decomposition has continuous spectrum and no spectral gap (\S\ref{sec:noncompact}). Second, on the compact factor $SO(3) \times \bT^n$, the Weyl eigenvalue asymptotics give $O(\Lambda^{(3+n)/2})$ spectral degrees of freedom below a cutoff~$\Lambda$---a curse of dimensionality for any spectral Galerkin truncation. Stochastic methods bypass this entirely: path sampling yields Monte Carlo estimates at rate $O(N^{-1/2})$, independently of $\dim G$---the CLT rate of the parent paper \cite{OCT}. The spectral gap $\lambda_1$ (\cref{cor:spectral-gap}) re-enters as the mixing rate of the sampler.
+\end{remark}
+
+\begin{remark}[Hopf--Cole linearization and path-integral control]
+Specialize the HJB equation (\S\ref{sec:hjb}) to quadratic control cost
+$L(g,u) = q(g) + \tfrac{1}{2}\|u\|_{\mathfrak{g}}^2$.
+The $\min_u$ is a Legendre--Fenchel transform: the minimizer is
+$u^* = -\nabla_{\mathfrak{g}} V$ with minimum value
+$q(g) - \tfrac{1}{2}\|\nabla_{\mathfrak{g}} V\|^2$.
+The specialized HJB becomes
+\[
+\partial_t V - \varepsilon\,\Omega V + q(g)
+  - \tfrac{1}{2}\|\nabla_{\mathfrak{g}} V\|^2 = 0,
+\quad V(T,g) = \Phi(g).
+\]
+In the deterministic limit $\varepsilon = 0$, the characteristics are Euler--Poincar\'e trajectories on $\mathfrak{g}$ (equivalently, Lie--Poisson flow on $\mathfrak{g}^*$).
+
+\medskip\noindent\textbf{Linearization.}
+Setting $\lambda = 2\varepsilon$ so that $\lambda R^{-1} = \Sigma$,
+the Hopf--Cole substitution $\psi = e^{-V/(2\varepsilon)}$ exactly cancels the
+quadratic gradient nonlinearity, yielding the linearized PDE:
+\[
+\partial_t \psi + (-\varepsilon\,\Omega)\psi
+  - \frac{q}{2\varepsilon}\,\psi = 0,
+\quad \psi(T,g) = e^{-\Phi(g)/(2\varepsilon)}.
+\]
+This is a backward linear PDE---the heat equation on $G$ with killing
+potential $q/(2\varepsilon)$.
+
+\medskip\noindent\textbf{Feynman--Kac representation.}
+Since $-\varepsilon\,\Omega$ is the generator of the uncontrolled diffusion
+$dg_s = g_s \cdot \sqrt{2\varepsilon}\,dW_s$:
+\[
+\psi(t,g) = \mathbb{E}_g\!\left[
+  \exp\!\left(-\frac{1}{2\varepsilon}\int_t^T q(g_s)\,ds\right)
+  e^{-\Phi(g_T)/(2\varepsilon)}
+\right],
+\]
+where the expectation is over the uncontrolled (pure-diffusion) process
+started at $g_t = g$.
+
+\medskip\noindent\textbf{Optimal control recovery and MPPI.}
+The optimal control is
+$u^*(t,g) = 2\varepsilon\,\nabla_{\mathfrak{g}}\log\psi(t,g)$.
+The nonlinear HJB is replaced by forward sampling of the SDE plus
+exponential reweighting---this is model-predictive path-integral control
+(MPPI) \cite{Kappen,Todorov}.
+The Monte Carlo estimate converges at $O(N^{-1/2})$ for bounded costs, independently of $\dim G$---the CLT rate of the parent paper \cite{OCT}.
+
+\medskip\noindent\textbf{Deterministic limit.}
+As $\varepsilon \to 0$, a Schilder-type large-deviation argument shows
+$V(t,g) \to \min_u\bigl\{\int_t^T L(g_s,u_s)\,ds + \Phi(g_T)\bigr\}$.
+The minimizing path satisfies the Euler--Lagrange equation; on a Lie group
+with left-invariant kinetic energy, this reduces to the Euler--Poincar\'e
+equation on $\mathfrak{g}$.
+\end{remark}
+
+\begin{remark}[Phase propagation and the eikonal limit]\label{rem:eikonal}
+The deterministic limit $\varepsilon \to 0$ of the specialized HJB (preceding remark) yields the Hamilton--Jacobi equation $\partial_t V + H(\nabla V) = 0$. For wave propagation in a medium with velocity profile $v(x)$, the phase $\phi(x,t)$ satisfies the \emph{eikonal equation}:
+\[
+|\nabla\phi|^2 = \frac{1}{v(x)^2},
+\]
+which is precisely a Hamilton--Jacobi equation. The wavefronts are characteristics; the rays are geodesics on the Riemannian manifold $(M, g_{ij} = v(x)^{-2}\delta_{ij})$. This is exact---not an approximation, not sampling, not machine learning. Given the velocity structure, one computes arrival times at any point in one step.
+
+\emph{Physical realizations.}
+\begin{itemize}
+\item \emph{Seismic waves.} Phase propagation through Earth's interior with velocity structure $v(x)$. Given the velocity profile, arrival times at any point are computed exactly via the eikonal equation.
+\item \emph{Tsunamis.} Shallow water wave propagation: $\partial_{tt}\eta = \nabla\cdot(gH(x)\nabla\eta)$, with phase velocity $\sqrt{gH(x)}$ determined by known bathymetry $H(x)$. This is why tsunami early warning systems produce exact arrival-time predictions within minutes of an earthquake.
+\item \emph{Elastic waves in kinematic chains.} Contact force propagation through a robot's structure---the same physics at smaller scale, with exactly known link geometry.
+\end{itemize}
+
+\emph{Peter--Weyl on $S^2$.}
+Earth is (approximately) a sphere. The Peter--Weyl decomposition of $L^2(S^2)$ yields the spherical harmonics $Y_\ell^m$, and Earth's free oscillations (normal modes) are exactly these harmonics with eigenfrequencies $\omega_{n\ell}$ determined by the radial velocity structure. Measuring eigenfrequencies after large earthquakes and inverting for $v(x)$ is the inverse spectral problem---hearing the shape of the drum. The forward problem (given structure, compute modes) is exact because it reduces to solving Sturm--Liouville equations on each representation block, exactly as the heat equation block-diagonalizes via the Casimir spectrum (\cref{cor:spectral-gap}).
+
+\emph{Cycle versus re-cycle.}
+Event nucleation (when an earthquake occurs) may have infinite holonomy---chaotic, sensitive to initial conditions, possibly unpredictable. But once the source exists, propagation on known structure is exact computation, not sampling. The structure (velocity profile, bathymetry, link geometry) is the cycle; estimating it from observations (seismic tomography, sonar mapping, system identification) is the re-cycle.
+\end{remark}
+
+%% ============================================================
+\section{Forward-only reduction}\label{sec:forward-only}
+
+\begin{proposition}[Forward-only reduction via the exponential bridge]
+\label{prop:forward-only}
+Consider the MPPI estimator for the controlled diffusion on a Lie group~$G$
+described in \S\ref{sec:mppi}.
+\begin{enumerate}[label=\textup{(\roman*)}]
+\item \textbf{Arithmetic completeness.}
+Every operation in the estimator is a finite composition of three primitives:
+\begin{itemize}[nosep]
+\item $\exp_G : \mathfrak{g} \to G$ \textup{(}Lie group exponential\textup{)},
+\item $\log_G : G \to \mathfrak{g}$ \textup{(}Lie group logarithm\textup{)},
+\item linear algebra \textup{(}matrix multiply-accumulate on
+      $\mathfrak{g} \cong \R^d$\textup{)}.
+\end{itemize}
+No backward differentiation through the dynamics and no other transcendental
+operations are required.
+\item \textbf{Dimension-free convergence.}
+The estimator converges at $O(N^{-1/2})$, independently of $\dim G$.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof \textup{(}constructive enumeration\textup{)}]
+We enumerate the four computational stages and verify that each uses only the
+three primitives.
+
+\medskip\noindent\emph{SDE step.}
+$g_{t+h} = g_t \cdot \exp_G\!\bigl(h\,u + \sqrt{2\varepsilon h}\;\xi\bigr)$,
+where $\xi \in \mathfrak{g}$ is Gaussian noise.
+This requires one~$\exp_G$ and one matrix multiply-accumulate (MMA) in
+$\mathfrak{g}$.
+
+\medskip\noindent\emph{Cost evaluation.}
+For a tracking cost $q(g) = \bigl\|\log_G(g^{-1}g_{\mathrm{target}})\bigr\|^2$:
+one~$\log_G$ and one MMA (squared norm in~$\mathfrak{g}$).
+
+\medskip\noindent\emph{Exponential reweighting.}
+$w^{(i)} = \exp\!\bigl(-\mathrm{cost}^{(i)}/(2\varepsilon)\bigr)$:
+one scalar exponential (the $\dim G = 1$ case of $\exp_G$).
+
+\medskip\noindent\emph{Weighted average.}
+$u^* = 2\varepsilon\,\sum_i w^{(i)}\xi^{(i)}\big/\sum_i w^{(i)}$:
+MMA in~$\mathfrak{g}$.
+
+\medskip\noindent
+The weights $w^{(i)}$ are bounded (bounded cost, fixed~$\varepsilon$), so the
+weighted average is a bounded-weight Monte Carlo estimator. The CLT
+(Theorems~3.1 and 4.1 of \cite{OCT}) gives convergence at $O(N^{-1/2})$,
+independently of~$\dim G$.
+\end{proof}
+
+%% ============================================================
+\section{Generalized path integral and Riccati compression}\label{sec:riccati}
+
+\begin{remark}[Generalized path integral and Riccati compression]
+The acronym GPI in the in-context GPI theorem (Theorem~1.6 of \cite{OCT}) admits a second reading:
+\emph{Generalized Path Integral}.
+The two readings coincide.
+
+The MPPI estimator of \cref{prop:forward-only} supplies the
+improvement half: sample $N$ trajectories, assign Boltzmann weights
+$w^{(i)} \propto \exp\!\bigl(-J^{(i)}/\varepsilon\bigr)$, and compute
+the weighted average.
+The Boltzmann reweighting is exactly the exponential bridge applied to
+the path measure---it converts the uniform (prior) measure over
+trajectories to the optimal (posterior) measure, with the cost
+functional $J$ playing the role of the negative log-likelihood.
+Convergence at $O(N^{-1/2})$ is guaranteed by the CLT
+(Theorems~3.1 and 4.1 of \cite{OCT}), independently of $\dim G$.
+
+\medskip\noindent\textbf{Riccati compression.}
+Specialize to $G = (\R^n, +)$ with linear dynamics
+$\dot x = Ax + Bu$ and quadratic cost
+$\int_0^T (x^\top Q\,x + u^\top R\,u)\,dt$
+(the LQG regime),
+where $A \in \R^{n \times n}$, $B \in \R^{n \times m}$,
+$Q \succeq 0$, and $R \succ 0$.
+The Feynman--Kac path integral is Gaussian and evaluates in closed
+form; the Boltzmann-weighted average compresses to the matrix Riccati
+ODE:
+\[
+\dot P = A^\top\! P + PA - PBR^{-1}B^\top\! P + Q,
+\]
+where $P(t) \in \R^{n \times n}$ is the cost-to-go matrix and
+$V(x) = x^\top P\, x$ the value function.
+No sampling is needed: the exact solution replaces the Monte Carlo
+estimator entirely.
+The dual equation (Kalman--Bucy filter) compresses the estimation
+filtration in the same way.
+The CLT rate $O(N^{-1/2})$ of \cref{prop:forward-only} thus quantifies
+the cost of leaving the Riccati regime: on a nonlinear Lie group~$G$
+with non-quadratic cost, the path integral cannot be evaluated
+analytically and one pays $O(N^{-1/2})$ per sample for the Monte Carlo
+approximation.
+\end{remark}
+
+%% ============================================================
+\section{Articulated rigid-body dynamics}\label{sec:articulated}
+
+An articulated mechanism---a tree of $n+1$ rigid bodies connected by joints,
+with body~$0$ as the floating base---provides a concrete test of the framework
+above.
+The configuration space is $Q = SE(3) \times \bT^n$, and every step of the classical recursive
+dynamics algorithms is an operation on $\mathfrak{se}(3)$ or its dual
+\cite{Featherstone,MurrayLiSastry}.
+
+\medskip\noindent\textbf{(A) Configuration space and product of exponentials.}
+Label the bodies $0, 1, \ldots, n$ along the kinematic tree.
+Body $i$ has joint angle $\theta_i \in \bT$ and screw axis
+$S_i \in \mathfrak{se}(3)$ (in body frame).
+The pose of body $i$ relative to the world frame is given by the product of
+exponentials:
+\[
+T_i(q)
+= g_0 \, \bar{M}_1 \, e^{S_1 \theta_1} \cdots \bar{M}_i \, e^{S_i \theta_i},
+\]
+where $g_0 \in SE(3)$ is the base pose and
+$\bar{M}_i \in SE(3)$ is the reference-configuration offset of joint $i$.
+
+\medskip\noindent\textbf{(B) Recursive velocity propagation---the adjoint
+representation in action.}
+The body velocity of link $i$ is
+$\mathcal{V}_i^b = T_i^{-1}\dot{T}_i \in \mathfrak{se}(3)$, and it
+satisfies the recursion
+\[
+\mathcal{V}_i^b
+= \mathrm{Ad}_{(e^{S_i\theta_i}\bar{M}_i)^{-1}}\,\mathcal{V}_{i-1}^b
+  + S_i\,\dot{\theta}_i.
+\]
+The recursion is built entirely from the \textbf{adjoint representation}
+$\mathrm{Ad}_g : \mathfrak{se}(3) \to \mathfrak{se}(3)$---the same object
+governing the Peter--Weyl decomposition of $L^2(SE(3))$.
+
+\medskip\noindent\textbf{(C) Spatial inertia and the Euler--Poincar\'e
+equation.}
+Each body $i$ carries a spatial inertia
+$\cM_i \in \mathrm{Sym}^+(\mathfrak{se}(3)^*)$: a $6 \times 6$
+positive-definite matrix in Pl\"ucker coordinates encoding mass, center of
+mass, and rotational inertia.
+The Newton--Euler equation for body $i$ in body frame is
+\[
+\mathcal{F}_i
+= \cM_i\,\dot{\mathcal{V}}_i
+  + \mathrm{ad}^*_{\mathcal{V}_i}\!(\cM_i\,\mathcal{V}_i),
+\]
+where $\mathrm{ad}^*$ is the coadjoint action of $\mathfrak{se}(3)$ on
+$\mathfrak{se}(3)^*$.
+This is exactly the \textbf{Euler--Poincar\'e equation} on $\mathfrak{se}(3)$
+for a single rigid body.
+For a free rigid body ($\mathcal{F} = 0$), writing
+$\mu = \cM\,\mathcal{V} \in \mathfrak{se}(3)^*$ gives
+$\dot{\mu} = \mathrm{ad}^*_{\mathcal{V}}\mu$; the rotational component
+recovers \textbf{Euler's equation} $\dot{\Pi} = \Pi \times \omega$.
+
+\medskip\noindent\textbf{(D) Recursive Newton--Euler Algorithm
+(RNEA)---$O(n)$ inverse dynamics.}
+\begin{itemize}[nosep]
+\item \emph{Forward pass} (root $\to$ leaves): propagate velocities
+  $\mathcal{V}_i$ and accelerations $\dot{\mathcal{V}}_i$ using $\mathrm{Ad}$.
+\item \emph{Backward pass} (leaves $\to$ root): compute body wrenches
+  $\mathcal{F}_i$ via Euler--Poincar\'e, propagate to parents using the
+  coadjoint $\mathrm{Ad}^*$, and project onto joint axes:
+  $\tau_i = S_i^T \mathcal{F}_i$.
+\end{itemize}
+Complexity: $O(n)$---one Euler--Poincar\'e evaluation and one $\mathrm{Ad}$
+transform per body.
+
+\noindent In Lagrangian coordinates \cite{CarpentierMansard}, the inverse dynamics reads
+\begin{equation}\label{eq:lagrangian-eom}
+\tau = M(q)\,\ddot{q} + C(q,\dot{q})\,\dot{q} + g(q)
+  - \sum_i J_i(q)^T f_i^{\mathrm{ext}},
+\end{equation}
+where $M(q) \in \R^{n \times n}$ is the joint-space inertia matrix,
+$C(q,\dot{q})\,\dot{q}$ collects Coriolis and centrifugal terms,
+$g(q)$ is the gravity vector, and $J_i(q)$ is the frame Jacobian at
+which external force $f_i^{\mathrm{ext}}$ is applied.
+RNEA evaluates the right-hand side in $O(n)$; its analytical
+derivatives $\partial\tau/\partial q$, $\partial\tau/\partial\dot{q}$
+are likewise $O(n)$ \cite{CarpentierMansard}.
+
+\medskip\noindent\textbf{(E) Articulated Body Algorithm (ABA)---$O(n)$
+forward dynamics.}
+The ABA computes the forward dynamics---inverting \eqref{eq:lagrangian-eom}
+to obtain $\ddot{q}$ given $(\tau, f^{\mathrm{ext}})$---without forming
+$M$ explicitly.
+The key object is the \emph{articulated-body inertia} $\cM_i^A$, the
+effective inertia of body $i$ and all its descendants accounting for joint
+freedom.
+The recursion (leaves $\to$ root) is
+\[
+\cM_i^A = \cM_i + \!\!\sum_{j \in \mathrm{children}(i)}
+  \mathrm{Ad}_{T_{ji}}^*
+  \!\left(\cM_j^A
+    - \cM_j^A S_j \bigl(S_j^T \cM_j^A S_j\bigr)^{\!-1} S_j^T \cM_j^A
+  \right) \mathrm{Ad}_{T_{ji}}.
+\]
+The inner expression
+$\cM^A - \cM^A S(S^T\cM^A S)^{-1} S^T \cM^A$ is a \textbf{Schur
+complement}---the projection of the inertia onto the space orthogonal to the
+joint axis.
+This is a Riccati recursion on $\mathrm{Sym}^+(\mathfrak{se}(3)^*)$.
+Complexity: $O(n)$.
+
+\medskip\noindent\textbf{(E$'$) Contact forces: recover then eliminate.}
+When the mechanism interacts with the environment, unilateral contacts
+impose constraints $\phi_k(q) \geq 0$ with associated Jacobians
+$J_k^c = \partial\phi_k/\partial q$.
+The contact forces $\lambda_k \geq 0$ satisfy the complementarity
+condition $0 \leq \lambda_k \perp \phi_k(q) \geq 0$ \cite{MenagerCarpentier2025}.
+In the Lagrangian form \eqref{eq:lagrangian-eom}, they enter as
+additional external forces $f_k^{\mathrm{ext}} = \lambda_k\,\hat{n}_k$
+at the contact points.
+
+\medskip\noindent\emph{Recover.}
+Substituting the forward dynamics into the contact constraint
+$\ddot{\phi}_k \geq 0$ yields the \textbf{Delassus system}:
+\[
+G\,\lambda = J^c\, M(q)^{-1}\bigl(\tau - C\dot{q} - g\bigr)
+  + \dot{J}^c\,\dot{q},
+\qquad G = J^c\, M(q)^{-1} (J^c)^T.
+\]
+The Delassus operator $G$ is a Schur complement of the mass matrix
+onto the contact space---the same algebraic structure as the
+articulated-body inertia projection in part~(E).
+
+\medskip\noindent\emph{Eliminate.}
+Once $\lambda$ is recovered, substitute back:
+$\ddot{q} = M^{-1}\bigl(\tau - C\dot{q} - g + (J^c)^T\lambda\bigr)$.
+The contact forces are eliminated from the forward dynamics; what
+remains is branchless arithmetic on $\mathfrak{se}(3)$.
+
+\medskip\noindent\emph{Barrier smoothing.}
+The complementarity condition $0 \leq \lambda \perp \phi \geq 0$ is a
+hard branch.
+Replacing it with a log-barrier potential
+$V_{\mathrm{barrier}}(\phi) = -\varepsilon\log\phi$ yields a smooth
+contact force $\lambda_\varepsilon = \varepsilon / \phi$ that
+approximates the complementarity as $\varepsilon \to 0$.
+(For exact treatment without relaxation, the complementarity can be
+handled as a quadratic program with complementarity
+constraints~\cite{MenagerCarpentier2025}.)
+The MPPI estimator of \cref{prop:forward-only} samples through the barrier-smoothed
+landscape without branch.
+
+\medskip\noindent\textbf{(F) Lie--Poisson duality: velocity
+$\leftrightarrow$ momentum.}
+The Legendre transform $\mathbb{FL}: \mathfrak{g} \to \mathfrak{g}^*$ via the
+composite inertia tensor maps body velocities to spatial momenta
+\cite{MarsdenRatiu}.
+Euler--Poincar\'e on $\bigoplus_i \mathfrak{se}(3)$ (velocity variables) is
+dual to Lie--Poisson on $\bigoplus_i \mathfrak{se}(3)^*$ (momentum
+variables):
+RNEA computes the Euler--Poincar\'e side; ABA computes the Lie--Poisson side.
+The inertia tensor
+$\cM_i : \mathfrak{se}(3) \to \mathfrak{se}(3)^*$ is the bridge, exactly as
+in the classical duality $\mathfrak{g} \leftrightarrow \mathfrak{g}^*$ of
+geometric mechanics.
+
+\medskip\noindent\textbf{(G) Connection to the spectral and
+stochastic framework.}
+Three connections tie the recursive dynamics to the results of \cite{OCT}:
+
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Representation-theoretic.}
+The $\mathrm{Ad}$ and $\mathrm{Ad}^*$ in Featherstone's recursions are the
+adjoint and coadjoint representations of $SE(3)$.
+In the Peter--Weyl/Plancherel decomposition of $L^2(SE(3))$, these same
+representations govern how Fourier modes transform under group action.
+The tree topology constrains them to act only between parent--child
+pairs---``nearest-neighbor coupling'' that enforces sparsity in the
+Peter--Weyl expansion.
+
+\item \emph{Riccati structure.}
+The ABA recursion is a discrete matrix Riccati equation on
+$\mathfrak{se}(3)^*$.
+The per-block Riccati of the HJB (\S\ref{sec:hjb}, for left-invariant quadratic cost)
+is the spectral-domain counterpart: ABA factors the Riccati in the spatial
+domain (tree topology), while Peter--Weyl factors it in the spectral domain
+(representation blocks).
+
+\item \emph{Stochastic extension and MPPI.}
+Adding noise to joint torques or base forces gives an SDE on
+$SE(3) \times \bT^n$.
+The Hopf--Cole linearization (\S\ref{sec:mppi}) converts the HJB for the
+articulated system to a Feynman--Kac expectation.
+Each forward sample of the SDE can be computed in $O(n)$ per time step using
+the recursive structure---the tree factorization is preserved under
+randomization.
+The Monte Carlo estimator converges at the CLT rate $O(N^{-1/2})$,
+independently of $n$ and $\dim G = 6 + n$:
+Featherstone provides the $O(n)$ forward simulator; the CLT provides the
+dimension-free convergence guarantee.
+This is the MPPI framework for articulated rigid-body control.
+\end{enumerate}
+
+%% ============================================================
+\begin{thebibliography}{99}
+
+\bibitem{OCT}
+J.~Zhang,
+Optimal Cycle Theory: holonomy of the additive-multiplicative loop via Fourier analysis on groups,
+preprint, 2025.
+
+\bibitem{CarpentierMansard}
+J.~Carpentier and N.~Mansard.
+\newblock Analytical derivatives of rigid body dynamics algorithms.
+\newblock In \emph{Robotics: Science and Systems~(RSS)}, 2018.
+
+\bibitem{Diaconis}
+P.~Diaconis,
+Group representations in probability and statistics,
+\emph{IMS Lecture Notes---Monograph Series}, vol.~11, 1988.
+
+\bibitem{Featherstone}
+R.~Featherstone,
+\emph{Rigid Body Dynamics Algorithms},
+Springer, 2008.
+
+\bibitem{Folland}
+G.~B.~Folland,
+\emph{A Course in Abstract Harmonic Analysis}, 2nd ed.,
+CRC Press, 2015.
+
+\bibitem{Hall}
+B.~C.~Hall,
+\emph{Lie Groups, Lie Algebras, and Representations: An Elementary Introduction}, 2nd ed.,
+Graduate Texts in Mathematics, vol.~222, Springer, 2015.
+
+\bibitem{Kappen}
+H.~J.~Kappen,
+Path integrals and symmetry breaking for optimal control theory,
+\emph{J.\ Stat.\ Mech.}, 2005:P11011, 2005.
+
+\bibitem{MarsdenRatiu}
+J.~E.~Marsden and T.~S.~Ratiu,
+\emph{Introduction to Mechanics and Symmetry}, 2nd ed.,
+Texts in Applied Mathematics, vol.~17, Springer, 1999.
+
+\bibitem{MenagerCarpentier2025}
+E.~M\'enager, A.~Bambade, W.~Jallet, A.~De~Marchi, and J.~Carpentier.
+\newblock Contact-implicit inverse dynamics.
+\newblock Submitted to \emph{IEEE Trans.\ Robotics}, 2025.
+
+\bibitem{MurrayLiSastry}
+R.~M.~Murray, Z.~Li, and S.~S.~Sastry,
+\emph{A Mathematical Introduction to Robotic Manipulation},
+CRC Press, 1994.
+
+\bibitem{Todorov}
+E.~Todorov,
+Linearly-solvable Markov decision problems,
+in \emph{Advances in Neural Information Processing Systems~19} (NIPS),
+2006, pp.~1369--1376.
+
+\end{thebibliography}
+
+\end{document}

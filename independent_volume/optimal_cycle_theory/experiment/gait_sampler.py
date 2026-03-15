@@ -80,7 +80,7 @@ def decode_gait(phi: jnp.ndarray, beta: float,
                   columns: [FR, FL, RL, RR]
     """
     stride_period = ROBOT["stride_period"]
-    phases = jnp.array([0.0, phi[0], phi[1], phi[2]])  # FR, FL, RL, RR
+    phases = jnp.array([phi[0], 0.0, phi[1], phi[2]])  # FL, FR(ref), RL, RR
     t_steps = jnp.arange(horizon + 1) * dt
     cycle_pos = (t_steps[:, None] / stride_period + phases[None, :]) % 1.0
     contacts = (cycle_pos < beta).astype(jnp.float32)
@@ -134,6 +134,92 @@ def weighted_circular_variance(phis: jnp.ndarray,
     return 1.0 - R
 
 
+def circular_distance(a: jnp.ndarray, b: jnp.ndarray) -> jnp.ndarray:
+    """Geodesic distance on T^1 = [0,1) per coordinate.
+
+    Returns:
+        d: same shape as a, b — entry-wise distance in [0, 0.5]
+    """
+    diff = (a - b) % 1.0
+    return jnp.minimum(diff, 1.0 - diff)
+
+
+def kl_diagonal_torus(mu_new: jnp.ndarray, sigma_new: jnp.ndarray,
+                      mu_old: jnp.ndarray, sigma_old: jnp.ndarray) -> float:
+    """KL(q_new || q_old) for diagonal Gaussians on T^3.
+
+    Uses circular distance for the mean shift.
+    KL = sum_i [ log(sigma_old_i/sigma_new_i)
+               + (sigma_new_i^2 + d_circ(mu_new_i, mu_old_i)^2) / (2 sigma_old_i^2)
+               - 1/2 ]
+
+    Args:
+        mu_new, mu_old: (d,) centers on [0,1)^d
+        sigma_new, sigma_old: (d,) standard deviations (diagonal)
+
+    Returns:
+        KL divergence (scalar)
+    """
+    d_mu = circular_distance(mu_new, mu_old)
+    return float(jnp.sum(
+        jnp.log(sigma_old / sigma_new)
+        + (sigma_new**2 + d_mu**2) / (2.0 * sigma_old**2)
+        - 0.5
+    ))
+
+
+def trust_region_step(mu_old: jnp.ndarray, sigma_old: jnp.ndarray,
+                      mu_new: jnp.ndarray, sigma_new: jnp.ndarray,
+                      delta_kl: float) -> tuple:
+    """Project (mu_new, sigma_new) onto KL trust region around (mu_old, sigma_old).
+
+    If KL(new || old) <= delta_kl, accept as-is.
+    Otherwise, find alpha in (0,1] by bisection such that
+        KL(interpolated || old) = delta_kl,
+    where interpolated = alpha * new + (1-alpha) * old
+    (with circular interpolation for mu on T^3).
+
+    Args:
+        mu_old, sigma_old: current distribution parameters
+        mu_new, sigma_new: proposed (unconstrained) update
+        delta_kl: trust region radius
+
+    Returns:
+        (mu_proj, sigma_proj, kl_actual, alpha)
+    """
+    kl = kl_diagonal_torus(mu_new, sigma_new, mu_old, sigma_old)
+
+    if kl <= delta_kl:
+        return mu_new, sigma_new, kl, 1.0
+
+    # Bisection on alpha
+    lo, hi = 0.0, 1.0
+    # Circular displacement from old to new
+    d_mu = circular_distance(mu_new, mu_old)
+    # Sign: which direction on the circle
+    raw_diff = (mu_new - mu_old) % 1.0
+    sign = jnp.where(raw_diff <= 0.5, 1.0, -1.0)
+    signed_d = sign * d_mu
+
+    for _ in range(20):  # bisection converges fast
+        alpha = (lo + hi) / 2.0
+        mu_mid = (mu_old + alpha * signed_d) % 1.0
+        sigma_mid = sigma_old + alpha * (sigma_new - sigma_old)
+        sigma_mid = jnp.maximum(sigma_mid, 1e-4)
+        kl_mid = kl_diagonal_torus(mu_mid, sigma_mid, mu_old, sigma_old)
+        if kl_mid < delta_kl:
+            lo = alpha
+        else:
+            hi = alpha
+
+    alpha = (lo + hi) / 2.0
+    mu_proj = (mu_old + alpha * signed_d) % 1.0
+    sigma_proj = jnp.maximum(sigma_old + alpha * (sigma_new - sigma_old), 1e-4)
+    kl_final = kl_diagonal_torus(mu_proj, sigma_proj, mu_old, sigma_old)
+
+    return mu_proj, sigma_proj, kl_final, alpha
+
+
 def contact_mask_to_foot_forces_reference(contact_mask: jnp.ndarray,
                                           mass: float) -> jnp.ndarray:
     """Generate reference foot forces for a given contact mask.
@@ -181,7 +267,7 @@ def foot_height_schedule(phi: jnp.ndarray, beta: float,
     if h_max is None:
         h_max = ROBOT["swing_height"]
     stride_period = ROBOT["stride_period"]
-    phases = jnp.array([0.0, phi[0], phi[1], phi[2]])  # FR, FL, RL, RR
+    phases = jnp.array([phi[0], 0.0, phi[1], phi[2]])  # FL, FR(ref), RL, RR
     t_steps = jnp.arange(horizon + 1) * dt
     cycle_pos = (t_steps[:, None] / stride_period + phases[None, :]) % 1.0
 

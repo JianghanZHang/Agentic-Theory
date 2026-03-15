@@ -5,6 +5,7 @@
 \usepackage{mathtools}
 \usepackage{tikz-cd}
 \usepackage{enumitem}
+\usepackage{graphicx} % for \rotatebox
 \usepackage{hyperref}
 \usepackage{cleveref}
 
@@ -37,6 +38,9 @@
 \newcommand{\cK}{\mathcal{K}}
 \newcommand{\cT}{\mathcal{T}}
 \newcommand{\Proj}{\mathsf{Proj}}
+\newcommand{\Chu}{\mathrm{Chu}}
+\DeclareMathOperator{\op}{op}
+\newcommand{\parr}{\mathbin{\rotatebox[origin=c]{180}{\&}}}
 
 \title[Optimal Cycle Theory]{Optimal Cycle Theory:\\ holonomy of the additive-multiplicative loop\\ via Fourier analysis on groups}
 \author{Jianghan Zhang}
@@ -79,6 +83,7 @@ We identify a closed algebraic loop---the \emph{optimal cycle}---connecting the 
 \input{sections/forward-only}
 \input{sections/riccati}
 \input{sections/articulated}
+\input{sections/chu-duality}
 
 % Concluding
 \input{sections/concluding}

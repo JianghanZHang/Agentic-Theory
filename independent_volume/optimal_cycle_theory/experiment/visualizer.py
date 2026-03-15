@@ -73,6 +73,7 @@ canvas.ch{width:100%;height:110px;margin:6px 0;background:rgba(0,0,0,0.2);border
     </div>
     <div class="bar">
       <button id="btnPlay" onclick="togglePlay()">▶</button>
+      <button id="btnTrack" onclick="toggleTrack()" style="min-width:80px">Rollout</button>
       <select id="iterSel" onchange="switchIter(+this.value)"></select>
       <label>Speed
         <input type="range" id="spd" min="0.2" max="4.0" step="0.2" value="1.0" oninput="speed=+this.value;document.getElementById('spdV').textContent=this.value+'x'">
@@ -97,33 +98,44 @@ let currentIter = -1;
 let nIters = 0;
 let diag = null;
 let lastT = 0;
+let track = 'rollout'; // 'rollout' or 'solve'
+let hasSolve = false;
 const FPS_BASE = 25;
+
+function toggleTrack() {
+  if (!hasSolve) return;
+  track = (track === 'rollout') ? 'solve' : 'rollout';
+  document.getElementById('btnTrack').textContent = track === 'rollout' ? 'Rollout' : 'Solved';
+  document.getElementById('btnTrack').classList.toggle('active', track === 'solve');
+  document.getElementById('finfo').textContent = 'loading...';
+  loadIter(currentIter);
+}
 
 async function loadIter(iter) {
   currentIter = iter;
-  const resp = await fetch('/traj_info?iter=' + iter);
+  const t = (iter === -1 && track === 'solve') ? 'solve' : '';
+  const resp = await fetch('/traj_info?iter=' + iter + '&track=' + t);
   const info = await resp.json();
   nFrames = info.n_frames;
   frames = new Array(nFrames).fill(null);
   fi = 0;
-  // Load ALL frames, wait for each
   const promises = [];
   for (let j = 0; j < nFrames; j++) {
-    promises.push(loadFrame(iter, j, j));
+    promises.push(loadFrame(iter, j, j, t));
   }
   await Promise.all(promises);
-  document.getElementById('finfo').textContent = nFrames + ' frames loaded';
+  document.getElementById('finfo').textContent = nFrames + ' frames (' + (t||'rollout') + ')';
   console.log('Loaded ' + frames.filter(f=>f).length + '/' + nFrames + ' frames');
   draw();
 }
 
-function loadFrame(iter, idx, slot) {
+function loadFrame(iter, idx, slot, t) {
   return new Promise(resolve => {
     const img = new window.Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => { frames[slot] = img; resolve(); };
     img.onerror = (e) => { console.error('frame err', idx, e); resolve(); };
-    img.src = '/frame?iter=' + iter + '&f=' + idx;
+    img.src = '/frame?iter=' + iter + '&f=' + idx + '&track=' + (t||'');
   });
 }
 
@@ -188,6 +200,9 @@ async function init() {
   for (let i = 0; i < nIters; i++) {
     sel.innerHTML += '<option value="'+i+'">Iter '+i+'</option>';
   }
+
+  hasSolve = data.has_solve || false;
+  if (!hasSolve) document.getElementById('btnTrack').style.display = 'none';
 
   document.getElementById('info').textContent =
     nIters + ' iters | N=' + data.N_samples +
@@ -269,6 +284,7 @@ def create_app(data_path: str = "rollout_data.npz") -> flask.Flask:
     npz_data = np.load(npz_path)
     final_traj = npz_data['final_trajectory']
     all_trajs = npz_data['all_trajectories']
+    solve_traj = npz_data['solve_trajectory'] if 'solve_trajectory' in npz_data else None
 
     with open(json_path) as f:
         meta = json.load(f)
@@ -307,27 +323,35 @@ def create_app(data_path: str = "rollout_data.npz") -> flask.Flask:
     # Pre-render frame cache (iter -> list of jpeg bytes)
     _cache = {}
 
-    def _get_traj(iter_idx):
+    def _get_traj(iter_idx, track=''):
+        if track == 'solve' and solve_traj is not None:
+            return solve_traj
         if iter_idx < 0 or iter_idx >= len(all_trajs):
             return final_traj
         return all_trajs[iter_idx]
 
-    def _ensure_cached(iter_idx):
-        if iter_idx in _cache:
-            return
-        traj = _get_traj(iter_idx)
+    def _ensure_cached(iter_idx, track=''):
+        cache_key = (iter_idx, track)
+        if cache_key in _cache:
+            return cache_key
+        traj = _get_traj(iter_idx, track)
         frames = []
         for i in range(traj.shape[0]):
             qvel = traj[i, nq:nq+nv] if traj.shape[1] > nq else None
             img = _render(traj[i, :nq], qvel)
             frames.append(_jpeg(img))
-        _cache[iter_idx] = frames
+        _cache[cache_key] = frames
+        return cache_key
 
-    # Pre-render final iteration at startup
+    # Pre-render at startup
     import sys
     print("Pre-rendering final trajectory...", file=sys.stderr, flush=True)
-    _ensure_cached(-1)
-    print(f"  {len(_cache[-1])} frames cached.", file=sys.stderr, flush=True)
+    ck = _ensure_cached(-1)
+    print(f"  {len(_cache[ck])} rollout frames cached.", file=sys.stderr, flush=True)
+    if solve_traj is not None:
+        print("Pre-rendering solve trajectory...", file=sys.stderr, flush=True)
+        ck = _ensure_cached(-1, 'solve')
+        print(f"  {len(_cache[ck])} solve frames cached.", file=sys.stderr, flush=True)
 
     @app.route('/')
     def index():
@@ -336,16 +360,18 @@ def create_app(data_path: str = "rollout_data.npz") -> flask.Flask:
     @app.route('/traj_info')
     def traj_info():
         iter_idx = flask.request.args.get('iter', -1, type=int)
-        traj = _get_traj(iter_idx)
-        _ensure_cached(iter_idx)
-        return flask.jsonify({'n_frames': traj.shape[0], 'iter': iter_idx})
+        track = flask.request.args.get('track', '', type=str)
+        traj = _get_traj(iter_idx, track)
+        _ensure_cached(iter_idx, track)
+        return flask.jsonify({'n_frames': traj.shape[0], 'iter': iter_idx, 'track': track})
 
     @app.route('/frame')
     def frame():
         iter_idx = flask.request.args.get('iter', -1, type=int)
         frame_idx = flask.request.args.get('f', 0, type=int)
-        _ensure_cached(iter_idx)
-        frames = _cache.get(iter_idx, [])
+        track = flask.request.args.get('track', '', type=str)
+        cache_key = _ensure_cached(iter_idx, track)
+        frames = _cache.get(cache_key, [])
         if not frames:
             return "no frames", 404
         frame_idx = max(0, min(frame_idx, len(frames) - 1))
@@ -358,6 +384,7 @@ def create_app(data_path: str = "rollout_data.npz") -> flask.Flask:
             'best_phi': meta['best_phi'],
             'n_iters': meta['n_iters'],
             'N_samples': meta.get('N_samples', 64),
+            'has_solve': solve_traj is not None,
         })
 
     return app

@@ -170,6 +170,9 @@ large when the foot is near the ground ($h_k \to 0^+$), decaying as
 the foot lifts.
 No binary contact mask is needed---the force generation is continuous and
 differentiable in both $\varphi$ and $\varepsilon$.
+In the cost functional (steps~4--5 below), $h_k$ is regularized to
+$h_k + \varepsilon$ to avoid the singularity at $h_k = 0$ during
+stance (\cref{rem:regularized-barrier}).
 
 \medskip\noindent\emph{Impedance realization.}
 The barrier scale $\sigma_k = \lambda_k / (\lambda_k + 1)$ modulates a
@@ -204,6 +207,71 @@ The barrier parameter $\varepsilon$ thus controls not only the contact force
 distribution and the MPPI temperature, but also the impedance profile of
 the physical controller.
 
+\begin{remark}[Regularized barrier and self-consistent contact force]
+\label{rem:regularized-barrier}
+The standard log-barrier $-\varepsilon\log h_k$ is singular at $h_k = 0$
+(stance phase, where $h_k \equiv 0$ by \eqref{eq:foot-height}).
+The regularized barrier
+\[
+V_k^{\mathrm{reg}} = -\varepsilon\log(h_k + \varepsilon)
+\]
+is finite everywhere and its gradient yields the barrier scale directly:
+$-\partial V_k^{\mathrm{reg}}/\partial h_k = \varepsilon/(h_k + \varepsilon) = \sigma_k$.
+The identity
+$-\varepsilon\log(h_k + \varepsilon) = -\varepsilon\log\varepsilon + \varepsilon\log\sigma_k$
+shows that the first term is constant across gait samples (hence drops from
+Boltzmann weights), while the second term $\varepsilon\log\sigma_k$ is $O(1)$
+and does not amplify cost variance---ensuring that the effective sample size
+remains bounded away from~$1$.
+\end{remark}
+
+\medskip\noindent\emph{PID extension and gravity compensation.}
+The PD law \eqref{eq:impedance} has zero steady-state error only when the
+gravitational torque vanishes---a condition violated at the thigh and calf
+joints of a standing quadruped.
+Add an integral term and feedforward gravity compensation:
+\begin{equation}\label{eq:pid-impedance}
+\tau_k = K_p(\sigma_k)\,e_k
+       + K_i(\sigma_k)\,z_k
+       - K_d(\sigma_k)\,\dot{q}_k
+       + \sigma_k\,\tau_k^{\mathrm{grav}},
+\end{equation}
+where $e_k = q_k^{\mathrm{des}} - q_k$ is the position error,
+$z_k(t) = \int_0^t e_k(s)\,ds$ is the integrator state, and
+$\tau_k^{\mathrm{grav}}$ is the gravity compensation torque from inverse
+dynamics.
+The integral gain interpolates as
+$K_i(\sigma) = K_i^{\mathrm{stance}}\,\sigma$: active only in stance
+($\sigma \approx 1$), dormant in swing ($\sigma \approx 0$).
+This mirrors industrial force controllers, where PI action eliminates
+the steady-state gravity error that pure PD cannot.
+
+\medskip\noindent\emph{B-spline generalization.}
+The sinusoidal schedule \eqref{eq:foot-height} is a special case: two
+effective control points (ground, peak) with a fixed trigonometric
+interpolant.
+More generally, represent each $h_k(t)$ as a periodic cubic B-spline with
+$n_k$ control points $c_{k,1}, \ldots, c_{k,n_k} \geq 0$:
+\begin{equation}\label{eq:bspline-height}
+h_k(t) = \max\Bigl(0,\;\sum_{j=1}^{n_k} c_{k,j}\,B_j(t \bmod T_s)\Bigr),
+\end{equation}
+where $B_j$ are periodic cubic B-spline basis functions with knots at
+$\{0, T_s/n_k, \ldots, (n_k{-}1)T_s/n_k\}$.
+The non-negativity clamp ensures $h_k \geq 0$; the barrier
+$\lambda_k = \varepsilon / h_k$ then derives the contact mode as before.
+
+Sampling noise at the $n_k$ knot points and interpolating is equivalent to
+MPPI with structured covariance
+$\Sigma_u = B\,\Sigma_c\,B^T$, where $B$ is the $H \times n_k$ basis
+matrix.
+This restricts the search to smooth (C$^2$) trajectories---a frequency
+filter that excludes unphysical high-frequency oscillations from the sample
+space.
+The dimension of the gait space increases from $3$ (phase offsets) to
+$4n_k$ (spline coefficients), but remains far below $4H$ (pointwise),
+achieving the ``complexity reduction for free'' observed empirically by
+Alvarez-Padilla et al.
+
 \medskip\noindent\emph{Joint-space renormalization.}
 Define normalized coordinates centered on the standing configuration
 $q_0 \in \R^n$:
@@ -218,6 +286,20 @@ The scale $r_i$ is the half-range of joint~$i$; the PD gains become
 uniform across joints with disparate physical ranges (e.g.\ hip
 $[\pm 60^\circ]$ vs.\ thigh $[-90^\circ, +200^\circ]$), eliminating the
 need for per-joint gain tuning.
+
+\smallskip
+\noindent\emph{Pitfall: non-uniform physical gains.}
+In normalized coordinates, a uniform gain $K_p$ maps to physical gains
+$K_p^{\mathrm{phys},i} = K_p / r_i$.
+Since the half-ranges differ substantially---e.g.\ thigh
+$r_{\mathrm{thigh}} \approx 2.53\;\mathrm{rad}$ vs.\ calf
+$r_{\mathrm{calf}} \approx 1.42\;\mathrm{rad}$---the physical
+stiffness at the thigh is $\sim\!1.8\times$ weaker than at the calf.
+The thigh, which bears the dominant gravitational load, is the weakest
+joint---exactly the wrong hierarchy.
+The integral term in \eqref{eq:pid-impedance} compensates: it accumulates
+the gravity-induced steady-state error that the proportional term alone
+cannot eliminate with uniform normalized gains.
 
 \medskip\noindent\emph{Joint-limit barrier.}
 Each joint~$i$ has normalized limits $a_i < 0 < b_i$ (asymmetric when
@@ -243,6 +325,280 @@ entropic OT regularization, and impedance modulation now also controls
 joint-limit softness---a \emph{quintuple} unification of a single
 barrier/temperature parameter.
 
+\medskip\noindent\emph{Anti-windup as anti-winding.}
+The integrator state $z_k(t) = \int_0^t e_k\,ds$ in \eqref{eq:pid-impedance}
+lives on $\R$---the universal cover of the circle.
+The physical torque, however, is constrained:
+$|\tau_k| \leq \tau_{\max,k}$.
+When the actuator saturates, further error accumulation in $z_k$ has no
+physical effect: the integrator \emph{winds} on $\R$ while the output
+is pinned at $\pm\tau_{\max}$.
+This is integrator windup---literally, a winding phenomenon.
+
+Anti-windup freezes the integrator at saturation:
+\begin{equation}\label{eq:anti-windup}
+\dot{z}_k =
+\begin{cases}
+e_k & \text{if } |\tau_k| < \tau_{\max,k}, \\
+0   & \text{if } |\tau_k| = \tau_{\max,k}.
+\end{cases}
+\end{equation}
+This is the projection from the universal cover $\R$ to the realizable
+set $\mathcal{Z}_k = \{z : |\tau_k(z)| \leq \tau_{\max,k}\}$---it prevents
+fictitious winding-number accumulation.
+
+The parallel with the joint-limit barrier is exact:
+\begin{center}
+\begin{tabular}{lll}
+& \textbf{State space} & \textbf{Actuator space} \\
+\hline
+Constraint & $a_i < \tilde{q}_i < b_i$ & $|\tau_k| \leq \tau_{\max,k}$ \\
+Smooth method & $-\varepsilon\log(\tilde{q}-a)$ (barrier) &
+  $K_i \int e\,dt$ saturates smoothly \\
+Hard method & hard wall at $a, b$ & clamp $\dot{z}=0$ at $\tau_{\max}$
+\end{tabular}
+\end{center}
+The log-barrier keeps $\tilde{q}$ in the interior (smooth anti-winding in
+state space); anti-windup keeps $z$ in the realizable set (hard
+anti-winding in actuator space).
+As $\varepsilon \to 0$, the barrier approaches the hard wall---the two
+mechanisms converge to the same boundary behavior.
+
+\medskip\noindent\emph{Time-varying feedback: Riccati inner solve.}
+The impedance controller \eqref{eq:pid-impedance} uses hand-tuned gains
+$K_p, K_d, K_i$.
+More generally, given a gait schedule $h_k(t;\varphi)$ and the induced
+barrier scales $\sigma_k(t)$, the centroidal dynamics
+\[
+\dot{x} = Ax + B(\sigma(t))\,u + c, \qquad
+B(\sigma)_{ij} = \sigma_k(t)\,B^0_{ij}
+\]
+is \emph{exactly} linear (not linearized) with time-varying $B(t)$.
+The state $x = (p, v, \phi, \omega, \theta) \in \R^{13}$ collects
+center-of-mass position, velocity, orientation, angular velocity, and stride
+phase; the control $u \in \R^{12}$ is the four-foot force vector.
+The kinematic part $A_{\mathrm{kin}}$ encodes the double-integrator structure
+($\dot{p} = v$, $\dot{\phi} = \omega$); the affine term $c$ encodes gravity
+and the phase clock.
+
+\medskip\noindent\emph{Viscous ground and the contact projector.}
+Each foot $k$ contacts a surface with unit outward normal
+$\hat{n}_k \in S^2$.
+The \textbf{contact projector}
+\begin{equation}\label{eq:contact-projector}
+  \Pi_k = I_3 - \hat{n}_k \otimes \hat{n}_k
+\end{equation}
+is the orthogonal projection onto the tangent plane at the contact point:
+$\Pi_k v$ extracts the component of velocity parallel to the surface.
+A foot in contact ($\sigma_k \approx 1$) generates viscous friction
+proportional to the tangential velocity,
+\begin{equation}\label{eq:viscous-friction}
+  F_{\mathrm{fric},k} = -\sigma_k\,\eta\,\Pi_k\,v,
+\end{equation}
+where $\eta > 0$ is the viscous ground coefficient (a material property).
+The per-foot weighted sum enters the acceleration rows of $A$:
+\begin{equation}\label{eq:A-viscous}
+  A(t)\big|_{3{:}6,\,3{:}6}
+  = -\frac{\eta}{m}\sum_{k=1}^{4}\sigma_k(t)\,\Pi_k,
+\end{equation}
+so that $A(t) = A_{\mathrm{kin}} + A_{\mathrm{fric}}(t)$ with the
+friction block \eqref{eq:A-viscous} in the velocity--acceleration coupling.
+
+\smallskip\noindent\emph{Flat-ground recovery.}
+When the terrain is flat with vertical gravity
+$\mathbf{g} = (0,0,-g)$, every contact normal is
+$\hat{n}_k = \hat{e}_z$ and
+$\Pi_k = \mathrm{diag}(1,1,0)$ for all $k$.
+The sum collapses to
+$(\sum_k \sigma_k)\,\Pi_{\mathrm{Null}(\mathbf{g})}$---friction
+acts in the horizontal plane only, as expected.
+The system remains \emph{exactly} linear in $x$: the coefficients
+of $A(t)$ depend on $\sigma_k(t)$ and the normals $\hat{n}_k$,
+not on $x$.
+The Riccati recursion \eqref{eq:riccati-tvlqr} applies with
+$A_d(t) = I + \Delta t\,A(t)$ at each backstep.
+The barrier $-\varepsilon\log(h_k + \varepsilon)$ prevents the foot
+from ``sinking''---simultaneously a complementarity relaxation and
+a buoyancy bound.
+
+\medskip\noindent\emph{Support $\oplus$ Coverage decomposition.}
+At each contact foot $k$, the force space $\R^3$ decomposes as
+\begin{equation}\label{eq:support-coverage}
+\R^3 = \mathrm{Range}(\hat{n}_k) \;\oplus\; \mathrm{Image}(\Pi_k).
+\end{equation}
+The \textbf{support} component $\mathrm{Range}(\hat{n}_k)$ carries the
+normal reaction force: through $B(\sigma)$, it generates the vertical
+acceleration $\dot{v}_z = \sum_k \sigma_k f_{k,z}/m$ that must equal $g$
+for weight support.
+The \textbf{coverage} component $\mathrm{Image}(\Pi_k)$ carries the
+tangential friction: through $A(t)$, it resists horizontal velocity and
+provides traction for locomotion.
+
+The finite-horizon Riccati \eqref{eq:riccati-tvlqr} with terminal cost
+$P_H = Q_f$ suffers \emph{feedforward decay}: the gravity-compensating
+feedforward $k_t$ weakens toward the horizon boundary.
+The remedy: define time-averaged discrete dynamics
+$\bar{A}_d = I + \Delta t\,\bar{A}$,
+$\bar{B}_d = \Delta t\,\bar{B}$
+where $\bar{A} = H^{-1}\sum_t A(t)$, $\bar{B} = H^{-1}\sum_t B(t)$.
+The \textbf{steady-state DARE}
+\begin{equation}\label{eq:dare-terminal}
+P_\infty = Q + \bar{A}_d^\top P_\infty \bar{A}_d
+  - \bar{A}_d^\top P_\infty \bar{B}_d
+    (R + \bar{B}_d^\top P_\infty \bar{B}_d)^{-1}
+    \bar{B}_d^\top P_\infty \bar{A}_d
+\end{equation}
+encodes the infinite-horizon cost-to-go.
+Using $P_H = P_\infty$ as terminal cost ensures that $k_t$ provides
+adequate gravity compensation at every backstep---the Riccati
+``covers'' the full horizon.
+
+Even with $P_\infty$, the Riccati may fall short of exact weight support
+due to time-varying $\sigma_k(t)$.
+The \textbf{support floor} enforces
+$\sum_k \sigma_k(t)\,f_{k,z}(t) \geq mg$
+after each forward step: if the effective vertical force is below
+threshold, the deficit is distributed uniformly across active feet.
+This is a projection onto the support half-space---the
+$\mathrm{Range}(\hat{n}_k)$ component of
+\eqref{eq:support-coverage}---and guarantees weight support regardless
+of Riccati approximation quality.
+
+\medskip\noindent\emph{Contact no-slip and the cyclic constraint.}
+A stance foot planted on the ground must not slide: the foot-ground
+relative velocity is zero.
+In the centroidal model, foot positions are fixed in the body frame,
+so the foot velocity equals the center-of-mass velocity $v$.
+The \textbf{contact no-slip cost}
+\begin{equation}\label{eq:no-slip}
+J_{\mathrm{slip}}
+= w_{\mathrm{slip}} \int_0^T \!\Bigl(\sum_k \sigma_k(t)\Bigr)
+  \bigl(v_x(t)^2 + v_y(t)^2\bigr)\,dt
+\end{equation}
+penalizes tangential velocity during contact: the more feet in stance,
+the higher the penalty.
+This creates the fundamental tension that drives gait cycling:
+tracking demands $v_x = v^*$, while no-slip demands $v = 0$ during
+stance.
+The resolution: alternate contacts so that stance duration is minimized
+while maintaining thrust---a trot pays half the slip cost of full stance.
+
+The no-slip cost makes $Q$ time-varying:
+$Q(t) = Q + w_{\mathrm{slip}} \bigl(\sum_k \sigma_k(t)\bigr) E_{v_x, v_y}$,
+where $E$ selects the horizontal velocity components.
+The Riccati recursion \eqref{eq:riccati-tvlqr} and Joseph form
+\eqref{eq:joseph-form} carry through with $Q \to Q(t)$;
+the affine recursion for $p_t$ retains the original $Q$ because the
+no-slip cost penalizes \emph{absolute} velocity (foot-ground slip),
+not deviation from the reference.
+
+\smallskip\noindent\emph{Integral controllability and the backflip test.}
+Any pointwise contact constraint would forbid flight phases---yet a
+backflip, with $B(t) = 0$ during flight, is controllable over the
+full cycle.
+The controllability Gramian
+\[
+W(0, T_s) = \int_0^{T_s}
+  \Phi(0,t)\, B(\sigma(t))\, R^{-1} B(\sigma(t))^\top \Phi(0,t)^\top\, dt
+\]
+is the integral measure: $W \succ 0$ iff the system is controllable
+over one stride, regardless of instantaneous contact loss
+\cite{Raibert}.
+The no-slip cost \eqref{eq:no-slip} is a practical realization of this
+integral perspective: it evaluates the \emph{total} contact sliding over
+a cycle, permitting flight ($\sigma_k = 0 \Rightarrow$ zero penalty)
+while penalizing prolonged stance.
+The support floor (\S\ref{sec:articulated}, forward simulate step)
+handles weight support pointwise; the no-slip cost handles gait cycling
+as an integral constraint.
+Together they complete the Support $\oplus$ Coverage decomposition:
+support is pointwise in $\mathrm{Range}(\hat{n}_k)$, coverage is
+integral in $\mathrm{Image}(\Pi_k)$.
+
+\begin{remark}[Three reference fields for the contact projector]
+\label{rem:reference-fields}
+The normal $\hat{n}_k$ admits three canonical choices:
+\begin{enumerate}[nosep]
+\item \emph{Gravity field}: $\hat{n}_k = -\mathbf{g}/|\mathbf{g}|$
+  (global vertical).
+  Flat-ground case; friction acts in the horizontal plane.
+\item \emph{Contact field}: $\hat{n}_k = \hat{n}_k(x)$
+  (surface normal at foot $k$'s contact point).
+  The physical truth for uneven terrain: the tangent plane
+  rotates with the local surface gradient.
+\item \emph{Task field}: $\hat{n}_k = \hat{n}_{\mathrm{task}}$
+  (an equilibrium direction defined by the task, not geometry).
+  This determines which velocity components are ``free'' for
+  locomotion and which are ``resisted''---functionally
+  defining the locomotion subspace.
+\end{enumerate}
+Choices~(1) and~(2) coincide on flat ground.
+Choice~(3) connects to the skew direction of gait asymmetry:
+the projector $\Pi_k$ determines which velocity components accumulate
+net displacement through periodic contact.
+\end{remark}
+
+\begin{remark}[Viscous ground as buoyancy]\label{rem:buoyancy}
+A foot in ground contact is analogous to a hull in water.
+Normal force (along $\hat{n}_k$) is buoyancy---weight
+support controlled by submersion depth via $\sigma_k$.
+Tangential force (in the contact plane $\Pi_k$) is viscous drag---the
+medium resists relative motion, providing the friction that enables
+locomotion.
+The barrier scale $\sigma_k = \varepsilon/(h_k + \varepsilon)$ controls
+``submersion'': deeper contact (lower $h_k$) $\Rightarrow$ higher
+$\sigma_k$ $\Rightarrow$ more friction $\Rightarrow$ more available thrust.
+As $\varepsilon \to 0$, the viscous model converges to binary stick/slip,
+recovering Coulomb-like contact.
+\end{remark}
+
+Euler discretization gives $A_d(t) = I + \Delta t\, A(t)$,
+$B_d(t) = \Delta t\, B(t)$.
+
+The discrete Riccati recursion
+\begin{equation}\label{eq:riccati-tvlqr}
+K_t = (R + B_d^\top P_{t+1} B_d)^{-1} B_d^\top P_{t+1} A_d, \qquad
+P_t = Q + A_d^\top P_{t+1}(A_d - B_d K_t)
+\end{equation}
+where $A_d = A_d(t)$ and $B_d = B_d(t)$ are both time-varying through
+$\sigma_k(t)$,
+yields optimal time-varying feedback $K(t) \in \R^{12 \times 13}$ and
+feedforward $k(t) \in \R^{12}$ for each sampled gait.
+
+\smallskip\noindent\emph{Joseph form and Gauss--Newton exactness.}
+The $P_t$ update in \eqref{eq:riccati-tvlqr} involves a subtraction
+$A_d^\top P_{t+1} A_d - K_t^\top S\, K_t$ that can destroy
+positive-definiteness through floating-point cancellation.
+Writing $F_t = A_d - B_d K_t$ (closed-loop dynamics), the algebraically
+equivalent \textbf{Joseph form} \cite{BucyJoseph}
+\begin{equation}\label{eq:joseph-form}
+P_t = Q + F_t^\top\, P_{t+1}\, F_t + K_t^\top R\, K_t
+\end{equation}
+is a sum of three positive semi-definite matrices---manifestly
+$P_t \succeq 0$ at every backstep, with no subtraction.
+For nonlinear dynamics, the value-function Hessian includes
+second-order terms $V_x \cdot f_{xx}$ that can spoil positive
+definiteness; the \emph{Gauss--Newton approximation}
+\cite{TassaErezTodorov,MastalliCrocoddyl} drops these terms,
+recovering the iLQR/DDP recursion used in Crocoddyl.
+In the centroidal model, the dynamics is \emph{exactly} linear
+($f_{xx} = 0$), so the Gauss--Newton approximation is
+exact---the Joseph form \eqref{eq:joseph-form} is the true
+Hessian, not an approximation.
+The optimal control is $u_t = k_t - K_t(x_t - x_t^{\mathrm{ref}})$:
+$K_t$ corrects deviations from the reference trajectory, $k_t$ accounts
+for gravity and the nominal contact pattern.
+
+The MPPI outer loop samples gait schedules $h_k$ (B-spline coefficients)
+and Boltzmann-reweights the \emph{policy cost}---not individual controls,
+but the cost of the full closed-loop trajectory under the Riccati-derived
+policy.
+This is \emph{policy-level} MPPI: Monte Carlo over contact modes,
+closed-form for feedback gains.
+The Riccati compression of \S\ref{sec:riccati} applies exactly within
+each gait sample; the non-Riccati part (gait mode selection) pays the
+$O(N^{-1/2})$ CLT rate.
+
 \medskip\noindent\emph{Dual $\varepsilon$ unification.}
 The barrier potential $V_{\mathrm{barrier}} = -\varepsilon\log h_k$ and the
 Hopf--Cole linearization $\psi = e^{-V/(2\varepsilon)}$ (\S\ref{sec:mppi})
@@ -262,7 +618,7 @@ the barrier contribution:
 \[
 J(\varphi) = \int_0^T \!\bigl[
   q(g_t) + \tfrac{1}{2}\|u_t\|^2
-  - \varepsilon\textstyle\sum_k \log h_k(t;\varphi)
+  - \varepsilon\textstyle\sum_k \log\bigl(h_k(t;\varphi) + \varepsilon\bigr)
 \bigr]\,dt + \Phi(g_T).
 \]
 The Boltzmann weight $w(\varphi) \propto e^{-J(\varphi)/\varepsilon}$
@@ -313,8 +669,12 @@ constrains the transport plan to a feasible corridor.
 The ``skew'' direction is the gait asymmetry:
 the robot does not follow the geodesic in $SE(3)$ but takes a cyclic path
 that accumulates net displacement through periodic contact.
+The contact projector $\Pi_k$ determines which velocity components
+are subject to friction and hence available for thrust; the skew
+direction steers net displacement within the image of
+$\sum_k \sigma_k \Pi_k$.
 
-The dual $\varepsilon$ is now a \emph{quintuple} unification:
+The dual $\varepsilon$ is now an \emph{octuple} unification:
 \begin{enumerate}[nosep]
 \item contact sharpness ($\lambda_k = \varepsilon/h_k$, barrier force),
 \item exploration temperature ($w \propto e^{-J/\varepsilon}$,
@@ -323,13 +683,222 @@ The dual $\varepsilon$ is now a \emph{quintuple} unification:
       Sinkhorn coupling),
 \item impedance modulation ($K_p(\sigma_k)$, stance/swing interpolation),
 \item joint-limit softness ($V_{\mathrm{joint}} = -\varepsilon\log(\tilde{q}-a)
-      - \varepsilon\log(b-\tilde{q})$, virtual wall).
+      - \varepsilon\log(b-\tilde{q})$, virtual wall),
+\item integrator anti-winding ($K_i(\sigma_k) = K_i^{\mathrm{stance}}\sigma_k$:
+      the integral gain activates with $\sigma_k$, coupling windup
+      dynamics to the barrier scale),
+\item viscous ground coupling ($F_{\mathrm{fric},k} = -\sigma_k\,\eta\,\Pi_k\,v$:
+      tangential friction projected onto the per-foot contact plane
+      and modulated by the barrier scale, making $A(t)$ time-varying
+      through the same $\sigma_k$ that controls $B(t)$),
+\item contact no-slip ($J_{\mathrm{slip}} = w_{\mathrm{slip}} \sum_k
+      \sigma_k \|v_{xy}\|^2$: tangential sliding penalized in proportion
+      to contact intensity, making $Q(t)$ time-varying through the same
+      $\sigma_k$ that controls $A(t)$ and $B(t)$).
 \end{enumerate}
-All five converge as $\varepsilon \to 0$: contact forces sharpen to
+All eight converge as $\varepsilon \to 0$: contact forces sharpen to
 complementarity, the MPPI distribution concentrates on the optimal gait,
 the entropic OT coupling converges to the Monge map,
 impedance gains become binary stance/swing,
-and joint limits become hard constraints.
+joint limits become hard constraints,
+the integrator anti-windup becomes a hard saturation clamp,
+tangential friction sharpens to binary stick/slip,
+and the no-slip cost becomes a hard no-sliding constraint during stance.
+
+\medskip\noindent\emph{Cost decomposition along the $\varepsilon$-path.}
+Decompose the total cost as $J = J_{\mathrm{track}} + J_{\mathrm{barrier}}$,
+where $J_{\mathrm{track}}$ collects the velocity and height tracking terms
+and $J_{\mathrm{barrier}}$ collects all log-barrier contributions
+(contact, height limits, orientation, joint limits).
+Since every barrier term is proportional to $\varepsilon$,
+\[
+J_{\mathrm{barrier}}(\varphi;\varepsilon)
+= \varepsilon \int_0^T \!\bigl[
+  \textstyle\sum_k \Psi_k(g_t, \varphi)
+\bigr]\,dt
+= O(\varepsilon),
+\]
+the total cost $J$ is \emph{not} expected to decrease monotonically across
+MPPI iterations: during the early dual-ascent phase, $\varepsilon$ increases
+(to satisfy the entropy constraint $S \geq H_{\mathrm{target}}$), inflating
+$J_{\mathrm{barrier}}$ even when $J_{\mathrm{track}}$ is flat or improving.
+The cost path traces a transient hump before $\varepsilon$ begins to anneal.
+
+This is the barrier method working as designed, not a convergence failure.
+Monotonicity holds for $J_{\mathrm{track}}$ at fixed $\varepsilon$, and
+for $J$ once the dual variable stabilizes.
+The correct convergence diagnostic is therefore to monitor the two components
+separately: $J_{\mathrm{track}}$ should decrease (the optimizer is finding
+better gaits) while $J_{\mathrm{barrier}}$ follows $\varepsilon$ (the barrier
+is tightening toward complementarity).
+
+\medskip\noindent\emph{Three-level hierarchy and the Kalman dual.}
+The complete control architecture separates three timescales:
+\begin{enumerate}[nosep]
+\item \emph{Policy level} (per-stride): MPPI samples gait schedules
+  $h_k$ on $\bT^3$ (or B-spline coefficients in $\R^{4n_k}_{\geq 0}$),
+  Boltzmann-reweights on trajectory cost---the combinatorial search over
+  contact modes.
+\item \emph{Action level} (per-timestep): two sub-mechanisms.
+  \emph{Coverage}: TV-LQR derives optimal
+  $K(t), k(t)$ via backward Riccati \eqref{eq:riccati-tvlqr} with
+  DARE terminal cost $P_\infty$ \eqref{eq:dare-terminal}---the
+  continuous optimization of feedback gains over the full horizon.
+  \emph{Support}: the forward simulator enforces
+  $\sum_k \sigma_k f_{k,z} \geq mg$ at each step---a projection
+  onto the weight-support half-space in $\mathrm{Range}(\hat{n}_k)$.
+  The centroidal foot forces $u = k_t - K_t(x - x^{\mathrm{ref}})$
+  remain in the planning domain (for cost evaluation);
+  physical joint torques come from the impedance controller
+  \eqref{eq:pid-impedance}, modulated by $\sigma_k$.
+\item \emph{Estimation level} (continuous): the Kalman--Bucy filter,
+  the dual Riccati equation
+  \[
+  \dot{\Sigma} = A\Sigma + \Sigma A^\top
+    - \Sigma C^\top W^{-1}C\Sigma + V,
+  \]
+  fuses IMU, joint encoders, and foot contact sensors into a state
+  estimate $\hat{x}(t)$.
+\end{enumerate}
+Levels 2 and 3 solve the same matrix Riccati ODE with different data:
+the control Riccati uses $(A, B, Q, R)$; the estimation Riccati uses
+$(A, C, V, W)$ where $C$ is the sensor model and $V, W$ are process
+and measurement noise covariances.
+The barrier parameter $\varepsilon$ connects all three: MPPI temperature
+(level~1), Riccati cost weights (level~2), and the process-noise
+scale in the Kalman filter (level~3).
+
+\medskip\noindent\emph{The optimal cycle algorithm.}
+The preceding paragraphs assemble the components of the
+barrier-smoothed MPPI controller.
+We consolidate them into a single specification,
+referencing each equation as it appears.
+
+\smallskip
+\noindent\textsc{Input.}
+Robot model $(M, \mathcal{I}, r_k, q^{\min}, q^{\max},
+\tau_{\max})$;
+task $(v^*, z^*, H, \Delta t)$.
+
+\smallskip
+\noindent\textsc{Precompute} (constant throughout).
+\begin{itemize}[nosep]
+\item $A_{\mathrm{kin}} \in \R^{13 \times 13}$: double integrator
+  ($\dot{p} = v$, $\dot{\phi} = \omega$).
+\item $c \in \R^{13}$: gravity ($c_5 = -g$) and
+  phase clock ($c_{12} = f_{\mathrm{stride}}$).
+\item $c_d = \Delta t\, c$.
+\item Contact normals $\hat{n}_k \in S^2$, $k = 1, \ldots, 4$
+  (default: $\hat{e}_z$ for flat ground);
+  projectors $\Pi_k = I_3 - \hat{n}_k \otimes \hat{n}_k$.
+\item Reference trajectory
+  $x^{\mathrm{ref}}_t$.
+\end{itemize}
+
+\smallskip
+\noindent\textsc{Initialize.}
+Gait phase $\varphi \in \bT^3$ (e.g.\ trot);
+$\varepsilon \leftarrow \varepsilon_0$;
+$H_{\mathrm{target}} \leftarrow \gamma_0 \log N$.
+
+\smallskip
+\noindent\textsc{Outer loop} (re-cycle, once per stride $T_s$).
+\begin{enumerate}[label=\textup{\arabic*.},nosep]
+\item \textbf{Sample.}
+  $\varphi^{(i)} = \varphi + \delta\varphi^{(i)}$,
+  \; $\delta\varphi^{(i)} \sim \cN(0, \Sigma_\varphi)$,
+  \; $i = 1, \ldots, N$.
+
+\item \textbf{Barrier bridge.}
+  For each $i$ and $t = 0, \ldots, H{-}1$:
+  foot height
+  $h_k$ via \eqref{eq:foot-height};
+  force scale
+  $\sigma_k = \varepsilon / (h_k + \varepsilon)$;
+  state matrix
+  $A_d(t) = I + \Delta t\, A(t)$ via \eqref{eq:A-viscous};
+  input matrix
+  $B_d(t) = \Delta t\, B(\sigma(t))$.
+  Terminal cost $P_\infty^{(i)}$ via DARE
+  \eqref{eq:dare-terminal} from time-averaged
+  $\bar{A}_d^{(i)}, \bar{B}_d^{(i)}$.
+
+\item \textbf{Backward Riccati.}
+  Initialize $P_H = P_\infty^{(i)}$ (coverage).
+  Running cost $Q(t) = Q + w_{\mathrm{slip}}(\sum_k \sigma_k(t))\,E_{v_x,v_y}$
+  (no-slip).
+  For $t = H{-}1, \ldots, 0$, the recursion
+  \eqref{eq:riccati-tvlqr} with $Q \to Q(t)$ yields
+  $K_t^{(i)} \in \R^{12 \times 13}$,
+  $k_t^{(i)} \in \R^{12}$.
+
+\item \textbf{Forward simulate.}
+  $u_t = k_t - K_t(x_t - x^{\mathrm{ref}}_t)$;
+  \emph{support floor}: project onto
+  $\sum_k \sigma_k f_{k,z} \geq mg$;
+  then $x_{t+1} = A_d(t) x_t + B_d(t) u_t + c_d$.
+  Accumulate
+  \[
+  J^{(i)} \;=\; \textstyle\sum_t \bigl[
+    \|x_t - x^{\mathrm{ref}}_t\|_Q^2
+    + \|u_t\|_R^2
+    - \varepsilon \sum_k \log(h_k + \varepsilon)
+  \bigr]\Delta t \;+\; \Phi(x_H).
+  \]
+
+\item \textbf{Boltzmann reweight.}
+  $w^{(i)} = e^{-J^{(i)}/\varepsilon}
+  \big/ {\textstyle\sum_j} e^{-J^{(j)}/\varepsilon}$.
+
+\item \textbf{Update.}
+  $\varphi \leftarrow
+  \mathrm{arg}\!\bigl(\sum_i w^{(i)}
+  e^{2\pi i \varphi^{(i)}}\bigr)/(2\pi)$
+  \quad (circular mean on $\bT^3$).
+
+\item \textbf{Dual ascent.}
+  $S \leftarrow -\sum_i w^{(i)} \log w^{(i)}$.
+  If $S < H_{\mathrm{target}}$:
+  $\varepsilon \leftarrow
+  \alpha_{\mathrm{up}}\,\varepsilon$;
+  else
+  $\varepsilon \leftarrow
+  \alpha_{\mathrm{down}}\,\varepsilon$.
+  Then
+  $H_{\mathrm{target}} \leftarrow
+  \gamma\, H_{\mathrm{target}}$.
+\end{enumerate}
+
+\smallskip
+\noindent\textsc{Inner loop} (per timestep,
+impedance realization).
+\begin{enumerate}[label=\textup{\arabic*.},nosep,start=8]
+\item \textbf{Impedance realization.}
+  The barrier scale $\sigma_k$ from step~1 modulates the
+  PID impedance controller \eqref{eq:pid-impedance}:
+  stance legs ($\sigma_k \approx 1$) are stiff, swing legs
+  ($\sigma_k \approx 0$) compliantly track $h_k$.
+  The rigid-body simulator provides ground reaction forces
+  through contact---no Jacobian transpose mapping is needed.
+  Joint-limit barrier \eqref{eq:joint-barrier} and
+  anti-windup \eqref{eq:anti-windup} apply.
+\end{enumerate}
+
+\begin{remark}[Arithmetic completeness of the algorithm]
+Every operation in steps~1--7 is a finite composition of
+$\exp$, $\log$, and linear algebra
+(\cref{prop:forward-only}).
+Step~3 is exact---not sampled: the centroidal dynamics is
+affine in $x$ with time-varying $A(t)$ and $B(t)$, so the Riccati
+recursion gives closed-form optimal feedback within each
+gait sample (\S\ref{sec:riccati}).
+MPPI pays $O(N^{-1/2})$ only for gait mode selection
+over $\bT^3$.
+Each outer iteration increases the effective $\nu$
+and decreases $H(f)$
+(\cref{prop:student-convergence}):
+the re-cycle converges to the cycle.
+\end{remark}
 
 \medskip\noindent\textbf{(F) Lie--Poisson duality: velocity
 $\leftrightarrow$ momentum.}

@@ -49,14 +49,14 @@ class OptimalCycleMPPI:
       3. Barrier forces: λ_k = ε / h_k (smooth, no binary mask)
       4. Simulate each gait in MuJoCo → cost J^(i)
       5. Boltzmann reweight: w^(i) = softmax(-J / ε)  (same ε!)
-      6. Dual ascent: ε ← ε + α(H_target - S_k)
+      6. Dual ascent: ε ← α_up · ε or α_down · ε  [multiplicative]
       7. Compress entropy bound
       8. Update student-t center (weighted circular mean on T^3)
     """
 
     def __init__(self, sim: Optional[MuJoCoQuadruped] = None,
                  N: int = None, nu_init: float = None,
-                 epsilon_init: float = None, alpha_dual: float = None,
+                 epsilon_init: float = None,
                  compression_rate: float = None):
 
         self.sim = sim or MuJoCoQuadruped()
@@ -69,7 +69,6 @@ class OptimalCycleMPPI:
 
         # Dual ascent state — ε controls BOTH barrier sharpness AND temperature
         self.epsilon = epsilon_init or MPPI["epsilon_init"]
-        self.alpha_dual = alpha_dual or MPPI["alpha_dual"]
         self.H_target = float(jnp.log(self.N))  # start at max entropy
         self.compression_rate = compression_rate or MPPI["compression_rate"]
 
@@ -176,11 +175,14 @@ class OptimalCycleMPPI:
         ess = float(effective_sample_size(weights))
         circ_var = weighted_circular_variance(phis, weights)
 
-        # 5. Dual ascent: ε is the Lagrange multiplier for H(f) ≥ H_target
+        # 5. Multiplicative dual ascent  [paper step 7]
         #    ε increases when entropy is too low (need more exploration)
         #    ε decreases when entropy is too high (can exploit more)
         #    This SIMULTANEOUSLY adjusts barrier sharpness and temperature
-        self.epsilon += self.alpha_dual * (self.H_target - entropy)
+        if entropy < self.H_target:
+            self.epsilon *= MPPI["alpha_up"]
+        else:
+            self.epsilon *= MPPI["alpha_down"]
         self.epsilon = float(jnp.clip(
             self.epsilon, MPPI["epsilon_min"], MPPI["epsilon_max"]
         ))

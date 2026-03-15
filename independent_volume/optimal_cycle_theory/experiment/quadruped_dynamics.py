@@ -89,22 +89,23 @@ class CentroidalQuadrupedDynamics(Dynamics):
 # Simulation model: MuJoCo Go2 (ground truth)
 # ═══════════════════════════════════════════════════════════════════
 
-# Go2 leg ordering: FL, FR, RL, RR
+# Go2 leg ordering (MuJoCo XML + gait_sampler): FL, FR, RL, RR
 # Each leg has 3 joints: hip, thigh, calf → 12 actuators total
 # MuJoCo qpos: [x,y,z, qw,qx,qy,qz, 12 joint angles] = 19
 # MuJoCo qvel: [vx,vy,vz, wx,wy,wz, 12 joint velocities] = 18
+# Gait phase: phi = [phi_FL, phi_RL, phi_RR], FR is reference at phase 0
 
 _GO2_SCENE = Path(__file__).parent / "assets" / "mujoco_menagerie" / "unitree_go2" / "scene.xml"
 
 # Foot body names in Go2 model (calf links contain the foot geoms)
 _FOOT_BODY_NAMES = ["FL_calf", "FR_calf", "RL_calf", "RR_calf"]
 
-# Default standing joint configuration (Go2 nominal pose)
+# Default standing joint configuration (from go2.xml keyframe "home")
 _STANDING_QPOS_JOINTS = np.array([
-    0.0,  0.8, -1.5,   # FL: hip, thigh, calf
-    0.0,  0.8, -1.5,   # FR
-    0.0,  1.0, -1.5,   # RL
-    0.0,  1.0, -1.5,   # RR
+    0.0,  0.9, -1.8,   # FL: hip, thigh, calf
+    0.0,  0.9, -1.8,   # FR
+    0.0,  0.9, -1.8,   # RL
+    0.0,  0.9, -1.8,   # RR
 ])
 
 # ── Joint-space renormalization ──
@@ -132,6 +133,14 @@ _Q_HALF_RANGE = 0.5 * (_Q_MAX - _Q_MIN)
 # Precomputed normalized joint limits (asymmetric when standing ≠ midpoint)
 _Q_NORM_MIN = (_Q_MIN - _Q_CENTER) / _Q_HALF_RANGE
 _Q_NORM_MAX = (_Q_MAX - _Q_CENTER) / _Q_HALF_RANGE
+
+# Actuator torque limits from go2.xml (per joint type, repeated per leg)
+_TORQUE_LIMIT = np.array([
+    23.7, 23.7, 45.43,   # FL: hip, thigh, calf
+    23.7, 23.7, 45.43,   # FR
+    23.7, 23.7, 45.43,   # RL
+    23.7, 23.7, 45.43,   # RR
+])
 
 def normalize_joints(q_phys: np.ndarray) -> np.ndarray:
     """Physical joint angles → normalized (standing = 0)."""
@@ -193,6 +202,9 @@ class MuJoCoQuadruped:
         self._jacp = np.zeros((3, self.model.nv))
         self._jacr = np.zeros((3, self.model.nv))
 
+        # PID integrator state (persistent across steps, reset on reset())
+        self._z_integrator = np.zeros(12)
+
     def reset(self, x0_centroidal: Optional[np.ndarray] = None):
         """Reset to standing pose, optionally with centroidal initial state.
 
@@ -224,6 +236,7 @@ class MuJoCoQuadruped:
             self.data.qvel[3:6] = x0[9:12]
 
         self._mujoco.mj_forward(self.model, self.data)
+        self._z_integrator[:] = 0.0  # reset integrator on new episode
 
     def step_torques(self, joint_torques: np.ndarray, dt_ocp: float):
         """Simulate one OCP timestep with joint torques.
@@ -286,7 +299,7 @@ class MuJoCoQuadruped:
 
         # Swing legs: PD tracking to retracted pose
         kp, kd = 40.0, 2.0
-        swing_target = np.array([0.0, 0.4, -0.8])  # retracted pose per leg
+        swing_target = np.array([0.0, 1.3, -2.2])  # swing peak per leg
         for k in range(4):
             if contact_mask[k] > 0.5:
                 continue
@@ -299,13 +312,20 @@ class MuJoCoQuadruped:
     def step_impedance(self, barrier_scales: np.ndarray,
                        foot_height_frac: np.ndarray, dt_ocp: float,
                        epsilon: float = 1.0):
-        """Impedance controller in renormalized joint space.
+        """Physical-space PID impedance controller with anti-windup.
 
-        All joints are mapped via (q - q_stand) / (q_range/2), so standing = 0.
-        The PD gains are uniform in this space — no per-joint tuning needed.
+        Gains are defined in physical space (N·m/rad, N·m·s/rad) to avoid
+        the non-uniform physical stiffness that arises from normalized-space
+        PD with disparate joint ranges (see §articulated, "Pitfall").
+
         The barrier scale σ_k modulates the gains:
             K_p(σ) = K_p^swing + (K_p^stance - K_p^swing) · σ
-        Joint-limit barrier adds repulsive torque: τ = ε [1/(q̃-a) - 1/(b-q̃)].
+            K_i(σ) = K_i^stance · σ   (integral active only in stance)
+        Joint-limit barrier adds repulsive torque (in normalized space,
+        converted to physical).
+
+        Anti-windup: when |τ_k| ≥ τ_max, the integrator freezes (ż=0).
+        This prevents fictitious winding-number accumulation on R.
 
         Args:
             barrier_scales: (4,) in [0,1], ≈1 stance, ≈0 swing.
@@ -313,53 +333,179 @@ class MuJoCoQuadruped:
             dt_ocp: OCP timestep.
             epsilon: barrier/temperature parameter (same ε as contact/MPPI).
         """
-        # Gains in normalized space (uniform for all joints)
-        kp_stance, kd_stance = 40.0, 3.0
-        kp_swing, kd_swing = 20.0, 1.5
+        # Physical-space gains (uniform across all joints — no range distortion)
+        kp_stance, kd_stance, ki_stance = 30.0, 0.5, 5.0
+        kp_swing, kd_swing = 10.0, 0.3
 
-        # Swing peak in normalized coordinates
-        q_swing_peak_phys = np.array([
-            0.0, 0.4, -0.8,   # FL
-            0.0, 0.4, -0.8,   # FR
-            0.0, 0.5, -0.8,   # RL
-            0.0, 0.5, -0.8,   # RR
+        # Gravity compensation from inverse dynamics
+        grav_comp = self.data.qfrc_bias[6:18].copy()
+
+        # Swing peak in physical joint angles
+        q_swing_peak = np.array([
+            0.0, 1.3, -2.2,   # FL
+            0.0, 1.3, -2.2,   # FR
+            0.0, 1.3, -2.2,   # RL
+            0.0, 1.3, -2.2,   # RR
         ])
-        q_swing_peak_norm = normalize_joints(q_swing_peak_phys)
 
-        # Current state in normalized coordinates
+        # Current physical state
         q_phys = self.data.qpos[7:19].copy()
         v_phys = self.data.qvel[6:18].copy()
+
+        # Raibert foot placement: offset = k * (v_des - v) * T_stance / (2*L)
+        # Go2 convention: +thigh angle = foot backward. At v < v_des,
+        # positive offset → foot behind hip → forward push.
+        v_forward = self.data.qvel[0]  # body x-velocity (world frame)
+        v_des = float(ROBOT.get("target_velocity_x", 1.0))
+        k_raibert = ROBOT.get("k_raibert", 0.0)
+        T_stance = ROBOT["duty_factor"] * ROBOT["stride_period"]
+        L_leg = ROBOT["standing_height"]
+        delta_thigh = k_raibert * (v_des - v_forward) * T_stance / (2.0 * L_leg)
+
+        # Normalized state (for joint-limit barrier only)
         q_norm = normalize_joints(q_phys)
-        # Velocity in normalized space: dq̃/dt = dq/dt / (range/2)
-        v_norm = v_phys / _Q_HALF_RANGE
+
+        # Joint-limit barrier weight
+        w_jb = 0.1
 
         torques = np.zeros(12)
+        position_errors = np.zeros(12)
+
         for k in range(4):
             s = barrier_scales[k]
             h_frac = foot_height_frac[k]
             idx = slice(3*k, 3*(k+1))
 
-            # Interpolate gains by barrier scale
+            # Interpolate gains by barrier scale (physical space)
             kp = kp_swing + (kp_stance - kp_swing) * s
             kd = kd_swing + (kd_stance - kd_swing) * s
+            ki = ki_stance * s  # integral only in stance
 
-            # Target in normalized space: blend standing (0) ↔ swing peak
-            q_target_norm = h_frac * q_swing_peak_norm[idx]  # standing = 0
+            # Target in physical space: blend standing ↔ swing peak
+            q_target = _STANDING_QPOS_JOINTS[idx] + h_frac * (
+                q_swing_peak[idx] - _STANDING_QPOS_JOINTS[idx]
+            )
+            # Raibert: offset thigh angle during swing for forward foot placement
+            if h_frac > 0.1:
+                q_target[1] += delta_thigh
 
-            # PD in normalized space
-            tau_norm = kp * (q_target_norm - q_norm[idx]) - kd * v_norm[idx]
+            # Position error (physical space)
+            e = q_target - q_phys[idx]
+            position_errors[idx] = e
 
-            # Joint-limit barrier: τ_barrier = ε [1/(q̃-a) - 1/(b-q̃)]
-            # Repulsive torque pushing joints away from limits
-            w_jb = 0.1  # joint-limit barrier weight (matches config)
+            # PID in physical space
+            tau = kp * e + ki * self._z_integrator[idx] - kd * v_phys[idx]
+
+            # Gravity compensation (modulated: full in stance, off in swing)
+            tau += s * grav_comp[idx]
+
+            # Joint-limit barrier (computed in normalized space, converted)
+            # τ_barrier_phys = w_jb · ε · [1/(q̃-a) - 1/(b-q̃)] / r
             q_lo = np.maximum(q_norm[idx] - _Q_NORM_MIN[idx], 1e-4)
             q_hi = np.maximum(_Q_NORM_MAX[idx] - q_norm[idx], 1e-4)
-            tau_norm += w_jb * epsilon * (1.0 / q_lo - 1.0 / q_hi)
+            tau_barrier_norm = w_jb * epsilon * (1.0 / q_lo - 1.0 / q_hi)
+            tau += tau_barrier_norm / _Q_HALF_RANGE[idx]
 
-            # Convert torque back to physical space:
-            # τ_phys = τ_norm / (range/2)  (chain rule of renormalization)
-            torques[idx] = tau_norm / _Q_HALF_RANGE[idx]
+            torques[idx] = tau
 
+        # ── Anti-windup: freeze integrator where torque saturates ──
+        # eq:anti-windup from paper: ż_k = e_k if |τ| < τ_max, 0 otherwise
+        saturated = np.abs(torques) >= _TORQUE_LIMIT * 0.95
+        for i in range(12):
+            if not saturated[i]:
+                self._z_integrator[i] += position_errors[i] * dt_ocp
+
+        # Hard clip (safety net — anti-windup should prevent most saturation)
+        torques = np.clip(torques, -_TORQUE_LIMIT, _TORQUE_LIMIT)
+        self.step_torques(torques, dt_ocp)
+
+    def step_tvlqr(self, K_t: np.ndarray, k_t: np.ndarray,
+                   x_ref_t: np.ndarray, barrier_scales: np.ndarray,
+                   foot_height_frac: np.ndarray, dt_ocp: float,
+                   epsilon: float = 1.0):
+        """DEPRECATED: Uses mj_jacBody J^T mapping which is architecturally wrong.
+
+        MuJoCo should only be the plant. Optimization uses centroidal
+        forward_simulate(); playback uses step_impedance().
+        Kept for backward compatibility with saved data only.
+
+        The Riccati solver gives optimal centroidal foot forces:
+            u = k_t - K_t @ (x - x_ref_t)
+        Mapped to joint torques via:
+            stance (σ≈1): τ = J^T f  (Jacobian transpose)
+            swing  (σ≈0): τ = PD tracking to swing trajectory
+        Blended continuously by barrier scale σ_k.
+
+        Args:
+            K_t: (12, 13) feedback gain at this timestep
+            k_t: (12,) feedforward at this timestep
+            x_ref_t: (13,) reference centroidal state
+            barrier_scales: (4,) σ_k values in [0,1]
+            foot_height_frac: (4,) h_k/h_max for swing target
+            dt_ocp: OCP timestep
+            epsilon: barrier parameter
+        """
+        # 1. Get centroidal state
+        x = self.get_centroidal_state()
+
+        # 2. Compute optimal foot forces from Riccati
+        u = k_t - K_t @ (x - x_ref_t)  # (12,)
+
+        # Clip foot forces (safety, matches OCP["force_limit"])
+        u = np.clip(u, -100.0, 100.0)
+
+        # 3. Map foot forces → joint torques
+        grav_comp = self.data.qfrc_bias[6:18].copy()
+        q_phys = self.data.qpos[7:19].copy()
+        v_phys = self.data.qvel[6:18].copy()
+        q_norm = normalize_joints(q_phys)
+
+        # Swing target in physical joint angles
+        q_swing_peak = np.array([
+            0.0, 1.3, -2.2,  0.0, 1.3, -2.2,
+            0.0, 1.3, -2.2,  0.0, 1.3, -2.2,
+        ])
+
+        kp_swing, kd_swing = 20.0, 1.0
+        w_jb = 0.1
+
+        torques = np.zeros(12)
+        forces = u.reshape(4, 3)
+
+        for k in range(4):
+            s = barrier_scales[k]
+            h_frac = foot_height_frac[k]
+            idx = slice(3*k, 3*(k+1))
+
+            # Riccati forces → joint torques via J^T
+            self._mujoco.mj_jacBody(
+                self.model, self.data, self._jacp, self._jacr,
+                self._foot_body_ids[k]
+            )
+            jac_leg = self._jacp[:, 6 + 3*k : 6 + 3*(k+1)]  # (3, 3)
+            tau_riccati = jac_leg.T @ forces[k]
+
+            # PD swing tracking
+            q_target = _STANDING_QPOS_JOINTS[idx] + h_frac * (
+                q_swing_peak[idx] - _STANDING_QPOS_JOINTS[idx]
+            )
+            tau_swing = kp_swing * (q_target - q_phys[idx]) - kd_swing * v_phys[idx]
+
+            # Blend by barrier scale: stance → J^T, swing → PD
+            tau = s * tau_riccati + (1.0 - s) * tau_swing
+
+            # Gravity compensation (modulated by σ)
+            tau += s * grav_comp[idx]
+
+            # Joint-limit barrier (normalized → physical)
+            q_lo = np.maximum(q_norm[idx] - _Q_NORM_MIN[idx], 1e-4)
+            q_hi = np.maximum(_Q_NORM_MAX[idx] - q_norm[idx], 1e-4)
+            tau_barrier_norm = w_jb * epsilon * (1.0 / q_lo - 1.0 / q_hi)
+            tau += tau_barrier_norm / _Q_HALF_RANGE[idx]
+
+            torques[idx] = tau
+
+        torques = np.clip(torques, -_TORQUE_LIMIT, _TORQUE_LIMIT)
         self.step_torques(torques, dt_ocp)
 
     def get_centroidal_state(self) -> np.ndarray:

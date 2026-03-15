@@ -1,0 +1,380 @@
+\section{Categorical duality: the Chu construction}\label{sec:chu}
+
+Every duality encountered in this paper pairs a ``forward'' object with
+a ``backward'' object through a scalar-valued coupling:
+cost-to-go $P$ with covariance $\Sigma$ via the trace pairing $\tr(P\Sigma)$
+(\S\ref{sec:riccati});
+value function $V$ with the linearized solution
+$\psi = e^{-V/(2\varepsilon)}$ via Hopf--Cole (\S\ref{sec:mppi});
+a function $f$ on an LCA group with its Fourier transform $\hat{f}$
+via the character pairing (\S\ref{sec:cycle});
+the causal Hardy space $\Htwo$ with its anti-causal complement
+$(\Htwo)^\perp$ (\S\ref{sec:hardy});
+representation spaces $V_\rho$ with their contragredients $V_\rho^*$
+(\S\ref{sec:compact});
+velocities $\xi \in \mathfrak{g}$ with momenta $\mu \in \mathfrak{g}^*$
+via the Legendre transform (\S\ref{sec:articulated}).
+In each case, the morphisms---Fourier transform, Hopf--Cole substitution,
+Legendre transform---act forward on one component and contravariantly on
+the dual.
+
+These are not independent observations.
+They are instances of a single categorical construction due to
+Barr~\cite{Barr1979,BarrOmatt}, whose antecedents include the
+``Mackey pairs'' of~\cite{Mackey1945}.
+
+\subsection*{The Chu construction}
+
+\begin{definition}[Chu space {\cite[Definition~2.1]{BarrOmatt}}]
+\label{def:chu-space}
+Let $(\mathcal{V}, \otimes, I, \multimap)$ be a symmetric monoidal
+closed category with pullbacks and let
+$\bot \in \mathrm{Ob}(\mathcal{V})$ be a fixed object (the
+\emph{dualizing object}).
+The category $\Chu(\mathcal{V}, \bot)$ has:
+\begin{enumerate}[label=(\roman*),nosep]
+\item \emph{Objects:} triples $(A, r, X)$ with
+  $A, X \in \mathrm{Ob}(\mathcal{V})$ and
+  $r \colon A \otimes X \to \bot$ (the \emph{pairing}).
+\item \emph{Morphisms} $(A, r, X) \to (B, s, Y)$: pairs
+  $(f \colon A \to B,\; g \colon Y \to X)$ such that
+  \[
+    s \circ (f \otimes \mathrm{id}_Y)
+    = r \circ (\mathrm{id}_A \otimes g)
+    \colon A \otimes Y \to \bot.
+  \]
+  The first component $f$ goes \emph{forward}; the second $g$ goes
+  \emph{backward}.
+\end{enumerate}
+The dual of $(A, r, X)$ is $(X, r^\sigma, A)$, where $r^\sigma$ is
+the transpose $X \otimes A \xrightarrow{\sim} A \otimes X
+\xrightarrow{r} \bot$.
+\end{definition}
+
+\begin{theorem}[{Barr \cite[Theorem~4.1]{BarrOmatt}}]
+\label{thm:chu-star-auto}
+If $\mathcal{V}$ is a complete symmetric monoidal closed category with
+pullbacks and $\bot \in \mathrm{Ob}(\mathcal{V})$, then
+$\Chu(\mathcal{V}, \bot)$ is a $*$-autonomous category: it is
+symmetric monoidal closed with dualizing object
+$(\bot, \mathrm{ev}, I)$, and the canonical map
+$\mathbf{A} \to \mathbf{A}^{**}$ is a natural isomorphism.
+\end{theorem}
+
+A $*$-autonomous category is a symmetric monoidal closed category
+$(\mathcal{C}, \otimes, I, \multimap)$ equipped with a dualizing object
+$\bot$ such that $A \mapsto (A \multimap \bot) \multimap \bot$ is
+naturally isomorphic to the identity.
+The relevance to linear logic is that $*$-autonomous categories are
+the categorical models of classical multiplicative linear
+logic~\cite{Seely1989,Girard}.
+
+\begin{remark}[Separated and extensional]
+\label{rmk:sep-ext}
+A Chu object $(A, r, X)$ is \emph{separated} if
+$r(a, -) = r(a', -)$ implies $a = a'$
+(the pairing separates points of $A$) and \emph{extensional} if
+$r(-, x) = r(-, x')$ implies $x = x'$.
+The full subcategory of separated-extensional objects is denoted
+$\mathrm{chu}(\mathcal{V}, \bot)$; it is still
+$*$-autonomous~\cite[Theorem~4.1(7)]{BarrOmatt}.
+This refinement eliminates degeneracies: the Pontryagin duality
+$G \leftrightarrow \widehat{G}$ for LCA groups, for instance, lives in
+$\mathrm{chu}(\mathsf{Ab}, \bT)$, where only non-degenerate pairings
+$G \times \widehat{G} \to \bT$ are
+admitted~\cite[Example~5.3]{BarrOmatt}.
+\end{remark}
+
+\subsection*{The seven Chu objects of optimal cycle theory}
+
+Every duality in Parts~I and~II defines a separated Chu object.
+We record them as triples
+$(A,\; r \colon A \otimes X \to \bot,\; X)$ with specified
+$\bot$.
+
+\begin{proposition}\label{prop:seven-chu}
+The following are separated Chu objects in the indicated ambient
+categories:
+\begin{enumerate}[label=\textup{(\roman*)},nosep]
+\item \emph{Control--estimation Riccati}
+  \textup{(\S\ref{sec:riccati}):}
+  $A = \mathrm{Sym}^+_n$ (cost-to-go matrices $P$),
+  $X = \mathrm{Sym}^+_n$ (covariance matrices $\Sigma$),
+  $r(P, \Sigma) = \tr(P\Sigma)$,
+  $\bot = \R$.
+  The control Riccati and the Kalman--Bucy Riccati solve the same
+  equation with $P$ and $\Sigma$ exchanged.
+
+\item \emph{Hopf--Cole linearization}
+  \textup{(\S\ref{sec:mppi}):}
+  $A = C^\infty(G)$ (value functions $V$),
+  $X = C^\infty_{>0}(G)$ (linear solutions
+  $\psi = e^{-V/(2\varepsilon)}$),
+  $r(V, \psi) = \int_G \psi\, e^{V/(2\varepsilon)} d\mu_G$,
+  $\bot = \R$.
+  The substitution $V \leftrightarrow \psi$ is an isomorphism of
+  Chu objects; the nonlinear HJB becomes the linear heat equation.
+
+\item \emph{Pontryagin--Fourier duality}
+  \textup{(\cref{thm:pontryagin}):}
+  $A = G$ (LCA group),
+  $X = \widehat{G}$ (Pontryagin dual),
+  $r(x, \chi) = \chi(x) \in \bT$,
+  $\bot = \bT$.
+  The evaluation pairing $G \times \widehat{G} \to \bT$ is exactly the
+  Chu pairing; the Pontryagin isomorphism $G \cong
+  \widehat{\widehat{G}}$ is the $*$-autonomy $A \cong A^{**}$.
+
+\item \emph{Hardy space decomposition}
+  \textup{(\S\ref{sec:hardy}):}
+  $A = \Htwo(\bT)$ (causal),
+  $X = (\Htwo)^\perp$ (anti-causal),
+  $r(f_+, f_-) = \int_\bT f_+ \bar{f}_-\, d\theta$,
+  $\bot = \mathbb{C}$.
+  The Szeg\H{o} projection
+  $L^2(\bT) = \Htwo \oplus (\Htwo)^\perp$
+  is the Chu decomposition into forward-causal and backward-causal
+  components.
+
+\item \emph{Peter--Weyl blocks}
+  \textup{(\S\ref{sec:compact}):}
+  $A = V_\rho$ (representation space),
+  $X = V_\rho^*$ (contragredient),
+  $r(v, v^*) = v^*(v)$,
+  $\bot = \mathbb{C}$.
+  The matrix coefficient
+  $\rho_{ij}(g) = e_j^*(\ \rho(g)\, e_i)$ is a morphism of Chu
+  objects; the Schur orthogonality relations express the inner product
+  in $\mathrm{chu}(\mathsf{Vect}, \mathbb{C})$.
+
+\item \emph{Lie--Poisson duality}
+  \textup{(\S\ref{sec:articulated}):}
+  $A = \mathfrak{g}$ (velocities),
+  $X = \mathfrak{g}^*$ (momenta),
+  $r(\xi, \mu) = \langle \mu, \xi \rangle$,
+  $\bot = \R$.
+  The Legendre transform
+  $\mathbb{FL} \colon \mathfrak{g} \to \mathfrak{g}^*$ and its inverse
+  constitute a Chu isomorphism.
+  The Euler--Poincar\'e equation on $\mathfrak{g}$ and the Lie--Poisson
+  equation on $\mathfrak{g}^*$ are the forward and backward faces.
+
+\item \emph{Barrier--Boltzmann coupling}
+  \textup{(\S\ref{sec:articulated}):}
+  $A = C(Q)$ (barrier potentials $-\varepsilon\log h$),
+  $X = \cP(Q)$ (Boltzmann measures
+  $w \propto e^{-J/\varepsilon}$),
+  $r(V, w) = \int_Q V\, dw = \mathbb{E}_w[V]$,
+  $\bot = \R$.
+  The sextuple parameter $\varepsilon$ of \S\ref{sec:articulated}
+  scales the pairing: as $\varepsilon \to 0$, the Boltzmann measure
+  $w$ concentrates on the support of the barrier constraint.
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}
+In each case the verification is the adjunction condition of
+\cref{def:chu-space}(ii): a morphism $(f, g)$ satisfies
+$s \circ (f \otimes \mathrm{id}) = r \circ (\mathrm{id} \otimes g)$
+if and only if the map $f$ and its transpose $g$ are related by the
+pairing.
+For~(i) this is $\tr(KP\Sigma) = \tr(P K^\top \Sigma)$;
+for~(iii) this is the functoriality of the Fourier transform
+(\cref{rmk:functoriality});
+for~(vi) this is the definition of the Legendre--Fenchel transform.
+The separation property follows from the non-degeneracy of each pairing
+(e.g., $\tr(PX) = 0$ for all $X \succeq 0$ implies $P = 0$).
+The remaining cases are analogous.
+\end{proof}
+
+\begin{remark}[Morphisms between Chu objects]
+The key transformations of the paper are Chu morphisms:
+\begin{enumerate}[label=(\alph*),nosep]
+\item The \emph{Fourier transform}
+  $\cF \colon (G, r, \widehat{G}) \to (G, r, \widehat{G})$ acts
+  forward on functions and backward (contravariantly) on characters.
+\item The \emph{Hopf--Cole substitution}
+  $(V, r, \psi) \mapsto (-2\varepsilon\log\psi, r', \psi)$ is a
+  Chu isomorphism exchanging the nonlinear and linear pictures.
+\item The \emph{Legendre transform}
+  $\mathbb{FL} \colon (\mathfrak{g}, r, \mathfrak{g}^*) \to
+  (\mathfrak{g}^*, r^\sigma, \mathfrak{g})$
+  swaps $A$ and $X$---it is the Chu dual map.
+\end{enumerate}
+The direction reversal in the second component---the defining feature
+of the Chu construction---is the source of every ``duality'' in the
+paper.
+\end{remark}
+
+\begin{remark}[Harmonic predictive control]
+\label{rmk:hpc}
+The same author~\cite{PrattHPC} independently applied the exponential
+bridge to PID control.
+Pratt's \emph{harmonic predictive control} (HPC) models the
+trajectory as $\varepsilon(t) = e^{\beta(t)} + \delta$, where
+$\beta(t)$ is a complex polynomial:
+\begin{itemize}[nosep]
+\item \emph{Limit avoidance} (sinusoidal): $\beta' = i\omega$,
+  giving oscillation---the Fourier/character side of the cycle;
+\item \emph{Setpoint seeking} (Gaussian): $\beta = -\frac{1}{2}
+  \bigl(\frac{t-\mu}{\sigma}\bigr)^2$
+  (real quadratic), giving heat-kernel decay---the diffusion side.
+\end{itemize}
+The controlled variable is the third derivative (jerk)
+$j = \varepsilon'''$, computed from $(q, v, a)$ via the differential
+equation $\varepsilon''' = (3\beta'' + \beta'^2)\varepsilon'$,
+with no tuning parameters: the control law is \emph{ordained by the
+exponential structure}.
+
+The parallel with \S\ref{sec:articulated} is precise.
+The ``proximity'' $p_\ell = v/(q - \ell)$ diverges as $q \to \ell$,
+exactly as our barrier force scale $\sigma_k = \varepsilon/h_k$
+diverges as $h_k \to 0$; both are log-barrier gradients.
+The sinusoidal and Gaussian regimes correspond to the two sides of
+the optimal cycle (\S\ref{sec:cycle}), and their $C^2$-continuous
+handoff is the smooth contact transition mediated by the barrier.
+Our Riccati inner solve (\S\ref{sec:articulated}) replaces
+hand-tuned PID gains $(K_P, K_I, K_D)$ with optimal gains $K(t)$
+derived from the same exponential bridge---the same structural move
+as HPC, but via the matrix Riccati equation rather than the scalar
+differential equation for $\beta$.
+
+That the Chu construction (\cref{def:chu-space}) and the
+exponential control law emerge from the same author is not a
+coincidence: both are consequences of the duality
+$\beta \leftrightarrow e^\beta$ between the log-domain (additive,
+linear, ``tuning-free'') and the physical domain (multiplicative,
+nonlinear, constrained).
+\end{remark}
+
+\subsection*{Linear logic interpretation}
+
+A $*$-autonomous category carries two distinct monoidal products:
+the tensor $\otimes$ and the \emph{par}
+$A \parr B \coloneqq (A^* \otimes B^*)^*$, corresponding to the two
+multiplicative connectives of Girard's linear logic~\cite{Girard}.
+In a resource-sensitive reading:
+\begin{itemize}[nosep]
+\item $A \otimes B$ means ``both $A$ and $B$ are available
+  simultaneously''---in control, the simultaneous availability of
+  state $x$ and co-state $p$;
+\item $A \parr B$ means ``$A$ or $B$, opponent's choice''---the dual
+  structure where either the controller or the estimator claims the
+  resource.
+\end{itemize}
+
+The exponential modality $!$ of linear logic converts a \emph{linear}
+resource (use exactly once) into a \emph{classical} one (use
+arbitrarily many times).
+Two structures in the paper realize this conversion:
+
+\medskip\noindent\emph{(a) The barrier method as $!$.}
+The hard constraint $h_k \geq 0$ is a linear resource: the contact
+force $\lambda_k$ is available in stance and consumed in swing---use
+once per stride.
+The log-barrier $-\varepsilon\log h_k$ converts this into a smooth
+potential that can be evaluated (``used'') at every point in
+configuration space.
+As $\varepsilon \to 0$, the smooth potential sharpens to the hard
+constraint---the $!$ ``forgets'' and the resource becomes linear
+again.
+The dual ascent on $\varepsilon$ (\S\ref{sec:cycle}) is the
+\emph{dereliction} map $!A \to A$: each iteration tightens the
+barrier, consuming one layer of the exponential modality.
+
+\medskip\noindent\emph{(b) Hopf--Cole as $!$.}
+The substitution $\psi = e^{-V/(2\varepsilon)}$ converts the
+multiplicative (nonlinear) HJB into the additive (linear) heat
+equation.
+This is literally the exponential applied to the value function: it
+converts a nonlinear/multiplicative object into a
+linear/additive one.
+The inverse $V = -2\varepsilon\log\psi$ is the co-exponential;
+the Feynman--Kac representation (\S\ref{sec:mppi}) provides the
+semantic content.
+
+\begin{remark}[The $\varepsilon$-dereliction path]
+\label{rmk:dereliction}
+In the dual ascent $\varepsilon \to 0$:
+\begin{enumerate}[nosep]
+\item the Boltzmann distribution
+  $w \propto e^{-J/\varepsilon}$ concentrates on the optimal
+  trajectory (the $!$ resource is consumed);
+\item the barrier $-\varepsilon\log h$ sharpens to complementarity
+  ($!A \to A$: the smooth constraint becomes hard);
+\item the Hopf--Cole linearization ceases to be useful
+  ($\psi \to \delta$: the Feynman--Kac measure degenerates to a point
+  mass).
+\end{enumerate}
+The $\varepsilon \to 0$ limit is the passage from the ``classical''
+(resource-abundant, smooth, linear) regime to the ``linear-logic''
+(resource-scarce, hard, nonlinear) regime.
+The holonomy $H(f)$ (\cref{def:cycle}) measures the cost of this
+passage.
+\end{remark}
+
+\subsection*{Tropical Chu spaces and the Legendre--Fenchel transform}
+
+The Maslov dequantization~\cite{Maslov} sends the semiring
+$(\R, +, \times)$ to the tropical semiring
+$(\R_{\max}, \max, +)$ via the logarithmic limit
+\[
+\lim_{\varepsilon \to 0^+} \varepsilon \log(e^{a/\varepsilon} +
+e^{b/\varepsilon}) = \max(a,b).
+\]
+Under this deformation, the HJB equation becomes \emph{linear over
+$\R_{\max}$}: the $\min$ in the Bellman recursion is the tropical
+addition, and cost accumulation along trajectories is tropical
+multiplication.
+The Hopf--Cole substitution (\S\ref{sec:mppi}) is precisely this
+dequantization: at finite $\varepsilon$, the system lives in the
+standard semiring (the heat equation); at $\varepsilon = 0$, it
+passes to the tropical semiring (the Hamilton--Jacobi equation).
+
+\begin{proposition}[Tropical Chu spaces]
+\label{prop:tropical-chu}
+Write $\R_{\max}$ for the tropical semiring
+$(\R \cup \{-\infty\}, \max, +)$.
+In $\Chu(\mathsf{Set}, \R_{\max})$, objects are pairs $(X, Y)$
+with pairing $\varphi \colon X \times Y \to \R_{\max}$.
+\begin{enumerate}[label=\textup{(\roman*)},nosep]
+\item The Legendre--Fenchel transform
+  $f^*(y) = \sup_x\, [\langle x, y \rangle - f(x)]$ arises as the
+  unit of the \emph{nucleus monad} on the enriched profunctor
+  $\R^{\op}_{\max} \times \R_{\max} \to \R_{\max}$
+  \cite{Willerton2015}.
+  The nucleus is the separated-extensional core of the Chu
+  construction: a convex function $f$ and its conjugate $f^*$ form a
+  separated Chu object $(f, r, f^*)$ with
+  $r(x, y) = \langle x, y \rangle$ and
+  $\bot = \R_{\max}$.
+\item The Bellman value function $V(x) = \min_u \int L\, dt + \Phi$
+  and the Lagrangian $L(x, u)$ form a Chu pair in
+  $\Chu(\mathsf{Set}, \R_{\max})$ via the tropical inner product
+  $\langle V, L \rangle_{\mathrm{trop}} = \max_x\,[V(x) + L(x)]$.
+\end{enumerate}
+\end{proposition}
+
+Pratt~\cite{Pratt1995} observed that the dualizing object $K$ in
+$\Chu(\mathsf{Set}, K)$ determines the ``physics'':
+$K = \{0,1\}$ gives classical logic,
+$K = [0,1]$ fuzzy/probabilistic systems,
+$K = \mathbb{C}$ quantum mechanics.
+The extension $K = \R_{\max}$ gives tropical/optimal-control
+``physics'': ``probabilities'' become costs, ``expectations''
+become optimizations.
+
+\begin{remark}[The $\varepsilon$-interpolation of Chu categories]
+\label{rmk:eps-interpolation}
+At finite $\varepsilon > 0$, the dualities of this paper live in
+$\Chu(\mathsf{Vect}_\R, \R)$: the pairings are bilinear (trace,
+$L^2$ inner product, Fourier integral) and the algebra is standard
+linear algebra.
+At $\varepsilon = 0$, the Maslov limit deforms the ambient category to
+$\Chu(\mathsf{Set}, \R_{\max})$: bilinear pairings become tropical
+(max-plus), the heat equation becomes Hamilton--Jacobi, and the
+Gaussian kernel becomes the min-cost envelope.
+The barrier parameter $\varepsilon$ interpolates continuously between
+these two categorical regimes---it is the deformation parameter of the
+$*$-autonomous structure itself.
+\end{remark}

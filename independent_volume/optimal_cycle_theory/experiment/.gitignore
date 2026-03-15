@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+.venv/
+
+# Experiment outputs (regenerable)
+*.png
+*.npz
+*.json
+!required_parameters.yaml
+
+# MuJoCo menagerie (large, vendored)
+assets/

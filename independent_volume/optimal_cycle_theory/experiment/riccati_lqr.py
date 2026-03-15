@@ -1,0 +1,425 @@
+"""Centroidal TV-LQR via backward Riccati recursion.
+
+The centroidal quadruped dynamics is *exactly* linear (not linearized):
+    ẋ = A(σ(t)) x + B(σ(t)) u + c
+
+where σ_k(t) is the barrier-smoothed contact scale from the gait schedule.
+A(t) is time-varying: the double-integrator structure plus viscous ground
+friction F = -Σ_k σ_k(t) · η · v makes A[3:6, 3:6] depend on σ(t).
+B(t) is time-varying through σ_k(t) as before.
+
+The backward Riccati gives optimal time-varying feedback K(t) and
+feedforward k(t) for tracking a reference trajectory x_ref(t).
+
+Usage in the MPPI loop:
+    1. MPPI samples gait schedules h_k (B-spline coefficients)
+    2. h_k → σ_k(t) via barrier_force_scale
+    3. build_AB(σ_k) → A_seq, B_seq, c
+    4. solve_tvlqr(A_seq, B_seq, ...) → K_seq, k_seq
+    5. Forward simulate: u_t = k_t - K_t @ (x_t - x_ref_t)
+"""
+
+import numpy as np
+from scipy.linalg import solve_discrete_are
+
+from config import ROBOT, OCP, CONSTRAINTS
+
+
+def solve_dare_nominal(A_seq, B_seq, Q, R, dt):
+    """Steady-state DARE from time-averaged dynamics (coverage terminal cost).
+
+    P_∞ = Q + Ā_d^T P_∞ Ā_d - Ā_d^T P_∞ B̄_d (R + B̄_d^T P_∞ B̄_d)^{-1} B̄_d^T P_∞ Ā_d
+
+    where Ā = H⁻¹ Σ_t A(t), B̄ = H⁻¹ Σ_t B(t), discretized via Euler.
+
+    Returns P_∞ or None if DARE fails (non-stabilizable pair).
+    """
+    nx = A_seq.shape[1]
+    A_d_nom = np.eye(nx) + dt * np.mean(A_seq, axis=0)
+    B_d_nom = dt * np.mean(B_seq, axis=0)
+    # Phase clock (dim 12) is uncontrollable (B[:,12]=0, eigenvalue=1).
+    # Shrink its eigenvalue inside the unit circle so DARE can stabilize.
+    A_d_nom[12, 12] *= 0.99
+    R_safe = np.maximum(R, 1e-6 * np.eye(R.shape[0]))
+    try:
+        P_inf = solve_discrete_are(A_d_nom, B_d_nom, Q, R_safe)
+        P_inf = 0.5 * (P_inf + P_inf.T)
+        if np.any(np.linalg.eigvalsh(P_inf) < -1e-6) or not np.all(np.isfinite(P_inf)):
+            return None
+        np.clip(P_inf, -1e4, 1e4, out=P_inf)
+        return P_inf
+    except (np.linalg.LinAlgError, ValueError):
+        return None
+
+
+def skew(r):
+    """3×3 skew-symmetric (cross-product) matrix of vector r."""
+    return np.array([
+        [0, -r[2], r[1]],
+        [r[2], 0, -r[0]],
+        [-r[1], r[0], 0],
+    ])
+
+
+def build_AB(mass, inertia, foot_pos, sigma_seq, eta=None, contact_normals=None):
+    """Build A_seq (H, 13, 13) and B_seq (H, 13, 12) from barrier scales.
+
+    A(t) = A_kin - (η/m) Σ_k σ_k(t) · Π_k,  where Π_k = I₃ - n̂_k n̂_k^T
+    is the per-foot contact tangent-plane projector.
+
+    Args:
+        mass: scalar robot mass
+        inertia: (3,) diagonal moments of inertia [Ixx, Iyy, Izz]
+        foot_pos: (4, 3) foot positions in body frame
+        sigma_seq: (H, 4) barrier scales per timestep
+        eta: viscous ground coefficient [N·s/m]. Defaults to ROBOT["eta"].
+        contact_normals: (4, 3) unit surface normals per foot.
+                         Default None → flat ground (ê_z).
+
+    Returns:
+        A_seq: (H, 13, 13) time-varying state matrices
+        B_seq: (H, 13, 12) time-varying input matrices
+        c: (13,) constant affine term (gravity + phase clock)
+    """
+    if eta is None:
+        eta = ROBOT.get("eta", 0.0)
+    H = sigma_seq.shape[0]
+
+    # A_base: constant kinematic part (double integrator)
+    A_base = np.zeros((13, 13))
+    A_base[0:3, 3:6] = np.eye(3)   # ṗ = v
+    A_base[6:9, 9:12] = np.eye(3)  # φ̇ = ω
+
+    # Default: flat ground normals (vertical)
+    if contact_normals is None:
+        contact_normals = np.tile(np.array([0.0, 0.0, 1.0]), (4, 1))
+
+    # Precompute per-foot projectors: Π_k = I₃ - n̂_k n̂_k^T
+    projectors = np.zeros((4, 3, 3))
+    for k in range(4):
+        n = contact_normals[k].copy()
+        norm = np.linalg.norm(n)
+        if norm < 1e-8:
+            n = np.array([0.0, 0.0, 1.0])
+        else:
+            n = n / norm
+        projectors[k] = np.eye(3) - np.outer(n, n)
+
+    # A_seq: time-varying through per-foot contact projectors
+    # Π_k projects velocity onto the tangent plane at foot k.
+    # Flat ground (n̂_k = ê_z): Π_k = diag(1,1,0) → horizontal friction only.
+    A_seq = np.tile(A_base, (H, 1, 1))  # (H, 13, 13)
+    for t in range(H):
+        weighted_proj = np.zeros((3, 3))
+        for k in range(4):
+            weighted_proj += sigma_seq[t, k] * projectors[k]
+        A_seq[t, 3:6, 3:6] = -(eta / mass) * weighted_proj
+
+    # c: gravity + stride clock
+    c = np.zeros(13)
+    c[5] = -9.81  # gravity in z
+    c[12] = ROBOT["stride_frequency"]  # phase clock
+
+    # Precompute per-foot rotation contribution: diag(1/I) @ [r_k]×
+    inv_I = 1.0 / inertia  # (3,)
+    rot_mats = []  # (4,) list of (3,3) matrices
+    for k in range(4):
+        # [r_k]× maps f → r_k × f; then divide by I per-axis
+        rot_mats.append(np.diag(inv_I) @ skew(foot_pos[k]))
+
+    # B_seq: time-varying through σ_k
+    B_seq = np.zeros((H, 13, 12))
+    for t in range(H):
+        for k in range(4):
+            s = sigma_seq[t, k]
+            cols = slice(3 * k, 3 * (k + 1))
+            # Translational: dv += σ_k f_k / m
+            B_seq[t, 3:6, cols] = s / mass * np.eye(3)
+            # Rotational: dω += σ_k diag(1/I) [r_k]× f_k
+            B_seq[t, 9:12, cols] = s * rot_mats[k]
+
+    return A_seq, B_seq, c
+
+
+def build_reference_trajectory(horizon, dt):
+    """Build reference trajectory for tracking.
+
+    Reference: constant-velocity forward motion at standing height.
+
+    Args:
+        horizon: number of timesteps H
+        dt: timestep
+
+    Returns:
+        x_ref: (H+1, 13) reference trajectory
+    """
+    v_target = np.array(OCP["target_velocity"])
+    z_target = CONSTRAINTS["z_target"]
+
+    x_ref = np.zeros((horizon + 1, 13))
+    for t in range(horizon + 1):
+        time = t * dt
+        # Position: propagate at target velocity
+        x_ref[t, 0] = v_target[0] * time  # px
+        x_ref[t, 1] = v_target[1] * time  # py
+        x_ref[t, 2] = z_target             # pz (constant height)
+        # Velocity: constant target
+        x_ref[t, 3:6] = v_target
+        # Orientation: upright
+        x_ref[t, 6:9] = 0.0
+        # Angular velocity: zero
+        x_ref[t, 9:12] = 0.0
+        # Phase clock
+        x_ref[t, 12] = ROBOT["stride_frequency"] * time % 1.0
+
+    return x_ref
+
+
+def solve_tvlqr(A_seq, B_seq, c, Q_diag, R_diag, Q_f_diag, x_ref, dt, horizon):
+    """Discrete-time TV-LQR via backward Riccati recursion.
+
+    Solves the tracking problem:
+        min Σ (x_t - x_ref_t)^T Q (x_t - x_ref_t) + u_t^T R u_t
+            + (x_H - x_ref_H)^T Q_f (x_H - x_ref_H)
+    subject to: x_{t+1} = A_d(t) x_t + B_d(t) u_t + c_d
+
+    Both A_d(t) and B_d(t) are time-varying through the barrier scale σ_k(t).
+
+    The optimal control is: u_t = k_t - K_t @ (x_t - x_ref_t)
+
+    Args:
+        A_seq: (H, 13, 13) continuous-time state matrices (time-varying)
+        B_seq: (H, 13, 12) continuous-time input matrices
+        c: (13,) continuous-time affine term
+        Q_diag: (13,) diagonal running cost weights
+        R_diag: (12,) diagonal control cost weights
+        Q_f_diag: (13,) diagonal terminal cost weights
+        x_ref: (H+1, 13) reference trajectory
+        dt: timestep
+        horizon: H
+
+    Returns:
+        K_seq: (H, 12, 13) feedback gains
+        k_seq: (H, 12) feedforward terms
+    """
+    nx, nu = 13, 12
+
+    # Discretize affine term (constant)
+    c_d = dt * c
+
+    # Cost matrices (diagonal → full for matrix ops)
+    Q = np.diag(Q_diag)
+    # Light R floor — just enough for conditioning when B ≈ 0.
+    # The S += 1e-6*I regularization handles the rest.
+    R_diag_safe = np.maximum(R_diag, 1e-6)
+    R = np.diag(R_diag_safe)
+    Q_f = np.diag(Q_f_diag)
+    P_MAX = 1e4  # per-element cap for numerical stability
+
+    # Contact no-slip cost: time-varying Q(t) = Q + w_slip * σ_sum(t) * E_slip
+    w_slip = float(OCP.get("w_slip", 0.0))
+    mass_val = float(ROBOT["mass"])
+    E_slip = np.zeros((nx, nx))
+    E_slip[3, 3] = 1.0  # vx
+    E_slip[4, 4] = 1.0  # vy
+
+    # Storage
+    K_seq = np.zeros((horizon, nu, nx))
+    k_seq = np.zeros((horizon, nu))
+
+    # Terminal conditions — coverage terminal cost via DARE
+    # DARE with time-averaged Q (includes slip cost)
+    if w_slip > 0:
+        sigma_sum_avg = sum(
+            np.mean(B_seq[:, 3, 3*k]) * mass_val for k in range(4)
+        )
+        Q_dare = Q + w_slip * sigma_sum_avg * E_slip
+    else:
+        Q_dare = Q
+    P_inf = solve_dare_nominal(A_seq, B_seq, Q_dare, R, dt)
+    assert P_inf is not None, "DARE failed — non-stabilizable (Ā_d, B̄_d)"
+    P = P_inf.copy()
+    p = -P @ x_ref[horizon]
+
+    # Backward Riccati recursion
+    for t in range(horizon - 1, -1, -1):
+        # NaN/inf recovery: reset to DARE terminal
+        if not np.all(np.isfinite(P)):
+            P = P_inf.copy()
+            p = -P @ x_ref[horizon]
+
+        # Clip P BEFORE matmul to prevent overflow in B_d^T @ P @ B_d
+        np.clip(P, -P_MAX, P_MAX, out=P)
+        np.clip(p, -P_MAX, P_MAX, out=p)
+
+        A_d = np.eye(nx) + dt * A_seq[t]  # (13, 13) time-varying
+        B_d = dt * B_seq[t]  # (13, 12)
+
+        # S = R + B_d^T P_{t+1} B_d  (12×12)
+        S = R + B_d.T @ P @ B_d
+        S = 0.5 * (S + S.T)  # symmetrize
+        S += 1e-6 * np.eye(nu)  # regularize for conditioning
+
+        # Robust solve: catch singular S
+        try:
+            S_inv = np.linalg.solve(S, np.eye(nu))
+        except np.linalg.LinAlgError:
+            S_inv = np.diag(1.0 / R_diag_safe)  # fallback to R^{-1}
+
+        # Feedback gain: K_t = S^{-1} B_d^T P_{t+1} A_d  (12×13)
+        K_t = S_inv @ B_d.T @ P @ A_d
+        np.clip(K_t, -1e3, 1e3, out=K_t)  # bound gains
+        K_seq[t] = K_t
+
+        # Raw feedforward: η_t = S^{-1} B_d^T (P_{t+1} c_d + p_{t+1})
+        Pc_plus_p = P @ c_d + p
+        eta_t = S_inv @ B_d.T @ Pc_plus_p
+
+        # Output feedforward for interface: u = k_out - K(x - x_ref)
+        k_seq[t] = -(K_t @ x_ref[t] + eta_t)
+        np.clip(k_seq[t], -1e3, 1e3, out=k_seq[t])
+
+        # Closed-loop dynamics
+        F_t = A_d - B_d @ K_t  # (13, 13)
+
+        # Time-varying Q: contact no-slip cost
+        if w_slip > 0:
+            sigma_sum_t = sum(B_seq[t, 3, 3*k] * mass_val for k in range(4))
+            Q_t = Q + w_slip * sigma_sum_t * E_slip
+        else:
+            Q_t = Q
+
+        # Update P_t — Joseph form with Q(t) (manifestly PSD)
+        P_new = Q_t + F_t.T @ P @ F_t + K_t.T @ R @ K_t
+        P = 0.5 * (P_new + P_new.T)  # symmetrize
+
+        # Update p_t — affine uses Q (not Q_t): slip penalizes absolute v, not v-v_ref
+        p = F_t.T @ Pc_plus_p - Q @ x_ref[t]
+
+        # Early break on numerical blowup — prevents cascading NaN warnings
+        if not (np.all(np.isfinite(P)) and np.all(np.isfinite(p))):
+            P = P_inf.copy()
+            p = -P @ x_ref[horizon]
+
+    return K_seq, k_seq
+
+
+def forward_simulate(x0, A_seq, B_seq, c, K_seq, k_seq, x_ref, h_seq,
+                     epsilon, horizon, dt, Q_diag, R_diag, Q_f_diag,
+                     constraints=None):
+    """Centroidal forward simulation with Riccati gains. No MuJoCo.
+
+    Computes the closed-loop trajectory and cost under the TV-LQR policy
+    on the exactly-linear centroidal model:
+        u_t = k_t - K_t @ (x_t - x_ref_t)
+        x_{t+1} = A_d(t) @ x_t + B_d(t) @ u_t + c_d
+
+    Both A_d(t) and B_d(t) are time-varying through σ_k(t).
+
+    Args:
+        x0: (13,) initial centroidal state
+        A_seq: (H, 13, 13) continuous-time state matrices (time-varying)
+        B_seq: (H, 13, 12) continuous-time input matrices
+        c: (13,) continuous-time affine term
+        K_seq: (H, 12, 13) feedback gains
+        k_seq: (H, 12) feedforward terms
+        x_ref: (H+1, 13) reference trajectory
+        h_seq: (H+1, 4) foot heights per timestep
+        epsilon: barrier/temperature parameter
+        horizon: H
+        dt: timestep
+        Q_diag: (13,) running cost weights
+        R_diag: (12,) control cost weights
+        Q_f_diag: (13,) terminal cost weights
+        constraints: optional dict with z_min, z_max, w_height,
+                     w_height_barrier, phi_max, w_ori_barrier
+
+    Returns:
+        x_traj: (H+1, 13) state trajectory
+        cost_total: scalar total cost (track + barrier + slip)
+        cost_track: scalar tracking cost
+        cost_barrier: scalar barrier cost
+        cost_slip: scalar contact no-slip cost
+    """
+    nx = 13
+    c_d = dt * c
+    mass = float(ROBOT["mass"])
+    g = 9.81
+
+    Q = np.diag(Q_diag)
+    R = np.diag(R_diag)
+    Q_f = np.diag(Q_f_diag)
+
+    x_traj = np.zeros((horizon + 1, nx))
+    x_traj[0] = x0.copy()
+
+    w_slip = float(OCP.get("w_slip", 0.0))
+    J_track = 0.0
+    J_barrier = 0.0
+    J_slip = 0.0
+
+    for t in range(horizon):
+        x = x_traj[t]
+        dx = x - x_ref[t]
+        u = k_seq[t] - K_seq[t] @ dx
+        u = np.clip(u, -100.0, 100.0)
+
+        # ── Support floor: Σ_k σ_k f_{k,z} ≥ mg ──
+        # σ_k is encoded in B_seq: B[3, 3k] = σ_k / mass
+        sigma_t = np.array([B_seq[t, 3, 3*k] * mass for k in range(4)])
+        eff_fz = sum(sigma_t[k] * u[3*k + 2] for k in range(4))
+        required_fz = mass * g
+        if eff_fz < required_fz:
+            sigma_sum = max(sigma_t.sum(), 1e-6)
+            boost = (required_fz - eff_fz) / sigma_sum
+            for k in range(4):
+                u[3*k + 2] += boost
+            u = np.clip(u, -100.0, 100.0)
+
+        A_d = np.eye(nx) + dt * A_seq[t]  # time-varying
+        B_d = dt * B_seq[t]
+        x_traj[t + 1] = A_d @ x + B_d @ u + c_d
+
+        # Tracking cost
+        J_track += dt * (dx @ Q @ dx + u @ R @ u)
+
+        # Contact barrier: -ε Σ_k log(h_k + ε)
+        for k in range(4):
+            h = h_seq[t, k]
+            J_barrier -= dt * epsilon * np.log(h + epsilon)
+
+        # Height and orientation barriers (centroidal-observable)
+        if constraints is not None:
+            pz = x_traj[t + 1, 2]
+
+            # Height barrier
+            z_lo = max(pz - constraints["z_min"], 1e-6)
+            z_hi = max(constraints["z_max"] - pz, 1e-6)
+            J_barrier -= dt * constraints["w_height_barrier"] * epsilon * (
+                np.log(z_lo) + np.log(z_hi)
+            )
+
+            # Height tracking (quadratic)
+            z_err = pz - constraints["z_target"]
+            J_track += dt * constraints["w_height"] * z_err**2
+
+            # Orientation barrier
+            phi_x = x_traj[t + 1, 6]
+            phi_y = x_traj[t + 1, 7]
+            phi_max2 = constraints["phi_max"]**2
+            ori_x = max(phi_max2 - phi_x**2, 1e-6)
+            ori_y = max(phi_max2 - phi_y**2, 1e-6)
+            J_barrier -= dt * constraints["w_ori_barrier"] * epsilon * (
+                np.log(ori_x) + np.log(ori_y)
+            )
+
+        # Contact no-slip cost: penalize absolute velocity during contact
+        if w_slip > 0:
+            sigma_sum_t = sum(B_seq[t, 3, 3*k] * mass for k in range(4))
+            J_slip += dt * w_slip * sigma_sum_t * (x[3]**2 + x[4]**2)
+
+    # Terminal cost
+    dx_T = x_traj[horizon] - x_ref[horizon]
+    J_track += dx_T @ Q_f @ dx_T
+
+    return x_traj, J_track + J_barrier + J_slip, J_track, J_barrier, J_slip
