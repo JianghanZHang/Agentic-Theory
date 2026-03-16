@@ -183,3 +183,42 @@ This remark has three layers of meaning.
 The CLT does not say ``things converge to normal.'' It says: \emph{the re-cycle converges to the cycle}. The Student $t_\nu$ is the re-cycle at finite time. The Gaussian is the cycle itself. Every actual measurement is $t_\nu$ with some finite $\nu$. The Gaussian is what they approach but none of them are---the $c$ of probability theory: unreachable, structural, defining everything by being the limit nothing reaches.
 \end{remark}
 
+\begin{remark}[Dual ascent on $\varepsilon$: the re-cycle]
+\label{rmk:dual-ascent}
+The holonomy $H(f)$ determines a natural schedule for the barrier
+parameter~$\varepsilon$.
+Let $w^{(i)} \propto e^{-J^{(i)}/\varepsilon}$ be the Boltzmann
+weights of an MPPI sample (\S\ref{sec:mppi}), and define the
+weight entropy $S = -\sum_i w^{(i)} \log w^{(i)}$.
+Low entropy ($S < H_{\mathrm{target}}$) signals that the weights
+have collapsed to a few samples---the effective sample size is too
+small---and $\varepsilon$ should increase to broaden exploration.
+High entropy signals that the distribution is diffuse and
+$\varepsilon$ can decrease to sharpen the barrier.
+The multiplicative update rule is:
+\[
+  \varepsilon \;\leftarrow\;
+  \begin{cases}
+    \alpha_{\mathrm{up}}\,\varepsilon
+      & \text{if } S < H_{\mathrm{target}}, \\[2pt]
+    \alpha_{\mathrm{down}}\,\varepsilon
+      & \text{otherwise},
+  \end{cases}
+  \qquad
+  H_{\mathrm{target}} \leftarrow \gamma\, H_{\mathrm{target}},
+\]
+where $\alpha_{\mathrm{up}} > 1 > \alpha_{\mathrm{down}} > 0$
+and $\gamma \in (0,1)$ is the annealing rate.
+This is a multiplicative dual ascent: each iteration traverses
+the optimal cycle once (sample in log-space, reweight
+multiplicatively, update $\varepsilon$), and the schedule
+$\varepsilon_n \to 0$ drives the Boltzmann distribution toward
+the deterministic optimum.
+The entropy threshold $H_{\mathrm{target}}$ decays geometrically,
+ensuring that the effective sample size remains bounded away
+from both $1$ (collapse) and $N$ (uniform), in analogy with the
+Szeg\H{o} condition
+$\int_\bT \log f\,d\theta > -\infty$
+that separates the non-trivial basin from the degenerate boundary.
+\end{remark}
+

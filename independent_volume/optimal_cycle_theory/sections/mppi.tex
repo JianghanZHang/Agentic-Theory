@@ -52,11 +52,16 @@ exponential reweighting---this is model-predictive path-integral control
 The Monte Carlo estimate converges at $O(N^{-1/2})$ for bounded costs, independently of $\dim G$---the CLT rate (\cref{thm:add-clt}).
 
 \medskip\noindent\textbf{Deterministic limit.}
-As $\varepsilon \to 0$, a Schilder-type large-deviation argument shows
+As $\varepsilon \to 0$, Varadhan's small-time
+asymptotics~\cite{Varadhan1967} (applied in the local chart
+$\exp\colon\mathfrak{g} \to G$, where cut-locus paths contribute
+exponentially vanishing weight) shows
 $V(t,g) \to \min_u\bigl\{\int_t^T L(g_s,u_s)\,ds + \Phi(g_T)\bigr\}$.
 The minimizing path satisfies the Euler--Lagrange equation; on a Lie group
 with left-invariant kinetic energy, this reduces to the Euler--Poincar\'e
-equation on $\mathfrak{g}$.
+equation on $\mathfrak{g}$; barrier and tracking costs enter as
+external forcing on the right-hand side
+($\dot\mu = \mathrm{ad}^*_\xi\mu + f_{\mathrm{ext}}$).
 \end{remark}
 
 \begin{remark}[Hopf--Cole and barrier-augmented costs]\label{rem:hopf-cole-barrier}

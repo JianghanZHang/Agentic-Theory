@@ -886,7 +886,12 @@ The dual $\varepsilon$ is now a \emph{nonuple} unification:
 \item exploration temperature ($w \propto e^{-J/\varepsilon}$,
       Boltzmann weight),
 \item entropic regularization ($\pi_\varepsilon \propto e^{-c/\varepsilon}$,
-      Sinkhorn coupling),
+      Sinkhorn coupling): the MPPI softmax reweighting
+      $w^{(i)} = e^{-J^{(i)}/\varepsilon}/\sum_j e^{-J^{(j)}/\varepsilon}$
+      is one row-normalization step of the Sinkhorn algorithm applied
+      to the cost matrix $c_{ij} = J(\phi_i, g_j)$ between sampled
+      gaits and rollout endpoints, with $\varepsilon$ as the
+      entropic regularization strength~\cite{Cuturi2013},
 \item impedance modulation ($K_p(\sigma_k)$, stance/swing interpolation),
 \item joint-limit softness ($V_{\mathrm{joint}} = -\varepsilon\log(\tilde{q}-a)
       - \varepsilon\log(b-\tilde{q})$, virtual wall),

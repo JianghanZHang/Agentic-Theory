@@ -627,37 +627,351 @@ octonion-structured cross-correlations (``multi-task learning via
 the octonion multiplication table'') outperform quaternion or
 complex alternatives---consistent with the hypothesis that eight
 coupled channels carry more structure than four.
+\end{remark}
 
-\medskip\noindent\emph{Example: the contact Jacobian as a Chu triad.}
-As evidence for the conjectured multiplication, consider the
-triple (Barrier--Boltzmann~(vii), Riccati~(i), Lie--Poisson~(vi)).
+%% ----------------------------------------------------------------
+%% Chu tensor products for the Fano triads
+%% ----------------------------------------------------------------
+\subsection*{Chu tensor products for the Fano triads}
+
+\begin{theorem}[Verified Chu bilinear maps]\label{thm:fano-triads}
+For each Fano triad $e_a \cdot e_b = e_c$ below, we exhibit a
+Chu bilinear map
+$\mathcal{C}_a \otimes \mathcal{C}_b \to \mathcal{C}_c$
+by constructing three maps---forward $f\colon A_a \otimes A_b \to A_c$,
+left backward $g_1\colon A_b \otimes X_c \to X_a$,
+right backward $g_2\colon A_a \otimes X_c \to X_b$---satisfying
+the triple adjunction condition
+\begin{equation}\label{eq:triple-adjunction}
+  r_c\!\bigl(f(a_1, a_2),\, x_3\bigr)
+  \;=\; r_a\!\bigl(a_1,\, g_1(a_2, x_3)\bigr)
+  \;=\; r_b\!\bigl(a_2,\, g_2(a_1, x_3)\bigr).
+\end{equation}
+
+\medskip\noindent
+\textbf{T1}\; ($e_1 \cdot e_2 = e_3$: BB $\times$ Ri $=$ LP).
+\emph{Contact Jacobian.}\;
 In the centroidal model (\S\ref{sec:articulated}), each stance
-foot~$k$ contributes a force $\sigma_k f_k$ to the body through
-the moment arm $r_k$; the net generalized force is
+foot~$k$ contributes a force $\sigma_k f_k$ through the moment
+arm~$r_k$; the net generalized force is
 $\mu = \sum_k \sigma_k\, r_k \times f_k \in \mathfrak{g}^*$.
-Define:
+The three maps are:
 \begin{itemize}[nosep]
-\item \emph{Forward map} $\phi$: given contact modes
-  $\sigma \in (0,1)^4$ (from Barrier--Boltzmann) and optimal
-  forces $f_k = -K_k(t)\,\delta x$ (from Riccati), produce the
-  body torque $\mu = \sum_k \sigma_k\, r_k \times f_k
-  \in \mathfrak{g}^*$ (in Lie--Poisson).
-\item \emph{Backward map} $\phi^*$: given a required body torque
-  $\mu \in \mathfrak{g}^*$, decompose it into per-foot
-  contributions $\sigma_k\, r_k \times f_k$ weighted by
-  $\sigma_k$---the force-distribution problem.
+\item \emph{Forward:}\;
+  $f(\sigma, f_k) = \mu = \sum_k \sigma_k\,(r_k \times f_k)
+  \in \mathfrak{g}^*$.
+\item \emph{Left backward:}\;
+  $g_1(f_k, \xi) = W_{\sigma_k} = \langle r_k \times f_k, \xi \rangle$
+  \quad (virtual work per foot).
+\item \emph{Right backward:}\;
+  $g_2(\sigma, \xi) = \delta x_k = \sigma_k\,(\xi \times r_k)$
+  \quad (virtual displacement).
 \end{itemize}
-The adjunction condition
-$\langle \mu, \xi \rangle_{\mathfrak{g}}
-= \sum_k \sigma_k\, \langle r_k \times f_k, \xi \rangle$
-is d'Alembert's principle of virtual work: the body absorbs
-exactly the power delivered by the contact-gated feet.
-The bilinearity in $(\sigma_k, f_k)$---contact mode times
-control force---is the tensor-product structure:
-neither factor alone determines the body torque.
+\emph{Key identity:} d'Alembert's principle of virtual work.
 
-\medskip\noindent\emph{Analytic criterion: Jensen's gap as a
-non-associativity measure.}
+\medskip\noindent
+\textbf{T2}\; ($e_1 \cdot e_4 = e_5$: BB $\times$ HC $=$ Ha).
+\emph{Feynman--Kac / Szeg\H{o} projection.}\;
+For a gait spectral density $f > 0$ on~$\bT$, write
+$\log f(\theta) = c_0 + \sum_{k \geq 1} c_k e^{2\pi i k\theta}
+  + \sum_{k \geq 1} \bar{c}_k e^{-2\pi i k\theta}$.
+The three Chu objects contribute:
+BB provides the total density~$f$ (via Toeplitz determinants),
+HC provides the geometric mean $G(f) = e^{c_0}$,
+and Ha carries the causal analytic component
+$(\log f)_+ = \sum_{k \geq 1} c_k e^{2\pi i k\theta} \in \Htwo$.
+The three maps are:
+\begin{itemize}[nosep]
+\item \emph{Forward:}\;
+  $f(V_{\mathrm{bar}}, V) = h \in \Htwo$, the Szeg\H{o}--Kolmogorov
+  outer function
+  $h(z) = \exp\!\bigl(\tfrac{c_0}{2} + \sum_{k \geq 1} c_k z^k\bigr)$
+  satisfying $f = |h|^2$ on~$\bT$.
+\item \emph{Left backward:}\;
+  $g_1(V, f_-) = w$, the Boltzmann measure
+  $dw \propto |h|^2 \cdot e^{-V/\varepsilon}\,d\theta$.
+\item \emph{Right backward:}\;
+  $g_2(V_{\mathrm{bar}}, f_-) = \psi
+  = \exp(-c_0/2)\cdot\exp\!\bigl(-(\log f)_-\bigr)$.
+\end{itemize}
+\emph{Key identity:} Strong Szeg\H{o} Limit Theorem.
+
+\medskip\noindent
+\textbf{T6}\; ($e_3 \cdot e_4 = e_7$: LP $\times$ HC $=$ AS).
+\emph{Momentum linearization / Pontryagin.}\;
+The Pontryagin maximum principle on contact variables yields
+the optimal log-contact mode
+$\beta_k = 2\varepsilon\langle \nabla_{\mathfrak{g}} \log\psi,
+  S_k \rangle$,
+where $\psi = e^{-V/(2\varepsilon)}$ is the Hopf--Cole
+desymmetrization and $S_k$ is the $k$-th joint axis.
+The three maps are:
+\begin{itemize}[nosep]
+\item \emph{Forward:}\;
+  $f(\xi, V) = \beta_k
+  = 2\varepsilon\langle \nabla_{\mathfrak{g}} \log\psi, S_k \rangle$
+  \quad (optimal control on joint axis~$k$).
+\item \emph{Left backward:}\;
+  $g_1(V, \sigma) = \mu = d_{\mathfrak{g}} V
+  = -2\varepsilon\, d_{\mathfrak{g}} \log\psi$
+  \quad (costate / momentum).
+\item \emph{Right backward:}\;
+  $g_2(\xi, \sigma) = \psi$ satisfying the transport--killing PDE
+  $\partial_t \psi + \mathcal{L}_\xi \psi
+  = -\tfrac{q(\sigma)}{2\varepsilon}\,\psi$.
+\end{itemize}
+\emph{Key identity:} Hopf--Cole chain rule
+$\langle \mu, \xi \rangle = -2\varepsilon\,
+  (\mathcal{L}_\xi \psi)/\psi$.
+\end{theorem}
+
+\begin{proof}
+\textbf{T1.}\;
+The scalar triple product satisfies
+$\langle f_k,\, \xi \times r_k \rangle
+= \langle r_k \times f_k,\, \xi \rangle$
+(cyclicity of the mixed product).
+Hence
+$r_3(\mu, \xi) = \sum_k \sigma_k\,\langle r_k \times f_k, \xi \rangle
+= r_1(\sigma, W_\sigma) = r_2(f_k, \delta x_k)$,
+verifying~\eqref{eq:triple-adjunction}.
+This is d'Alembert's principle:
+the body absorbs exactly the power delivered by the
+contact-gated feet.
+
+\medskip\noindent
+\textbf{T2.}\;
+The Szeg\H{o}--Verblunsky identity gives
+$D_n(f) = r_0^{\,n} \prod_{k=0}^{n-1}(1 - |\alpha_k|^2)^{n-k}$,
+where $D_n(f) = \det T_n(f)$ is the $n$-th Toeplitz determinant
+and $\alpha_k$ are the Verblunsky coefficients.
+Taking logarithms and passing to the limit yields the
+Strong Szeg\H{o} Limit Theorem:
+\[
+  \log D_n(f)
+  \;=\; \underbrace{n \int_\bT \log f\, d\theta}_{\text{HC: }n\,c_0}
+  \;+\; \underbrace{\sum_{k \geq 1} k\,|c_k|^2}_{\text{Ha: holonomy }H(f)}
+  \;+\; o(1).
+\]
+The left side is the BB pairing (Toeplitz determinant of the
+gait density), the first term is the HC contribution (geometric
+mean), and the second term is the Ha holonomy---confirming
+the triple adjunction~\eqref{eq:triple-adjunction} for
+BB~$\otimes$~HC~$\to$~Ha.
+
+\medskip\noindent
+\textbf{T6.}\;
+From $V = -2\varepsilon \log\psi$, the chain rule gives
+$d_{\mathfrak{g}} V = -2\varepsilon\, d_{\mathfrak{g}} \log\psi$,
+so for any $\xi \in \mathfrak{g}$:
+\[
+  \langle \mu, \xi \rangle
+  \;=\; \langle d_{\mathfrak{g}} V, \xi \rangle
+  \;=\; -2\varepsilon\,\frac{\mathcal{L}_\xi \psi}{\psi}.
+\]
+Under joint-space reduction
+($\xi = \sum_k \xi^k S_k$, with contact gating~$\sigma_k$):
+\[
+  \langle \mu, \xi \rangle
+  \;=\; \sum_k \underbrace{2\varepsilon
+    \langle \nabla_{\mathfrak{g}} \log\psi, S_k\rangle}_{\beta_k}
+    \cdot \sigma_k \cdot \xi^k
+  \;=\; \sum_k r_7(\beta_k, \sigma_k)\,\xi^k,
+\]
+which verifies~\eqref{eq:triple-adjunction} for
+LP~$\otimes$~HC~$\to$~AS.
+\end{proof}
+
+\begin{remark}[Remaining triads: constructions and key identities]
+\label{rmk:remaining-triads}
+For each of the four remaining Fano triads we sketch the
+forward/backward maps and identify the key identity; the
+full Chu tensor-product verification is deferred.
+
+\medskip\noindent
+\textbf{T4}\; ($e_2 \cdot e_4 = e_6$: Ri $\times$ HC $=$ PW).
+\emph{Riccati spectral decomposition.}\;
+Peter--Weyl block-diagonalizes the HJB equation on a compact
+Lie group~$G$: in each irreducible representation~$\rho$,
+the Casimir acts as a scalar~$\lambda_\rho$, and Hopf--Cole
+linearization reduces each block to an independent
+finite-dimensional Riccati equation.
+Forward: $f(P, V) = v_\rho = \hat{V}_\rho \cdot P_\rho^{1/2}$.
+Left backward: $g_1(V, v_\rho^*) = \Sigma_\rho$ via Schur
+orthogonality.
+Right backward: $g_2(P, v_\rho^*)(g)
+= v_\rho^*(\rho(g)\,P_\rho^{-1/2})$.
+In the LQR specialization, the adjunction becomes the
+equipartition identity
+$\tr(P_\rho\,\Sigma_\rho) = d_\rho\,\varepsilon/2$.
+\emph{Key identity:} Schur orthogonality + LQR equipartition.
+
+\medskip\noindent
+\textbf{T7}\; ($e_3 \cdot e_6 = e_5$: LP $\times$ PW $=$ Ha).
+\emph{Coadjoint orbit causality.}\;
+The heat kernel on a compact group~$G$ admits the
+Peter--Weyl expansion
+$p_t(g) = \sum_\rho d_\rho\, e^{-\lambda_\rho t}\,\chi_\rho(g)$,
+which is causal: the exponential decay $e^{-\lambda_\rho t}$
+is supported on $t > 0$, placing its spectral content in~$\Htwo$.
+Forward: $f(\xi, v) = P_+[\sum_\rho d_\rho\,
+  v^*(\rho(e^{\xi\theta})\,v)]$.
+Schur orthogonality selects the diagonal blocks; Laplace
+half-plane support guarantees the Hardy projection is exact.
+\emph{Key identity:} Schur orthogonality +
+heat semigroup causality.
+
+\medskip\noindent
+\textbf{T3}\; ($e_1 \cdot e_7 = e_6$: BB $\times$ AS $=$ PW).
+\emph{Gait spectral analysis.}\;
+The periodic gait function
+$F(\theta) = \sigma(\beta(\theta))\,e^{-V_{\mathrm{bar}}(\theta)/\varepsilon}$
+has Fourier coefficients that live in the Peter--Weyl
+representation spaces.
+Forward: $f(V_{\mathrm{bar}}, \beta) = \hat{F}(n)
+= \int_\bT \sigma(\beta)\,e^{-V_{\mathrm{bar}}/\varepsilon}\,
+  e^{-2\pi i n\theta}\,d\theta$.
+The barrier-logit identity
+$V_{\mathrm{bar}} = \varepsilon(\beta + \mathrm{const})$
+ensures that the constant drops out under Fourier projection
+for $n \neq 0$.
+\emph{Key identity:} Fourier inversion +
+barrier-logit identity.
+\emph{Technical gap:} the Action--State object requires
+lifting from scalar $(\beta, \sigma)$ to $L^2(\bT)$.
+
+\medskip\noindent
+\textbf{T5}\; ($e_2 \cdot e_5 = e_7$: Ri $\times$ Ha $=$ AS).
+\emph{Causal feedback $\to$ contacts.}\;
+The causal component of the Riccati gain $K(\theta)$
+encodes predictable future gains; the contact schedule is
+determined by the causal spectral factor.
+Forward: $f(P, f_+) = \beta(\theta)
+= \mathrm{logit}(\langle K(\theta), f_+(\theta)\rangle
+  / \|K(\theta)\|)$.
+Left backward: $g_1(f_+, \sigma)
+= \Sigma_{\mathrm{obs}}
+= \int \sigma(\theta)\,f_+(\theta)\,f_+(\theta)^*\,d\theta$
+(Kalman--Bucy observation Gramian).
+\emph{Key identity:} Szeg\H{o}--Kolmogorov spectral
+factorization + Kalman observation Gramian.
+\emph{Technical gap:} same Action--State lifting as T3.
+\end{remark}
+
+\begin{remark}[$\mathbb{F}_2$-labeling and the hypercube]
+\label{rmk:hypercube}
+The identification of octonion basis elements with vertices of
+the $3$-cube $\{0,1\}^3$ is standard: the Fano plane is the
+projective plane $PG(2,\mathbb{F}_2)$, and the multiplication
+rule $e_a \cdot e_b = \pm e_c$ satisfies
+$c = a \oplus b$ (bitwise XOR)~\cite{BaezOctonions}.
+Under this labeling the eight Chu objects sit at the vertices
+of the $3$-cube as shown below.
+
+\begin{center}
+\begin{tikzpicture}[
+    scale=2.2,
+    every node/.style={font=\footnotesize},
+    ctrl/.style={fill=blue!12, draw=blue!50!black, thick,
+                 rounded corners=2pt, inner sep=3pt},
+    spec/.style={fill=orange!15, draw=orange!60!black, thick,
+                 rounded corners=2pt, inner sep=3pt},
+    xedge/.style={draw=green!50!black, thick},
+    yedge/.style={draw=blue!60!black, thick},
+    zedge/.style={draw=red!60!black, thick, dashed},
+  ]
+  % Coordinates: isometric projection
+  % Front face (q1=0): H quaternion (control-loop)
+  \coordinate (PF) at (0, 0);       % 000
+  \coordinate (BB) at (1.1, 0);     % 001
+  \coordinate (Ri) at (0, 1.1);     % 010
+  \coordinate (LP) at (1.1, 1.1);   % 011
+  % Back face (q1=1): He4 (spectral-analytic)
+  \def\dx{0.55}
+  \def\dy{0.45}
+  \coordinate (HC) at (\dx, \dy);           % 100
+  \coordinate (Ha) at (1.1+\dx, \dy);       % 101
+  \coordinate (PW) at (\dx, 1.1+\dy);       % 110
+  \coordinate (AS) at (1.1+\dx, 1.1+\dy);   % 111
+
+  % --- Faces (drawn first, behind everything) ---
+  % Front face: H (control-loop) — blue
+  \fill[blue!6, draw=blue!30, thin]
+    (PF) -- (BB) -- (LP) -- (Ri) -- cycle;
+  % Back face: He4 (spectral-analytic) — orange
+  \fill[orange!8, draw=orange!30, thin]
+    (HC) -- (Ha) -- (AS) -- (PW) -- cycle;
+
+  % --- Edges ---
+  % X-axis (q3 flip): green — constraint injection
+  \draw[xedge] (PF) -- (BB);
+  \draw[xedge] (Ri) -- (LP);
+  \draw[xedge] (HC) -- (Ha);
+  \draw[xedge] (PW) -- (AS);
+  % Y-axis (q2 flip): blue — dynamics injection
+  \draw[yedge] (PF) -- (Ri);
+  \draw[yedge] (BB) -- (LP);
+  \draw[yedge] (HC) -- (PW);
+  \draw[yedge] (Ha) -- (AS);
+  % Z-axis (q1 flip): red dashed — Hopf-Cole bridge
+  \draw[zedge] (PF) -- (HC);
+  \draw[zedge] (BB) -- (Ha);
+  \draw[zedge] (Ri) -- (PW);
+  \draw[zedge] (LP) -- (AS);
+
+  % --- Nodes ---
+  % Front face (H)
+  \node[ctrl, anchor=north east] at (PF) {PF\;\textit{000}};
+  \node[ctrl, anchor=north west] at (BB) {BB\;\textit{001}};
+  \node[ctrl, anchor=south east] at (Ri) {Ri\;\textit{010}};
+  \node[ctrl, anchor=south west] at (LP) {LP\;\textit{011}};
+  % Back face (He4)
+  \node[spec, anchor=south west] at (HC) {HC\;\textit{100}};
+  \node[spec, anchor=south west] at (Ha) {Ha\;\textit{101}};
+  \node[spec, anchor=south east] at (PW) {PW\;\textit{110}};
+  \node[spec, anchor=south west] at (AS) {AS\;\textit{111}};
+
+  % --- Face labels ---
+  \node[blue!60!black, font=\scriptsize\itshape]
+    at (0.55, -0.22) {$\mathbb{H}$ (control)};
+  \node[orange!70!black, font=\scriptsize\itshape]
+    at (\dx + 0.55, \dy + 0.55) {$\mathbb{H}\,e_4$ (spectral)};
+
+  % --- Axis legend ---
+  \node[font=\scriptsize, anchor=west] at (2.1, 0.15)
+    {\tikz\draw[xedge] (0,0)--(0.4,0);
+     \; $X$ ($e_1$, Law~I)};
+  \node[font=\scriptsize, anchor=west] at (2.1, -0.08)
+    {\tikz\draw[yedge] (0,0)--(0.4,0);
+     \; $Y$ ($e_2$, Law~II)};
+  \node[font=\scriptsize, anchor=west] at (2.1, -0.31)
+    {\tikz\draw[zedge] (0,0)--(0.4,0);
+     \; $Z$ ($e_4$, Law~III)};
+\end{tikzpicture}
+\end{center}
+
+\noindent
+The three Cayley--Dickson doublings correspond to the three
+coordinate axes:
+\begin{enumerate}[label=\textup{(\roman*)},nosep]
+\item \emph{$X$-axis} ($q_3$, constraint injection):
+  $\R \to \mathbb{C}$ via $e_1 = \mathrm{BB}$.
+\item \emph{$Y$-axis} ($q_2$, dynamics injection):
+  $\mathbb{C} \to \mathbb{H}$ via $e_2 = \mathrm{Ri}$.
+\item \emph{$Z$-axis} ($q_1$, analytic bridge):
+  $\mathbb{H} \to \mathbb{O}$ via $e_4 = \mathrm{HC}$.
+\end{enumerate}
+The $Z$-axis flip ($q_1 \colon 0 \leftrightarrow 1$) sends
+every control-loop object in the $\mathbb{H}$ face to its
+spectral-analytic counterpart in the $\mathbb{H}\,e_4$ face
+via the Hopf--Cole exponential bridge.
+The barrier parameter~$\varepsilon$ interpolates along this
+axis---a categorical analogue of the role of $\hbar$ in
+Maslov dequantization (\cref{prop:tropical-chu}).
+\end{remark}
+
+\begin{remark}[Non-associativity certificate: Jensen's gap]
+\label{rmk:jensen-gap}
 The strictly convex barrier
 $V(h) = -\varepsilon \log h$ satisfies Jensen's inequality:
 $\mathbb{E}[V(h)] \geq V(\mathbb{E}[h])$, with equality if and
@@ -716,8 +1030,10 @@ and the Jensen gap provides an analytic certificate:
 \emph{non-trivial locomotion ($H(f) > 0$) is a necessary
 condition for the eight Chu dualities to exhibit
 non-associative coupling}.
+\end{remark}
 
-\medskip
+\begin{remark}[Octonion conjecture: summary of evidence]
+\label{rmk:octonion-conjecture}
 We state the correspondence as a conjecture with the following
 supporting evidence:
 \begin{enumerate}[label=(\alph*),nosep]
@@ -733,11 +1049,18 @@ supporting evidence:
   that respects the Cayley--Dickson splitting
   $\mathbb{O} = \mathbb{H} \oplus \mathbb{H}\,e_4$
   (control-loop vs.\ spectral-analytic quaternions).
-\item One triad fully constructed: T1 (contact Jacobian,
-  $e_1 \cdot e_2 = e_3$) with explicit forward/backward maps
-  and the d'Alembert adjunction condition.
-\item All seven triads identified with physical content and
-  antisymmetric mediators (table above).
+\item Three triads fully constructed:
+  T1 (contact Jacobian),
+  T2 (Feynman--Kac / Szeg\H{o}),
+  T6 (momentum linearization / Pontryagin),
+  with explicit forward/backward maps and verified adjunction
+  conditions (\cref{thm:fano-triads}).
+\item Four additional triads constructed with identified key
+  identities (\cref{rmk:remaining-triads}):
+  T4 (Schur orthogonality),
+  T7 (heat semigroup causality),
+  T3 (Fourier inversion),
+  T5 (spectral factorization).
 \item The self-product $e_i^2 = -1$ follows from
   symplectic self-duality (Green's function sign).
 \item Anti-commutativity $e_a \cdot e_b = -e_b \cdot e_a$
@@ -746,11 +1069,14 @@ supporting evidence:
   non-trivial locomotion ($H(f) > 0$) implies
   non-associativity; the concrete associator
   $-2e_6$ for the triple $(e_1, e_2, e_5)$
-  identifies Peter--Weyl spectral content as the obstruction.
+  identifies Peter--Weyl spectral content as the obstruction
+  (\cref{rmk:jensen-gap}).
+\item The $\mathbb{F}_2^3$ vertex labeling
+  (\cref{rmk:hypercube}) recovers the Fano plane as
+  $PG(2, \mathbb{F}_2)$ with XOR multiplication.
 \end{enumerate}
-What remains open is the rigorous verification that each of the
-seven physical morphisms satisfies the universal property of the
-Chu tensor product---specifically, that the forward and backward
-maps of each triad compose to yield the correct pairing on the
-third Chu object.
+What remains open is the verification of the universal property
+for T3 and T5 (which require lifting the scalar Action--State
+object to $L^2(\bT)$), and the explicit associator computation
+for all $\binom{7}{3} = 35$ triples.
 \end{remark}

@@ -22,7 +22,8 @@ $\dot x = Ax + Bu$ and quadratic cost
 $\int_0^T (x^\top Q\,x + u^\top R\,u)\,dt$
 (the LQG regime),
 where $A \in \R^{n \times n}$, $B \in \R^{n \times m}$,
-$Q \succeq 0$, and $R \succ 0$.
+$Q \succeq 0$, $R \succ 0$, and the pair $(A, B)$ is stabilizable
+with $(A, Q^{1/2})$ detectable.
 The Feynman--Kac path integral is Gaussian and evaluates in closed
 form; the Boltzmann-weighted average compresses to the matrix Riccati
 ODE:
