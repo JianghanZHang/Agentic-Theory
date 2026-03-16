@@ -29,7 +29,7 @@ NU = 12  # f0_x,f0_y,f0_z, f1_x,..., f3_z (4 feet × 3 force components)
 
 # ── OCP (inner solver) ──
 OCP = {
-    "horizon": 50,
+    "horizon": 100,
     "dt": 0.01,                     # 100 Hz discretization
     "target_velocity": jnp.array([1.0, 0.0, 0.0]),  # 1 m/s forward
     "Q_diag": jnp.concatenate([
@@ -49,6 +49,7 @@ OCP = {
     ]),
     "force_limit": 100.0,  # N per foot
     "w_slip": 0.1,         # contact no-slip weight (integral constraint)
+    "T_ramp": 0.3,         # velocity ramp-up period [s] (ref starts from rest)
 }
 
 # ── MPPI (outer loop) ──
@@ -64,6 +65,7 @@ MPPI = {
     "h_min": 1e-4,              # barrier floor (prevent division by zero)
     "barrier_delta": 0.01,      # sigmoid sharpness for force_scale
     "n_knots": 6,               # B-spline control points per foot per stride
+    "beta_scale": 3.0,          # std dev of B-spline coefficient noise in log space
     "delta_kl": 0.5,            # KL trust region radius on T^3
 }
 
@@ -77,6 +79,8 @@ CONSTRAINTS = {
     "phi_max": 0.524,      # max pitch/roll ~30° (rad)
     "w_ori_barrier": 1.0,  # orientation log-barrier weight (× ε)
     "w_joint_barrier": 0.1, # joint-limit log-barrier weight (× ε)
+    "C_min": 0.3,          # min time-averaged contact fraction per foot
+    "C_max": 0.7,          # max time-averaged contact fraction per foot
 }
 
 # ── MuJoCo simulation ──

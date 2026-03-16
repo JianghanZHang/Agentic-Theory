@@ -20,9 +20,10 @@ Usage in the MPPI loop:
 """
 
 import numpy as np
-from scipy.linalg import solve_discrete_are
+from scipy.linalg import solve_discrete_are, expm
 
 from config import ROBOT, OCP, CONSTRAINTS
+from xla_inf import smooth_where, safe_log, devil_check
 
 
 def solve_dare_nominal(A_seq, B_seq, Q, R, dt):
@@ -59,6 +60,38 @@ def skew(r):
         [r[2], 0, -r[0]],
         [-r[1], r[0], 0],
     ])
+
+
+def matrix_exp_discretize(A_ct, dt):
+    """Compute exact discretization via matrix exponential.
+
+    Returns A_d = expm(A·dt).  B_d is computed as dt·B (first-order) since
+    A has eigenvalues O(η/m) ≈ 0.3 and dt = 0.01, giving error O(A·dt²) ≈ 3e-5.
+
+    For the affine term, uses the augmented matrix trick:
+        expm([[A·dt, c·dt], [0, 0]]) = [[expm(A·dt), V·c], [0, 1]]
+    where V = A⁻¹(expm(A·dt) - I), avoiding explicit inversion.
+    """
+    return expm(A_ct * dt)
+
+
+def matrix_exp_step(A_ct, B_ct, c, x, u, dt):
+    """Exact one-step integration via augmented matrix exponential.
+
+    x(t+dt) = expm(A·dt)·x + V·(B·u + c)
+    where V = A⁻¹(expm(A·dt) - I).
+
+    Uses the augmented (nx+1)×(nx+1) matrix for numerical stability:
+        expm([[A·dt, (Bu+c)·dt], [0, 0]]) = [[expm(A·dt), V·(Bu+c)], [0, 1]]
+    """
+    nx = A_ct.shape[0]
+    rhs = B_ct @ u + c
+    M = np.zeros((nx + 1, nx + 1))
+    M[:nx, :nx] = A_ct * dt
+    M[:nx, nx] = rhs * dt
+    eM = expm(M)
+    x_new = eM[:nx, :nx] @ x + eM[:nx, nx]
+    return x_new
 
 
 def build_AB(mass, inertia, foot_pos, sigma_seq, eta=None, contact_normals=None):
@@ -144,7 +177,9 @@ def build_AB(mass, inertia, foot_pos, sigma_seq, eta=None, contact_normals=None)
 def build_reference_trajectory(horizon, dt):
     """Build reference trajectory for tracking.
 
-    Reference: constant-velocity forward motion at standing height.
+    Reference: linear velocity ramp over [0, T_ramp], then constant.
+    Position is the exact integral of the velocity profile, so (x_ref, v_ref)
+    is dynamically consistent — the LQR tracks a physically achievable path.
 
     Args:
         horizon: number of timesteps H
@@ -155,16 +190,26 @@ def build_reference_trajectory(horizon, dt):
     """
     v_target = np.array(OCP["target_velocity"])
     z_target = CONSTRAINTS["z_target"]
+    T_ramp = float(OCP.get("T_ramp", 0.5))  # ramp-up period [s]
 
     x_ref = np.zeros((horizon + 1, 13))
     for t in range(horizon + 1):
         time = t * dt
-        # Position: propagate at target velocity
-        x_ref[t, 0] = v_target[0] * time  # px
-        x_ref[t, 1] = v_target[1] * time  # py
-        x_ref[t, 2] = z_target             # pz (constant height)
-        # Velocity: constant target
-        x_ref[t, 3:6] = v_target
+        # Velocity: linear ramp then constant
+        alpha = min(time / max(T_ramp, 1e-30), 1.0)
+        v_ref = alpha * v_target
+        x_ref[t, 3:6] = v_ref
+        # Position: integral of ramp profile
+        #   t < T_ramp: p = v_target * t² / (2 T_ramp)
+        #   t ≥ T_ramp: p = v_target * T_ramp / 2 + v_target * (t - T_ramp)
+        #             = v_target * (t - T_ramp / 2)
+        if time < T_ramp:
+            x_ref[t, 0] = v_target[0] * time**2 / (2.0 * T_ramp)
+            x_ref[t, 1] = v_target[1] * time**2 / (2.0 * T_ramp)
+        else:
+            x_ref[t, 0] = v_target[0] * (time - T_ramp / 2.0)
+            x_ref[t, 1] = v_target[1] * (time - T_ramp / 2.0)
+        x_ref[t, 2] = z_target  # pz (constant height)
         # Orientation: upright
         x_ref[t, 6:9] = 0.0
         # Angular velocity: zero
@@ -214,7 +259,6 @@ def solve_tvlqr(A_seq, B_seq, c, Q_diag, R_diag, Q_f_diag, x_ref, dt, horizon):
     R_diag_safe = np.maximum(R_diag, 1e-6)
     R = np.diag(R_diag_safe)
     Q_f = np.diag(Q_f_diag)
-    P_MAX = 1e4  # per-element cap for numerical stability
 
     # Contact no-slip cost: time-varying Q(t) = Q + w_slip * σ_sum(t) * E_slip
     w_slip = float(OCP.get("w_slip", 0.0))
@@ -242,45 +286,38 @@ def solve_tvlqr(A_seq, B_seq, c, Q_diag, R_diag, Q_f_diag, x_ref, dt, horizon):
     p = -P @ x_ref[horizon]
 
     # Backward Riccati recursion
+    #
+    # All matrix products use np.dot instead of the @ operator.
+    # On ARM64 macOS (Apple Accelerate BLAS), the @ operator raises
+    # spurious "divide by zero encountered in matmul" warnings —
+    # results are correct but the FP exception flag is tripped.
+    # np.dot delegates to a different code path that avoids this.
+    dot = np.dot
     for t in range(horizon - 1, -1, -1):
-        # NaN/inf recovery: reset to DARE terminal
-        if not np.all(np.isfinite(P)):
-            P = P_inf.copy()
-            p = -P @ x_ref[horizon]
-
-        # Clip P BEFORE matmul to prevent overflow in B_d^T @ P @ B_d
-        np.clip(P, -P_MAX, P_MAX, out=P)
-        np.clip(p, -P_MAX, P_MAX, out=p)
-
-        A_d = np.eye(nx) + dt * A_seq[t]  # (13, 13) time-varying
-        B_d = dt * B_seq[t]  # (13, 12)
+        A_d = matrix_exp_discretize(A_seq[t], dt)  # expm(A·dt), exact
+        B_d = dt * B_seq[t]  # first-order B_d (error O(A·dt²) ≈ 3e-5)
 
         # S = R + B_d^T P_{t+1} B_d  (12×12)
-        S = R + B_d.T @ P @ B_d
+        PB = dot(P, B_d)  # (13, 12)
+        S = R + dot(PB.T, B_d)
         S = 0.5 * (S + S.T)  # symmetrize
         S += 1e-6 * np.eye(nu)  # regularize for conditioning
 
-        # Robust solve: catch singular S
-        try:
-            S_inv = np.linalg.solve(S, np.eye(nu))
-        except np.linalg.LinAlgError:
-            S_inv = np.diag(1.0 / R_diag_safe)  # fallback to R^{-1}
-
         # Feedback gain: K_t = S^{-1} B_d^T P_{t+1} A_d  (12×13)
-        K_t = S_inv @ B_d.T @ P @ A_d
+        K_t = np.linalg.solve(S, dot(PB.T, A_d))
         np.clip(K_t, -1e3, 1e3, out=K_t)  # bound gains
         K_seq[t] = K_t
 
         # Raw feedforward: η_t = S^{-1} B_d^T (P_{t+1} c_d + p_{t+1})
-        Pc_plus_p = P @ c_d + p
-        eta_t = S_inv @ B_d.T @ Pc_plus_p
+        Pc_plus_p = dot(P, c_d) + p
+        eta_t = np.linalg.solve(S, dot(PB.T, c_d) + dot(B_d.T, p))
 
         # Output feedforward for interface: u = k_out - K(x - x_ref)
-        k_seq[t] = -(K_t @ x_ref[t] + eta_t)
+        k_seq[t] = -(dot(K_t, x_ref[t]) + eta_t)
         np.clip(k_seq[t], -1e3, 1e3, out=k_seq[t])
 
         # Closed-loop dynamics
-        F_t = A_d - B_d @ K_t  # (13, 13)
+        F_t = A_d - dot(B_d, K_t)  # (13, 13)
 
         # Time-varying Q: contact no-slip cost
         if w_slip > 0:
@@ -290,16 +327,11 @@ def solve_tvlqr(A_seq, B_seq, c, Q_diag, R_diag, Q_f_diag, x_ref, dt, horizon):
             Q_t = Q
 
         # Update P_t — Joseph form with Q(t) (manifestly PSD)
-        P_new = Q_t + F_t.T @ P @ F_t + K_t.T @ R @ K_t
+        P_new = Q_t + dot(dot(F_t.T, P), F_t) + dot(dot(K_t.T, R), K_t)
         P = 0.5 * (P_new + P_new.T)  # symmetrize
 
         # Update p_t — affine uses Q (not Q_t): slip penalizes absolute v, not v-v_ref
-        p = F_t.T @ Pc_plus_p - Q @ x_ref[t]
-
-        # Early break on numerical blowup — prevents cascading NaN warnings
-        if not (np.all(np.isfinite(P)) and np.all(np.isfinite(p))):
-            P = P_inf.copy()
-            p = -P @ x_ref[horizon]
+        p = dot(F_t.T, Pc_plus_p) - dot(Q, x_ref[t])
 
     return K_seq, k_seq
 
@@ -341,8 +373,7 @@ def forward_simulate(x0, A_seq, B_seq, c, K_seq, k_seq, x_ref, h_seq,
         cost_barrier: scalar barrier cost
         cost_slip: scalar contact no-slip cost
     """
-    nx = 13
-    c_d = dt * c
+    nx, nu = 13, 12
     mass = float(ROBOT["mass"])
     g = 9.81
 
@@ -358,59 +389,81 @@ def forward_simulate(x0, A_seq, B_seq, c, K_seq, k_seq, x_ref, h_seq,
     J_barrier = 0.0
     J_slip = 0.0
 
+    # Palindrome compile width: shared ε for all smooth blends.
+    # Controls the transition sharpness of force clip, support floor,
+    # and barrier floors.  As blend_eps → 0, recovers the hard ops.
+    blend_eps = max(epsilon, 1e-4)
+    force_limit = 100.0
+
     for t in range(horizon):
         x = x_traj[t]
         dx = x - x_ref[t]
         u = k_seq[t] - K_seq[t] @ dx
-        u = np.clip(u, -100.0, 100.0)
 
-        # ── Support floor: Σ_k σ_k f_{k,z} ≥ mg ──
-        # σ_k is encoded in B_seq: B[3, 3k] = σ_k / mass
+        # ── Smooth force clip (replaces np.clip(u, -100, 100)) ──
+        # smooth_where(u + M, ...) ≈ max(u, -M)
+        # smooth_where(M - u, ...) ≈ min(u, M)
+        for j in range(nu):
+            u[j] = smooth_where(u[j] + force_limit, u[j], -force_limit,
+                                blend_eps)
+            u[j] = smooth_where(force_limit - u[j], u[j], force_limit,
+                                blend_eps)
+
+        # ── Smooth support floor: Σ_k σ_k f_{k,z} ≥ mg ──
         sigma_t = np.array([B_seq[t, 3, 3*k] * mass for k in range(4)])
         eff_fz = sum(sigma_t[k] * u[3*k + 2] for k in range(4))
         required_fz = mass * g
-        if eff_fz < required_fz:
-            sigma_sum = max(sigma_t.sum(), 1e-6)
-            boost = (required_fz - eff_fz) / sigma_sum
-            for k in range(4):
-                u[3*k + 2] += boost
-            u = np.clip(u, -100.0, 100.0)
+        deficit = required_fz - eff_fz
+        sigma_sum = max(sigma_t.sum(), 1e-6)
+        # smooth_where(-deficit, 0, boost, ε): boost only when deficit > 0
+        boost = smooth_where(-deficit, 0.0, deficit / sigma_sum, blend_eps)
+        for k in range(4):
+            u[3*k + 2] += boost
+        # Re-clip after boost
+        for j in range(nu):
+            u[j] = smooth_where(u[j] + force_limit, u[j], -force_limit,
+                                blend_eps)
+            u[j] = smooth_where(force_limit - u[j], u[j], force_limit,
+                                blend_eps)
 
-        A_d = np.eye(nx) + dt * A_seq[t]  # time-varying
-        B_d = dt * B_seq[t]
-        x_traj[t + 1] = A_d @ x + B_d @ u + c_d
+        # Matrix exponential integrator: exact for the linear system
+        x_traj[t + 1] = matrix_exp_step(A_seq[t], B_seq[t], c, x, u, dt)
 
         # Tracking cost
         J_track += dt * (dx @ Q @ dx + u @ R @ u)
 
-        # Contact barrier: -ε Σ_k log(h_k + ε)
+        # Contact barrier: -ε Σ_k log(h_k + ε)  (already smooth)
         for k in range(4):
             h = h_seq[t, k]
-            J_barrier -= dt * epsilon * np.log(h + epsilon)
+            J_barrier -= dt * epsilon * safe_log(h + epsilon)
 
-        # Height and orientation barriers (centroidal-observable)
+        # Height and orientation barriers (smooth via safe_log)
         if constraints is not None:
             pz = x_traj[t + 1, 2]
 
-            # Height barrier
-            z_lo = max(pz - constraints["z_min"], 1e-6)
-            z_hi = max(constraints["z_max"] - pz, 1e-6)
+            # Height barrier — smooth floor via smooth_where
+            z_lo_raw = pz - constraints["z_min"]
+            z_hi_raw = constraints["z_max"] - pz
+            z_lo = smooth_where(z_lo_raw - 1e-6, z_lo_raw, 1e-6, 1e-6)
+            z_hi = smooth_where(z_hi_raw - 1e-6, z_hi_raw, 1e-6, 1e-6)
             J_barrier -= dt * constraints["w_height_barrier"] * epsilon * (
-                np.log(z_lo) + np.log(z_hi)
+                safe_log(z_lo) + safe_log(z_hi)
             )
 
-            # Height tracking (quadratic)
+            # Height tracking (quadratic — already smooth)
             z_err = pz - constraints["z_target"]
             J_track += dt * constraints["w_height"] * z_err**2
 
-            # Orientation barrier
+            # Orientation barrier — smooth floor via smooth_where
             phi_x = x_traj[t + 1, 6]
             phi_y = x_traj[t + 1, 7]
             phi_max2 = constraints["phi_max"]**2
-            ori_x = max(phi_max2 - phi_x**2, 1e-6)
-            ori_y = max(phi_max2 - phi_y**2, 1e-6)
+            ori_x_raw = phi_max2 - phi_x**2
+            ori_y_raw = phi_max2 - phi_y**2
+            ori_x = smooth_where(ori_x_raw - 1e-6, ori_x_raw, 1e-6, 1e-6)
+            ori_y = smooth_where(ori_y_raw - 1e-6, ori_y_raw, 1e-6, 1e-6)
             J_barrier -= dt * constraints["w_ori_barrier"] * epsilon * (
-                np.log(ori_x) + np.log(ori_y)
+                safe_log(ori_x) + safe_log(ori_y)
             )
 
         # Contact no-slip cost: penalize absolute velocity during contact
@@ -421,5 +474,8 @@ def forward_simulate(x0, A_seq, B_seq, c, K_seq, k_seq, x_ref, h_seq,
     # Terminal cost
     dx_T = x_traj[horizon] - x_ref[horizon]
     J_track += dx_T @ Q_f @ dx_T
+
+    assert devil_check(x_traj, np.array([J_track, J_barrier, J_slip])), \
+        "devil escaped in forward_simulate"
 
     return x_traj, J_track + J_barrier + J_slip, J_track, J_barrier, J_slip

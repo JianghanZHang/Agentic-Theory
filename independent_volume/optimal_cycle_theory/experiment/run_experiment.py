@@ -29,7 +29,10 @@ from gait_sampler import (
     weighted_circular_variance,
     trust_region_step,
 )
-from bspline_gait import periodic_bspline_height, sample_bspline_gaits
+from bspline_gait import (
+    periodic_bspline_height, sample_bspline_gaits,
+    periodic_bspline_logcontact, sample_logspace_gaits,
+)
 from riccati_lqr import build_AB, build_reference_trajectory, solve_tvlqr, forward_simulate
 from quadruped_dynamics import (
     MuJoCoQuadruped, normalize_joints, _Q_NORM_MIN, _Q_NORM_MAX,
@@ -311,8 +314,9 @@ def run_rollout_bspline(n_iters: int = 50, seed: int = 0,
     x0[2] = ROBOT["standing_height"]
 
     # B-spline mean and variance (Euclidean, not circular)
+    beta_scale = MPPI.get("beta_scale", 3.0)
     cp_mean = np.zeros((4, n_knots))
-    cp_std = h_max * 0.5 * np.ones((4, n_knots))
+    cp_std = beta_scale * 0.5 * np.ones((4, n_knots))
 
     rng = np.random.default_rng(seed)
 
@@ -329,15 +333,15 @@ def run_rollout_bspline(n_iters: int = 50, seed: int = 0,
 
         # 1. Sample N gaits as B-spline control points
         if k == 0:
-            all_cp = sample_bspline_gaits(
-                n_knots, N, T_stride, rng, h_max=h_max, duty_factor=beta
+            all_cp = sample_logspace_gaits(
+                n_knots, N, T_stride, rng, beta_scale=beta_scale
             )
         else:
-            # Sample around current mean with current variance
+            # Sample around current mean with current variance (log-space, unconstrained)
             all_cp = np.zeros((N, 4, n_knots))
             for i in range(N):
                 noise = rng.normal(0, 1, size=(4, n_knots)) * cp_std
-                all_cp[i] = np.maximum(cp_mean + noise, 0.0)
+                all_cp[i] = cp_mean + noise
 
         # 2. Evaluate each gait
         costs = np.zeros(N)
@@ -346,12 +350,12 @@ def run_rollout_bspline(n_iters: int = 50, seed: int = 0,
         best_cp = None
 
         for i in range(N):
-            # Evaluate B-spline foot heights
-            heights = periodic_bspline_height(all_cp[i], horizon + 1, T_stride)
-            scales = np.array(barrier_force_scale(
-                jnp.array(heights), epsilon, h_min
-            ))
-            height_fracs = np.clip(heights / h_max, 0.0, 1.0)
+            # Evaluate log-space B-spline → contact modes
+            beta_i, sigma_i, heights = periodic_bspline_logcontact(
+                all_cp[i], horizon + 1, T_stride, epsilon=epsilon
+            )
+            scales = sigma_i
+            height_fracs = np.clip(heights / h_max, 0.0, 1.0)  # for impedance interpolation
 
             # Simulate with impedance control
             sim.reset(x0)
@@ -403,6 +407,16 @@ def run_rollout_bspline(n_iters: int = 50, seed: int = 0,
                     np.sum(np.log(q_lo_j) + np.log(q_hi_j))
                 )
 
+            # Contact budget penalty (emergent periodicity constraint)
+            C_min = CONSTRAINTS.get("C_min", 0.3)
+            C_max = CONSTRAINTS.get("C_max", 0.7)
+            avg_sigma_k = np.mean(sigma_i, axis=0)  # (4,) average contact per foot
+            budget_lo = np.maximum(avg_sigma_k - C_min, 1e-8)
+            budget_hi = np.maximum(C_max - avg_sigma_k, 1e-8)
+            cost -= epsilon * float(
+                np.sum(np.log(budget_lo) + np.log(budget_hi))
+            )
+
             costs[i] = cost
             if cost < best_cost:
                 best_cost = cost
@@ -436,7 +450,7 @@ def run_rollout_bspline(n_iters: int = 50, seed: int = 0,
         # 8. Weighted variance in spline coefficient space
         diffs = all_cp - cp_mean[None, :, :]
         cp_var = np.sum(weights[:, None, None] * diffs**2, axis=0)
-        cp_std = np.clip(np.sqrt(cp_var), 0.005, h_max)
+        cp_std = np.clip(np.sqrt(cp_var), 0.1, beta_scale)
 
         # Record
         all_trajectories.append(best_traj)
@@ -478,17 +492,17 @@ def run_rollout_bspline(n_iters: int = 50, seed: int = 0,
 
 def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
                       verbose: bool = True) -> dict:
-    """MPPI with Riccati inner solve (TV-LQR).
+    """MPPI with Riccati inner solve (TV-LQR) — log-space B-spline parameterization.
 
     For each MPPI iteration:
-      1. Sample N B-spline gait schedules h_k
+      1. Sample N log-space B-spline coefficients β_k ∈ ℝ^{4×n_knots}
       2. For each sample:
-         a. h_k → σ_k(t) via barrier_force_scale
-         b. Build B(t) from σ_k(t) on centroidal model
-         c. Solve TV-LQR → K(t), k(t) via backward Riccati
+         a. β_k → σ_k = sigmoid(β_k) via periodic_bspline_logcontact
+         b. Build A(t), B(t) from σ_k(t) on centroidal model
+         c. Solve TV-LQR → K(t), k(t) via backward Riccati (expm discretization)
          d. Forward simulate on centroidal model (no MuJoCo)
-         e. Evaluate cost
-      3. Boltzmann reweight on B-spline coefficients
+         e. Evaluate cost (tracking + barrier + no-slip + contact budget)
+      3. Boltzmann reweight on B-spline coefficients (path integral)
       4. Update mean/std of B-spline distribution
       5. Dual ascent on ε
 
@@ -524,9 +538,10 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
     # Reference trajectory for Riccati
     x_ref = build_reference_trajectory(horizon, dt)
 
-    # B-spline mean and variance
+    # Log-space B-spline mean and variance
+    beta_scale = float(MPPI.get("beta_scale", 3.0))
     cp_mean = np.zeros((4, n_knots))
-    cp_std = h_max * 0.5 * np.ones((4, n_knots))
+    cp_std = beta_scale * 0.5 * np.ones((4, n_knots))
 
     rng = np.random.default_rng(seed)
 
@@ -539,27 +554,26 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
         # Cost decomposition (best sample per iteration)
         'best_vel': [], 'best_height': [],
         'best_height_bar': [], 'best_ori_bar': [], 'best_joint_bar': [],
-        'best_control': [], 'best_contact_bar': [],
+        'best_control': [], 'best_contact_bar': [], 'best_slip': [],
         # Cost decomposition (mean across samples)
         'mean_vel': [], 'mean_height': [],
         'mean_height_bar': [], 'mean_ori_bar': [], 'mean_joint_bar': [],
-        'mean_control': [], 'mean_contact_bar': [],
+        'mean_control': [], 'mean_contact_bar': [], 'mean_slip': [],
     }
 
     for k in range(n_iters):
         t0 = time.time()
 
-        # 1. Sample N gaits as B-spline control points
+        # 1. Sample N gaits as log-space B-spline coefficients
         if k == 0:
-            all_cp = sample_bspline_gaits(
-                n_knots, N, T_stride, rng, h_max=h_max,
-                duty_factor=ROBOT["duty_factor"]
+            all_cp = sample_logspace_gaits(
+                n_knots, N, T_stride, rng, beta_scale=beta_scale
             )
         else:
             all_cp = np.zeros((N, 4, n_knots))
             for i in range(N):
                 noise = rng.normal(0, 1, size=(4, n_knots)) * cp_std
-                all_cp[i] = np.maximum(cp_mean + noise, 0.0)
+                all_cp[i] = cp_mean + noise  # unconstrained in log space
 
         # 2. Evaluate each gait with Riccati inner solve
         costs = np.zeros(N)
@@ -579,11 +593,11 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
         comp_slip = np.zeros(N)
 
         for i in range(N):
-            # a. B-spline → foot heights → barrier scales
-            heights = periodic_bspline_height(all_cp[i], horizon + 1, T_stride)
-            scales = np.array(barrier_force_scale(
-                jnp.array(heights), epsilon, h_min
-            ))
+            # a. Log-space B-spline → β_k → σ_k (action-cycle → state-cycle)
+            beta_i, sigma_i, heights = periodic_bspline_logcontact(
+                all_cp[i], horizon + 1, T_stride, epsilon=epsilon
+            )
+            scales = sigma_i  # σ_k = sigmoid(β_k), already in (0,1)
             height_fracs = np.clip(heights / h_max, 0.0, 1.0)
 
             # b-c. Build A(t), B(t) and solve TV-LQR
@@ -605,6 +619,17 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
                 epsilon, horizon, dt, Q_diag, R_diag, Q_f_diag,
                 constraints=CONSTRAINTS
             )
+            # Contact budget penalty (emergent periodicity constraint)
+            C_min = CONSTRAINTS.get("C_min", 0.3)
+            C_max = CONSTRAINTS.get("C_max", 0.7)
+            avg_sigma_k = np.mean(sigma_i, axis=0)  # (4,)
+            budget_lo = np.maximum(avg_sigma_k - C_min, 1e-8)
+            budget_hi = np.maximum(C_max - avg_sigma_k, 1e-8)
+            cost_budget = -epsilon * float(
+                np.sum(np.log(budget_lo) + np.log(budget_hi))
+            )
+            cost_total += cost_budget
+
             costs[i] = cost_total
             comp_vel[i] = cost_track
             comp_height[i] = 0.0
@@ -612,7 +637,7 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
             comp_ori_bar[i] = 0.0
             comp_joint_bar[i] = 0.0
             comp_control[i] = 0.0
-            comp_contact_bar[i] = cost_barrier
+            comp_contact_bar[i] = cost_barrier + cost_budget
             comp_slip[i] = cost_slip
 
             if costs[i] < best_cost:
@@ -620,6 +645,8 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
                 # Store centroidal trajectory (no MuJoCo qpos/qvel during optimization)
                 best_traj_centroidal = x_traj.copy()
                 best_cp = all_cp[i].copy()
+                best_heights = heights.copy()
+                best_scales = scales.copy()
                 best_idx = i
 
         costs_jnp = jnp.array(costs)
@@ -646,10 +673,10 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
         # 7. Weighted mean in B-spline coefficient space
         cp_mean = np.sum(weights[:, None, None] * all_cp, axis=0)
 
-        # 8. Weighted variance
+        # 8. Weighted variance (in log space — unconstrained)
         diffs = all_cp - cp_mean[None, :, :]
         cp_var = np.sum(weights[:, None, None] * diffs**2, axis=0)
-        cp_std = np.clip(np.sqrt(cp_var), 0.005, h_max)
+        cp_std = np.clip(np.sqrt(cp_var), 0.1, beta_scale)
 
         # Record (centroidal trajectories during optimization, no MuJoCo)
         all_trajectories.append(best_traj_centroidal)
@@ -696,6 +723,9 @@ def run_rollout_tvlqr(n_iters: int = 50, seed: int = 0,
         'final_trajectory': all_trajectories[-1],
         'best_phi': best_cp.flatten().tolist(),
         'best_cp': best_cp,
+        'best_heights': best_heights,
+        'best_scales': best_scales,
+        'x_ref': x_ref,
         'n_iters': n_iters,
         'N_samples': N,
         'nq': 19,  # Go2: 7 (base) + 12 (joints)
@@ -722,12 +752,12 @@ def playback_trajectory_tvlqr(sim, cp, epsilon, duration=2.0,
         print(f"\nPlayback (impedance): ε={epsilon:.4f}, "
               f"duration={duration}s, {n_steps} steps")
 
-    # Build gait schedule
-    heights = periodic_bspline_height(cp, n_steps + 1, T_stride)
-    scales = np.array(barrier_force_scale(
-        jnp.array(heights), epsilon, h_min
-    ))
-    height_fracs = np.clip(heights / h_max, 0.0, 1.0)
+    # Build gait schedule (log-space B-spline → contact modes)
+    beta_sched, sigma_sched, heights = periodic_bspline_logcontact(
+        cp, n_steps + 1, T_stride, epsilon=epsilon
+    )
+    scales = sigma_sched
+    height_fracs = np.clip(heights / h_max, 0.0, 1.0)  # for impedance interpolation
 
     # Simulate with impedance controller (no Riccati gains needed)
     x0 = np.zeros(13)
@@ -791,11 +821,11 @@ def playback_trajectory_bspline(sim, cp, epsilon, duration=2.0,
         print(f"\nPlayback (B-spline): ε={epsilon:.4f}, "
               f"duration={duration}s, {n_steps} steps")
 
-    heights = periodic_bspline_height(cp, n_steps + 1, T_stride)
-    scales = np.array(barrier_force_scale(
-        jnp.array(heights), epsilon, h_min
-    ))
-    height_fracs = np.clip(heights / h_max, 0.0, 1.0)
+    beta_sched, sigma_sched, heights = periodic_bspline_logcontact(
+        cp, n_steps + 1, T_stride, epsilon=epsilon
+    )
+    scales = sigma_sched
+    height_fracs = np.clip(heights / h_max, 0.0, 1.0)  # for impedance interpolation
 
     x0 = np.zeros(13)
     x0[2] = ROBOT["standing_height"]
@@ -988,11 +1018,11 @@ def solve_trajectory_mujoco(sim, cp, epsilon, best_centroidal, duration=2.0,
     if verbose:
         print(f"\nSolve trajectory: {n_steps} steps")
 
-    heights = periodic_bspline_height(cp, n_steps + 1, T_stride)
-    scales = np.array(barrier_force_scale(
-        jnp.array(heights), epsilon, h_min
-    ))
-    height_fracs = np.clip(heights / h_max, 0.0, 1.0)
+    beta_sched, sigma_sched, heights = periodic_bspline_logcontact(
+        cp, n_steps + 1, T_stride, epsilon=epsilon
+    )
+    scales = sigma_sched
+    height_fracs = np.clip(heights / h_max, 0.0, 1.0)  # for impedance interpolation
 
     # Build centroidal reference for the full duration
     horizon = OCP["horizon"]
@@ -1043,6 +1073,12 @@ def save_result(result: dict, path: str = "rollout_data.npz"):
         'final_trajectory': result['final_trajectory'],
         'all_trajectories': np.array(result['trajectories']),
     }
+    if 'x_ref' in result:
+        save_dict['x_ref'] = np.array(result['x_ref'])
+    if 'best_heights' in result:
+        save_dict['best_heights'] = np.array(result['best_heights'])
+    if 'best_scales' in result:
+        save_dict['best_scales'] = np.array(result['best_scales'])
     if 'playback_trajectory' in result:
         save_dict['playback_trajectory'] = result['playback_trajectory']
     if 'solve_trajectory' in result:

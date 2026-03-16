@@ -334,6 +334,172 @@ def main():
         else:
             plt.show()
 
+    # ── Figure 3: Solved centroidal trajectory vs reference ──
+    all_trajs = npz['all_trajectories']
+    has_ref = 'x_ref' in npz
+    if all_trajs.ndim == 3 and all_trajs.shape[2] == 13:
+        # Best centroidal trajectory (last iteration)
+        x_solved = all_trajs[-1]  # (H+1, 13)
+        H1 = x_solved.shape[0]
+        dt_cent = 0.01  # OCP dt
+        t_cent = np.arange(H1) * dt_cent
+
+        x_ref = npz['x_ref'] if has_ref else None
+
+        fig3 = plt.figure(figsize=(16, 12))
+        fig3.suptitle('Solved Centroidal Trajectory vs Reference', fontsize=12)
+        gs3 = gridspec.GridSpec(4, 2, figure=fig3, hspace=0.45, wspace=0.3)
+
+        # (0,0) Position px, py
+        ax = fig3.add_subplot(gs3[0, 0])
+        ax.plot(t_cent, x_solved[:, 0], 'r-', linewidth=1.5, label='px (solved)')
+        ax.plot(t_cent, x_solved[:, 1], 'g-', linewidth=1.5, label='py (solved)')
+        if x_ref is not None:
+            ax.plot(t_cent, x_ref[:H1, 0], 'r--', linewidth=1, alpha=0.6, label='px (ref)')
+            ax.plot(t_cent, x_ref[:H1, 1], 'g--', linewidth=1, alpha=0.6, label='py (ref)')
+        ax.set_ylabel('Position (m)')
+        ax.set_title('Horizontal position: px, py', fontsize=9)
+        ax.legend(fontsize=7, ncol=2)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Time (s)')
+
+        # (0,1) Position pz
+        ax = fig3.add_subplot(gs3[0, 1])
+        ax.plot(t_cent, x_solved[:, 2], 'b-', linewidth=1.5, label='pz (solved)')
+        if x_ref is not None:
+            ax.plot(t_cent, x_ref[:H1, 2], 'b--', linewidth=1, alpha=0.6, label='pz (ref)')
+        ax.axhline(0.27, color='b', linestyle=':', alpha=0.3, linewidth=0.8, label='z_target')
+        ax.axhline(0.13, color='k', linestyle=':', alpha=0.3, linewidth=0.8, label='z_min')
+        ax.axhline(0.41, color='k', linestyle=':', alpha=0.3, linewidth=0.8, label='z_max')
+        ax.set_ylabel('Height (m)')
+        ax.set_title('Vertical position: pz', fontsize=9)
+        ax.legend(fontsize=7)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Time (s)')
+
+        # (1,0) Velocity vx, vy
+        ax = fig3.add_subplot(gs3[1, 0])
+        ax.plot(t_cent, x_solved[:, 3], 'r-', linewidth=1.5, label='vx (solved)')
+        ax.plot(t_cent, x_solved[:, 4], 'g-', linewidth=1.5, label='vy (solved)')
+        if x_ref is not None:
+            ax.plot(t_cent, x_ref[:H1, 3], 'r--', linewidth=1, alpha=0.6, label='vx (ref)')
+            ax.plot(t_cent, x_ref[:H1, 4], 'g--', linewidth=1, alpha=0.6, label='vy (ref)')
+        ax.set_ylabel('Velocity (m/s)')
+        ax.set_title('Horizontal velocity: vx, vy', fontsize=9)
+        ax.legend(fontsize=7, ncol=2)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Time (s)')
+
+        # (1,1) Velocity vz
+        ax = fig3.add_subplot(gs3[1, 1])
+        ax.plot(t_cent, x_solved[:, 5], 'b-', linewidth=1.5, label='vz (solved)')
+        if x_ref is not None:
+            ax.plot(t_cent, x_ref[:H1, 5], 'b--', linewidth=1, alpha=0.6, label='vz (ref)')
+        ax.set_ylabel('Velocity (m/s)')
+        ax.set_title('Vertical velocity: vz', fontsize=9)
+        ax.legend(fontsize=7)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Time (s)')
+
+        # (2,0) Orientation: roll, pitch, yaw
+        ax = fig3.add_subplot(gs3[2, 0])
+        ori_labels = ['roll', 'pitch', 'yaw']
+        ori_colors = ['r', 'g', 'b']
+        for i in range(3):
+            ax.plot(t_cent, np.degrees(x_solved[:, 6+i]), color=ori_colors[i],
+                    linewidth=1.5, label=f'{ori_labels[i]} (solved)')
+        ax.axhline(30, color='k', linestyle=':', alpha=0.3, linewidth=0.8)
+        ax.axhline(-30, color='k', linestyle=':', alpha=0.3, linewidth=0.8)
+        ax.set_ylabel('Angle (deg)')
+        ax.set_title('Orientation: roll, pitch, yaw', fontsize=9)
+        ax.legend(fontsize=7, ncol=3)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Time (s)')
+
+        # (2,1) Angular velocity: wx, wy, wz
+        ax = fig3.add_subplot(gs3[2, 1])
+        for i in range(3):
+            ax.plot(t_cent, x_solved[:, 9+i], color=ori_colors[i],
+                    linewidth=1.5, label=f'ω_{ori_labels[i][0]} (solved)')
+        ax.set_ylabel('Angular vel (rad/s)')
+        ax.set_title('Angular velocity: ωx, ωy, ωz', fontsize=9)
+        ax.legend(fontsize=7, ncol=3)
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Time (s)')
+
+        # (3,0) Contact modes: barrier scales σ_k (Gantt-style)
+        has_scales = 'best_scales' in npz
+        has_heights = 'best_heights' in npz
+        if has_scales:
+            ax = fig3.add_subplot(gs3[3, 0])
+            scales = npz['best_scales']
+            T_sc = min(scales.shape[0], H1)
+            t_sc = np.arange(T_sc) * dt_cent
+            for k in range(4):
+                y_base = 3 - k
+                # Gantt bars: stance (σ > 0.5)
+                for i in range(T_sc):
+                    if scales[i, k] > 0.5:
+                        ax.barh(y_base, dt_cent, left=t_sc[i], height=0.6,
+                                color=LEG_COLORS[k], alpha=0.7, edgecolor='none')
+                # σ line overlay
+                ax.plot(t_sc, scales[:T_sc, k] * 0.5 + y_base - 0.25,
+                        color=LEG_COLORS[k], linewidth=0.8, alpha=0.6)
+            ax.set_yticks([0, 1, 2, 3])
+            ax.set_yticklabels(list(reversed(LEG_NAMES)))
+            ax.set_ylabel('Foot')
+            ax.set_title('Solved contact mode σ_k (bars: stance, lines: σ)', fontsize=9)
+            ax.set_ylim(-0.5, 3.8)
+            ax.grid(True, alpha=0.3, axis='x')
+            ax.set_xlabel('Time (s)')
+        elif x_ref is not None:
+            # Fallback: tracking error
+            ax = fig3.add_subplot(gs3[3, 0])
+            err_pos = np.linalg.norm(x_solved[:, 0:3] - x_ref[:H1, 0:3], axis=1)
+            err_vel = np.linalg.norm(x_solved[:, 3:6] - x_ref[:H1, 3:6], axis=1)
+            err_ori = np.linalg.norm(x_solved[:, 6:9] - x_ref[:H1, 6:9], axis=1)
+            ax.plot(t_cent, err_pos, 'r-', linewidth=1.5, label='‖Δp‖ (m)')
+            ax.plot(t_cent, err_vel, 'b-', linewidth=1.5, label='‖Δv‖ (m/s)')
+            ax.plot(t_cent, err_ori, 'g-', linewidth=1.5, label='‖Δφ‖ (rad)')
+            ax.set_ylabel('Tracking error')
+            ax.set_title('Tracking error vs reference', fontsize=9)
+            ax.legend(fontsize=7, ncol=3)
+            ax.grid(True, alpha=0.3)
+            ax.set_xlabel('Time (s)')
+
+        # (3,1) Foot heights + tracking error
+        ax = fig3.add_subplot(gs3[3, 1])
+        if has_heights:
+            heights_data = npz['best_heights']
+            T_h = min(heights_data.shape[0], H1)
+            t_h = np.arange(T_h) * dt_cent
+            for k in range(4):
+                ax.plot(t_h, heights_data[:T_h, k], color=LEG_COLORS[k],
+                        linewidth=1.2, label=LEG_NAMES[k])
+            ax.set_ylabel('Foot height (m)')
+            ax.set_title('Solved foot height schedule h_k(t)', fontsize=9)
+            ax.legend(fontsize=7, ncol=4)
+            ax.grid(True, alpha=0.3)
+            ax.set_xlabel('Time (s)')
+        else:
+            # Fallback: phase clock
+            ax.plot(t_cent, x_solved[:, 12], 'k-', linewidth=1.5, label='phase (solved)')
+            if x_ref is not None:
+                ax.plot(t_cent, x_ref[:H1, 12], 'k--', linewidth=1, alpha=0.6, label='phase (ref)')
+            ax.set_ylabel('Phase')
+            ax.set_title('Stride phase clock', fontsize=9)
+            ax.legend(fontsize=7)
+            ax.grid(True, alpha=0.3)
+            ax.set_xlabel('Time (s)')
+
+        fig3.tight_layout(rect=[0, 0, 1, 0.96])
+        if save:
+            out_path3 = str(Path(out_dir) / 'solved_trajectory.png')
+            fig3.savefig(out_path3, dpi=150, bbox_inches='tight')
+            print(f"Saved {out_path3}")
+        else:
+            plt.show()
+
 
 if __name__ == '__main__':
     main()
