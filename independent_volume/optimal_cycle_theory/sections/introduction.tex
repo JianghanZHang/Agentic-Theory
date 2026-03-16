@@ -1,6 +1,8 @@
 \section*{Introduction}
 
-This paper identifies a closed algebraic loop---the \emph{additive-multiplicative cycle}---connecting three locally compact abelian groups:
+This paper identifies a closed algebraic loop---the
+\emph{additive-multiplicative cycle}---connecting three locally compact
+abelian groups:
 \[
 M = (\Rpos, \times)
 \xrightarrow{\;\log\;}
@@ -10,6 +12,8 @@ A = (\R, +)
 \xrightarrow{\;\exp\;}
 M.
 \]
+The Fourier arrow passes through the quotient: a spectral density $f$ lives on $\bT = \R/\Z$, so its Fourier coefficients are indexed by $\widehat{\bT} = \Z$ (not $\widehat{A} = \widehat{\R} \cong \R$). The cycle operates on the values and coefficients of $f$: the positive reals $\Rpos$ are the range of $f$, the reals $\R$ are the range of $\log f$, and the integers $\Z$ index the Fourier coefficients $c_k$ of $\log f$. The groups label the value/index spaces, not the function spaces.
+
 A positive spectral density $f > 0$ on $\bT$ enters the cycle in the multiplicative theater $M$. The logarithm $\log f$ moves it into the additive theater $A$. The Fourier transform decomposes $\log f$ into coefficients $\{c_k\}_{k \in \Z}$. The exponential $G(f) = e^{c_0}$ recovers the geometric mean (the DC component), but the \emph{AC} component carries an obstruction to closing the loop perfectly: the \emph{holonomy}
 \[
 H(f) = \sum_{k=1}^{\infty} k\,|c_k|^2,
@@ -22,9 +26,9 @@ The holonomy satisfies a trichotomy (\cref{thm:holonomy-trichotomy}):
 \item $0 < H(f) < \infty$---the Strong Szeg\H{o} class: a non-trivial cycle with finite cost;
 \item $H(f) = \infty$---the cycle breaks.
 \end{enumerate}
-The Gaussian is simultaneously the Fourier eigenfunction, the heat kernel, the outer function seed, and the unique density with $E(f) = 1$. It is not a distribution observed in nature; it is the \emph{fixed point} of the cycle. Every finite process approximates it as the Student $t_\nu$ distribution with holonomy $H \sim O(1/\nu)$ (\cref{ex:student-t}).
+The Gaussian is simultaneously the Fourier eigenfunction, the heat kernel, the outer function seed, and the unique density with $E(f) = 1$. It is not a distribution observed in nature; it is the \emph{fixed point} of the cycle. Every finite process approximates it as the Student $t_\nu$ distribution with holonomy $H = O(\log\nu/\nu)$ (\cref{ex:student-t}).
 
-The constrained optimal cycle (\cref{def:optimal-cycle}) considers the infimum $H_t^* = \inf_{f \in \Omega_t} H(f)$ over spectral densities matching observations up to lag $t$. The minimizer is the maximum-entropy AR$(t)$ density (Burg), and the sequence $H_0^* \leq H_1^* \leq \cdots \leq H(f_{\mathrm{true}})$ is monotone non-decreasing---learning is holonomy increasing.
+The constrained optimal cycle (\cref{def:optimal-cycle}) considers the infimum $H_t^* = \inf_{f \in \Omega_t} H(f)$ over spectral densities matching observations up to lag $t$. The minimizer is the maximum-entropy AR$(t)$ density \cite{Burg}, and the sequence $H_0^* \leq H_1^* \leq \cdots \leq H(f_{\mathrm{true}})$ is monotone non-decreasing---learning is holonomy increasing.
 
 A genuinely new computation emerges from the Jacobian of the cycle's first map. The Szeg\H{o} exponent on the Fourier side converges for $\sigma > 1$ (the PNT zero-free line), while on the Mellin side it converges for $\sigma > \tfrac{1}{2}$ (the GRH critical line). The shift $\sigma_M^* = \sigma_{\bT}^* - \tfrac{1}{2}$ arises from the Haar measure correction $dx/x \to dy$ under $\log$ (\cref{thm:half-shift}).
 

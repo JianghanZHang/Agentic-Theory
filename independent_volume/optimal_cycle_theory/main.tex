@@ -6,8 +6,27 @@
 \usepackage{tikz-cd}
 \usepackage{enumitem}
 \usepackage{graphicx} % for \rotatebox
-\usepackage{hyperref}
+\usepackage[pdfencoding=auto,psdextra]{hyperref}
 \usepackage{cleveref}
+
+% Allow slight extra inter-word stretch to reduce overfull boxes
+\emergencystretch=1.5em
+
+% Suppress hyperref warnings from math in PDF bookmark strings
+\pdfstringdefDisableCommands{%
+  \def\tfrac#1#2{#1/#2}%
+  \let\Rpos\relax \def\Rpos{R>0}%
+  \let\R\relax \def\R{R}%
+  \let\Z\relax \def\Z{Z}%
+  \let\bT\relax \def\bT{T}%
+  \let\cN\relax \def\cN{N}%
+  \let\Htwo\relax \def\Htwo{H2}%
+  \let\mathfrak\relax \def\mathfrak#1{#1}%
+}
+\hypersetup{
+  pdftitle={Optimal Cycle Theory},
+  pdfauthor={Jianghan Zhang},
+}
 
 % Theorem environments (shared counter within section)
 \newtheorem{theorem}{Theorem}[section]
@@ -44,7 +63,7 @@
 
 \title[Optimal Cycle Theory]{Optimal Cycle Theory:\\ holonomy of the additive-multiplicative loop\\ via Fourier analysis on groups}
 \author{Jianghan Zhang}
-\address{Department of Mathematics, Dartmouth College, Hanover, NH 03755}
+\address{Department of Computer Science, Dartmouth College, Hanover, NH 03755}
 \email{jianghan.zhang.gr@dartmouth.edu}
 \date{\today}
 
@@ -54,7 +73,7 @@
 \begin{document}
 
 \begin{abstract}
-We identify a closed algebraic loop---the \emph{optimal cycle}---connecting the multiplicative group $(\Rpos, \times)$, the additive group $(\R, +)$, and the dual group $(\Z, +)$ via the maps $\log$, Fourier series, and $\exp$. The loop carries a holonomy $H(f) = \sum_{k=1}^{\infty} k\,|c_k|^2$, the $H^{1/2}(\bT)$ Sobolev seminorm of the log-spectral density, which vanishes if and only if $f$ is Gaussian. We develop this correspondence at the level of characteristic functions, heat equations, Gaussian measures, Hardy spaces, and Szeg\H{o} limit theorems within the framework of harmonic analysis on LCA groups. We show that the Student $t_\nu$ family parameterizes the entire re-cycle trajectory and establish a $\tfrac{1}{2}$ shift theorem relating the Fourier and Mellin Szeg\H{o} boundaries. Part~II develops applications to optimal control on Lie groups, model-predictive path-integral control (MPPI), and articulated rigid-body dynamics, where the exponential map $\exp : \mathfrak{g} \to G$ serves as the computational bridge throughout.
+We identify a closed algebraic loop---the \emph{optimal cycle}---connecting the multiplicative group $(\Rpos, \times)$, the additive group $(\R, +)$, and the dual group $(\Z, +)$ via the maps $\log$, Fourier series, and $\exp$. The loop carries a holonomy $H(f) = \sum_{k=1}^{\infty} k\,|c_k|^2$, the $H^{1/2}(\bT)$ Sobolev seminorm of the log-spectral density, which vanishes if and only if $f$ is Gaussian. We develop this correspondence at the level of characteristic functions, heat equations, Gaussian measures, Hardy spaces, and Szeg\H{o} limit theorems within the framework of harmonic analysis on LCA groups. We show that the Student $t_\nu$ family parameterizes the entire re-cycle trajectory and establish a $\tfrac{1}{2}$~shift theorem relating the Fourier and Mellin Szeg\H{o} boundaries. Part~II develops applications to optimal control on Lie groups, model-predictive path-integral control (MPPI), and articulated rigid-body dynamics, where the exponential map $\exp : \mathfrak{g} \to G$ serves as the computational bridge throughout.
 \end{abstract}
 
 \maketitle

@@ -70,13 +70,27 @@ In the notation of \cref{def:optimal-cycle}:
 \begin{enumerate}[label=(\roman*)]
 \item \textbf{Shrinking feasible sets}: $\Omega_0 \supseteq \Omega_1 \supseteq \Omega_2 \supseteq \cdots$.
 \item \textbf{Monotone holonomy}: $H_0^* \leq H_1^* \leq \cdots \leq H(f_{\mathrm{true}})$, with equality in the limit if $f_{\mathrm{true}} \in \Omega$.
-\item \textbf{Maximum-entropy minimizer}: the minimizer $f_t^*$ is the maximum-entropy spectral density compatible with $r_0, \ldots, r_t$, i.e., the autoregressive AR$(t)$ spectral density (Burg's theorem).
+\item \textbf{Maximum-entropy minimizer}: the minimizer $f_t^*$ is the maximum-entropy spectral density compatible with $r_0, \ldots, r_t$, i.e., the autoregressive AR$(t)$ spectral density (Burg's theorem \cite{Burg}).
 \item \textbf{Dual convergence}: the prediction error $\sigma_t^2 = \exp\bigl(\int_{\bT} \log f_t^*\bigr)$ decreases monotonically to $\sigma_{\mathrm{true}}^2$, while $H_t^*$ increases monotonically to $H(f_{\mathrm{true}})$---convergence from opposite directions.
 \end{enumerate}
 \end{proposition}
 
-\begin{proof}[Proof sketch]
-Part~(i): each additional constraint $\widehat{f}(t+1) = r_{t+1}$ restricts the feasible set. Part~(ii): immediate from~(i). Part~(iii): among all densities $f$ with prescribed autocovariances $r_0, \ldots, r_t$, the one maximizing $\int \log f$ (equivalently, minimizing the Kullback--Leibler divergence from the uniform density) has $\log f$ of the form $c_0 + \sum_{|k| \leq t} a_k e^{2\pi ik\theta}$, forcing $c_k = 0$ for $|k| > t$; this is the AR$(t)$ density. Part~(iv): $\sigma_t^2 = G(f_t^*) = e^{c_0(f_t^*)}$ decreases as the maximum-entropy estimate sharpens; meanwhile $H_t^*$ increases by~(ii). These are dual aspects of the same convergence: the filtration $\{\Omega_t\}$ is a functor in $\Proj_Y$ (\cref{def:gpi-category}), and the constrained optimization is the evaluation functor applied to the holonomy.
+\begin{proof}
+Part~(i): each additional constraint $\widehat{f}(t+1) = r_{t+1}$ restricts the feasible set.
+
+Part~(ii): immediate from~(i), since the infimum over a smaller set is at least as large.
+
+Part~(iii): by the Szeg\H{o}--Verblunsky identity (\cref{prop:verblunsky}), the Verblunsky coefficients $\alpha_0, \ldots, \alpha_{t-1}$ are uniquely determined by the autocovariances $r_0, \ldots, r_t$ via the Levinson recursion. They are the same for all $f \in \Omega_t$. The AR$(t)$ model is characterized by $\alpha_k = 0$ for all $k \geq t$. Split $H(f)$ using \cref{prop:verblunsky}(iii):
+\[
+H(f) = \underbrace{-\sum_{k=1}^{t-1} k\log(1-|\alpha_k|^2)}_{\text{constant on }\Omega_t} \;+\; \underbrace{\left(-\sum_{k=t}^{\infty} k\log(1-|\alpha_k|^2)\right)}_{\geq\, 0,\;\; =\, 0 \;\text{iff}\; \alpha_k = 0\;\forall\, k \geq t}.
+\]
+Similarly, for the geometric mean (\cref{prop:verblunsky}(ii)):
+\[
+\log G(f) = \underbrace{\log r_0 + \sum_{k=0}^{t-1}\log(1-|\alpha_k|^2)}_{\text{constant on }\Omega_t} \;+\; \underbrace{\sum_{k=t}^{\infty}\log(1-|\alpha_k|^2)}_{\leq\, 0,\;\; =\, 0 \;\text{iff}\; \alpha_k = 0\;\forall\, k \geq t}.
+\]
+Since $-\log(1-|\alpha_k|^2) \geq 0$ with equality iff $\alpha_k = 0$: $H(f) \geq H(f_{\mathrm{AR}(t)})$ and $G(f) \leq G(f_{\mathrm{AR}(t)})$, with equality in both iff $\alpha_k = 0$ for all $k \geq t$, i.e., $f = f_{\mathrm{AR}(t)}$. This is Burg's theorem \cite{Burg}: the AR$(t)$ density simultaneously minimizes holonomy and maximizes the geometric mean (entropy) on $\Omega_t$.
+
+Part~(iv): since $f_t^* = f_{\mathrm{AR}(t)}$, we have $\sigma_t^2 = G(f_t^*)$ and $H_t^* = H(f_t^*)$. As $t$ increases: each additional Verblunsky coefficient $\alpha_t \neq 0$ (generically) adds a positive term to $H$ and a negative term to $\log G$, so $H_t^*$ increases and $\sigma_t^2$ decreases monotonically. These are dual aspects of the same convergence: the Verblunsky coefficients apportion the true spectral density's holonomy into constrained (known) and free (unknown) parts, and each observation converts one coefficient from free to constrained.
 \end{proof}
 
 \begin{remark}[Connection to GPI]
@@ -100,15 +114,15 @@ Each measurement refines $\mathcal{G}_t$. By \cref{cor:monotonicity}, the residu
 Given the estimated spectral density $f_t^*$, compute consequences exactly---the forward problem on known structure. This layer is only as good as Layer~2: prediction inherits the estimation uncertainty, but the forward computation is exact, so input uncertainty maps to output uncertainty in a fully characterized way.
 
 The closed operational loop
-\[
+\begin{gather*}
 \text{Measure}
 \xrightarrow{\;\text{re-cycle}\;}
 \text{Estimate}
 \xrightarrow{\;\text{direct computation}\;}
-\text{Predict}
+\text{Predict} \\
 \xrightarrow{\;\text{target next observation}\;}
 \text{Measure better}
-\]
+\end{gather*}
 is the optimal cycle applied operationally. Each revolution refines Layer~2: $\nu$ increases, $H$ decreases.
 \end{remark}
 
@@ -116,33 +130,41 @@ is the optimal cycle applied operationally. Each revolution refines Layer~2: $\n
 \emph{Student $t$ with $\nu$ degrees of freedom is the re-cycle snapshot at observation $\nu$.}
 
 The Student $t_\nu$ family parameterizes the entire re-cycle trajectory with a single real parameter $\nu \in [1, \infty]$:
+{\small
 \[
 \renewcommand{\arraystretch}{1.4}
 \begin{array}{cclcl}
 \hline
 \nu & \text{Distribution} & H(f_{t_\nu}) & E(f_{t_\nu}) & \text{Cycle state} \\
 \hline
-\nu = 1 & \text{Cauchy} & \infty & \infty & \text{Broken---no finite cycle cost} \\
-1 < \nu < \nu^* & \text{Heavy-tailed } t & \infty & \infty & \text{Still broken---tails too heavy} \\
-\nu = \nu^* & \text{Critical } t & \text{finite (bdry)} & \text{finite} & \text{Szeg\H{o} boundary---cycle just closes} \\
-\nu^* < \nu < \infty & \text{Moderate } t & \text{finite}, > 0 & > 1 & \text{Non-trivial cycle---learning} \\
-\nu \to \infty & \text{Gaussian} & 0 & 1 & \text{Perfect cycle---fixed point} \\
+\nu = 1 & \text{Cauchy} & \infty & \infty & \text{Broken} \\
+1 < \nu \leq 2 & \text{Heavy-tailed } t & \infty & \infty & E[X^2] = \infty \\
+2 < \nu < \infty & \text{Moderate } t & \text{finite}, > 0 & > 1 & \text{Non-trivial---learning} \\
+\nu \to \infty & \text{Gaussian} & 0 & 1 & \text{Fixed point} \\
 \hline
 \end{array}
 \]
-\end{example}
+}\end{example}
 
 \begin{proposition}[Student $t$ convergence along the re-cycle]\label{prop:student-convergence}
-Let $f_{t_\nu}$ denote the spectral density associated to the Student $t_\nu$ distribution.
+For $\nu > 0$, define the \emph{spectral density associated to the Student $t_\nu$ distribution} as the periodized autocovariance:
+\[
+f_{t_\nu}(\theta) = \sum_{k \in \Z} r_k\, e^{2\pi ik\theta}, \qquad r_k = \varphi_{t_\nu}(2\pi k),
+\]
+where $\varphi_{t_\nu}(\xi) = \frac{2^{1-\nu/2}}{\Gamma(\nu/2)}|\sqrt{\nu}\,\xi|^{\nu/2}K_{\nu/2}(\sqrt{\nu}\,|\xi|)$ is the characteristic function of the $t_\nu$ distribution and $K_{\nu/2}$ is the modified Bessel function of the second kind. For $\nu > 2$, the second moment $E[X^2] = \nu/(\nu-2)$ is finite, $r_k$ decays exponentially in $|k|$, and $f_{t_\nu} > 0$ with $\log f_{t_\nu} \in L^1(\bT)$.
 \begin{enumerate}[label=(\roman*)]
-\item There exists $\nu^* > 1$ such that $E(f_{t_\nu}) < \infty$ if and only if $\nu > \nu^*$. The critical $\nu^*$ is the threshold where $\log f_{t_\nu}$ first enters $H^{1/2}(\bT)$.
-\item For $\nu > \nu^*$: $H(f_{t_\nu}) = O(1/\nu)$ as $\nu \to \infty$. The convergence rate to the Gaussian fixed point is algebraic.
-\item The unique minimizer of $H$ over the family $\{f_{t_\nu} : \nu > \nu^*\}$ is $\nu = \infty$ (Gaussian), confirming the cycle's unique fixed point.
+\item The critical value is $\nu^* = 2$: the Szeg\H{o} constant satisfies $E(f_{t_\nu}) < \infty$ if and only if $\nu > 2$, corresponding to the threshold where the second moment $E[X^2]$ becomes finite and the autocovariance is well-defined and summable.
+\item For $\nu > 2$: $H(f_{t_\nu}) = O(\log\nu / \nu)$ as $\nu \to \infty$. The convergence rate to the Gaussian fixed point is algebraic.
+\item The unique minimizer of $H$ over the family $\{f_{t_\nu} : \nu > 2\}$ is $\nu = \infty$ (Gaussian), confirming the cycle's unique fixed point.
 \end{enumerate}
 \end{proposition}
 
 \begin{proof}[Proof sketch]
-The spectral density of $t_\nu$ is $f_{t_\nu}(\theta) \propto (1 + \theta^2/\nu)^{-(\nu+1)/2}$ near the origin. For $\nu$ large, $\log f_{t_\nu}(\theta) \approx -\tfrac{\nu+1}{2}\log(1+\theta^2/\nu) \approx -\tfrac{1}{2}\theta^2 + O(\theta^4/\nu)$. The Fourier coefficients $c_k$ of the correction $\log f_{t_\nu} - \log f_{\cN}$ decay as $O(k^{-1}\nu^{-1})$, giving $H(f_{t_\nu}) = \sum k|c_k|^2 = O(1/\nu)$.
+(i) For $\nu \leq 2$, the second moment diverges ($E[X^2] = \nu/(\nu-2) \to \infty$ as $\nu \to 2^+$), so $r_0 = \infty$ and the spectral density is not in $L^1$. For $\nu > 2$, the exponential decay of $K_{\nu/2}$ ensures $r_k = O(e^{-c|k|})$ for some $c > 0$, so $f_{t_\nu}$ is smooth and strictly positive, giving $\log f_{t_\nu} \in H^{1/2}(\bT)$ and $E(f_{t_\nu}) < \infty$.
+
+(ii) By the Szeg\H{o}--Verblunsky identity (\cref{prop:verblunsky}), $H(f_{t_\nu}) = -\sum_{k=1}^{\infty}k\log(1-|\alpha_k(\nu)|^2)$. For large $\nu$, the $t_\nu$ characteristic function satisfies $\varphi_{t_\nu}(\xi) = e^{-\xi^2/2}(1 + O(\xi^4/\nu))$, so the spectral density approaches the Gaussian at rate $O(1/\nu)$ uniformly. The Verblunsky coefficients inherit this: $|\alpha_k(\nu)|^2 = O(k^{-2}\nu^{-1})$, giving $H(f_{t_\nu}) \approx \sum_{k=1}^{N} k|\alpha_k|^2 = O(\nu^{-1})\sum_{k=1}^{N} k^{-1} = O(\log\nu/\nu)$ where $N \sim \nu$ is the effective cutoff beyond which $|\alpha_k|$ is negligible.
+
+(iii) By \cref{prop:verblunsky}(iii), $H(f_{t_\nu}) > 0$ for any $\nu < \infty$ (since some $\alpha_k \neq 0$), and $H(f_{t_\infty}) = 0$ (all $\alpha_k = 0$, Gaussian).
 \end{proof}
 
 \begin{remark}[Canonicality]

@@ -30,7 +30,8 @@ In each case, the ``positive frequencies'' are determined by a choice of orderin
 \end{definition}
 
 \begin{proposition}[Hardy decomposition]\label{prop:hardy-decomp}
-For each $G \in \{(\R, +),\, (\Rpos, \times),\, (\bT, +)\}$, the Hilbert space $L^2(G)$ admits the orthogonal decomposition
+For each $G \in \{(\R, +),\; (\Rpos, \times),\; (\bT, +)\}$,
+the Hilbert space $L^2(G)$ admits the orthogonal decomposition
 \begin{equation}\label{eq:hardy-decomp}
 L^2(G) = \Htwo(G) \oplus \Htwo(G)^\perp,
 \end{equation}
@@ -111,7 +112,10 @@ Let $\{X_n\}_{n \in \Z}$ be a wide-sense stationary process with spectral densit
 \int_0^1 \log f(\theta)\, d\theta > -\infty.
 \]
 
-\item \textbf{(Innovation and outer function.)} When purely non-deterministic, $f$ admits an outer function factorization $f(\theta) = |h(e^{2\pi i\theta})|^2$ with $h \in \Htwo(\bT)$ outer, and the one-step prediction error is
+\item \textbf{(Innovation and outer function.)} When purely non-deterministic,
+$f$ admits an outer function factorization
+$f(\theta) = |h(e^{2\pi i\theta})|^2$ with $h \in \Htwo(\bT)$ outer,
+and the one-step prediction error is
 \[
 \sigma^2 = \exp\left(\int_0^1 \log f(\theta)\, d\theta\right).
 \]
@@ -172,6 +176,26 @@ D_n(f) = G(f)^n \cdot \det\bigl(T_n(e^h)\, T_n(e^{\bar{h}})\bigr),
 and the Borodin--Okounkov--Case--Geronimo identity \cite[Chapter~5]{BottcherSilbermann} gives $\det(T_n(e^h)\, T_n(e^{\bar{h}})) \to \exp(\sum_{k=1}^{\infty} k\, |c_k|^2)$. Alternatively, see \cite[Chapter~2]{Simon}.
 \end{proof}
 
+\begin{proposition}[Szeg\H{o}--Verblunsky identity {\cite[Chapter~1]{Simon}}]\label{prop:verblunsky}
+Let $f \in L^1(\bT)$ with $f > 0$ a.e.\ and $\log f \in L^1(\bT)$, and let $r_k = \widehat{f}(k)$ denote the autocovariances. Let $\{\alpha_k\}_{k \geq 0}$ denote the Verblunsky (reflection) coefficients of $f$, determined by the Levinson recursion from $\{r_k\}$. Then:
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{Levinson determinant formula:} $D_n(f) = r_0^n \prod_{k=0}^{n-1} (1 - |\alpha_k|^2)^{n-k}$.
+\item \textbf{Geometric mean:} $\log G(f) = \log r_0 + \sum_{k=0}^{\infty} \log(1 - |\alpha_k|^2)$.
+\item \textbf{Holonomy:} $H(f) = -\sum_{k=1}^{\infty} k\, \log(1 - |\alpha_k|^2)$.
+\end{enumerate}
+Since $-\log(1 - |\alpha_k|^2) \geq 0$ with equality if and only if $\alpha_k = 0$, the holonomy $H(f)$ is a weighted sum of non-negative contributions, one per Verblunsky coefficient. The AR$(t)$ spectral density is characterized by $\alpha_k = 0$ for all $k \geq t$: the Verblunsky coefficients beyond the model order vanish, so their contributions to $H(f)$ and $\log G(f)$ are exactly zero.
+\end{proposition}
+
+\begin{proof}
+Part~(i) is the Levinson determinant formula \cite[Theorem~1.5.7]{Simon}. Part~(ii) follows from~(i) and the First Szeg\H{o} Limit Theorem: $\log G(f) = \lim_{n \to \infty} (1/n)\log D_n(f) = \log r_0 + \sum_{k=0}^{\infty}\log(1-|\alpha_k|^2)$. For~(iii), substituting~(i) into the Strong Szeg\H{o} limit:
+\begin{align*}
+H(f) &= \lim_{n \to \infty}\bigl[\log D_n(f) - n\log G(f)\bigr] \\
+&= \lim_{n \to \infty}\left[\sum_{k=0}^{n-1}(n-k)\log(1-|\alpha_k|^2) - n\sum_{k=0}^{\infty}\log(1-|\alpha_k|^2)\right] \\
+&= \lim_{n \to \infty}\left[-\sum_{k=0}^{n-1}k\log(1-|\alpha_k|^2) - n\sum_{k=n}^{\infty}\log(1-|\alpha_k|^2)\right].
+\end{align*}
+Under the Strong Szeg\H{o} condition $\sum k\,|\alpha_k|^2 < \infty$, the tail term vanishes as $n \to \infty$, yielding~(iii).
+\end{proof}
+
 The factorization $\log f = c_0 + h + \bar{h}$ with $h \in \Htwo(\bT)$ is the Hardy decomposition of $\log f$. The causal part $h$ generates the outer function; the constant $c_0 = \int \log f$ generates $G(f) = e^{c_0}$. The Szeg\H{o} constant $E(f)$ therefore measures the ``interaction energy'' between the causal and anti-causal components of $\log f$.
 
 \begin{remark}[Holonomy interpretation]
@@ -229,18 +253,19 @@ The Hardy decomposition $L^2 = \Htwo \oplus (\Htwo)^\perp$ has a dynamical-syste
 \end{remark}
 
 \begin{example}[Summary: Hardy spaces on the three groups]\label{ex:hardy-summary}
+{\small
 \[
 \renewcommand{\arraystretch}{1.4}
 \begin{array}{lllll}
 \hline
-\textbf{Group } G & \Htwo(G) & \textbf{Shift } S & \ker(S^*) & \textbf{Toeplitz symbol} \\
+\textbf{Group } G & \Htwo(G) & \textbf{Shift } S & \ker(S^*) & \textbf{Symbol} \\
 \hline
-(\R, +) & \widehat{f}(\xi) = 0,\; \xi < 0 & T_a:\; e^{ia\xi}\widehat{f}(\xi) & \text{---} & L^\infty(\R) \cap C_0 \\
-(\Rpos, \times) & \cM[f](s) = 0,\; s < 0 & S_a:\; a^{is}\widehat{g}(s) & \text{---} & L^\infty(\R) \cap C_0 \\
-(\bT, +) & \widehat{f}(n) = 0,\; n < 0 & z\text{-multiplication} & \operatorname{span}\{\mathbf{1}\} & C(\bT) \\
+(\R, +) & \widehat{f}(\xi){=}0,\; \xi{<}0 & T_a & \text{---} & L^\infty \cap C_0 \\
+(\Rpos, \times) & \cM[f](s){=}0,\; s{<}0 & S_a & \text{---} & L^\infty \cap C_0 \\
+(\bT, +) & \widehat{f}(n){=}0,\; n{<}0 & z\text{-mult.} & \mathrm{span}\{\mathbf{1}\} & C(\bT) \\
 \hline
 \end{array}
 \]
-The second row is the image of the first under $\exp_*$ (equivalently, the first is the image of the second under $\log_*$), reflecting \cref{thm:hardy-duality}. Here $C_0$ denotes continuous functions vanishing at infinity. On the non-compact groups $(\R, +)$ and $(\Rpos, \times)$, the shift is a one-parameter semigroup $\{T_a\}_{a > 0}$ (resp.\ $\{S_a\}_{a > 1}$) of isometries rather than a single isometry, so the Wold decomposition takes the continuous form (Lax--Phillips scattering theory) and $\ker(S^*)$ is replaced by the infinitesimal generator's defect space---marked ``---'' since it does not reduce to a finite-dimensional subspace.
+}The second row is the image of the first under $\exp_*$ (equivalently, the first is the image of the second under $\log_*$), reflecting \cref{thm:hardy-duality}. Here $C_0$ denotes continuous functions vanishing at infinity. On the non-compact groups $(\R, +)$ and $(\Rpos, \times)$, the shift is a one-parameter semigroup $\{T_a\}_{a > 0}$ (resp.\ $\{S_a\}_{a > 1}$) of isometries rather than a single isometry, so the Wold decomposition takes the continuous form (Lax--Phillips scattering theory) and $\ker(S^*)$ is replaced by the infinitesimal generator's defect space---marked ``---'' since it does not reduce to a finite-dimensional subspace.
 \end{example}
 

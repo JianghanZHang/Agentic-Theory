@@ -59,6 +59,10 @@ with left-invariant kinetic energy, this reduces to the Euler--Poincar\'e
 equation on $\mathfrak{g}$.
 \end{remark}
 
+\begin{remark}[Hopf--Cole and barrier-augmented costs]\label{rem:hopf-cole-barrier}
+The Hopf--Cole substitution $\psi = e^{-V/(2\varepsilon)}$ requires $V$ to be globally defined; it sends $V \to \infty$ to $\psi \to 0$. In the barrier-augmented formulation of \S\ref{sec:articulated}, where $V$ includes the log-barrier term $-\varepsilon\log h \to \infty$ as $h \to 0$, the linearized PDE has $\psi \to 0$ on the constraint boundary. The Feynman--Kac representation remains valid: paths hitting the barrier contribute zero weight ($\psi = 0$), which is the correct probabilistic interpretation---forbidden trajectories are suppressed rather than excluded by hard constraints.
+\end{remark}
+
 \begin{remark}[Phase propagation and the eikonal limit]\label{rem:eikonal}
 The deterministic limit $\varepsilon \to 0$ of the specialized HJB (preceding remark) yields the Hamilton--Jacobi equation $\partial_t V + H(\nabla V) = 0$. For wave propagation in a medium with velocity profile $v(x)$, the phase $\phi(x,t)$ satisfies the \emph{eikonal equation}:
 \[

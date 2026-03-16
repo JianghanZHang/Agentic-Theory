@@ -246,31 +246,57 @@ $K_i(\sigma) = K_i^{\mathrm{stance}}\,\sigma$: active only in stance
 This mirrors industrial force controllers, where PI action eliminates
 the steady-state gravity error that pure PD cannot.
 
-\medskip\noindent\emph{B-spline generalization.}
-The sinusoidal schedule \eqref{eq:foot-height} is a special case: two
-effective control points (ground, peak) with a fixed trigonometric
-interpolant.
-More generally, represent each $h_k(t)$ as a periodic cubic B-spline with
-$n_k$ control points $c_{k,1}, \ldots, c_{k,n_k} \geq 0$:
-\begin{equation}\label{eq:bspline-height}
-h_k(t) = \max\Bigl(0,\;\sum_{j=1}^{n_k} c_{k,j}\,B_j(t \bmod T_s)\Bigr),
+\medskip\noindent\emph{Log-space B-spline parameterization.}
+The sinusoidal schedule \eqref{eq:foot-height} parameterizes the foot height
+$h_k(t) \geq 0$ directly---a constrained quantity in the physical (state) domain.
+The \emph{action-cycle} perspective (\S\ref{sec:chu}, \cref{rmk:hpc}) suggests
+the dual parameterization: represent the \emph{log-contact mode}
+\begin{equation}\label{eq:log-contact}
+  \beta_k(t) = \sum_{j=1}^{n_k} c_{k,j}\, B_j(t \bmod T_s),
+  \qquad c_{k,j} \in \R,
 \end{equation}
-where $B_j$ are periodic cubic B-spline basis functions with knots at
+as a periodic cubic B-spline in $\R$ (unconstrained), where $B_j$ are
+periodic cubic B-spline basis functions with knots at
 $\{0, T_s/n_k, \ldots, (n_k{-}1)T_s/n_k\}$.
-The non-negativity clamp ensures $h_k \geq 0$; the barrier
-$\lambda_k = \varepsilon / h_k$ then derives the contact mode as before.
+The contact mode is recovered through the sigmoid:
+\begin{equation}\label{eq:sigmoid-contact}
+  \sigma_k(t) = \mathrm{sigmoid}(\beta_k(t))
+  = \frac{1}{1 + e^{-\beta_k(t)}}.
+\end{equation}
+The foot height follows by inverting the barrier relation
+$\sigma_k = \varepsilon/(h_k + \varepsilon)$:
+\[
+  h_k = \varepsilon\,\bigl(\sigma_k^{-1} - 1\bigr)
+  = \varepsilon\, e^{-\beta_k}.
+\]
+
+\smallskip\noindent\emph{Why log space.}
+\begin{enumerate}[nosep]
+\item \emph{Unconstrained}: $\beta_k \in \R$ has no boundary; the
+  non-negativity $h_k \geq 0$ and the range $\sigma_k \in (0,1)$
+  are automatic through the exponential map.
+\item \emph{Additive}: sampling noise in $\beta$-space
+  ($\beta \to \beta + \delta\beta$) is a multiplicative perturbation
+  of $\sigma_k$---the natural scale for contact mode variation.
+\item \emph{Smooth transitions}: the sigmoid provides $C^\infty$
+  contact transitions; combined with the $C^2$ B-spline, the composite
+  $\sigma_k(t)$ is as smooth as the spline.
+\item \emph{Pratt's exponential bridge}: $\sigma_k = \mathrm{sigmoid}(\beta_k)$
+  is exactly the structure of harmonic predictive control
+  (\cref{rmk:hpc}): the log-domain trajectory $\beta_k(t)$ is the
+  ``action'' and the physical mode $\sigma_k(t)$ is the ``state''
+  related by $\exp$.
+\end{enumerate}
 
 Sampling noise at the $n_k$ knot points and interpolating is equivalent to
 MPPI with structured covariance
 $\Sigma_u = B\,\Sigma_c\,B^T$, where $B$ is the $H \times n_k$ basis
 matrix.
-This restricts the search to smooth (C$^2$) trajectories---a frequency
+This restricts the search to smooth ($C^2$) trajectories---a frequency
 filter that excludes unphysical high-frequency oscillations from the sample
 space.
 The dimension of the gait space increases from $3$ (phase offsets) to
-$4n_k$ (spline coefficients), but remains far below $4H$ (pointwise),
-achieving the ``complexity reduction for free'' observed empirically by
-Alvarez-Padilla et al.
+$4n_k$ (spline coefficients), but remains far below $4H$ (pointwise).
 
 \medskip\noindent\emph{Joint-space renormalization.}
 Define normalized coordinates centered on the standing configuration
@@ -416,7 +442,7 @@ The system remains \emph{exactly} linear in $x$: the coefficients
 of $A(t)$ depend on $\sigma_k(t)$ and the normals $\hat{n}_k$,
 not on $x$.
 The Riccati recursion \eqref{eq:riccati-tvlqr} applies with
-$A_d(t) = I + \Delta t\,A(t)$ at each backstep.
+$A_d(t) = e^{A(t)\Delta t}$ via \eqref{eq:matrix-exp} at each backstep.
 The barrier $-\varepsilon\log(h_k + \varepsilon)$ prevents the foot
 from ``sinking''---simultaneously a complementarity relaxation and
 a buoyancy bound.
@@ -441,6 +467,11 @@ The remedy: define time-averaged discrete dynamics
 $\bar{A}_d = I + \Delta t\,\bar{A}$,
 $\bar{B}_d = \Delta t\,\bar{B}$
 where $\bar{A} = H^{-1}\sum_t A(t)$, $\bar{B} = H^{-1}\sum_t B(t)$.
+(For the time-averaged dynamics, forward Euler
+$\bar{A}_d = I + \Delta t\,\bar{A}$ suffices because $\bar{A}$ is
+constant and the $O(\Delta t^2)$ error is absorbed by the terminal-cost
+role of $P_\infty$; the per-step recursion \eqref{eq:riccati-tvlqr}
+uses the exact $A_d = e^{A\Delta t}$ from \eqref{eq:matrix-exp}.)
 The \textbf{steady-state DARE}
 \begin{equation}\label{eq:dare-terminal}
 P_\infty = Q + \bar{A}_d^\top P_\infty \bar{A}_d
@@ -515,6 +546,137 @@ Together they complete the Support $\oplus$ Coverage decomposition:
 support is pointwise in $\mathrm{Range}(\hat{n}_k)$, coverage is
 integral in $\mathrm{Image}(\Pi_k)$.
 
+\medskip\noindent\emph{Integral area constraint and emergent periodicity.}
+The B-spline parameterization \eqref{eq:log-contact} need not impose
+periodicity a priori.
+Instead, periodicity can \emph{emerge} from two integral constraints.
+First, the \textbf{contact budget}:
+\begin{equation}\label{eq:contact-budget}
+  C_{\min} \;\leq\;
+  \frac{1}{T}\int_0^T \sigma_k(t)\, dt
+  \;\leq\; C_{\max},
+  \qquad k = 1, \ldots, 4,
+\end{equation}
+which bounds the time-averaged contact fraction per foot.
+The lower bound prevents permanent flight ($\sigma_k \equiv 0$);
+the upper bound prevents permanent stance ($\sigma_k \equiv 1$).
+Both bounds are soft penalties (barrier-enforced, weight
+$\varepsilon$) rather than hard constraints.
+Second, the no-slip cost \eqref{eq:no-slip} penalizes tangential
+velocity during contact: if a foot is in stance for too long, the
+sliding cost dominates.
+
+Together these create a \emph{cyclic tension}: the contact budget
+requires each foot to touch down periodically, while the no-slip cost
+requires it to lift off.
+The optimal resolution---at sufficiently high target velocity---is a
+periodic alternation, i.e., a gait.
+By Jensen's inequality, a periodic schedule with fixed duty
+ratio $C = \int \sigma\, dt / T$ achieves lower no-slip cost than
+any non-periodic schedule with the same $C$, because
+the quadratic velocity penalty $\sigma \|v\|^2$ is convex and the
+periodic schedule distributes contact evenly.
+Periodicity is thus not an assumption but a \emph{consequence} of
+cost minimization under the integral constraint.
+
+\medskip\noindent\emph{Eulerian cycle on the contact state graph.}
+The $2^4 = 16$ binary contact configurations
+$\sigma \in \{0,1\}^4$ form the vertices of a $4$-dimensional
+hypercube graph $Q_4$.
+Each edge corresponds to a single foot lift-off or touch-down
+(Hamming weight-$1$ transition).
+Every vertex has degree~$4$ (one edge per foot), so $Q_4$ is
+Eulerian: there exists a closed walk traversing every edge exactly
+once (Euler's theorem: a connected graph is Eulerian iff every
+vertex has even degree).
+An Eulerian circuit visits all $32$ transitions in $32$ steps,
+returning to the starting configuration---the combinatorial skeleton
+of a complete gait cycle.
+Actual gaits use only a subgraph (trot uses $4$ of the $16$ vertices
+and $8$ edges), but the existence of an Eulerian circuit on the
+full graph shows that every possible transition is reachable through
+periodic contact cycling.
+
+\medskip\noindent\emph{Action-cycle and state-cycle.}
+The distinction between parameterizing $h_k(t) \geq 0$ (state space)
+and $\beta_k(t) \in \R$ (log space, \eqref{eq:log-contact}) reflects a
+deeper duality between \emph{actions} and \emph{states}:
+\begin{itemize}[nosep]
+\item The \textbf{action-cycle} $\beta_k(t)$ lives in the Lie algebra
+  $\mathfrak{g} = \R$---the space of \emph{generators}.
+  Lift-off and touch-down are actions (verbs): $\beta_k \to +\infty$
+  is swing, $\beta_k \to -\infty$ is stance, and the transition rate
+  $\dot{\beta}_k$ is the action intensity.
+\item The \textbf{state-cycle} $\sigma_k(t)$ lives in the Lie group
+  $G = (0,1)$---the space of \emph{configurations}.
+  It is the cumulative result of the action:
+  $\sigma_k = \exp_{\mathrm{sigmoid}}(\beta_k)$.
+\end{itemize}
+The exponential map $\exp: \mathfrak{g} \to G$ (here, the sigmoid)
+connects them:
+\begin{equation}\label{eq:action-state}
+  \underbrace{\beta_k(t)}_{\text{action-cycle (log)}}
+  \;\xrightarrow{\;\mathrm{sigmoid}\;}
+  \underbrace{\sigma_k(t)}_{\text{state-cycle (exp)}}
+  \;\xrightarrow{\;\text{ODE}\;}
+  \underbrace{x(t)}_{\text{trajectory}}.
+\end{equation}
+Given an initial state $x(0)$ and an action schedule $\beta(\cdot)$,
+the trajectory $x(t)$ is uniquely determined (the forward map is a
+function).
+The \emph{inverse}---which $\beta(\cdot)$ produced a given $x(T)$---is
+multi-valued: multiple gaits reach the same goal.
+The \textbf{principle of least action} selects the optimal one:
+\begin{equation}\label{eq:least-action}
+  \beta^* = \arg\min_{\beta(\cdot)} \;
+  S[\beta] \;=\; \int_0^{T_s} L\bigl(x(t),\, \dot{x}(t),\,
+    \sigma(t;\beta)\bigr)\, dt,
+\end{equation}
+where $L$ is the running cost (tracking + barrier + no-slip).
+The transition events---lift-off, touch-down---\emph{are} the action
+(Wirkung / \emph{zu\`o y\`ong li\`ang}) in the variational sense.
+At finite $\varepsilon$, the MPPI Boltzmann weight
+$w \propto e^{-S[\beta]/\varepsilon}$ assigns nonzero probability to all
+sampled actions---genuine indefiniteness.
+As $\varepsilon \to 0$, the distribution concentrates on $\beta^*$
+(or symmetry-broken local minima: trot vs.\ gallop).
+
+\smallskip\noindent\emph{Log-space Riccati recursion.}
+The DARE \eqref{eq:dare-terminal} that initializes the backward Riccati
+can be viewed as operating in log space.
+The contact mode $\sigma_k = \mathrm{sigmoid}(\beta_k)$ enters $A(t)$
+and $B(t)$, making the discrete dynamics
+$A_d(t) = e^{A(\sigma(t))\Delta t}$, $B_d(t) = V(\sigma(t))\,B(\sigma(t))$
+functions of the log-contact schedule $\beta(\cdot)$.
+The time-averaged DARE uses $\bar{A}_d, \bar{B}_d$ computed from the
+\emph{average} $\sigma_k$---equivalently, the softmax of the average
+$\beta_k$.
+The Riccati cost-to-go $P_\infty$ is thus a function of the log-space
+B-spline coefficients $c_{k,j}$: the DARE solves a fixed-point equation
+in the image of the exponential map.
+The entire backward Riccati recursion
+\eqref{eq:riccati-tvlqr} with $A_d(t) = e^{A(t)\Delta t}$ inherits
+the log-space structure: $K_t, k_t$ are smooth functions of $\beta(t)$,
+and the cost-to-go $P_t$ flows backward through the exponential
+discretization.
+
+\begin{remark}[The group law on $(0,1)$]
+\label{rem:group-law}
+The interval $(0,1)$ is not a group under ordinary multiplication
+(the identity~$1$ is a boundary point).
+It becomes one via the \emph{transported group law}:
+$\sigma_1 \star \sigma_2
+= \mathrm{sigmoid}(\mathrm{logit}(\sigma_1) + \mathrm{logit}(\sigma_2))$,
+where $\mathrm{logit}(\sigma) = \log(\sigma/(1{-}\sigma))$.
+Under this operation, $(0,1)$ is isomorphic to $(\R, +)$ via the
+logit/sigmoid bijection.
+The identity is $1/2$ ($= \mathrm{sigmoid}(0)$), and the inverse of
+$\sigma$ is $1 - \sigma$
+($= \mathrm{sigmoid}(-\mathrm{logit}(\sigma))$).
+The Lie algebra is $(\R, +)$ with the sigmoid as exponential
+map---precisely the structure used throughout this section.
+\end{remark}
+
 \begin{remark}[Three reference fields for the contact projector]
 \label{rem:reference-fields}
 The normal $\hat{n}_k$ admits three canonical choices:
@@ -552,8 +714,51 @@ As $\varepsilon \to 0$, the viscous model converges to binary stick/slip,
 recovering Coulomb-like contact.
 \end{remark}
 
-Euler discretization gives $A_d(t) = I + \Delta t\, A(t)$,
-$B_d(t) = \Delta t\, B(t)$.
+\begin{remark}[Quaternion closure and the stride holonomy]
+\label{rem:quaternion-closure}
+Each stance foot $k$ generates a torque
+$\tau_k = r_k \times (\sigma_k f_k)$ on the base body, where
+$r_k \in \R^3$ is the foot moment arm and $f_k$ is the foot
+force.
+The net angular velocity
+$\omega = I^{-1}\sum_k \tau_k \in \R^3 \cong \mathrm{Im}(\mathbb{H})$
+lives in the imaginary quaternions.
+Over one stride, the base orientation evolves as
+\[
+  q(T_s) = \prod_{t=0}^{T_s/\Delta t}
+    \exp\bigl(\tfrac{1}{2}\omega(t)\,\Delta t\bigr)\, q(0)
+    \;\in\; S^3 \subset \mathbb{H}.
+\]
+A steady-state gait requires \emph{stride closure}:
+$q(T_s) = q(0)$, i.e., the product of incremental rotations is the
+identity quaternion.
+This is a holonomy condition on $S^3$: the gait cycle is a loop
+in the orientation fiber bundle.
+The four legs, acting through their moment arms, are the generators
+of this rotation---four elements of $\mathrm{Im}(\mathbb{H})$
+whose time-integrated composition must close on $S^3$.
+\end{remark}
+
+\smallskip\noindent\emph{Matrix exponential integrator.}
+Since the centroidal dynamics $\dot{x} = A(t)x + B(t)u + c$ is exactly
+linear within each timestep (piecewise constant $A$, $B$), the solution
+over $[t, t{+}\Delta t]$ with control held constant is
+\begin{equation}\label{eq:matrix-exp}
+x(t{+}\Delta t) = e^{A\Delta t}\, x(t) + V\,(B\, u + c),
+\qquad V = A^{-1}(e^{A\Delta t} - I).
+\end{equation}
+This is exact for the linear system---no discretization error---and
+replaces the forward Euler approximation $A_d = I + \Delta t\, A$.
+When $A$ is near-singular (e.g.\ zero friction during flight),
+$V$ is computed via the augmented matrix exponential:
+\[
+\exp\!\begin{pmatrix} A\Delta t & (Bu + c)\Delta t \\ 0 & 0 \end{pmatrix}
+= \begin{pmatrix} e^{A\Delta t} & V(Bu + c) \\ 0 & 1 \end{pmatrix},
+\]
+which avoids explicit inversion and is numerically stable for any $A$
+\cite{HighamExpm}.
+The discrete matrices are $A_d(t) = e^{A(t)\Delta t}$ and
+$B_d(t) = V(t)\, B(t)$, both time-varying through $\sigma_k(t)$.
 
 The discrete Riccati recursion
 \begin{equation}\label{eq:riccati-tvlqr}
@@ -589,7 +794,8 @@ The optimal control is $u_t = k_t - K_t(x_t - x_t^{\mathrm{ref}})$:
 $K_t$ corrects deviations from the reference trajectory, $k_t$ accounts
 for gravity and the nominal contact pattern.
 
-The MPPI outer loop samples gait schedules $h_k$ (B-spline coefficients)
+The MPPI outer loop samples gait schedules $\beta_k$ (log-space B-spline
+coefficients \eqref{eq:log-contact})
 and Boltzmann-reweights the \emph{policy cost}---not individual controls,
 but the cost of the full closed-loop trajectory under the Riccati-derived
 policy.
@@ -674,7 +880,7 @@ are subject to friction and hence available for thrust; the skew
 direction steers net displacement within the image of
 $\sum_k \sigma_k \Pi_k$.
 
-The dual $\varepsilon$ is now an \emph{octuple} unification:
+The dual $\varepsilon$ is now a \emph{nonuple} unification:
 \begin{enumerate}[nosep]
 \item contact sharpness ($\lambda_k = \varepsilon/h_k$, barrier force),
 \item exploration temperature ($w \propto e^{-J/\varepsilon}$,
@@ -694,16 +900,25 @@ The dual $\varepsilon$ is now an \emph{octuple} unification:
 \item contact no-slip ($J_{\mathrm{slip}} = w_{\mathrm{slip}} \sum_k
       \sigma_k \|v_{xy}\|^2$: tangential sliding penalized in proportion
       to contact intensity, making $Q(t)$ time-varying through the same
-      $\sigma_k$ that controls $A(t)$ and $B(t)$).
+      $\sigma_k$ that controls $A(t)$ and $B(t)$),
+\item action-cycle parameterization ($\sigma_k = \mathrm{sigmoid}(\beta_k)$:
+      the contact mode is the exponential image of the unconstrained
+      log-space B-spline \eqref{eq:log-contact}, so the MPPI samples live
+      in $\mathfrak{g} = \R^{4n_k}$ while the physical schedule lives in
+      $G = (0,1)^4$---the same $\beta \leftrightarrow e^\beta$ duality
+      of \cref{rmk:hpc}).
 \end{enumerate}
-All eight converge as $\varepsilon \to 0$: contact forces sharpen to
+All nine converge as $\varepsilon \to 0$: contact forces sharpen to
 complementarity, the MPPI distribution concentrates on the optimal gait,
 the entropic OT coupling converges to the Monge map,
 impedance gains become binary stance/swing,
 joint limits become hard constraints,
 the integrator anti-windup becomes a hard saturation clamp,
 tangential friction sharpens to binary stick/slip,
-and the no-slip cost becomes a hard no-sliding constraint during stance.
+the no-slip cost becomes a hard no-sliding constraint during stance,
+and the sigmoid sharpens to a step function ($\sigma_k \to \{0,1\}$)
+recovering binary contact modes from the continuous log-space
+parameterization.
 
 \medskip\noindent\emph{Cost decomposition along the $\varepsilon$-path.}
 Decompose the total cost as $J = J_{\mathrm{track}} + J_{\mathrm{barrier}}$,
@@ -732,11 +947,48 @@ separately: $J_{\mathrm{track}}$ should decrease (the optimizer is finding
 better gaits) while $J_{\mathrm{barrier}}$ follows $\varepsilon$ (the barrier
 is tightening toward complementarity).
 
+\medskip\noindent\emph{Path integral and multiple shooting.}
+The outer MPPI loop is a \emph{path integral} over the contact-schedule
+space.
+Each sample $\beta^{(i)}(\cdot)$ defines a ``path'' (contact schedule);
+the inner Riccati solve evaluates the ``action'' $S[\beta^{(i)}]$
+(closed-loop cost); the Boltzmann weight
+$w^{(i)} \propto e^{-S[\beta^{(i)}]/\varepsilon}$ is the
+Feynman--Kac kernel.
+The weighted update
+$\bar{\beta} = \sum_i w^{(i)} \beta^{(i)}$ is a Monte Carlo
+approximation of
+\[
+  \bar{\beta}
+  = \frac{\int \beta\, e^{-S[\beta]/\varepsilon}\,
+    \mathcal{D}[\beta]}
+  {\int e^{-S[\beta]/\varepsilon}\, \mathcal{D}[\beta]},
+\]
+which is the \emph{path-integral mean} in the infinite-sample limit
+\cite{WilliamsMPPI}.
+The inner Riccati solve is exact for the linear centroidal dynamics
+(the Gauss--Newton approximation is exact,
+\eqref{eq:joseph-form}), so the cost functional $S[\beta]$ is
+the true closed-loop cost---the ``Lagrangian'' of the path
+integral---not an approximation.
+
+This makes the MPPI loop a form of
+\emph{multiple shooting at the dynamics level}:
+each sample $\beta^{(i)}$ is a ``shooting node'' in the space of
+contact schedules; the Boltzmann weighting closes the
+``optimality defect'' (concentrating on low-cost schedules)
+in the same way that Newton steps close continuity defects in
+classical multiple shooting.
+As $\varepsilon \to 0$, the path integral concentrates on
+$\beta^*$---the deterministic limit of the variational principle
+\eqref{eq:least-action}.
+
 \medskip\noindent\emph{Three-level hierarchy and the Kalman dual.}
 The complete control architecture separates three timescales:
 \begin{enumerate}[nosep]
 \item \emph{Policy level} (per-stride): MPPI samples gait schedules
-  $h_k$ on $\bT^3$ (or B-spline coefficients in $\R^{4n_k}_{\geq 0}$),
+  $\beta_k$ as B-spline coefficients in $\R^{4n_k}$
+  (log-contact space, unconstrained \eqref{eq:log-contact}),
   Boltzmann-reweights on trajectory cost---the combinatorial search over
   contact modes.
 \item \emph{Action level} (per-timestep): two sub-mechanisms.
@@ -767,6 +1019,31 @@ and measurement noise covariances.
 The barrier parameter $\varepsilon$ connects all three: MPPI temperature
 (level~1), Riccati cost weights (level~2), and the process-noise
 scale in the Kalman filter (level~3).
+
+\begin{remark}[Action-driven dynamics]
+\label{rem:action-driven}
+The B-spline parameterization \eqref{eq:log-contact} treats
+$\beta_k(t)$ as a \emph{predetermined schedule}---the MPPI loop
+optimizes the coefficients $c_{k,j}$, and the Riccati inner solve
+takes $\sigma_k(t) = \mathrm{sigmoid}(\beta_k(t))$ as given.
+An alternative formulation promotes $\beta_k$ to a
+\emph{dynamical state}: augment the state vector
+$(x, \beta) \in \R^{13} \times \R^4$ with the contact action
+rate as control:
+\[
+  \dot{\beta}_k = a_k, \qquad a_k \in \R.
+\]
+The augmented system is still exactly linear in $(x, \beta, u, a)$,
+so the Riccati framework applies.
+The MPPI loop now samples action \emph{rates} $a_k^{(i)}(t)$
+rather than B-spline coefficients---a finer-grained search that
+can express non-periodic and transient contact schedules.
+Feasibility defects (e.g.\ the contact budget
+\eqref{eq:contact-budget}) need not hold pointwise during
+iteration; the MPPI iterations close them in the same way that
+multiple-shooting iterations close continuity defects.
+We defer the implementation to future work.
+\end{remark}
 
 \medskip\noindent\emph{The optimal cycle algorithm.}
 The preceding paragraphs assemble the components of the
@@ -811,17 +1088,18 @@ $H_{\mathrm{target}} \leftarrow \gamma_0 \log N$.
 
 \item \textbf{Barrier bridge.}
   For each $i$ and $t = 0, \ldots, H{-}1$:
+  log-contact mode
+  $\beta_k^{(i)}(t)$ via B-spline \eqref{eq:log-contact};
+  contact mode
+  $\sigma_k = \mathrm{sigmoid}(\beta_k)$ via \eqref{eq:sigmoid-contact};
   foot height
-  $h_k$ via \eqref{eq:foot-height};
-  force scale
-  $\sigma_k = \varepsilon / (h_k + \varepsilon)$;
+  $h_k = \varepsilon\, e^{-\beta_k}$;
   state matrix
-  $A_d(t) = I + \Delta t\, A(t)$ via \eqref{eq:A-viscous};
-  input matrix
-  $B_d(t) = \Delta t\, B(\sigma(t))$.
+  $A_d(t) = e^{A(t)\Delta t}$ via \eqref{eq:matrix-exp};
+  input matrix effect
+  $V(t)\, B(\sigma(t))$ via \eqref{eq:matrix-exp}.
   Terminal cost $P_\infty^{(i)}$ via DARE
-  \eqref{eq:dare-terminal} from time-averaged
-  $\bar{A}_d^{(i)}, \bar{B}_d^{(i)}$.
+  \eqref{eq:dare-terminal} from time-averaged dynamics.
 
 \item \textbf{Backward Riccati.}
   Initialize $P_H = P_\infty^{(i)}$ (coverage).
@@ -836,7 +1114,8 @@ $H_{\mathrm{target}} \leftarrow \gamma_0 \log N$.
   $u_t = k_t - K_t(x_t - x^{\mathrm{ref}}_t)$;
   \emph{support floor}: project onto
   $\sum_k \sigma_k f_{k,z} \geq mg$;
-  then $x_{t+1} = A_d(t) x_t + B_d(t) u_t + c_d$.
+  then $x_{t+1} = e^{A(t)\Delta t}\, x_t + V(t)\,(B(t)\, u_t + c)$
+  via \eqref{eq:matrix-exp}.
   Accumulate
   \[
   J^{(i)} \;=\; \textstyle\sum_t \bigl[

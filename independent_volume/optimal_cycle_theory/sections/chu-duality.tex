@@ -11,7 +11,7 @@ via the character pairing (\S\ref{sec:cycle});
 the causal Hardy space $\Htwo$ with its anti-causal complement
 $(\Htwo)^\perp$ (\S\ref{sec:hardy});
 representation spaces $V_\rho$ with their contragredients $V_\rho^*$
-(\S\ref{sec:compact});
+(item~(v) below);
 velocities $\xi \in \mathfrak{g}$ with momenta $\mu \in \mathfrak{g}^*$
 via the Legendre transform (\S\ref{sec:articulated}).
 In each case, the morphisms---Fourier transform, Hopf--Cole substitution,
@@ -85,14 +85,14 @@ $G \times \widehat{G} \to \bT$ are
 admitted~\cite[Example~5.3]{BarrOmatt}.
 \end{remark}
 
-\subsection*{The seven Chu objects of optimal cycle theory}
+\subsection*{The eight Chu objects of optimal cycle theory}
 
 Every duality in Parts~I and~II defines a separated Chu object.
 We record them as triples
 $(A,\; r \colon A \otimes X \to \bot,\; X)$ with specified
 $\bot$.
 
-\begin{proposition}\label{prop:seven-chu}
+\begin{proposition}\label{prop:eight-chu}
 The following are separated Chu objects in the indicated ambient
 categories:
 \begin{enumerate}[label=\textup{(\roman*)},nosep]
@@ -166,9 +166,23 @@ categories:
   $w \propto e^{-J/\varepsilon}$),
   $r(V, w) = \int_Q V\, dw = \mathbb{E}_w[V]$,
   $\bot = \R$.
-  The sextuple parameter $\varepsilon$ of \S\ref{sec:articulated}
+  The nonuple parameter $\varepsilon$ of \S\ref{sec:articulated}
   scales the pairing: as $\varepsilon \to 0$, the Boltzmann measure
   $w$ concentrates on the support of the barrier constraint.
+
+\item \emph{Action--state duality}
+  \textup{(\S\ref{sec:articulated}, eq.~\eqref{eq:action-state}):}
+  $A = \R$ (log-contact modes $\beta_k$, the Lie algebra of
+  generators---lift-off, touch-down),
+  $X = (0,1)$ (contact modes $\sigma_k$, the Lie group of
+  configurations),
+  $r(\beta, \sigma) = \beta\,\sigma$ (the tangent-value pairing),
+  $\bot = \R$.
+  The sigmoid $\sigma = (1 + e^{-\beta})^{-1}$ is the exponential map;
+  its inverse $\beta = \log(\sigma/(1{-}\sigma))$ is the logit.
+  The forward map $\beta \to x(T)$ (given $x(0)$) is a function;
+  the inverse $x(T) \to \beta^*$ requires the variational principle
+  \eqref{eq:least-action}---the Chu adjunction condition.
 \end{enumerate}
 \end{proposition}
 
@@ -245,6 +259,22 @@ coincidence: both are consequences of the duality
 $\beta \leftrightarrow e^\beta$ between the log-domain (additive,
 linear, ``tuning-free'') and the physical domain (multiplicative,
 nonlinear, constrained).
+
+The log-space B-spline parameterization \eqref{eq:log-contact} makes
+this parallel precise: $\beta_k(t)$ is a periodic polynomial (B-spline)
+in log space, exactly as Pratt's $\beta(t)$; and
+$\sigma_k = \mathrm{sigmoid}(\beta_k) = 1/(1 + e^{-\beta_k})$ is the
+smooth contact mode, exactly as Pratt's
+$\varepsilon = e^\beta + \delta$.
+The MPPI outer loop optimizes the B-spline coefficients
+$c_{k,j} \in \R$---the ``tuning-free'' log-domain
+representation---while the Riccati inner solve computes optimal gains
+from the resulting $\sigma_k(t)$---the physical-domain trajectory.
+The MPPI outer loop, viewed as a path integral over log-space contact
+schedules (\S\ref{sec:articulated}), makes this Chu duality
+computational: the forward map $\beta \to x(T)$ evaluates the Chu
+pairing, while the Boltzmann-weighted inverse (path-integral mean)
+is the adjunction condition.
 \end{remark}
 
 \subsection*{Linear logic interpretation}
@@ -377,4 +407,350 @@ Gaussian kernel becomes the min-cost envelope.
 The barrier parameter $\varepsilon$ interpolates continuously between
 these two categorical regimes---it is the deformation parameter of the
 $*$-autonomous structure itself.
+\end{remark}
+
+\begin{remark}[Cayley--Dickson tower and the division-algebra hierarchy]
+\label{rmk:cayley-dickson}
+The progression
+$\R \subset \mathbb{C} \subset \mathbb{H} \subset \mathbb{O}$
+mirrors the structural layers of the quadruped controller:
+\begin{enumerate}[nosep]
+\item $\R$ (1-dimensional): the scalar cost $J \in \R$---totally
+  ordered, commutative, associative.
+\item $\mathbb{C}$ (2-dimensional): the gait phase
+  $e^{i\theta} \in S^1$---no preferred direction (loss of ordering),
+  the Pontryagin dual $\widehat{G}$ of item~(iii).
+\item $\mathbb{H}$ (4-dimensional): the base orientation
+  $q \in S^3 \subset \mathbb{H}$, modulated by four feet generating
+  torques in $\mathrm{Im}(\mathbb{H}) \cong \R^3$
+  (\cref{rem:quaternion-closure}).
+  Loss of commutativity: the order of rotations matters.
+\item $\mathbb{O}$ (8-dimensional): conjecturally, the eight Chu
+  objects of \cref{prop:eight-chu}.
+  Loss of associativity: forward composition
+  $\beta \to \sigma \to x$ is deterministic (a function),
+  but backward decomposition $x(T) \to \beta$ depends on the
+  grouping---the variational principle
+  \eqref{eq:least-action} selects among multiple factorizations.
+\end{enumerate}
+At each Cayley--Dickson doubling, a structural property is lost;
+at each level of the controller hierarchy, a new form of
+non-uniqueness appears.
+
+\medskip\noindent\emph{Cayley--Dickson splitting.}
+The Cayley--Dickson construction doubles
+$\mathbb{H}$ to $\mathbb{O} = \mathbb{H} \oplus \mathbb{H}\,e_4$
+by adjoining a unit $e_4$ that anticommutes with every quaternion
+imaginary unit.
+This suggests a partition of the eight Chu objects into two
+quaternionic halves:
+\begin{itemize}[nosep]
+\item \emph{Control-loop quaternion} ($\mathbb{H}$ component):
+  Pontryagin--Fourier~(iii) as the identity~$1$ (representation
+  theory furnishes the scalar frame), together with the three
+  imaginary units that form the physical control loop---%
+  Barrier--Boltzmann~(vii) as $e_1$ (contact constraints),
+  Riccati~(i) as $e_2$ (optimal feedback),
+  and Lie--Poisson~(vi) as $e_3$ (momentum dynamics).
+  Their internal product $e_1 \cdot e_2 = e_3$ is the contact
+  Jacobian triad constructed below.
+\item \emph{Spectral-analytic quaternion}
+  ($\mathbb{H}\,e_4$ component):
+  the four objects providing mathematical infrastructure for the
+  control loop---%
+  Hopf--Cole~(ii) as the doubling unit~$e_4$
+  (the linearization bridge between nonlinear control and
+  linear analysis),
+  Hardy~(iv) as $e_5$ (causal structure),
+  Peter--Weyl~(v) as $e_6$ (spectral decomposition),
+  and Action--State~(viii) as $e_7$
+  (contact schedule parameterization).
+\end{itemize}
+The doubling unit $e_4 = \text{Hopf--Cole}$ is the exponential
+bridge $V \leftrightarrow \psi = e^{-V/(2\varepsilon)}$:
+it converts nonlinear control ($\mathbb{H}$) into linear
+analysis ($\mathbb{H}\,e_4$), exactly as the Cayley--Dickson
+imaginary unit converts quaternion arithmetic into octonion
+arithmetic.
+
+\medskip\noindent\emph{Addition vs.\ multiplication: the physical
+root of non-associativity.}
+The two halves do not compose associatively because addition and
+multiplication are incompatible operations: the superposition of
+forces is additive ($f_1 + f_2$), but the composition of the
+rotations they induce is multiplicative
+($\exp(\tau_1 \Delta t)\,\exp(\tau_2 \Delta t)
+\neq \exp((\tau_1 + \tau_2)\Delta t)$ in general).
+This is the Baker--Campbell--Hausdorff obstruction:
+$\log(e^X e^Y) = X + Y + \tfrac{1}{2}[X,Y] + \cdots$, where the
+commutator terms break associativity of the naive
+``add-then-exponentiate'' composition.
+In the Cayley--Dickson language, the $\mathbb{H}$ and
+$\mathbb{H}\,e_4$ halves fail to associate because
+$e_4$ anticommutes with the quaternion units---precisely the
+algebraic shadow of the BCH remainder.
+
+\medskip\noindent\emph{$\varepsilon$ as the unique
+addition--multiplication bridge.}
+The nonuple parameter $\varepsilon$ of \S\ref{sec:articulated}
+appears in every conversion between the additive and multiplicative
+halves:
+\begin{itemize}[nosep]
+\item Hopf--Cole: $V \leftrightarrow \psi = e^{-V/(2\varepsilon)}$
+  (value function $\leftrightarrow$ linear solution);
+\item Sigmoid: $\beta \leftrightarrow \sigma =
+  (1 + e^{-\beta})^{-1}$
+  (log-contact mode $\leftrightarrow$ contact fraction);
+\item Log-barrier: $h \leftrightarrow -\varepsilon\log h$
+  (constraint slack $\leftrightarrow$ barrier cost);
+\item Boltzmann: $J \leftrightarrow w \propto e^{-J/\varepsilon}$
+  (cost $\leftrightarrow$ sampling weight).
+\end{itemize}
+These are four manifestations of a single map
+$x \mapsto e^{-x/\varepsilon}$ (or its inverse
+$w \mapsto -\varepsilon \log w$).
+The parameter $\varepsilon$ is the \emph{exchange rate} between
+addition and multiplication---the analogue of $\hbar$ in the
+Feynman path integral, where it converts the additive Lagrangian
+$\int L\,dt$ to the multiplicative amplitude $e^{iS/\hbar}$.
+
+\medskip\noindent\emph{Explicit assignment and the Fano plane.}
+The proposed correspondence between octonion basis elements and
+Chu objects is:
+
+\begin{center}
+\small
+\begin{tabular}{cll}
+\hline
+Basis & Chu object & Role \\
+\hline
+$1$ & Pontryagin--Fourier~(iii) & identity / representation frame \\
+$e_1$ & Barrier--Boltzmann~(vii) & contact constraints \\
+$e_2$ & Riccati~(i) & optimal feedback \\
+$e_3$ & Lie--Poisson~(vi) & momentum dynamics \\
+$e_4$ & Hopf--Cole~(ii) & linearization bridge (doubling unit) \\
+$e_5$ & Hardy~(iv) & causal structure \\
+$e_6$ & Peter--Weyl~(v) & spectral decomposition \\
+$e_7$ & Action--State~(viii) & contact schedule \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+The seven Fano plane triads---cyclic triples $(e_a, e_b, e_c)$
+with $e_a \cdot e_b = e_c$---are:
+
+\begin{center}
+\footnotesize
+\begin{tabular}{clll}
+\hline
+\# & Product & Physical name & Mediator \\
+\hline
+T1 & $e_1 {\cdot}\, e_2 {=} e_3$ (BB${\times}$Ri$=$LP)
+   & Contact Jacobian & $r_k \times f_k$ \\
+T2 & $e_1 {\cdot}\, e_4 {=} e_5$ (BB${\times}$HC$=$Ha)
+   & Feynman--Kac proj.\ & Szeg\H{o} $P_+$ \\
+T3 & $e_1 {\cdot}\, e_7 {=} e_6$ (BB${\times}$AS$=$PW)
+   & Gait spectral analysis & Fourier sign \\
+T4 & $e_2 {\cdot}\, e_4 {=} e_6$ (Ri${\times}$HC$=$PW)
+   & Riccati spectral dec.\ & symplectic $J$ \\
+T5 & $e_2 {\cdot}\, e_5 {=} e_7$ (Ri${\times}$Ha$=$AS)
+   & Causal fb.\ $\to$ contacts & spec.\ factor sign \\
+T6 & $e_3 {\cdot}\, e_4 {=} e_7$ (LP${\times}$HC$=$AS)
+   & Momentum linearization & Lie bracket \\
+T7 & $e_3 {\cdot}\, e_6 {=} e_5$ (LP${\times}$PW$=$Ha)
+   & Coadjoint orbit caus.\ & conjugation \\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+Each triad carries a natural antisymmetric bilinear form (cross
+product, symplectic form, Lie bracket, Szeg\H{o} projection,
+Fourier inversion) that mediates the product; swapping inputs
+through this mediator reverses the sign, yielding
+anti-commutativity $e_a \cdot e_b = -e_b \cdot e_a$
+automatically.
+Triad~T1 is the contact Jacobian constructed in detail below;
+the remaining six triads are identified by their physical content
+but their full Chu tensor-product verification is deferred.
+
+\medskip\noindent\emph{Three doublings, three laws.}
+The three Cayley--Dickson doublings correspond to Newton's three
+laws of mechanics:
+\begin{enumerate}[nosep]
+\item $\R \to \mathbb{C}$ (adjoin $e_1 = \text{BB}$):
+  \textbf{Law~I} (inertia).
+  The contact constraint defines the reference frame; without
+  external force, the barrier keeps feet planted.
+  Loss of total ordering: multiple equilibria coexist.
+\item $\mathbb{C} \to \mathbb{H}$ (adjoin $e_2 = \text{Ri}$,
+  derive $e_3 = e_1 \cdot e_2 = \text{LP}$):
+  \textbf{Law~II} ($F = dp/dt$).
+  Riccati computes optimal force, Lie--Poisson tracks the
+  resulting momentum.
+  Loss of commutativity: the order of force application matters.
+\item $\mathbb{H} \to \mathbb{O}$ (adjoin $e_4 = \text{HC}$,
+  derive $e_5, e_6, e_7$):
+  \textbf{Law~III} (action $= -$reaction).
+  Hopf--Cole linearization enables spectral analysis of the
+  control loop; non-associativity appears because multi-body
+  contact changes the system topology.
+  Loss of associativity: grouping of composed transformations
+  matters.
+\end{enumerate}
+
+\medskip\noindent\emph{Self-interaction: $e_i^2 = -1$ as
+Green's function.}
+In the Chu framework, $e_i^2$ is the tensor product of a Chu
+object with itself: the object acts simultaneously as source~($A$)
+and field~($X$), coupled through the pairing~$r$.
+The self-duality isomorphism $\varphi \colon A \xrightarrow{\sim} X$
+implicit in each pair carries an antisymmetric structure:
+the Riccati Hamiltonian is $J$-symmetric (symplectic),
+the Lie--Poisson bracket is skew on $\mathfrak{g}^*$,
+and the Szeg\H{o} projection $P_+$ satisfies
+$P_+ + P_- = I$ with cross-term $P_+ P_-^* = 0$.
+In each case, the sign of the self-pairing is
+$r(\varphi(a), a) = -\|a\|^2$---the Green's equation
+$L \cdot G = -\delta$ evaluated on the diagonal.
+The universal $-1$ is the hallmark of symplectic/antisymmetric
+self-duality, not an algebraic accident.
+
+\medskip
+Hurwitz's theorem ($\mathbb{O}$ is the last normed division
+algebra) would, if the correspondence is exact, imply that eight
+Chu dualities are \emph{maximal}---no ninth independent duality
+exists without the algebraic structure collapsing.
+Wu et al.~\cite{WuOctonion} provide empirical evidence that
+octonion-structured cross-correlations (``multi-task learning via
+the octonion multiplication table'') outperform quaternion or
+complex alternatives---consistent with the hypothesis that eight
+coupled channels carry more structure than four.
+
+\medskip\noindent\emph{Example: the contact Jacobian as a Chu triad.}
+As evidence for the conjectured multiplication, consider the
+triple (Barrier--Boltzmann~(vii), Riccati~(i), Lie--Poisson~(vi)).
+In the centroidal model (\S\ref{sec:articulated}), each stance
+foot~$k$ contributes a force $\sigma_k f_k$ to the body through
+the moment arm $r_k$; the net generalized force is
+$\mu = \sum_k \sigma_k\, r_k \times f_k \in \mathfrak{g}^*$.
+Define:
+\begin{itemize}[nosep]
+\item \emph{Forward map} $\phi$: given contact modes
+  $\sigma \in (0,1)^4$ (from Barrier--Boltzmann) and optimal
+  forces $f_k = -K_k(t)\,\delta x$ (from Riccati), produce the
+  body torque $\mu = \sum_k \sigma_k\, r_k \times f_k
+  \in \mathfrak{g}^*$ (in Lie--Poisson).
+\item \emph{Backward map} $\phi^*$: given a required body torque
+  $\mu \in \mathfrak{g}^*$, decompose it into per-foot
+  contributions $\sigma_k\, r_k \times f_k$ weighted by
+  $\sigma_k$---the force-distribution problem.
+\end{itemize}
+The adjunction condition
+$\langle \mu, \xi \rangle_{\mathfrak{g}}
+= \sum_k \sigma_k\, \langle r_k \times f_k, \xi \rangle$
+is d'Alembert's principle of virtual work: the body absorbs
+exactly the power delivered by the contact-gated feet.
+The bilinearity in $(\sigma_k, f_k)$---contact mode times
+control force---is the tensor-product structure:
+neither factor alone determines the body torque.
+
+\medskip\noindent\emph{Analytic criterion: Jensen's gap as a
+non-associativity measure.}
+The strictly convex barrier
+$V(h) = -\varepsilon \log h$ satisfies Jensen's inequality:
+$\mathbb{E}[V(h)] \geq V(\mathbb{E}[h])$, with equality if and
+only if $h$ is constant.
+Consider the associator for the triple
+$(e_1, e_2, e_5) = (\text{BB}, \text{Ri}, \text{Ha})$:
+\begin{itemize}[nosep]
+\item \emph{Left bracket}
+  $(e_1 \cdot e_2) \cdot e_5 = e_3 \cdot e_5 = -e_6$:
+  solve the barrier-gated Riccati feedback (producing
+  Lie--Poisson dynamics $e_3$), \emph{then} project onto the
+  causal Hardy component---yielding
+  $\mathbb{E}[V_{\mathrm{barrier}}(\cdot)]$.
+  The result is $-e_6 = -\text{PW}$ (negative spectral content).
+\item \emph{Right bracket}
+  $e_1 \cdot (e_2 \cdot e_5) = e_1 \cdot e_7 = +e_6$:
+  first compose Riccati with Hardy splitting (yielding
+  Action--State contact selection $e_7$), \emph{then} apply the
+  barrier---yielding
+  $V_{\mathrm{barrier}}(\mathbb{E}[\cdot])$.
+  The result is $+e_6 = +\text{PW}$ (positive spectral content).
+\end{itemize}
+The associator is $-2e_6$: the discrepancy between the two
+evaluation orders is measured by Peter--Weyl spectral content---the
+frequency-domain representation of the gait.
+The difference is the Jensen gap:
+\begin{equation}\label{eq:jensen-gap}
+  \Delta_J
+  \;=\; \mathbb{E}[-\varepsilon \log h]
+  - (-\varepsilon \log \mathbb{E}[h])
+  \;=\; \varepsilon \log
+  \frac{\overline{h}}{\exp(\overline{\log h})}
+  \;\geq\; 0,
+\end{equation}
+where $\overline{h}$ is the arithmetic mean and
+$\exp(\overline{\log h})$ is the geometric mean of the contact
+schedule over one stride.
+This ratio---arithmetic mean over geometric mean---is the
+signature of the Szeg\H{o} structure from Part~I:
+the geometric mean $G(f) = \exp(\int_\bT \log f\, d\theta)$
+of \cref{def:cycle} appears in the denominator, and
+$\Delta_J = 0$ if and only if the contact schedule is
+constant, i.e., the Gaussian fixed point of
+\cref{thm:holonomy-trichotomy}(i) where $H(f) = 0$.
+For any non-trivial periodic gait ($H(f) > 0$), the Jensen gap
+is strictly positive: the two evaluation orders disagree, and
+the Chu tensor product is not associative.
+
+We do not claim that $\Delta_J$ equals the full octonion
+associator; the holonomy $H(f)$ of \cref{def:cycle},
+which involves all weighted Fourier coefficients
+$\sum_{k \geq 1} k\,|c_k|^2$, is a finer invariant than the
+scalar AM/GM ratio.
+But both vanish on exactly the same set ($f = \mathrm{const}$),
+and the Jensen gap provides an analytic certificate:
+\emph{non-trivial locomotion ($H(f) > 0$) is a necessary
+condition for the eight Chu dualities to exhibit
+non-associative coupling}.
+
+\medskip
+We state the correspondence as a conjecture with the following
+supporting evidence:
+\begin{enumerate}[label=(\alph*),nosep]
+\item An explicit assignment
+  (PF~$\mapsto 1$,
+  BB~$\mapsto e_1$,
+  Ri~$\mapsto e_2$,
+  LP~$\mapsto e_3$,
+  HC~$\mapsto e_4$,
+  Ha~$\mapsto e_5$,
+  PW~$\mapsto e_6$,
+  AS~$\mapsto e_7$)
+  that respects the Cayley--Dickson splitting
+  $\mathbb{O} = \mathbb{H} \oplus \mathbb{H}\,e_4$
+  (control-loop vs.\ spectral-analytic quaternions).
+\item One triad fully constructed: T1 (contact Jacobian,
+  $e_1 \cdot e_2 = e_3$) with explicit forward/backward maps
+  and the d'Alembert adjunction condition.
+\item All seven triads identified with physical content and
+  antisymmetric mediators (table above).
+\item The self-product $e_i^2 = -1$ follows from
+  symplectic self-duality (Green's function sign).
+\item Anti-commutativity $e_a \cdot e_b = -e_b \cdot e_a$
+  follows from the antisymmetric mediator in each triad.
+\item The Jensen gap~\eqref{eq:jensen-gap} certifies that
+  non-trivial locomotion ($H(f) > 0$) implies
+  non-associativity; the concrete associator
+  $-2e_6$ for the triple $(e_1, e_2, e_5)$
+  identifies Peter--Weyl spectral content as the obstruction.
+\end{enumerate}
+What remains open is the rigorous verification that each of the
+seven physical morphisms satisfies the universal property of the
+Chu tensor product---specifically, that the forward and backward
+maps of each triad compose to yield the correct pairing on the
+third Chu object.
 \end{remark}

@@ -175,7 +175,7 @@ If $\mathcal{G}_1 \subseteq \mathcal{G}_2 \subseteq \cF$, then $E[(Y - E[Y \mid 
 Since $\mathcal{G}_1 \subseteq \mathcal{G}_2$, we have $L^2(\Omega, \mathcal{G}_1, P) \subseteq L^2(\Omega, \mathcal{G}_2, P)$. Projecting onto a larger closed subspace can only decrease the residual.
 \end{proof}
 
-\begin{definition}[The GPI category]\label{def:gpi-category}
+\begin{definition}[The Generalized Policy Iteration (GPI) category]\label{def:gpi-category}
 Let $(\Omega, \cF, P)$ be a probability space and $Y \in L^2(\Omega, \cF, P)$.
 The \emph{GPI category} $\Proj_Y$ is the thin category (poset category) whose
 objects are sub-$\sigma$-algebras $\mathcal{G} \subseteq \cF$ and whose unique
@@ -422,6 +422,6 @@ functor $\mathcal{E}_Y(\mathcal{G}_t)$, and convergence is guaranteed by
 \end{remark}
 
 \begin{remark}[Connection to the CLT framework]
-The foundations reviewed here underlie every result in this paper. The CLT (\cref{thm:add-clt}) concerns the law $\mu_{S_n/\sqrt{n}} = P \circ (S_n/\sqrt{n})^{-1}$ of a normalized sum, whose characteristic function is an expectation: $\varphi_{S_n/\sqrt{n}}(\xi) = E[e^{i\xi S_n/\sqrt{n}}]$. The Fourier transform of a probability measure is nothing but the expectation of a character. The entire duality between the additive and multiplicative CLTs (\cref{thm:mellin-fourier}) rests on the fact that expectation is a linear functional that commutes with the group isomorphism $\log : (\Rpos, \times) \to (\R, +)$.
+The foundations reviewed here underlie every result in this paper. The CLT (\cref{thm:add-clt}) concerns the law $\mu_{S_n/\sqrt{n}} = P \circ (S_n/\sqrt{n})^{-1}$ of a normalized sum, whose characteristic function is an expectation: $\varphi_{S_n/\sqrt{n}}(\xi) = E[e^{i\xi S_n/\sqrt{n}}]$. The Fourier transform of a probability measure is nothing but the expectation of a character. The entire duality between the additive and multiplicative CLTs (\cref{thm:mellin-fourier}) rests on the measure-theoretic pushforward: if $\mu$ is a measure on $(\Rpos, \times)$, then $\log_*\mu$ is a measure on $(\R, +)$, and $\cM[\mu](s) = \cF[\log_*\mu](s)$ (\cref{thm:mellin-fourier}). The logarithm is a group isomorphism, not a linear map; the key property is that it preserves Haar measure ($dx/x \mapsto dy$), not that it commutes with expectation.
 \end{remark}
 

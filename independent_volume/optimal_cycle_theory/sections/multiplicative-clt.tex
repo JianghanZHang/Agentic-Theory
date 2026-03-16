@@ -28,6 +28,22 @@ P_n^{1/\sqrt{n}} = \exp\!\left(\frac{S_n}{\sqrt{n}}\right) \xrightarrow{d} \exp\
 \]
 \end{proof}
 
+\begin{remark}[Hypotheses of the multiplicative CLT]\label{rmk:mult-clt-hypotheses}
+The hypothesis $E[\log Y_1] = 0$ means the geometric mean is calibrated:
+$\operatorname{GM}(Y) = \exp(E[\log Y]) = 1$.
+The hypothesis $\Var(\log Y_1) < \infty$ requires the distribution to be
+sufficiently concentrated near~$1$ in the multiplicative sense.
+Sufficient conditions: $Y_1$ is lognormal with zero log-mean, or
+$Y_1 = e^{X_1}$ where $X_1$ satisfies the hypotheses of the additive
+CLT (\cref{thm:add-clt}).
+The multiplicative CLT is equivalent to the additive CLT applied to
+$X_k = \log Y_k$---the isomorphism
+$\log : (\Rpos, \times) \to (\R, +)$ converts one to the other.
+Part~II applies this with $Y_k$ representing the per-stride cost ratio,
+where the calibration $E[\log Y_1] = 0$ holds by optimality of the
+steady-state policy.
+\end{remark}
+
 \begin{remark}[Normalization]\label{rmk:normalization}
 On $(\R, +)$, the natural scaling is $x \mapsto x/\sqrt{n}$ (division by $\sqrt{n}$). On $(\Rpos, \times)$, the corresponding operation is $y \mapsto y^{1/\sqrt{n}}$ (extraction of the $\sqrt{n}$-th root), since $\log(y^{1/\sqrt{n}}) = (\log y)/\sqrt{n}$. Division on the additive group corresponds to root extraction on the multiplicative group.
 \end{remark}
