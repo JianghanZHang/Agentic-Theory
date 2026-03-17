@@ -222,3 +222,680 @@ $\int_\bT \log f\,d\theta > -\infty$
 that separates the non-trivial basin from the degenerate boundary.
 \end{remark}
 
+\begin{proposition}[Online mirror descent interpretation]
+\label{prop:omd}
+Let $\mathcal{Q} = \{q_\theta : \theta \in \Theta\}$ be an exponential family of distributions over the feasible set (\cref{def:optimal-cycle}). The re-cycle (\cref{rmk:dual-ascent}) is an instance of Online Mirror Descent~\cite{Nemirovski-Yudin,Shalev-Shwartz} with:
+\begin{itemize}
+\item \emph{Primal space:} $\Theta$ (natural parameters of $q_\theta$).
+\item \emph{Mirror map:} $\varphi(\theta) = \log Z(\theta)$ (log-partition function, i.e.\ negative entropy of $q_\theta$).
+\item \emph{Bregman divergence:} $D_\varphi(\theta' \| \theta) = D_{\KL}(q_{\theta'} \| q_\theta)$.
+\item \emph{Loss at round $n$:} $\ell_n(\theta) = \mathbb{E}_{q_\theta}[J(\beta)]$, estimated by $N$ Monte Carlo samples $\beta^{(i)} \sim q_\theta$.
+\item \emph{Step size:} $\eta_n = \varepsilon_n$ (the barrier/temperature parameter).
+\end{itemize}
+The OMD update
+\[
+q_{n+1} = \arg\min_q \bigl\{\langle \hat{\nabla}\ell_n, q\rangle + \tfrac{1}{\varepsilon_n}\, D_{\KL}(q \,\|\, q_n)\bigr\}
+\]
+has closed-form solution
+\[
+q_{n+1}(\beta) \propto q_n(\beta)\,\exp\!\bigl(-J(\beta)/\varepsilon_n\bigr),
+\]
+which is exactly the Boltzmann reweighting $w^{(i)} \propto \exp(-J^{(i)}/\varepsilon_n)$ followed by moment matching (weighted mean and covariance update).
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The minimizer of $\langle g, q\rangle + \frac{1}{\eta} D_{\KL}(q \| p)$ over distributions $q$ is $q^*(\beta) \propto p(\beta)\exp(-\eta\, g(\beta))$ by the Lagrange multiplier on the normalization constraint. Setting $p = q_n$, $g = J$, $\eta = 1/\varepsilon_n$ gives the result.
+\end{proof}
+
+\begin{remark}[Regret bound via information gain]
+\label{rmk:omd-regret}
+Model the objective landscape with a Gaussian process surrogate
+$\GP(\mu_0, k)$, where $\mu_0$ is a prior mean (e.g., the cost at a
+known safe gait) and
+$k(\beta,\beta') = \exp\!\bigl(-\tfrac{\|\beta-\beta'\|^2}{2\ell^2}\bigr)$
+is the squared-exponential kernel in dimension $d = \dim\Theta$.
+The GP is a \emph{transport model}: the posterior
+$q_n = \GP(\mu_n, \Sigma_n \mid \mathcal{D}_n)$ defines a conditional
+flow from prior to truth (\cref{prop:kl-contract}), not a generative
+claim that $J$ was sampled from the GP.
+The GP-UCB acquisition function
+\begin{equation}\label{eq:gp-ucb}
+\textcolor{AcqColor}{
+  \ell_n(\beta)
+  = \mu_{n-1}(\beta)
+    - \sqrt{\bar\beta_n}\;\sigma_{n-1}(\beta)
+}
+\end{equation}
+(where $\mu_{n-1},\sigma_{n-1}$ are the posterior mean and standard
+deviation after $n-1$ observations and
+$\bar\beta_n = 2\log(|\Theta|\,n^2\pi^2/6\delta)$,
+with $|\Theta|$ the cardinality of a finite cover of~$\Theta$)
+selects $\beta_n = \arg\min_{\beta \in S_n} \ell_n(\beta)$, yielding the
+cumulative regret bound~\cite{SrinivasGPUCB}:
+\begin{equation}\label{eq:gp-regret}
+R_T
+= \sum_{n=1}^{T}\bigl[J(\beta_n) - J(\beta^*)\bigr]
+\leq \cO\!\bigl(\sqrt{T\,\gamma_T\,\log T}\bigr),
+\qquad
+\gamma_T = \cO\!\bigl((\log T)^{d+1}\bigr).
+\end{equation}
+Three consequences:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Sub-linear regret.}
+$R_T/T \to 0$ unconditionally whenever $J$ lies in the RKHS of~$k$.
+No bounded-gradient assumption is needed---the information gain
+$\gamma_T$ replaces it.
+\item \emph{Information-gain interpretation.}
+$\gamma_T$ counts the effective number of independent ``directions''
+observed by iteration~$T$. For the SE kernel in dimension~$d$,
+$\gamma_T$ is poly-logarithmic, so the regret is essentially
+$\cO(\sqrt{T}\,(\log T)^{(d+1)/2})$.
+\item \emph{Holonomy connection.}
+The information gain $\gamma_T$ plays the role of the
+holonomy $H(f)$: it measures how far the conditional flow
+has transported the GP prior toward the truth
+(\cref{prop:kl-contract}).
+$R_T > 0$ iff $\gamma_T > 0$ iff the cycle has not closed.
+Convergence $R_T/T \to 0$ means the holonomy vanishes
+asymptotically, recovering the OMD interpretation of
+\cref{prop:omd} with a sharper, information-theoretic rate.
+\end{enumerate}
+\end{remark}
+
+\begin{remark}[Re-cycle algorithm]
+\label{rmk:omd-algorithm}
+We give the GP-UCB formulation of the re-cycle, making explicit
+the acquisition-update-contraction structure that replaces
+the MPPI sample-reweight loop of~\cref{prop:omd}.
+\cref{alg:riccati-eval} encapsulates the inner trajectory solver;
+\cref{alg:recycle} is the outer MPC loop that calls it,
+with a two-phase acquisition strategy: Phase~1 evaluates
+$2d{+}1$ sigma points for a deterministic GP warm start
+(\cref{rmk:unscented}, Level~3); Phase~2 refines via
+GP-UCB acquisition.
+The six guarantee propositions that follow establish their
+formal properties.
+\end{remark}
+
+\begin{algorithm}[ht]
+\caption{Riccati trajectory evaluation}
+\label{alg:riccati-eval}
+\begin{algorithmic}[1]
+\Require Gait parameter~$\beta$, $M$~domain-randomized copies
+\Ensure Cost~$J$, feedback gains $K(t),\, k(t)$
+\State Decode $\beta \to$ contact schedule
+  $\sigma_k(t) \in [0,1]^4$ via B-spline
+\State Backward solve $\to K(t),\, k(t)$
+  \hfill\textcolor{ConColor}{\small Riccati or CUDP
+  (\cref{rmk:unscented})}
+\State Forward-simulate with $M$ copies
+  \hfill\textcolor{ConColor}{\small MC or sigma points}
+\State $J \gets \frac{1}{M}\sum_{m=1}^{M} J^{(m)}(\beta)$
+  \hfill\textcolor{ConColor}{\small noise-averaged}
+\State \Return $J,\; K(t),\; k(t)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}[ht]
+\caption{Re-cycle: GP-UCB gait optimization with
+  sigma-point initialization}
+\label{alg:recycle}
+\begin{algorithmic}[1]
+\Require Prior $\GP(\mu_0,k)$, seed point $\beta_0$ with
+         $J(\beta_0) \leq c_{\max}$, dimension $d = \dim\Theta$,
+         threshold $c_{\max}$, horizon~$T$
+\Ensure Optimized gait $\beta^*$, posterior $(\mu_T,\sigma_T)$
+\Statex \textcolor{CycleColor}{$\triangleright$
+  \textbf{Phase~1} ($n \leq 2d{+}1$): sigma-point warm start;\;
+  \textbf{Phase~2} ($n > 2d{+}1$): UCB refinement}
+\State $\{\beta^{(j)}\}_{j=1}^{2d+1} \gets$ sigma points from
+  $(\mu_0, \Sigma_0)$ in~$\Theta \cap S_1$
+  \hfill\textcolor{CycleColor}{\small unscented
+  (\cref{rmk:unscented}, Level~3)}
+\Statex \textcolor{ConColor}{$\triangleright$
+  $S_1 \gets \{\beta : \mu_0(\beta) + \sqrt{\bar\beta_1}\,\sigma_0(\beta)
+  \leq c_{\max}\}$, seeded from~$\beta_0$}
+\For{$n = 1, \ldots, T$}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{AcqColor}{$\triangleright$ \textbf{Acquisition}}
+  \State $\beta_n \gets
+    \begin{cases}
+      \beta^{(n)} & n \leq 2d{+}1
+        \quad\textcolor{CycleColor}{\text{\small(sigma-point)}}
+        \\[3pt]
+      \displaystyle\arg\min_{\beta \in S_n}\bigl[
+        \mu_{n-1}(\beta) - \sqrt{\bar\beta_n}\;\sigma_{n-1}(\beta)
+      \bigr] & n > 2d{+}1
+        \quad\textcolor{AcqColor}{\text{\small(GP-LCB)}}
+    \end{cases}$
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Evaluate
+    (\cref{alg:riccati-eval})}}
+  \State $J_n,\, K_n(t),\, k_n(t) \gets
+    \textsc{RiccatiEval}(\beta_n, M)$
+    \hfill\textcolor{ConColor}{\small \cref{alg:riccati-eval}}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{PostColor}{$\triangleright$ \textbf{Posterior update
+    (Bayesian)}}
+  \State $\mathcal{D}_n \gets \mathcal{D}_{n-1}
+    \cup \{(\beta_n, J_n)\}$
+  \State Update GP: $\mu_n, \sigma_n \mid \mathcal{D}_n$
+    \hfill\textcolor{PostColor}{\small $\cO(\gamma_n^3)$ via MINI-META
+    \cite{CalandrielloMINIMETA}}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Safety \& contraction}}
+  \State $S_{n+1} \gets \bigl\{\beta :
+    \mu_n(\beta) + \sqrt{\bar\beta_n}\,\sigma_n(\beta)
+    \leq c_{\max}\bigr\}$
+    \hfill\textcolor{ConColor}{\small pessimistic safe set
+    \cite{SuiSafeOpt}}
+\EndFor
+\State \Return $\beta^* = \arg\min_{n} J_n$,\;
+  $(\mu_T, \sigma_T)$
+\end{algorithmic}
+\end{algorithm}
+
+\textcolor{CycleColor}{\textbf{Cycle connection.}}
+Each iteration of \cref{alg:recycle} traverses
+$M \xrightarrow{\log} A \xrightarrow{\text{Fourier}} \hat{A}
+\xrightarrow{\exp} M$ once.
+Line~3 is the $\log$~map (acquisition in parameter space).
+\cref{alg:riccati-eval} is the Fourier transform (inner solve evaluates
+the cost functional on the current ``frequency''~$\beta_n$).
+Lines~5--6 are the $\exp$~map (posterior update returns a distribution
+over parameter space).
+Line~7 is the entropy compression: the safe set $S_{n+1}$ contracts,
+mirroring the Szeg\H{o} condition
+$\int_\bT \log f\,d\theta > -\infty$ that separates the non-trivial
+basin from the degenerate boundary.
+
+\begin{proposition}[No-regret convergence]
+\label{prop:gp-regret}
+Suppose $J - \mu_0$ lies in the RKHS of the SE kernel with $\|J - \mu_0\|_k \leq B$.
+Then \cref{alg:recycle} achieves cumulative regret
+\[
+R_T \leq \cO\!\bigl(\sqrt{T\,(\log T)^{d+1}\,\log T}\bigr)
+= \widetilde{\cO}(\sqrt{T}),
+\]
+unconditionally on the smoothness of~$J$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+By \cite[Theorem~1]{SrinivasGPUCB}, the GP-UCB regret satisfies
+$R_T \leq \cO(\sqrt{T\,\gamma_T\,\bar\beta_T})$ where
+$\gamma_T = \cO((\log T)^{d+1})$ for the SE kernel and
+$\bar\beta_T = \cO(\log T)$, giving $R_T = \widetilde{\cO}(\sqrt{T})$.
+\end{proof}
+
+\begin{proposition}[Per-step safety]
+\label{prop:safe-gp}
+Define the constraint $g(\beta) = J(\beta) - c_{\max}$.
+Under Lipschitz continuity of~$g$ and with sigma points
+drawn from~$S_1$,
+\cref{alg:recycle} ensures $g(\beta_n) \leq 0$ for all $n \geq 1$
+with probability at least $1-\delta$.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+The safe set $S_{n+1}$ (line~7) uses the upper confidence bound
+$\mathrm{ucb}_n(\beta)
+= \mu_n(\beta) + \sqrt{\bar\beta_n}\,\sigma_n(\beta)
+\leq c_{\max}$, so any $\beta \in S_{n+1}$ satisfies
+$J(\beta) \leq c_{\max}$ w.h.p.\ by the GP confidence
+interval~\cite{SuiSafeOpt,BerkenkampSafeMPC}.
+\end{proof}
+
+\begin{proposition}[KL contraction via conditional flow]
+\label{prop:kl-contract}
+The GP posterior sequence $q_0, q_1, \ldots$ from \cref{alg:recycle}
+forms a conditional flow on the space of Gaussian measures.
+Let $\pi(\beta) \propto \exp(-J(\beta)/\varepsilon)$ be the Boltzmann
+target and define the per-step information ratio
+\[
+  \eta_n
+  = \frac{\sigma^2_{n-1}(\beta_n)}
+         {\sigma^2_{n-1}(\beta_n) + \sigma^2_{\mathrm{noise}}}.
+\]
+Then:
+\begin{enumerate}[label=(\roman*)]
+\item The mutual information satisfies
+$I(J;\, \mathcal{D}_T) = \gamma_T
+= \tfrac{1}{2}\sum_{n=1}^{T}
+  \log\bigl(1 + \sigma^2_{n-1}(\beta_n)
+  /\sigma^2_{\mathrm{noise}}\bigr)$.
+\item The continuous-time KL contraction rate is
+\[
+\textcolor{ConColor}{
+  \frac{d}{dt}\,D_{\KL}(q_t \| \pi)
+  \leq -\frac{2}{\|k\|_{\mathrm{op}}}\,
+       D_{\KL}(q_t \| \pi),
+}
+\]
+where $\|k\|_{\mathrm{op}}$ is the operator norm of the kernel
+and $1/\|k\|_{\mathrm{op}}$ is the Gaussian log-Sobolev constant
+(Bakry--\'Emery~\cite{BakryEmery,Ledoux}).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+(i)~Standard GP information gain: each observation at $\beta_n$ with
+noise $\sigma^2_{\mathrm{noise}}$ contributes
+$\tfrac{1}{2}\log(1+\sigma^2_{n-1}(\beta_n)
+/\sigma^2_{\mathrm{noise}})$
+to the mutual information about~$J$.
+
+(ii)~The GP prior $q_0 = \GP(\mu_0, k)$ is a Gaussian measure on
+function space.
+By the Bakry--\'Emery criterion~\cite{BakryEmery,Ledoux},
+every Gaussian measure satisfies a log-Sobolev inequality with
+constant $\alpha = \lambda_{\min}(k^{-1}) = 1/\|k\|_{\mathrm{op}}$.
+Each posterior update $q_n \mapsto q_{n+1}$ is a rank-$1$
+contraction of the covariance operator:
+$\Sigma_{n+1} = \Sigma_n
+  - k(\cdot,\beta_{n+1})\,k(\beta_{n+1},\cdot)
+  /(\sigma^2_n(\beta_{n+1}) + \sigma^2_{\mathrm{noise}})$.
+This is the Bures--Wasserstein optimal transport between
+Gaussians, and the log-Sobolev inequality gives the
+exponential KL decay along this conditional
+flow~\cite{Ledoux}.
+The observation noise $\sigma^2_{\mathrm{noise}}$ from
+domain randomization (\cref{rem:domain-rand}) modulates the
+per-step information through~$\eta_n$: larger noise slows
+contraction but improves robustness.
+\end{proof}
+
+\begin{proposition}[Trajectory contraction]
+\label{prop:riccati-contract}
+Under the stabilizability conditions of~\cref{sec:riccati},
+the Riccati feedback law (\cref{alg:riccati-eval}, line~2) yields
+\[
+\textcolor{ConColor}{
+  \|x(t) - \bar{x}(t)\|_P
+  \leq \rho^{T-t}\,\|x(T) - \bar{x}(T)\|_P,
+}
+\]
+where $P$ is the Riccati cost-to-go matrix and $\rho < 1$ is the
+spectral contraction rate.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Standard Riccati contraction: the value function
+$V(x,t) = (x-\bar{x})^\top P(t)(x-\bar{x})$ satisfies
+$V(x,t) \leq \rho^2 V(x,t+1)$ along closed-loop trajectories,
+so $\|x-\bar{x}\|_P$ decays geometrically backward from the terminal
+condition.
+\end{proof}
+
+\begin{proposition}[Computational scalability]
+\label{prop:scalable}
+Using the MINI-META sparse approximation~\cite{CalandrielloMINIMETA}
+with effective dictionary size bounded by $\gamma_n = \cO((\log n)^{d+1})$,
+the total computational cost of \cref{alg:recycle} over $T$ iterations
+is
+\[
+\cO\!\bigl(T\,(\log T)^{3(d+1)}\bigr),
+\]
+i.e., poly-logarithmic per step.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Each GP update (line~6) costs $\cO(\gamma_n^3)$ via MINI-META, where
+$\gamma_n = \cO((\log n)^{d+1})$ for the SE kernel.
+Summing: $\sum_{n=1}^T \gamma_n^3 = \cO(T\,(\log T)^{3(d+1)})$.
+\end{proof}
+
+\begin{proposition}[Unconditional two-level contraction]
+\label{prop:unconditional}
+\cref{alg:recycle} achieves two-level contraction:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Outer level (GP-UCB):} the gait parameter $\beta_n$
+converges to $\beta^*$ at rate $\widetilde{\cO}(1/\sqrt{n})$
+(\cref{prop:gp-regret}), with per-step safety
+(\cref{prop:safe-gp}).
+\item \emph{Inner level (Riccati):} for each fixed~$\beta$,
+the trajectory converges to the nominal at
+rate~$\rho^{T-t}$ (\cref{prop:riccati-contract}).
+\item \emph{Combined:} the information gain
+$\gamma_T = I(J;\,\mathcal{D}_T)$ simultaneously
+controls the regret
+(\cref{prop:gp-regret}: $R_T \leq \cO(\sqrt{T\gamma_T\log T})$)
+and the KL contraction rate
+(\cref{prop:kl-contract}: exponential at rate
+$2/\|k\|_{\mathrm{op}}$),
+with total cost $\cO(T(\log T)^{3(d+1)})$
+(\cref{prop:scalable}).
+\end{enumerate}
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Combine \cref{prop:gp-regret,prop:safe-gp,prop:kl-contract,%
+prop:riccati-contract,prop:scalable}.
+The outer loop provides global convergence with safety;
+the inner loop provides local trajectory tracking;
+KL contraction unifies both levels.
+\end{proof}
+
+\begin{remark}[Receding-horizon MPC interpretation]
+\label{rmk:mpc}
+\cref{alg:recycle} is a model-predictive controller with
+state~$s_n = (\mu_n, \Sigma_n)$ (GP posterior),
+action~$a_n = \beta_n$ (query point),
+and dynamics~$s_{n+1} = \mathrm{BayesUpdate}(s_n, \beta_n, J_n)$.
+Two classical MPC guarantees hold:
+\begin{enumerate}[label=(\roman*)]
+\item \emph{Recursive feasibility.}
+The safe set~$S_n$ is non-empty for all $n \geq 1$.
+Indeed, $\beta_0 \in S_1$ by construction; at each step,
+the UCB-based update (line~7) and Lipschitz continuity of~$g$
+ensure $S_{n+1} \supseteq S_n \cap B_\epsilon(\beta_n)$
+for sufficiently small~$\epsilon$, so the safe set never
+collapses~\cite{BerkenkampSafeMPC}.
+\item \emph{Lyapunov stability.}
+The Lyapunov function $V_n = \tr(\Sigma_n)$ is strictly decreasing:
+each rank-$1$ covariance contraction
+(\cref{prop:kl-contract}) gives
+$V_{n+1} = V_n - \sigma^2_{n-1}(\beta_n)\,\eta_n < V_n$.
+Since $V_n \geq 0$ and $V_n \searrow$, the posterior concentrates;
+$V_n \to 0$ iff the GP has resolved all uncertainty, i.e., the
+cycle has closed.
+\end{enumerate}
+\end{remark}
+
+\begin{remark}[Stein-variational iLQR]
+\label{rmk:svgd-ilqr}
+The GP-UCB acquisition (\cref{alg:recycle}, line~3) admits a
+parallel, particle-based interpretation via Stein Variational
+Gradient Descent~\cite{LiuSVGD}. Given $M$ particles
+$\{\beta^{(m)}\}_{m=1}^M$, the SVGD update is
+\[
+\textcolor{PostColor}{
+  \beta^{(m)} \gets \beta^{(m)}
+  + \frac{\epsilon}{M}\sum_{j=1}^{M}\Bigl[
+    \underbrace{k(\beta^{(j)}, \beta^{(m)})\,
+      \nabla_{\!\beta^{(j)}} \log \pi(\beta^{(j)})}_{\text{drift (exploitation)}}
+    + \underbrace{\nabla_{\!\beta^{(j)}}
+      k(\beta^{(j)}, \beta^{(m)})}_{\text{repulsion (exploration)}}
+  \Bigr],
+}
+\]
+where $\pi(\beta) \propto \exp(-J(\beta)/\varepsilon)$.
+The \emph{drift} term is the iLQR descent direction: $\nabla \log \pi$
+derives from the Riccati cost-to-go, steering particles toward
+low-cost gaits.
+The \emph{repulsion} term is the kernel gradient, proportional to the
+GP posterior variance $\sigma_{n-1}$, which pushes particles apart
+to maintain exploration.
+The connection to \cref{alg:recycle} is:
+GP-UCB (sequential, global guarantee via $\gamma_T$) $\longleftrightarrow$
+SVGD (parallel, local contraction via KL).
+Both minimize the same KL objective; GP-UCB does so
+greedily one point at a time, SVGD does so by transporting
+the full particle ensemble.
+\end{remark}
+
+\begin{remark}[Kernel attention]
+\label{rmk:attention}
+The GP posterior mean is a kernel-weighted average:
+\[
+\textcolor{PostColor}{
+  \mu_n(\beta)
+  = \sum_{i=1}^{n} \alpha_i\, k(\beta, \beta_i)
+  = \mathrm{Attn}\bigl(\beta;\, \{\beta_i\},\, \{J_i\}\bigr),
+}
+\]
+where $\alpha = (K + \sigma^2_{\mathrm{noise}} I)^{-1} \mathbf{J}$
+and $K_{ij} = k(\beta_i, \beta_j)$.
+This is precisely the attention mechanism: the kernel $k$ plays
+the role of the query-key similarity, the weights $\alpha_i$ are
+the softmax scores, and the values are the observed costs~$J_i$.
+The GP-LCB acquisition~\eqref{eq:gp-ucb} subtracts an
+\emph{anti-attention} term:
+\[
+\textcolor{AcqColor}{
+  \ell_n(\beta)
+  = \underbrace{\mu_n(\beta)}_{\text{attention (exploit)}}
+  - \sqrt{\bar\beta_n}\;
+    \underbrace{\sigma_n(\beta)}_{\text{anti-attention (explore)}}.
+}
+\]
+The posterior variance~$\sigma_n$ is maximal where the kernel
+``attends least''---precisely the unexplored regions---so the
+LCB selects where low expected cost overcomes exploration
+uncertainty: known-good gaits minus the penalty for the unknown.
+The SVGD interpretation (\cref{rmk:svgd-ilqr}) extends this:
+$M$~particles constitute $M$~attention heads, each attending to the
+score~$\nabla\log\pi$ (exploitation) while the repulsive kernel
+gradient enforces head diversity (exploration).
+\end{remark}
+
+\begin{remark}[Goal-directed dynamics: closing the optimization-deployment gap]
+\label{rem:gdd}
+The Riccati feedback law $u = k(t) - K(t)(x - \bar{x}(t))$ produces optimal \emph{centroidal} foot forces, but deploying these on an articulated robot via the Jacobian-transpose mapping $\tau = J^\top f$ fails when the configuration drifts from the nominal trajectory.  The Jacobian $J(q)$ changes with $q$, so the effective wrench diverges from the intended one as tracking error accumulates.
+
+\medskip\noindent\textbf{Resolution.}
+Following Todorov's goal-directed dynamics framework~\cite{TodorovGDD,TodorovDSO}, we work in \emph{acceleration space} instead of force space.
+Given the Riccati foot forces $f_k$ and contact schedule~$\sigma_k$:
+\begin{enumerate}[label=(\roman*)]
+\item Compute the desired centre-of-mass acceleration:
+\[
+\ddot{p}_{\mathrm{des}} = \frac{1}{m}\sum_k \sigma_k f_k + g, \qquad
+\dot{\omega}_{\mathrm{des}} = I^{-1}\sum_k \sigma_k (r_k \times f_k).
+\]
+\item Set the generalized acceleration $\ddot{q}$ so that the base follows $(\ddot{p}_{\mathrm{des}},\, \dot{\omega}_{\mathrm{des}})$ and the joints track a PD target in acceleration space.
+\item Call $\texttt{mj\_inverse}$ at the \emph{current} configuration $q$ to obtain the dynamically consistent joint torques $\tau = M(q)\ddot{q} + h(q,\dot{q})$.
+\end{enumerate}
+In acceleration space the mapping from desired motion to joint torques is kinematic---linear in $\ddot{q}$ regardless of configuration---so the controller remains accurate even when $q$ deviates from the nominal trajectory.
+The Riccati gains serve as a \emph{value function approximation} for the cost evaluation (\cref{alg:riccati-eval}), while GDD provides the \emph{deployment} mechanism that realizes those forces on hardware.
+\end{remark}
+
+\begin{remark}[Per-sample domain randomization]
+\label{rem:domain-rand}
+Since each iteration of \cref{alg:recycle} evaluates its cost via \cref{alg:riccati-eval}, the cost function is a natural site for \emph{domain randomization}.
+For each of the $M$ domain-randomized copies, we draw perturbed centroidal parameters from a prior distribution:
+\[
+m^{(i)} \sim m(1 + \delta_m),\quad
+I^{(i)} \sim I \odot (1 + \delta_I),\quad
+r_k^{(i)} \sim r_k + \delta_r,
+\]
+where $\delta_m \sim \cN(0, \sigma_m^2)$, $\delta_I \sim \cN(0, \sigma_I^2 \mathbb{1}_3)$, and $\delta_r \sim \cN(0, \sigma_r^2 \mathbb{1}_3)$.
+Each copy's Riccati solve (\cref{alg:riccati-eval}, line~2) and forward simulation (line~3) use the perturbed dynamics, so the GP posterior update (lines~5--6 of \cref{alg:recycle}) automatically learns gait parameters $\beta$ that achieve low cost \emph{across} the uncertainty set.
+This is a form of distributionally robust optimization: the Gaussian mixture induced by the $M$ parameter perturbations defines an empirical uncertainty set, and the GP acquisition finds gaits robust to worst-case-in-expectation model error---at negligible additional cost, since the per-sample Riccati solve dominates the computational budget.
+The domain-randomized cost contributes observation noise $\sigma^2_{\mathrm{noise}}$ to the GP likelihood, which the posterior update (line~6) absorbs naturally: larger randomization increases $\sigma^2_{\mathrm{noise}}$, widening the posterior confidence bands and promoting exploration.
+\end{remark}
+
+\begin{remark}[Constrained unscented GP]
+\label{rmk:unscented}
+The unscented transform connects the three algorithmic levels---inner
+trajectory solve, noise averaging, and outer Bayesian
+optimization---into a single deterministic framework.
+
+\smallskip\noindent\emph{Level~1: derivative-free backward pass
+(\cref{alg:riccati-eval}, line~2).}
+The linearization $\text{dynamics} \to A(t), B(t)$ is vulnerable to
+sharp contact transitions: as $\varepsilon \to 0$,
+$\sigma_k(t)$ switches rapidly and the Riccati gains can
+diverge---the standard BPTT failure mode.
+Unscented dynamic programming (UDP)~\cite{ManchesterUDP} replaces
+linearization with $2d_x{+}1$ sigma points propagated through the
+\emph{full nonlinear} dynamics, fitting the cost-to-go quadratic
+directly from sigma-point statistics.
+No Jacobians are computed; the dynamics is a black box.
+Constrained UDP (CUDP)~\cite{PlancherCUDP} adds an augmented
+Lagrangian for state and control constraints, ensuring
+\emph{backward feasibility}: the backward pass produces gains
+$K(t)$ that keep the forward trajectory in the feasible set.
+
+\smallskip\noindent\emph{Level~2: deterministic noise averaging
+(\cref{alg:riccati-eval}, lines~3--4).}
+The domain-randomized copies (\cref{rem:domain-rand}) are
+replaced by $2p{+}1$ sigma points in the centroidal
+parameter space $\theta = (m, I, r_1, \ldots, r_4) \in \R^p$:
+\[
+  J_n = \sum_{j=0}^{2p} w^{(j)}\, J(\beta_n;\, \theta^{(j)}),
+\]
+exact for Gaussian $\theta$ through a quadratic cost landscape.
+For a quadruped ($p \approx 16$), $33$ deterministic
+evaluations replace $M$ random rollouts.
+
+\smallskip\noindent\emph{Level~3: deterministic GP
+(\cref{alg:recycle}).}
+The GP posterior update is a Kalman filter step in function space:
+the measurement model $y_n = J(\beta_n) + \text{noise}$ is
+\emph{linear} in the unknown function~$J$, so the Kalman update
+is exact---no unscented approximation is needed at this level.
+But the converse holds: the GP posterior is \emph{recoverable}
+from sigma-point evaluations.
+Choose $2d{+}1$ sigma points
+$\{\beta^{(j)}\}$ from the GP prior covariance
+in $\bT^d$ ($d = \dim\Theta$; for a quadruped with
+$\Theta = \bT^3$, this is $7$~points).
+Evaluate $J(\beta^{(j)})$ at each via \cref{alg:riccati-eval}.
+The GP posterior conditioned on these $2d{+}1$ evaluations is:
+\[
+\textcolor{PostColor}{
+  \mu_{2d+1}(\beta)
+  = \mathbf{k}(\beta)^\top\,
+    (K + \sigma^2_{\mathrm{noise}} I)^{-1}\, \mathbf{J},
+}
+\]
+where $\mathbf{k}(\beta)_j = k(\beta, \beta^{(j)})$ and
+$K_{ij} = k(\beta^{(i)}, \beta^{(j)})$.
+The sigma points provide the optimal query locations for
+this batch: they capture the prior covariance structure,
+so $\mu_{2d+1}$ is the best $2d{+}1$-point GP
+approximation.
+This is a \emph{deterministic GP}: $2d{+}1$ function evaluations,
+no random sampling, no sequential acquisition---one batch
+produces the full posterior.
+\cref{alg:recycle} implements this directly:
+Phase~1 (line~1, iterations $n \leq 2d{+}1$) evaluates the
+sigma-point batch; Phase~2 ($n > 2d{+}1$) refines via GP-UCB,
+selecting additional queries guided by the posterior
+variance and converging at the information-theoretic
+rate~$\gamma_T$.
+
+\smallskip\noindent\emph{Feasibility unification.}
+The two feasibility constraints are the same mechanism at
+different scales:
+\begin{enumerate}[label=(\roman*),nosep]
+\item \emph{inner} (CUDP): backward feasibility---gains $K(t)$
+  keep the trajectory $x(t)$ in the constraint set;
+\item \emph{outer} (safe GP-UCB): recursive feasibility---the
+  safe set $S_n$ never collapses (\cref{rmk:mpc}).
+\end{enumerate}
+Both are enforced by constrained backward propagation at their
+respective scales: augmented Lagrangian for the inner dynamics,
+lower confidence bound for the outer gait space.
+\end{remark}
+
+\begin{remark}[Measure-theoretic unification:
+$\sigma$-algebra, attention, and the unscented transform]
+\label{rmk:sigma-algebra}
+The preceding remarks---kernel attention (\cref{rmk:attention}),
+MPC interpretation (\cref{rmk:mpc}), constrained unscented GP
+(\cref{rmk:unscented}), and Stein-variational iLQR
+(\cref{rmk:svgd-ilqr})---are manifestations of a single
+measure-theoretic structure: the filtration generated by
+GP observations.
+
+\smallskip\noindent\emph{The observation filtration.}
+Let $\cF_n = \sigma(\mathcal{D}_n)
+= \sigma(\beta_1, J_1, \ldots, \beta_n, J_n)$ be the
+$\sigma$-algebra generated by the first~$n$ observations.
+The sequence $\cF_0 \subset \cF_1 \subset \cdots \subset \cF_T$
+is a filtration: each iteration of \cref{alg:recycle} refines
+$\cF_n$ by exactly one observation $(\beta_{n+1}, J_{n+1})$.
+The algorithm is $\cF_n$-adapted: the acquisition
+$\beta_{n+1}$ is a deterministic function of $\cF_n$.
+
+\smallskip\noindent\emph{Conditional expectation as GP posterior.}
+For Gaussian processes, the conditional expectation and
+posterior mean coincide by definition:
+\[
+  \textcolor{PostColor}{
+  \mathbb{E}[J(\beta) \mid \cF_n] = \mu_n(\beta), \qquad
+  \Var(J(\beta) \mid \cF_n) = \sigma_n^2(\beta).
+  }
+\]
+This is not an approximation but an identity:
+$\mathbb{E}[\,\cdot \mid \cF_n]$ is the $L^2$-orthogonal
+projection onto the subspace of $\cF_n$-measurable functions.
+
+\smallskip\noindent\emph{Attention as projection.}
+The identification $\mu_n = \mathbb{E}[\,\cdot \mid \cF_n]$
+gives the attention--anti-attention decomposition of
+\cref{rmk:attention} a precise operator-theoretic meaning:
+\begin{enumerate}[label=(\roman*),nosep]
+\item \emph{attention} $= \mathbb{E}[J(\beta) \mid \cF_n]
+  = \mu_n(\beta)$: projection onto ``what is known'';
+\item \emph{anti-attention}
+  $= \sqrt{\Var(J(\beta) \mid \cF_n)} = \sigma_n(\beta)$:
+  norm of the residual in $\cF_n^\perp$, i.e.,
+  ``what is unknown'';
+\item \emph{LCB} $= \mathbb{E}[J \mid \cF_n]
+  - \sqrt{\bar\beta_n}\;\|J - \mathbb{E}[J \mid \cF_n]\|
+  $: optimistic projection for cost, known minus calibrated unknown.
+\end{enumerate}
+
+\smallskip\noindent\emph{Sigma points as optimal initialization.}
+For a Gaussian prior over $\Theta \subseteq \R^d$, the
+$2d{+}1$ sigma points are the \emph{optimal batch design}
+for recovering the first two moments of any function
+pushed through the prior:
+\[
+  \textcolor{CycleColor}{
+  \cF_{2d+1}^{\mathrm{UT}}
+  = \sigma\!\bigl(J(\beta^{(1)}), \ldots, J(\beta^{(2d+1)})\bigr),
+  \qquad
+  \mu_{2d+1}(\beta)
+  = \mathbb{E}[J(\beta) \mid \cF_{2d+1}^{\mathrm{UT}}],
+  }
+\]
+where $\mu_{2d+1}$ is the GP posterior conditioned on these
+$2d{+}1$ observations (Level~3 of \cref{rmk:unscented}).
+This is a finite-dimensional approximation, not
+function-space sufficiency: $V_{2d+2} < V_{2d+1}$
+(\cref{rmk:mpc}), so further observations always improve
+the posterior.
+Phase~1 of \cref{alg:recycle} constructs
+$\cF_{2d+1}^{\mathrm{UT}}$ as the best batch initialization;
+Phase~2 refines it adaptively:
+$\cF_{2d+1} \subset \cF_{2d+2} \subset \cdots \subset \cF_T$.
+
+\smallskip\noindent\emph{MPC as filtration dynamics.}
+The MPC interpretation (\cref{rmk:mpc}) becomes:
+the state $s_n = (\mu_n, \Sigma_n)$ is the conditional law
+of~$J$ given~$\cF_n$.
+The Lyapunov function $V_n = \tr(\Sigma_n)$ measures the
+``size'' of~$\cF_n^\perp$---the unexplained variance.
+Each observation contracts $\cF_n^\perp$ by a rank-$1$
+projection, giving $V_{n+1} < V_n$.
+The cycle closes when $\cF_T = \cF_\infty$, i.e., all
+uncertainty has been resolved and the holonomy vanishes.
+
+\smallskip\noindent\emph{Randomness structure.}
+Two disjoint $\sigma$-algebras carry distinct sources of
+randomness:
+\begin{enumerate}[label=(\roman*),nosep]
+\item \emph{Injective randomness.}
+  At each iteration~$n$, fresh domain-randomized parameters
+  $\mathcal{G}_n = \sigma(\theta_n^{(1)}, \ldots, \theta_n^{(M)})$
+  (\cref{rem:domain-rand}) are drawn independently of the
+  observation history~$\cF_{n-1}$.
+  Their effect is absorbed into $\sigma^2_{\mathrm{noise}}$
+  in the GP likelihood: the noise realization affects~$J_n$
+  (and hence enters~$\cF_n$), but the acquisition
+  $\beta_{n+1}$ was determined from~$\cF_n$ before
+  $\mathcal{G}_{n+1}$ is realized.
+\item \emph{Inductive randomness}: \textbf{none.}
+  The acquisition $\beta_{n+1}$ is a deterministic function
+  of~$\cF_n$ (Phase~1: precomputed sigma points; Phase~2:
+  $\arg\min$ of LCB).
+  The algorithm has zero inductive randomness---every decision
+  is a measurable function of the observation filtration.
+  This is a categorical distinction from MPPI, where the
+  sampling distribution introduces inductive randomness that
+  cannot be replayed deterministically.
+\end{enumerate}
+\end{remark}
+

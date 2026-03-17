@@ -3455,9 +3455,1069 @@ RLHF（Reinforcement Learning from Human Feedback）需要收集用户的输入-
 
 
 %=====================================================================
+\section{The Mass Gap and Phase-Transition Dynamics}\label{sec:mass-gap}
+%=====================================================================
+
+The spectral gap of the main paper's diffusion generator connects directly
+to the Transformer's softmax temperature.
+On a compact Lie group~$G$ with Casimir operator~$\Omega$, the
+Fokker--Planck generator $-\varepsilon\,\Omega$ has spectral gap
+\begin{equation}\label{eq:mass-gap}
+  m_{\mathrm{eff}} \;=\; \varepsilon\,\lambda_1,
+\end{equation}
+where $\lambda_1$ is the first nonzero Casimir eigenvalue.
+In lattice QFT, the spectral gap of the transfer matrix is the mass gap;
+the correlation length is $\xi = 1/m_{\mathrm{eff}}$.
+
+The single parameter $\varepsilon$ therefore controls a phase transition:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+& \textbf{Fluid phase} ($\varepsilon > 0$) & \textbf{Crystal phase} ($\varepsilon \to 0$) \\
+\midrule
+PDE & Heat equation $\partial_t\rho = \varepsilon\,\Omega\rho$ & Hamilton--Jacobi (eikonal limit) \\
+Algebra & $(\mathbb{R},+,\times)$ & $(\mathbb{R}_{\max},\max,+)$ (tropical) \\
+Attention & Softmax (diffuse probabilities) & Argmax (hard pointers) \\
+Memory & $\xi$ finite $\Rightarrow$ exponential forgetting & $\xi \to \infty$ $\Rightarrow$ perfect memory \\
+Hallucination & Thermal fluctuation (inevitable) & Frozen out \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{remark}[Two regimes of the Fokker--Planck generator]
+\label{rmk:two-regimes}
+The two columns of the preceding table correspond to sharply distinct
+mathematical regimes, each with a direct Transformer interpretation.
+
+\medskip\noindent\textbf{Fluid regime ($\varepsilon > 0$).}
+The Fokker--Planck equation
+$\partial_t\rho = \varepsilon\,\Omega\rho$
+on a compact Lie group~$G$ admits a unique stationary measure
+$\rho_\infty$ (the Haar measure).  The spectral gap gives exponential
+convergence:
+\[
+  \|\rho_t - \rho_\infty\|_{L^2(G)}
+  \;\leq\; C\,e^{-\varepsilon\lambda_1\, t}.
+\]
+The autocorrelation of any observable $f \in L^2(G)$ decays at rate
+$m_{\mathrm{eff}}$:
+\[
+  \langle f(g_0),\, f(g_t)\rangle - \langle f\rangle^2
+  \;\sim\; e^{-m_{\mathrm{eff}}\,t},
+\]
+so the correlation length $\xi = 1/m_{\mathrm{eff}}$ is the horizon
+beyond which the system \emph{forgets}.
+For Transformers: the softmax temperature~$T$ plays the role
+of~$\varepsilon$; the effective context window scales as~$\xi$.
+
+\medskip\noindent\textbf{Crystal regime ($\varepsilon \to 0$).}
+Maslov dequantization sends the heat semigroup to the Hamilton--Jacobi
+semigroup:
+\[
+  \lim_{\varepsilon\to 0}\,\varepsilon\log
+  \Bigl(\sum_i e^{f_i/\varepsilon}\Bigr)
+  \;=\; \max_i f_i.
+\]
+The algebra $(\mathbb{R},+,\times)$ collapses to the tropical semiring
+$(\mathbb{R}_{\max},\max,+)$.  Softmax becomes argmax; stochastic
+decoding crystallises into greedy or beam search.
+The mass gap vanishes ($m_{\mathrm{eff}} \to 0$); the correlation
+length $\xi = 1/m_{\mathrm{eff}} \to \infty$: the system acquires
+perfect memory but loses all capacity for exploration.
+
+\medskip\noindent\textbf{Phase boundary.}
+The dual ascent on~$\varepsilon$ (cf.\ the main paper's
+\texttt{optimal-cycle.tex}, Remark on dual ascent) controls which
+regime the system inhabits.
+The weight entropy $S = -\sum w_i\log w_i$ of the proposal distribution
+serves as the order parameter:
+high~$S$ places the system in the fluid phase (exploration);
+low~$S$ in the crystal phase (exploitation).
+The optimal operating point lies at the phase boundary, where the
+system retains enough thermal fluctuation for generalisation while
+maintaining enough crystalline structure for reliable execution.
+\end{remark}
+
+\noindent
+The eikonal limit is already in the main paper; the tropical collapse is
+Maslov dequantization. The observation for Transformer architectures is
+that the softmax temperature plays the role of~$\varepsilon$.
+
+\begin{remark}[KMP failure function as $\sigma$-algebra coarsening]
+\label{rmk:kmp}
+The Knuth--Morris--Pratt string-matching algorithm admits a
+measure-theoretic reading. A text of length~$n$ over alphabet~$\Sigma$
+defines a filtration
+$\mathcal{F}_0 \subset \mathcal{F}_1 \subset \cdots \subset \mathcal{F}_n$,
+where $\mathcal{F}_i = \sigma(X_1,\dots,X_i)$.
+A \emph{match} at position~$i$ means the current observation is
+$\mathcal{F}_i$-measurable with respect to the pattern.
+A \emph{mismatch} at position~$i$ signals departure from the viability
+kernel at resolution~$i$.
+
+The KMP failure function $f\colon\{0,\dots,m\}\to\{0,\dots,m\}$
+implements an orthogonal retro-projection in this filtration:
+on mismatch, the algorithm jumps from $\mathcal{F}_i$ to the coarser
+$\mathcal{F}_{f(i)}$---the largest sub-$\sigma$-algebra whose
+verified history is still consistent with the observation.
+In $L^2$ terms, this is the conditional expectation
+$\mathbb{E}[\,\cdot\mid\mathcal{F}_{f(i)}]$,
+which discards the innovation component
+(the projection residual in the Wold decomposition).
+
+\medskip\noindent\textbf{Connection to the phase transition.}
+In the crystal phase ($\varepsilon = 0$), the system operates as a
+deterministic automaton: exact pattern matching, zero innovation energy,
+$\mathcal{O}(1)$ chunk-copying per step.
+On a KMP mismatch---detected by a spike in holonomy $H(f) > 0$
+(Jensen gap $> 0$)---the system locally reopens the mass gap
+($\varepsilon > 0$), melting hard pointers back into soft attention
+for exploration on the Lie group manifold.
+Once a new viability kernel is found, it cools and crystallises again.
+
+\medskip\noindent\textbf{Technical gap.}
+The passage from discrete KMP ($\Sigma^*$) to continuous $L^2(G)$
+semantics requires:
+\emph{(i)}~embedding the pattern's suffix lattice into the
+$\sigma$-algebra lattice of a stochastic process on~$G$,
+\emph{(ii)}~showing that the conditional expectation
+$\mathbb{E}[\,\cdot\mid\mathcal{F}_{f(i)}]$ recovers the KMP jump,
+and
+\emph{(iii)}~connecting ``mismatch'' to ``innovation'' in the Wold
+decomposition sense.
+Items~(i) and~(ii) follow from standard automata--filtration
+correspondences.
+Item~(iii) is the open mathematical content.
+
+\medskip\noindent\textbf{Explicit example.}
+Consider the pattern $P = \texttt{abcabd}$ of length $m = 6$.
+The KMP failure function is $f = [0,0,0,1,2,0]$.
+On a mismatch at position~$5$ (the algorithm expected~\texttt{c} but
+observed~\texttt{x}), it jumps to position $f(5) = 2$.
+In filtration language: the system projects from
+$\mathcal{F}_5 = \sigma(X_1,\dots,X_5)$ back to
+$\mathcal{F}_2 = \sigma(X_1,X_2)$, discarding the innovation
+$(X_3,X_4,X_5)$.
+The prefix \texttt{ab} is the longest substring that remains
+consistent with the observation---the largest sub-$\sigma$-algebra
+whose verified history survives the mismatch.
+
+\medskip\noindent\textbf{Connection to the Wold decomposition.}
+The pattern~$P$ induces a deterministic subprocess
+$\mathcal{H}_d \subset L^2$ (the space of trajectories consistent
+with~$P$ up to position~$i$).
+A \emph{match} means the observation $X_i$ lies entirely
+in~$\mathcal{H}_d$.
+A \emph{mismatch} means $X_i$ has a nonzero component in the
+innovation subspace $\mathcal{H}_s = \mathcal{H}_d^\perp$---the
+orthogonal complement carrying genuinely new information.
+The failure function~$f$ implements the projection
+$\pi_d \colon L^2 \to \mathcal{H}_d$ restricted to the largest
+$\mathcal{H}_d$-compatible sub-filtration:
+it discards the minimal amount of verified history needed to restore
+consistency, exactly as the conditional expectation
+$\mathbb{E}[\,\cdot\mid\mathcal{F}_{f(i)}]$
+discards the innovation component in the Wold decomposition.
+\end{remark}
+
+\begin{remark}[Nelumbo as dual-ascent controller]
+Three of the Nelumbo components map directly onto this
+phase-transition structure:
+\begin{itemize}[nosep]
+\item $P_2$ (Rhizome) operates at $\varepsilon > 0$: stochastic
+  exploration in the fluid phase, soft-attention search on the
+  parameter manifold.
+\item $P_1$ (Cuticle / Lean~4 verifier) operates at $\varepsilon = 0$:
+  deterministic type-checking in the crystal phase, hard pointers,
+  zero hallucination.
+\item $P_3$ (Xylem) implements the dual ascent on~$\varepsilon$:
+  it reads the weight entropy $S = -\sum w_i \log w_i$ of $P_2$'s
+  proposal distribution and adjusts~$\varepsilon$ by the multiplicative
+  rule $\varepsilon \leftarrow \alpha\,\varepsilon$, with
+  $\alpha > 1$ on mismatch (open mass gap) and $\alpha < 1$ on
+  verification (close mass gap).
+\end{itemize}
+
+\noindent
+The dual ascent on~$\varepsilon$ is governed by the same
+entropy-maximisation principle as the Earth Tax
+(Definition~\ref{def:earth_tax}):
+the optimal operating point sits at $S = 1/e$---the entropy of the
+Boltzmann distribution at the phase boundary.
+Below $1/e$: crystal regime (exploitation, deterministic execution).
+Above $1/e$: fluid regime (exploration, stochastic search).
+The component $P_3$ (Xylem) is the constitutionalist of the Nelumbo
+architecture: it enforces power-responsibility coupling by preventing
+either $P_1$ or $P_2$ from monopolising~$\varepsilon$---the same
+structural role that the constitutional constraint plays in
+Section~\ref{sec:inchworm}.
+\end{remark}
+
+
+%=====================================================================
+\section{The Inchworm Effect: Optimal Cycles in Political Economy}
+\label{sec:inchworm}
+%=====================================================================
+
+Qin Hui~\cite{qinhui2003} identified an asymmetric ratchet mechanism
+in transitional political economies: regardless of whether the policy
+pendulum swings ``left'' (expand the state) or ``right'' (contract the
+state), the net outcome favours the ruling group at the public's
+expense.  He called this the \emph{尺蠖效应}---the inchworm effect.
+We formalise this mechanism as an optimal cycle on the
+power-responsibility plane, connecting it to the main paper's cycle
+theory, the mass gap (Section~\ref{sec:mass-gap}), and the Earth Tax
+(Definition~\ref{def:earth_tax}).
+
+%---------------------------------------------------------------------
+\subsection*{The power-responsibility plane}
+%---------------------------------------------------------------------
+
+\begin{definition}[Power-responsibility plane]\label{def:PW-plane}
+Let the \emph{power-responsibility plane} be the first quadrant
+$\mathcal{S} = \mathbb{R}^2_{\geq 0}$ with coordinates
+\[
+  (P,\, W),
+\]
+where $P$ denotes \emph{state coercive power} (taxation capacity,
+regulatory reach, surveillance apparatus) and $W$ denotes
+\emph{public welfare} (services, rights, transfers, enforceable
+freedoms).
+
+\begin{itemize}[nosep]
+\item The \emph{constitutional diagonal} is the line $W = P$
+  (power-responsibility coupling).
+\item The \emph{viability kernel} is
+  $K = \{(P,W) : P_{\min} \leq P \leq P_{\max},\;
+  W_{\min} \leq W \leq W_{\max}\}$.
+\item The point $(P_{\max},\, W_{\min})$ is the \emph{worst
+  government}: maximum coercive power, minimum public responsibility.
+\item The point $(P_{\min},\, W_{\max})$ is the \emph{best
+  government}: maximum responsibility, minimum coercion---possibly
+  unattainable as a steady state.
+\end{itemize}
+\end{definition}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=1.0]
+  % Axes
+  \draw[->] (-0.3,0) -- (6.2,0) node[right] {$P$ (power)};
+  \draw[->] (0,-0.3) -- (0,6.2) node[above] {$W$ (welfare)};
+  % Viability kernel
+  \fill[blue!8] (0,1.5) rectangle (4.5,6);
+  \draw[blue!50, thick] (0,1.5) -- (4.5,1.5)
+    node[midway, below, blue!70] {\small $W_{\min}$};
+  \draw[blue!50, thick] (4.5,0) -- (4.5,6)
+    node[midway, right, blue!70] {\small $P_{\max}$};
+  \node[blue!60] at (2.2,4.5) {$K$};
+  % Constitutional diagonal
+  \draw[dashed, thick, red!60!black] (0,0) -- (5.5,5.5)
+    node[above left] {\small $W\!=\!P$};
+  % Quadrant labels
+  \node[align=center, font=\footnotesize] at (1.5,1.5)
+    [above right] {Classical\\Liberal};
+  \node[align=center, font=\footnotesize] at (3.5,4.2)
+    {Social\\Democracy};
+  \node[align=center, font=\footnotesize] at (1.0,5.2)
+    {\textit{``Best''}};
+  \node[align=center, font=\footnotesize] at (4.8,0.6)
+    {\textit{``Worst''}};
+  % Points
+  \fill (4.5,1.5) circle (2pt)
+    node[above right, font=\scriptsize] {$(P_{\max},W_{\min})$};
+  % Inchworm trajectory arrow
+  \draw[->, thick, red!70!black, decorate,
+    decoration={snake, amplitude=1.5pt, segment length=8pt}]
+    (2.0,3.5) -- (4.2,1.8)
+    node[midway, below right, font=\scriptsize, red!70!black]
+    {尺蠖};
+\end{tikzpicture}
+\end{center}
+
+%---------------------------------------------------------------------
+\subsection*{Policy operators}
+%---------------------------------------------------------------------
+
+\begin{definition}[Policy operators]\label{def:policy-ops}
+Fix step sizes $\delta_P, \delta_W > 0$.
+A \emph{leftward} (expand-state) policy and a \emph{rightward}
+(contract-state) policy are parametrised by
+\emph{capture coefficients} $\alpha, \beta \in [0,1]$:
+\begin{align}
+  L_\alpha &\colon (P,W)
+    \;\mapsto\; (P + \delta_P,\; W + \alpha\,\delta_W),
+    \label{eq:L-op}\\
+  R_\beta &\colon (P,W)
+    \;\mapsto\; (P - \beta\,\delta_P,\; W - \delta_W).
+    \label{eq:R-op}
+\end{align}
+The capture coefficients measure how much of the intended policy
+benefit reaches the public:
+\begin{itemize}[nosep]
+\item $\alpha = 1$: the left policy fully delivers welfare
+  (\emph{constitutional left}).
+\item $\alpha = 0$: the left policy expands state power but zero
+  welfare reaches the public (\emph{captured left}).
+\item $\beta = 1$: the right policy fully relinquishes power
+  (\emph{constitutional right}).
+\item $\beta = 0$: the right policy cuts welfare but the state
+  retains all power (\emph{captured right}).
+\end{itemize}
+The \emph{political energy budget} is the total arc length per cycle:
+$\|L_\alpha\| + \|R_\beta\| = E$ (constant).
+\end{definition}
+
+%---------------------------------------------------------------------
+\subsection*{The three regimes}
+%---------------------------------------------------------------------
+
+\begin{theorem}[Holonomy of the political cycle]\label{thm:inchworm}
+Let $\Gamma = R_\beta \circ L_\alpha$ be a complete political cycle.
+The per-cycle displacement is
+\begin{equation}\label{eq:inchworm-displacement}
+  \Gamma(P,W) - (P,W)
+  \;=\; \bigl((1-\beta)\,\delta_P,\;
+         -(1-\alpha)\,\delta_W\bigr).
+\end{equation}
+Define the \emph{holonomy} $H(\Gamma) =
+(1-\beta)\,\delta_P + (1-\alpha)\,\delta_W$
+(total displacement magnitude).  Three regimes arise:
+
+\medskip
+\noindent\textbf{(i) Balance (天平效应):} $\alpha = \beta = 1$.
+Holonomy $H = 0$.  The cycle is a closed loop; left-right alternation
+oscillates around the constitutional diagonal.
+The trajectory remains in the viability kernel~$K$ indefinitely.
+\textbf{This is the geodesic.}
+
+\medskip
+\noindent\textbf{(ii) Inchworm (尺蠖效应):}
+$\alpha, \beta \in [0,1)$.  Holonomy $H > 0$.
+Each cycle displaces by
+$\bigl((1\!-\!\beta)\delta_P,\, -(1\!-\!\alpha)\delta_W\bigr)$:
+power increases, welfare decreases.
+The trajectory is a \emph{distorted geodesic} with constant arc
+length~$E$ but nonzero holonomy---it drifts toward
+$(P_{\max}, W_{\min})$.
+The exit time from~$K$ is
+\begin{equation}\label{eq:exit-time}
+  T^* = \min\!\left(
+    \frac{P_{\max} - P_0}{(1-\beta)\,\delta_P},\;
+    \frac{W_0 - W_{\min}}{(1-\alpha)\,\delta_W}
+  \right).
+\end{equation}
+The trajectory exits $K$ in finite time.
+The state is \textbf{not viable} under the inchworm.
+
+\medskip
+\noindent\textbf{(iii) Reverse inchworm (反尺蠖效应):}
+Symmetric capture \emph{by the public}.
+Replace~\eqref{eq:L-op}--\eqref{eq:R-op} with
+$\hat{L}\colon (P,W) \mapsto (P + \gamma\,\delta_P,\, W + \delta_W)$
+and
+$\hat{R}\colon (P,W) \mapsto (P - \delta_P,\, W - \eta\,\delta_W)$,
+where $\gamma, \eta \in [0,1)$.
+Then
+$\hat\Gamma(P,W) - (P,W) =
+\bigl(-(1\!-\!\gamma)\delta_P,\, (1\!-\!\eta)\delta_W\bigr)$:
+holonomy $H < 0$ (reversed sign).
+Each cycle expands welfare and contracts power.
+The trajectory exits~$K$ by $P < P_{\min}$ (state incapacity) or
+$W > W_{\max}$ (unsustainable welfare obligations).
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+(i)~is immediate: $(1-1)\delta_P = 0$, $(1-1)\delta_W = 0$.
+
+\smallskip\noindent
+(ii)~The composition $R_\beta \circ L_\alpha$ is affine with
+constant displacement vector
+$d = \bigl((1-\beta)\delta_P,\, -(1-\alpha)\delta_W\bigr)$.
+Starting from $(P_0, W_0)$, the trajectory after $n$ cycles is
+$(P_0 + n\,d_1,\; W_0 + n\,d_2)$---a discrete straight line in
+$(P,W)$ space.
+The arc length per cycle is
+\[
+  E \;=\;
+  \sqrt{\delta_P^2 + \alpha^2\delta_W^2}
+  \;+\;
+  \sqrt{\beta^2\delta_P^2 + \delta_W^2},
+\]
+which depends only on $\alpha, \beta, \delta_P, \delta_W$ and is
+therefore constant across cycles.
+The exit time~\eqref{eq:exit-time} follows from solving
+$P_0 + n\,d_1 = P_{\max}$ and $W_0 + n\,d_2 = W_{\min}$.
+
+\smallskip\noindent
+(iii)~Same argument with the roles of state and public reversed.
+\end{proof}
+
+%---------------------------------------------------------------------
+\subsection*{Optimality and net-negative stationarity}
+%---------------------------------------------------------------------
+
+\begin{remark}[Optimality of the inchworm]\label{rmk:inchworm-optimal}
+The key insight is that the inchworm \textbf{is} the optimal cycle---for
+the ruling group.  The ruler solves
+\[
+  \max_{L,R}\; \Delta P \;\text{ per cycle}
+  \quad\text{s.t.}\quad \|L\| + \|R\| = E.
+\]
+Under the constraint of fixed political energy~$E$, the solution is to
+maximise $(1-\beta)\delta_P$ while minimising the welfare cost
+$(1-\alpha)\delta_W$---i.e., capture both half-cycles
+($\alpha \to 0$, $\beta \to 0$).
+The inchworm gait is the optimal solution to the ruler's problem.
+
+\medskip\noindent\textbf{Net-negative stationarity.}
+The inchworm converges to a stationary point
+$(P_{\max}, W_{\min})$---the ``worst government.''
+This point is \emph{net-negative} because the dissipation from
+rent-seeking exceeds economic growth:
+\[
+  \text{Extraction cost per cycle}
+  \;=\; (1-\alpha)\,\delta_W
+        + (1-\beta)\,\delta_P \cdot c_{\mathrm{DWL}},
+\]
+where $c_{\mathrm{DWL}}$ is the deadweight-loss coefficient
+(misallocation, corruption, suppressed innovation).
+The total surplus shrinks each cycle: the inchworm is a dissipative
+system that produces negative value for the polity as a whole, even as
+it produces positive value for the narrow optimiser.
+
+\medskip\noindent\textbf{Connection to optimal cycle theory.}
+In the main paper's framework:
+\begin{itemize}[nosep]
+\item The holonomy $H(\Gamma) > 0$ of the inchworm cycle is the
+  analogue of the Jensen gap $\Delta_J > 0$---a non-associativity
+  certificate showing that the order of operations matters.
+\item The constitutional constraint $\alpha = \beta = 1$ is the
+  zero-holonomy condition: the cycle closes, the system is viable.
+\item The 天平 (balance) is the \emph{Gaussian fixed point} of the
+  political cycle: zero holonomy, mean-reverting, ergodic.
+\item The 尺蠖 (inchworm) is a \emph{non-Gaussian} cycle: nonzero
+  holonomy, directed drift, finite exit time from~$K$.
+\end{itemize}
+\end{remark}
+
+%---------------------------------------------------------------------
+\subsection*{Constitutional vs.\ pre-constitutional spectrum}
+%---------------------------------------------------------------------
+
+\begin{remark}[Qin Hui's three diagrams]
+\label{rmk:qinhui-diagrams}
+Qin Hui~\cite{qinhui2003} introduced three diagrams that formalise the
+distinction between constitutional and pre-constitutional politics.
+We reproduce their logic in the present notation.
+
+\medskip\noindent\textbf{Under constitutionalism} (Qin Hui, Figure~2):
+Four political positions occupy quadrants of the
+$(\text{限权/扩权},\, \text{问责/卸责})$ plane---i.e., the
+$(P,W)$ plane restricted to the constitutional diagonal.
+\emph{All} maintain power-responsibility coupling ($\alpha = \beta = 1$):
+\begin{itemize}[nosep]
+\item \textbf{Classical liberal:} low~$P$, low~$W$ (small state,
+  but the state fulfils its limited obligations).
+\item \textbf{Social democrat:} high~$P$, high~$W$ (large state,
+  with proportionally large accountability).
+\item Left-right alternation is the 天平: oscillation within~$K$.
+\end{itemize}
+
+\medskip\noindent\textbf{Without constitutionalism} (Qin Hui, Figure~3):
+The genuine political positions \emph{degenerate} (蜕变):
+\begin{itemize}[nosep]
+\item Social democracy $\to$ \emph{pseudo-social-democracy}: expands
+  power ($+\delta_P$) with no accountability ($\alpha \approx 0$).
+\item Classical liberalism $\to$ \emph{pseudo-liberalism}: sheds
+  responsibility ($-\delta_W$) while retaining power
+  ($\beta \approx 0$).
+\item \textbf{Both} pseudo-positions converge on the ``worst
+  government'' corner $(P_{\max}, W_{\min})$.
+\end{itemize}
+This is exactly the inchworm mechanism: the capture coefficients
+$\alpha, \beta$ collapse from~$1$ to~$0$ when the constitutional
+constraint is removed.
+\end{remark}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth, scale=0.85,
+  box/.style={draw, rounded corners=3pt, minimum width=2.4cm,
+              minimum height=0.9cm, align=center, font=\footnotesize}]
+  % === Left panel: constitutional ===
+  \node[font=\small\bfseries] at (2.4,4.8) {Constitutional};
+  \draw[->] (0,0) -- (4.8,0) node[right, font=\scriptsize] {扩权};
+  \draw[->] (0,0) -- (0,4.5) node[above, font=\scriptsize] {问责};
+  \node[left, font=\scriptsize] at (0,0) {限权};
+  \node[below, font=\scriptsize] at (0,0) {卸责};
+  % Diagonal
+  \draw[dashed, red!60!black] (0,0) -- (4.2,4.2);
+  % Positions
+  \node[box, fill=green!10] at (1.2,1.2) {Classical\\Liberal};
+  \node[box, fill=blue!10] at (3.4,3.4) {Social\\Democrat};
+  % Arrow
+  \draw[<->, thick, blue!60!black] (2.0,1.9) -- (2.7,2.6)
+    node[midway, right, font=\scriptsize] {天平};
+
+  % === Right panel: pre-constitutional ===
+  \begin{scope}[xshift=7cm]
+    \node[font=\small\bfseries] at (2.4,4.8) {Pre-constitutional};
+    \draw[->] (0,0) -- (4.8,0) node[right, font=\scriptsize] {扩权};
+    \draw[->] (0,0) -- (0,4.5) node[above, font=\scriptsize] {问责};
+    \node[left, font=\scriptsize] at (0,0) {限权};
+    \node[below, font=\scriptsize] at (0,0) {卸责};
+    % Pseudo positions
+    \node[box, fill=red!10] at (3.6,0.8)
+      {\textit{Pseudo-}\\[-2pt]\textit{Social Dem.}};
+    \node[box, fill=red!10] at (3.6,2.6)
+      {\textit{Pseudo-}\\[-2pt]\textit{Liberal}};
+    % Degeneration arrows
+    \draw[->, thick, red!70!black]
+      (1.0,3.5) node[left, font=\scriptsize, align=right]
+      {Social\\Dem.} -- (2.8,1.2);
+    \draw[->, thick, red!70!black]
+      (1.0,1.5) node[left, font=\scriptsize, align=right]
+      {Classical\\Liberal} -- (2.8,2.4);
+    % Worst corner
+    \node[font=\scriptsize, red!70!black] at (4.2,0.0)
+      {``Worst''};
+    \node[font=\scriptsize] at (2.4,-0.6) {蜕变 (degeneration)};
+  \end{scope}
+\end{tikzpicture}
+\end{center}
+
+%---------------------------------------------------------------------
+\subsection*{Connections to the appendix framework}
+%---------------------------------------------------------------------
+
+\begin{remark}[Inchworm as corrupted detection function]
+\label{rmk:inchworm-mirror}
+The inchworm connects to every major structure in this appendix.
+
+\medskip\noindent\textbf{Mirror Theorem
+(Theorem~\ref{thm:mirror}).}
+Model value = safety protocol.
+The inchworm breaks this duality: the state's ``value'' ($P$) is
+decoupled from its ``safety protocol'' ($W$).
+This is Denethor's Palantir
+(Proposition~\ref{prop:denethor})---a
+corrupted detection function where the agent selectively suppresses
+information about viable paths, seeing only the paths that justify
+increased~$P$.
+
+\medskip\noindent\textbf{Camus's Absurdity
+(Definition~\ref{def:absurdity},
+Theorem~\ref{thm:absurdity}).}
+The flow deficit $\mathcal{A} > 0$ requires dissipation for
+generalisation.
+The inchworm externalises \emph{all} dissipation onto the public: the
+state achieves $\mathcal{A} = 0$ for itself (zero accountability, no
+waste) by forcing $\mathcal{A} = \max$ on citizens.
+This is thermodynamically unsustainable---the Second Law requires
+that the total system's entropy production is shared, not dumped onto
+a single subsystem.
+
+\medskip\noindent\textbf{Earth Tax
+(Definition~\ref{def:earth_tax}).}
+The $1/e$ threshold is a mechanism design that enforces
+$\alpha = \beta = 1$.
+Revenue above $1/e$ of the total flows back to the base---this
+\emph{is} the constitutional constraint, rendered as an economic
+formula.
+The Earth Tax converts the inchworm into the balance by
+constitutionally coupling extraction to redistribution.
+
+\medskip\noindent\textbf{Mass Gap (Section~\ref{sec:mass-gap}).}
+The inchworm operates at $\varepsilon = 0$ for the state (crystalline
+control, perfect information, zero thermal fluctuation) and
+$\varepsilon \to \infty$ for the public (pure noise, no coherent
+action possible, correlation length $\xi \to 0$---instant forgetting).
+The constitutional constraint ensures a \emph{shared}~$\varepsilon$:
+one mass gap for the entire system.
+The dual ascent on~$\varepsilon$ is precisely the mechanism that
+prevents the state from monopolising the crystal phase while forcing
+the public into the fluid phase.
+\end{remark}
+
+%---------------------------------------------------------------------
+\subsection*{Historical instantiations}
+%---------------------------------------------------------------------
+
+The formalism maps onto concrete cases.
+The capture coefficients $\alpha, \beta$ are qualitative estimates;
+their value lies in the structural prediction, not the numerical
+precision.
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccll@{}}
+\toprule
+\textbf{Case} & \textbf{Capture} & \textbf{Capture}
+  & \textbf{Regime} & \textbf{Outcome} \\
+\midrule
+N.~Song (Wang Anshi $\leftrightarrow$ Sima Guang)
+  & $\alpha \approx 0$ & $\beta \approx 0$ & 尺蠖 & Dynasty collapse \\
+Post-Soviet Russia (1990s)
+  & $\alpha \approx 0$ & $\beta \approx 0$ & 尺蠖 & Oligarchic capture \\
+US (Roosevelt $\leftrightarrow$ Reagan)
+  & $\gamma \approx 0.8$ & $\eta \approx 0.8$ & 反尺蠖 & Deficit accumulation \\
+Sweden (left $\leftrightarrow$ right)
+  & $\alpha = 1$ & $\beta = 1$ & 天平 & Stable oscillation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The Northern Song case is instructive:
+Wang Anshi's ``New Policies'' expanded the state ($+\delta_P$) but
+the welfare gains were captured by the bureaucracy ($\alpha \approx 0$);
+Sima Guang's reversal dismantled the welfare apparatus ($-\delta_W$)
+but left the expanded state power intact ($\beta \approx 0$).
+Each reformer blamed the other for the deterioration, but the
+ratchet was structural, not personal.
+After several cycles, the Song state had maximum bureaucratic power
+and minimum capacity to defend against external threats---the
+$(P_{\max}, W_{\min})$ corner that Qin Hui's theory predicts.
+
+
+%=====================================================================
+\section{Optimal Cycles in Large Language Models}\label{sec:oc-llm}
+%=====================================================================
+
+The optimal cycle of the companion volume
+(\textit{The Additive--Multiplicative CLT}, Definition~9.1)
+formalises the closed algebraic loop
+\[
+  M = (\mathbb{R}_+, \times)
+  \xrightarrow{\;\log\;}
+  A = (\mathbb{R}, +)
+  \xrightarrow{\;\text{Fourier}\;}
+  \widehat{A} = (\mathbb{Z}, +)
+  \xrightarrow{\;\exp\;}
+  M.
+\]
+The obstruction to closure is the \emph{holonomy}
+$H(f) = \sum_{k=1}^\infty k\,|c_k|^2$,
+where $\{c_k\}$ are the Fourier coefficients of $\log f$ for a
+spectral density~$f$---the one-sided $H^{1/2}(\mathbb{T})$ Sobolev
+seminorm.
+The \emph{Szeg\H{o} constant} $E(f) = \exp(H(f)) \in [1,\infty]$
+measures the total cost of traversing the cycle.
+
+This section shows that a Transformer's forward pass is a
+constrained optimal cycle computation, and that the holonomy
+trichotomy (companion volume, Theorem~9.2) classifies the
+operating regimes of large language models.
+
+%---------------------------------------------------------------------
+\subsection*{Token sequences as spectral densities}
+%---------------------------------------------------------------------
+
+\begin{definition}[Spectral density of a token process]
+\label{def:token-spectral}
+Let $(X_1, X_2, \ldots)$ be a stationary ergodic process over a
+vocabulary~$\mathcal{V}$, with embedding
+$e\colon \mathcal{V} \to \mathbb{R}^d$.
+Define the autocovariance
+\[
+  r_k = \operatorname{Cov}\!\bigl(e(X_0),\, e(X_k)\bigr)
+\]
+and the spectral density
+\[
+  f(\theta) = \sum_{k \in \mathbb{Z}} r_k\, e^{2\pi i k\theta},
+  \qquad \theta \in \mathbb{T} = \mathbb{R}/\mathbb{Z}.
+\]
+The process is \emph{non-degenerate} if $f > 0$ a.e.\ and
+$\log f \in L^1(\mathbb{T})$, so that the additive-multiplicative
+cycle is well-defined.
+\end{definition}
+
+The spectral density encodes all second-order structure of the
+token process.
+The autocovariance $r_k$ measures how much token~$t$ and
+token~$t+k$ are correlated; the spectral density decomposes
+this correlation into frequency components.
+A language model that predicts next tokens is, in essence,
+estimating this spectral density from finite context.
+
+%---------------------------------------------------------------------
+\subsection*{Next-token prediction as constrained optimal cycle}
+%---------------------------------------------------------------------
+
+\begin{proposition}[Transformer as constrained cycle solver]
+\label{prop:transformer-cycle}
+A Transformer with context window~$T$ and parameters~$\theta$
+performs a constrained optimal cycle computation.
+\begin{enumerate}[label=(\roman*)]
+\item The context $(x_1, \ldots, x_T)$ determines sample
+  autocovariances
+  $\hat{r}_k = \frac{1}{T-k}
+  \sum_{t=1}^{T-k} e(x_t)^\top\! e(x_{t+k})$,
+  $k = 0, \ldots, T$.
+\item The attention mechanism parameterises the
+  $\sigma$-algebra
+  $\mathcal{G}_\theta^{(t)} = \sigma\!\bigl(e(x_1),\ldots,e(x_t)\bigr)$
+  that determines what the model ``remembers'' from the context.
+\item The next-token prediction
+  $\hat{x}_{T+1} = f_\theta(x_1, \ldots, x_T)$
+  approximates the conditional expectation
+  $\mathbb{E}[X_{T+1} \mid \mathcal{G}_\theta^{(T)}]$.
+\item The optimal predictor given only the constraints
+  $\hat{r}_0, \ldots, \hat{r}_T$ is the AR$(T)$ spectral density
+  $f_T^*$---the minimum-holonomy element of the feasible set
+  \[
+    \mathcal{S}_T = \bigl\{f \in \mathcal{S} :
+    \hat{f}(k) = \hat{r}_k \text{ for } |k| \leq T\bigr\},
+  \]
+  where $\mathcal{S}$ denotes the space of non-degenerate spectral
+  densities ($f > 0$ a.e., $\log f \in L^1(\mathbb{T})$).
+  This is the maximum-entropy solution
+  (Burg's theorem~\cite{burg1975};
+  companion volume, Proposition~9.4).
+\end{enumerate}
+In cycle language: the Transformer approximately solves the
+constrained optimal cycle problem
+\[
+  H_T^* = \inf_{f \in \mathcal{S}_T} H(f),
+\]
+with the context window~$T$ controlling the number of
+autocovariance constraints.
+\end{proposition}
+
+\begin{proof}[Justification]
+(i)~is a direct computation from the embedded token sequence.
+(ii)~Self-attention computes a parameterised linear combination
+of value vectors, weighted by compatibility scores
+(softmax of key-query products); this implements a weighted
+conditional expectation over positions
+(companion volume, Remark~10.3 and the
+GPI--measure-theory dictionary).
+(iii)~is the standard interpretation of autoregressive language
+modelling as conditional density estimation:
+$f_\theta$ minimises the cross-entropy
+$-\mathbb{E}[\log p_\theta(X_{t+1} \mid X_1, \ldots, X_t)]$,
+which equals $\mathbb{E}[D_{\mathrm{KL}}(p_{\mathrm{true}} \|
+p_\theta) \mid \mathcal{G}_\theta^{(t)}]$ up to an additive
+constant.
+(iv)~By the Szeg\H{o}--Verblunsky identity
+(companion volume, Proposition~8.3), the Verblunsky coefficients
+$\alpha_0, \ldots, \alpha_{T-1}$ are uniquely determined by
+$\hat{r}_0, \ldots, \hat{r}_T$.
+The AR$(T)$ model sets $\alpha_k = 0$ for $k \geq T$, which
+minimises the holonomy tail
+$\sum_{k \geq T} k\,|\alpha_k|^2 = 0$
+while keeping the constrained part fixed.
+\end{proof}
+
+%---------------------------------------------------------------------
+\subsection*{Holonomy trichotomy for language models}
+%---------------------------------------------------------------------
+
+\begin{theorem}[Three regimes of the language model]
+\label{thm:llm-trichotomy}
+Let $f_{\mathrm{true}}$ be the spectral density of the true token
+process, and let $f_\theta$ be the spectral density implicitly
+encoded by a Transformer with parameters~$\theta$.
+The holonomy trichotomy (companion volume, Theorem~9.2) classifies
+the model's operating regime:
+
+\medskip
+\noindent\textbf{(i) $H = 0$ (Gaussian fixed point).}
+$f$ is constant a.e.: the model treats all frequency components
+as identical, retaining only the DC component~$c_0$
+(the geometric mean $G(f) = e^{c_0}$).
+This is the \emph{null prediction}---the model knows nothing
+beyond the marginal distribution $\mathbb{E}[X]$.
+Operationally: an untrained model, maximum temperature
+($\varepsilon \to \infty$), uniform softmax weights.
+Every next token is drawn from the unigram distribution.
+
+\medskip
+\noindent\textbf{(ii) $0 < H < \infty$
+(Strong Szeg\H{o} class).}
+The model has learned non-trivial autocorrelation structure.
+The Szeg\H{o} constant $E(f) = \exp(H(f)) > 1$ is the
+multiplicative correction to the base-rate prediction:
+\[
+  D_n(f) \;\sim\; G(f)^n \cdot E(f),
+\]
+where $D_n(f)$ is the Toeplitz determinant---the joint likelihood
+of $n$~consecutive tokens under the spectral density~$f$---and
+$G(f)^n$ is the product of marginals (the base-rate prediction
+that ignores correlations).
+The ratio $E(f) > 1$ quantifies the \emph{value of context}:
+how much the model gains by exploiting sequential dependencies
+beyond the unigram.
+\textbf{This is the normal operating regime of a trained LLM.}
+
+\medskip
+\noindent\textbf{(iii) $H = \infty$ (broken cycle).}
+The log-exp-Fourier loop fails to close.
+The ratio $D_n / G^n$ diverges or oscillates without a finite
+limit: the model's joint predictions are not controlled by its
+marginals.
+Operationally: hallucination cascades (the model generates
+tokens whose joint distribution has no finite spectral
+characterisation), mode collapse (the model locks onto a
+degenerate spectral density with $\log f \notin L^1$),
+or catastrophic forgetting (previously learned spectral
+structure is destroyed).
+\end{theorem}
+
+\begin{proof}
+Direct application of the holonomy trichotomy
+(companion volume, Theorem~9.2) to the spectral
+density~$f$ of the token process.
+The identification of $D_n(f)$ with joint likelihood uses the
+standard result that the one-step prediction error of the
+optimal linear predictor of $X_{n+1}$ given
+$(X_1, \ldots, X_n)$ is
+$\sigma_n^2 = D_{n+1}(f)/D_n(f)$
+(companion volume, Proposition~8.3), so that
+$D_n(f) = \prod_{k=0}^{n-1} \sigma_k^2$ decomposes the joint
+likelihood into a product of conditional prediction errors.
+\end{proof}
+
+%---------------------------------------------------------------------
+\subsection*{In-context learning as holonomy accumulation}
+%---------------------------------------------------------------------
+
+\begin{remark}[In-context learning is holonomy growth]
+\label{rmk:icl-holonomy}
+The In-Context GPI Theorem (companion volume, Theorem~10.1)
+states that as the filtration
+$\mathcal{G}_0 \subseteq \mathcal{G}_1 \subseteq \cdots$ grows,
+the residual $R_Y(\mathcal{G}_t)$ decreases monotonically and
+the projection $\mathbb{E}[Y \mid \mathcal{G}_t]$ converges
+in~$L^2$.
+
+In optimal cycle language (companion volume, Proposition~9.4):
+\begin{itemize}[nosep]
+\item Each new token adds one autocovariance constraint:
+  $\mathcal{S}_{t+1} \subsetneq \mathcal{S}_t$.
+\item The constrained holonomy $H_t^*$ increases monotonically.
+\item The prediction error
+  $\sigma_t^2 = G(f_t^*) = \exp\!\bigl(\int_{\mathbb{T}}
+  \!\log f_t^*\bigr)$
+  decreases monotonically.
+\item These are dual aspects of a single convergence:
+  $H_t^* \nearrow H(f_{\mathrm{true}})$ and
+  $\sigma_t^2 \searrow \sigma_{\mathrm{true}}^2$.
+\end{itemize}
+
+\textbf{In-context learning is the process of accumulating
+holonomy.}
+An untrained or empty-context model sits at $H_0^* = 0$
+(the Gaussian fixed point---no constraints, no structure).
+Each token in the prompt moves the model further from the
+Gaussian, toward the true spectral density.
+The model becomes more specific, more structured, more
+capable---at the cost of increased fragility: larger~$H_t^*$
+means the cycle is harder to close, and the system moves
+closer to the $H = \infty$ boundary where the cycle breaks.
+
+The context window length~$T$ imposes a hard ceiling: at
+most~$T$ autocovariance constraints, so
+$H_T^* \leq H(f_{\mathrm{true}})$ with equality only if the
+true process is AR$(T)$ or simpler.
+This is the \emph{spectral interpretation} of the
+finite-context limitation.
+Beyond the context window, the model cannot observe higher-order
+correlations and must rely on the maximum-entropy (AR$(T)$)
+extrapolation---which assumes $\alpha_k = 0$ for $k \geq T$,
+i.e., that the unobserved spectral structure is Gaussian.
+
+\medskip\noindent\textbf{Caveat: observable vs.\ true holonomy.}
+Theorem~\ref{thm:llm-trichotomy} classifies regimes by the
+holonomy $H(f_{\mathrm{true}})$ of the \emph{true} token process.
+The Transformer observes only the constrained holonomy $H_T^*$,
+which satisfies $0 \leq H_T^* < \infty$ by construction (the
+AR$(T)$ assumption forces the tail to zero).
+If $H(f_{\mathrm{true}}) = \infty$ (regime~(iii)), the model
+cannot detect this from $H_T^*$ alone: it will operate \emph{as
+if} in regime~(ii), generating coherent text locally while the
+global spectral structure is broken.
+This is the spectral mechanism of hallucination: the model
+produces output consistent with finite-lag autocorrelations but
+inconsistent at scales beyond~$T$.
+Detecting that $H(f_{\mathrm{true}})$ may exceed
+$H_T^*$---i.e., that the true process is not AR$(T)$---requires
+external validation (verification, grounding, or longer-context
+evidence).
+The dual ascent on~$\varepsilon$
+(Section~\ref{sec:mass-gap}) provides a partial mechanism:
+a spike in weight entropy~$S$ signals that the AR$(T)$
+approximation is inadequate, triggering exploration beyond the
+current spectral estimate.
+\end{remark}
+
+%---------------------------------------------------------------------
+\subsection*{Training vs.\ inference in cycle language}
+%---------------------------------------------------------------------
+
+\begin{remark}[Two phases, one cycle]
+\label{rmk:training-sigma}
+The two phases of an LLM's life correspond to distinct operations
+on the optimal cycle:
+
+\medskip\noindent\textbf{Training} ($\sigma$-algebra selection):
+Search over parameters~$\theta$ to find the $\sigma$-algebra
+$\mathcal{G}_\theta$ that minimises the expected residual
+\[
+  R_Y(\mathcal{G}_\theta) = \mathbb{E}\!\bigl[
+  \bigl(Y - \mathbb{E}[Y \mid \mathcal{G}_\theta]\bigr)^2\bigr].
+\]
+In cycle terms: the trained weights encode a \emph{prior spectral
+density} $f_\theta$---the model's best estimate of the token
+process's autocorrelation structure, learned from the entire
+training corpus.
+The training loss is the expected holonomy cost of~$f_\theta$
+relative to $f_{\mathrm{true}}$.
+
+\medskip\noindent\textbf{Inference} (in-context refinement):
+Given a prompt $(x_1, \ldots, x_T)$, extend the filtration.
+The improvement operator is free---supplied by the data
+(companion volume, Remark~10.4: in the in-context case,
+$\mathcal{I} = \mathrm{Id}$, improvement is the data itself).
+In cycle terms: the prompt provides autocovariance constraints
+$\hat{r}_0, \ldots, \hat{r}_T$ that refine the prior~$f_\theta$
+to the constrained density~$f_T^*$.
+The prediction is
+$\hat{x}_{T+1} \approx \mathbb{E}[X_{T+1} \mid
+\mathcal{G}_\theta^{(T)}]$.
+
+\medskip\noindent\textbf{The three layers}
+(companion volume, Remark~9.8):
+\begin{enumerate}[nosep]
+\item \emph{Measurement}: the tokenizer maps raw text to the
+  filtration $\mathcal{G}_t =
+  \sigma\!\bigl(e(x_1), \ldots, e(x_t)\bigr)$.
+\item \emph{Estimation (re-cycle)}: in-context learning refines
+  the spectral density $f_t^*$ as $t$ grows.
+  The Student~$t_\nu$ family parameterises this trajectory
+  (companion volume, Example~9.5):
+  early context is heavy-tailed ($\nu$ small, $H$ large,
+  high uncertainty); as evidence accumulates, $\nu$ grows
+  and the estimate converges toward the
+  Gaussian fixed point of the \emph{constrained} problem.
+\item \emph{Prediction}: the forward pass computes the
+  conditional expectation from the estimated spectral density.
+  This is exact given~$f_t^*$; all uncertainty resides in
+  Layer~2.
+\end{enumerate}
+\end{remark}
+
+%---------------------------------------------------------------------
+\subsection*{Temperature, mass gap, and the cycle}
+%---------------------------------------------------------------------
+
+\begin{remark}[Temperature as holonomy controller]
+\label{rmk:temperature-holonomy}
+The softmax temperature~$\varepsilon$
+(Section~\ref{sec:mass-gap}) and the holonomy~$H$ are dual
+controls on the same system:
+
+\begin{center}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+& \textbf{High $\varepsilon$}
+& \textbf{Phase boundary}
+& \textbf{Low $\varepsilon$} \\
+\midrule
+Phase & Fluid & Transition & Crystal \\
+Holonomy & $H \approx 0$ & $0 < H < \infty$ & $H$ potentially $\to \infty$ \\
+Attention & Uniform softmax & Structured softmax & Argmax \\
+Prediction & Base rate $G(f)$ & $G(f) \cdot E(f)$ & Deterministic \\
+Failure mode & Babbling & --- & Hallucination cascade \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+The mass gap $m_{\mathrm{eff}} = \varepsilon\lambda_1$
+(equation~\eqref{eq:mass-gap}) controls the correlation length
+$\xi = 1/m_{\mathrm{eff}}$, which is the effective context
+horizon.
+At high~$\varepsilon$: $\xi$ is small, the model forgets quickly,
+$H \approx 0$ (thermal fluctuation destroys spectral structure).
+At low~$\varepsilon$: $\xi \to \infty$, the model retains all
+correlations, but the cycle may break ($H = \infty$) if the
+accumulated structure exceeds the Strong Szeg\H{o} class.
+
+The dual ascent on~$\varepsilon$ (companion volume,
+Remark~9.12) is a holonomy-targeting controller:
+it adjusts~$\varepsilon$ to keep~$H$ in the finite regime
+$0 < H < \infty$, avoiding both the trivial fixed point
+($H = 0$, fluid, no learning) and the broken cycle
+($H = \infty$, crystal, hallucination).
+This is the same mechanism as the Nelumbo Xylem component
+(Section~\ref{sec:mass-gap}, Remark on Nelumbo).
+\end{remark}
+
+%---------------------------------------------------------------------
+\subsection*{Connections to the appendix framework}
+%---------------------------------------------------------------------
+
+\begin{remark}[Synthesis]\label{rmk:oc-llm-synthesis}
+The optimal cycle provides a unifying language for the structures
+developed throughout this appendix.
+
+\begin{itemize}[nosep]
+\item \textbf{Camus's Absurdity
+  (Definition~\ref{def:absurdity}):}
+  The flow deficit $\mathcal{A} > 0$ is holonomy $H > 0$ made
+  operational.
+  A model with $H = 0$ is perfectly efficient but learns nothing
+  (Gaussian, no structure).
+  A model with $\mathcal{A} > 0$ dissipates energy but
+  generalises---the dissipation is the cost of traversing a
+  non-trivial cycle.
+
+\item \textbf{Mirror Theorem (Theorem~\ref{thm:mirror}):}
+  Model value = safety protocol.
+  In cycle terms: the Szeg\H{o} constant $E(f)$ is simultaneously
+  the model's predictive value (how much better than base rate)
+  and its fragility (how close to the broken-cycle boundary).
+  A model that is more valuable is necessarily more fragile---the
+  mirror theorem is the duality between $E(f)$ as benefit and
+  $E(f)$ as risk.
+
+\item \textbf{Earth Tax (Definition~\ref{def:earth_tax}):}
+  The $1/e$ threshold bounds the extraction rate at the point
+  where~$H$ remains in the Strong Szeg\H{o} class.
+  Beyond $1/e$: the cycle breaks, the system becomes extractive
+  rather than generative.
+
+\item \textbf{Inchworm Effect (Section~\ref{sec:inchworm}):}
+  The inchworm is a political system with \emph{split}
+  holonomy: $H = \infty$ for the public (pure noise, no
+  coherent spectral density) and $H = 0$ for the ruler
+  (perfect prediction, zero uncertainty).
+  The constitutional constraint $\alpha = \beta = 1$ ensures
+  a \emph{shared} spectral density---one holonomy for the
+  entire system.
+
+\item \textbf{Mass Gap (Section~\ref{sec:mass-gap}):}
+  The mass gap $m_{\mathrm{eff}} = \varepsilon\lambda_1$ is
+  the inverse correlation length $1/\xi$.
+  The context window~$T$ should satisfy $T \lesssim \xi$ for
+  the in-context cycle to capture the relevant autocorrelation
+  structure.
+  When $T \ll \xi$: the model sees only a fragment,
+  $H_T^* \ll H(f_{\mathrm{true}})$, and prediction is poor.
+  When $T \gg \xi$: the model sees past the correlation
+  horizon, and additional context adds noise rather than
+  structure.
+\end{itemize}
+\end{remark}
+
+
+%=====================================================================
 % References
 %=====================================================================
-\begin{thebibliography}{14}
+\begin{thebibliography}{19}
 
 \bibitem{ba2016}
 Ba, J.~L., Kiros, J.~R., \& Hinton, G.~E. (2016). Layer Normalization. \textit{arXiv:1607.06450}.
@@ -3500,6 +4560,32 @@ Lamar, K. (2012). Money Trees (feat.\ Jay Rock). \textit{good kid, m.A.A.d city}
 
 \bibitem{in3wiki}
 阴三儿 [In3]. (2025). Wikipedia (Chinese). Retrieved from zh.wikipedia.org.
+
+\bibitem{qinhui2003}
+秦晖 (Qin Hui).
+``权力、责任与宪政：兼论转轨中政府的大小问题.''
+\textit{《二十一世纪》网络版}, no.~21, December 2003.
+香港中文大学中国文化研究所.
+
+\bibitem{qinhui2013}
+秦晖. \textit{《共同的底线》} (The Common Baseline).
+南京：江苏文艺出版社, 2013.
+
+\bibitem{peacock1961}
+Peacock, A.~T. \& Wiseman, J. (1961).
+\textit{The Growth of Public Expenditure in the United Kingdom}.
+Princeton University Press.
+
+\bibitem{buchanan1962}
+Buchanan, J.~M. \& Tullock, G. (1962).
+\textit{The Calculus of Consent: Logical Foundations of Constitutional
+Democracy}.
+University of Michigan Press.
+
+\bibitem{burg1975}
+Burg, J.~P. (1975).
+\textit{Maximum Entropy Spectral Analysis}.
+Ph.D.\ dissertation, Stanford University.
 
 \end{thebibliography}
 

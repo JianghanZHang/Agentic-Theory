@@ -142,7 +142,7 @@ approximates the complementarity as $\varepsilon \to 0$.
 (For exact treatment without relaxation, the complementarity can be
 handled as a quadratic program with complementarity
 constraints~\cite{MenagerCarpentier2025}.)
-The MPPI estimator of \cref{prop:forward-only} samples through the barrier-smoothed
+The re-cycle (\cref{alg:recycle}) optimizes through the barrier-smoothed
 landscape without branch.
 
 \medskip\noindent\emph{Continuous foot height from gait phase.}
@@ -170,7 +170,7 @@ large when the foot is near the ground ($h_k \to 0^+$), decaying as
 the foot lifts.
 No binary contact mask is needed---the force generation is continuous and
 differentiable in both $\varphi$ and $\varepsilon$.
-In the cost functional (steps~4--5 below), $h_k$ is regularized to
+In the cost functional (\cref{alg:quadruped}, line~15), $h_k$ is regularized to
 $h_k + \varepsilon$ to avoid the singularity at $h_k = 0$ during
 stance (\cref{rem:regularized-barrier}).
 
@@ -204,7 +204,7 @@ continuously modulates the mechanical impedance between rigid support
 No explicit force-to-torque mapping (Jacobian transpose) is needed---the
 contact physics is delegated entirely to the rigid-body simulator.
 The barrier parameter $\varepsilon$ thus controls not only the contact force
-distribution and the MPPI temperature, but also the impedance profile of
+distribution and the Boltzmann target temperature, but also the impedance profile of
 the physical controller.
 
 \begin{remark}[Regularized barrier and self-consistent contact force]
@@ -289,7 +289,7 @@ $\sigma_k = \varepsilon/(h_k + \varepsilon)$:
 \end{enumerate}
 
 Sampling noise at the $n_k$ knot points and interpolating is equivalent to
-MPPI with structured covariance
+sampling with structured covariance
 $\Sigma_u = B\,\Sigma_c\,B^T$, where $B$ is the $H \times n_k$ basis
 matrix.
 This restricts the search to smooth ($C^2$) trajectories---a frequency
@@ -346,7 +346,7 @@ with gradient (repulsive torque in normalized space):
 For joints with $q_0 = q_{\mathrm{mid}}$ (symmetric limits, $a = -1$,
 $b = 1$), the barrier reduces to
 $V = -\varepsilon\log(1 - \tilde{q}^2)$.
-The same $\varepsilon$ that controls contact sharpness, MPPI temperature,
+The same $\varepsilon$ that controls contact sharpness, Boltzmann target temperature,
 entropic OT regularization, and impedance modulation now also controls
 joint-limit softness---a \emph{quintuple} unification of a single
 barrier/temperature parameter.
@@ -635,9 +635,9 @@ The \textbf{principle of least action} selects the optimal one:
 where $L$ is the running cost (tracking + barrier + no-slip).
 The transition events---lift-off, touch-down---\emph{are} the action
 (Wirkung / \emph{zu\`o y\`ong li\`ang}) in the variational sense.
-At finite $\varepsilon$, the MPPI Boltzmann weight
-$w \propto e^{-S[\beta]/\varepsilon}$ assigns nonzero probability to all
-sampled actions---genuine indefiniteness.
+At finite $\varepsilon$, the Boltzmann target
+$\pi \propto e^{-S[\beta]/\varepsilon}$ assigns nonzero probability to all
+actions---genuine indefiniteness.
 As $\varepsilon \to 0$, the distribution concentrates on $\beta^*$
 (or symmetry-broken local minima: trot vs.\ gallop).
 
@@ -761,10 +761,11 @@ The discrete matrices are $A_d(t) = e^{A(t)\Delta t}$ and
 $B_d(t) = V(t)\, B(t)$, both time-varying through $\sigma_k(t)$.
 
 The discrete Riccati recursion
-\begin{equation}\label{eq:riccati-tvlqr}
-K_t = (R + B_d^\top P_{t+1} B_d)^{-1} B_d^\top P_{t+1} A_d, \qquad
-P_t = Q + A_d^\top P_{t+1}(A_d - B_d K_t)
-\end{equation}
+\begin{align}\label{eq:riccati-tvlqr}
+K_t &= (R + B_d^\top P_{t+1} B_d)^{-1} B_d^\top P_{t+1} A_d,
+\notag\\
+P_t &= Q + A_d^\top P_{t+1}(A_d - B_d K_t)
+\end{align}
 where $A_d = A_d(t)$ and $B_d = B_d(t)$ are both time-varying through
 $\sigma_k(t)$,
 yields optimal time-varying feedback $K(t) \in \R^{12 \times 13}$ and
@@ -790,20 +791,27 @@ In the centroidal model, the dynamics is \emph{exactly} linear
 ($f_{xx} = 0$), so the Gauss--Newton approximation is
 exact---the Joseph form \eqref{eq:joseph-form} is the true
 Hessian, not an approximation.
+Equivalently, the FONC and SOSC backward passes coincide
+(\cref{rem:fonc-sosc}): the iLQR sensitivity is the
+exact NLP sensitivity~\cite{FreyDiffMPC}.
 The optimal control is $u_t = k_t - K_t(x_t - x_t^{\mathrm{ref}})$:
 $K_t$ corrects deviations from the reference trajectory, $k_t$ accounts
 for gravity and the nominal contact pattern.
 
-The MPPI outer loop samples gait schedules $\beta_k$ (log-space B-spline
-coefficients \eqref{eq:log-contact})
-and Boltzmann-reweights the \emph{policy cost}---not individual controls,
-but the cost of the full closed-loop trajectory under the Riccati-derived
-policy.
-This is \emph{policy-level} MPPI: Monte Carlo over contact modes,
-closed-form for feedback gains.
+The GP-UCB outer loop (\cref{alg:recycle}) queries gait schedules
+$\beta_k$ (log-space B-spline coefficients \eqref{eq:log-contact})
+and updates the GP posterior on the \emph{policy cost}---not individual
+controls, but the cost of the full closed-loop trajectory under the
+Riccati-derived policy.
+This is \emph{policy-level} Bayesian optimization: GP-UCB over contact
+modes, closed-form for feedback gains.
 The Riccati compression of \S\ref{sec:riccati} applies exactly within
-each gait sample; the non-Riccati part (gait mode selection) pays the
-$O(N^{-1/2})$ CLT rate.
+each gait evaluation; the non-Riccati part (gait mode selection) achieves
+the information-theoretic rate $R_T/T \to 0$ via $\gamma_T$
+(\cref{prop:gp-regret}).
+Because the GP evaluates $J(\theta)$ as a black box, the outer
+loop avoids the SOSC backward pass entirely
+(\cref{rem:fonc-recycle}).
 
 \medskip\noindent\emph{Dual $\varepsilon$ unification.}
 The barrier potential $V_{\mathrm{barrier}} = -\varepsilon\log h_k$ and the
@@ -819,7 +827,7 @@ linear one:
   $\partial_t V + q - \tfrac{1}{2}\|\nabla V\|^2 = 0$ into the linear
   backward heat equation for $\psi$.
 \end{itemize}
-The MPPI cost for a trajectory with gait phase $\varphi$ therefore includes
+The trajectory cost for gait phase $\varphi$ therefore includes
 the barrier contribution:
 \[
 J(\varphi) = \int_0^T \!\bigl[
@@ -827,42 +835,44 @@ J(\varphi) = \int_0^T \!\bigl[
   - \varepsilon\textstyle\sum_k \log\bigl(h_k(t;\varphi) + \varepsilon\bigr)
 \bigr]\,dt + \Phi(g_T).
 \]
-The Boltzmann weight $w(\varphi) \propto e^{-J(\varphi)/\varepsilon}$
-samples through the barrier-smoothed landscape: as $\varepsilon \to 0$,
-forces sharpen to complementarity \emph{and} the MPPI distribution
+The Boltzmann target $\pi(\varphi) \propto e^{-J(\varphi)/\varepsilon}$
+defines the landscape the GP posterior converges to
+(\cref{prop:kl-contract}): as $\varepsilon \to 0$,
+forces sharpen to complementarity \emph{and} the posterior
 concentrates on the optimal gait---simultaneously.
-The dual ascent on $\varepsilon$ (\cref{sec:cycle}) controls both the
-contact sharpness and the exploration--exploitation tradeoff in a single
-scalar.
+In the GP-UCB formulation, $\varepsilon$ is fixed as a barrier parameter;
+the exploration--exploitation tradeoff is controlled by the UCB
+coefficient~$\bar\beta_n$ (\cref{alg:recycle}, line~3).
 
 \medskip\noindent\textbf{(E$''$) Optimal transport interpretation.}
-The Boltzmann reweighting of \S\ref{sec:mppi},
-$w(\varphi) \propto e^{-J(\varphi)/\varepsilon}$,
-has the structure of an entropic optimal transport coupling.
+The GP posterior update (\cref{prop:kl-contract}) defines a
+conditional flow toward the Boltzmann target
+$\pi(\varphi) \propto e^{-J(\varphi)/\varepsilon}$,
+which has the structure of an entropic optimal transport coupling.
 In Cuturi's framework \cite{Cuturi2013}, the entropic regularization of the
 Wasserstein distance yields the coupling
 $\pi_\varepsilon(x,y) = a(x)\,b(y)\,e^{-c(x,y)/\varepsilon}$,
 where the Sinkhorn potentials $a, b$ enforce the marginal constraints.
-In the MPPI setting:
+In the GP-UCB setting:
 \begin{itemize}[nosep]
-\item the \emph{source} measure is the student-$t$ prior on $\bT^3$
+\item the \emph{source} measure is the GP prior on $\bT^3$
   (gait phase space);
 \item the \emph{target} is the desired velocity distribution
   ($\delta_{v^*}$ for tracking);
 \item the \emph{cost} $c(\varphi, v^*) = J(\varphi)$ is the
   barrier-smoothed trajectory cost;
-\item the \emph{regularization} $\varepsilon$ is the same dual parameter
-  controlling contact sharpness and exploration.
+\item the \emph{regularization} $\varepsilon$ controls contact sharpness;
+  exploration is governed by the UCB coefficient~$\bar\beta_n$.
 \end{itemize}
 
-The dual ascent on $\varepsilon$ in \cref{sec:cycle} is a variant of the
-Sinkhorn algorithm: it alternates between evaluating the transport cost
-(forward simulation) and adjusting the regularization to satisfy an entropy
-constraint.
-The compression rate
-$H_{\mathrm{target}} \leftarrow \gamma\,H_{\mathrm{target}}$
-tightens the constraint over iterations, analogous to the annealing
-$\varepsilon \to 0$ in entropic OT \cite{Villani}.
+The GP posterior contraction (\cref{prop:kl-contract}) is a
+Bayesian analogue of the Sinkhorn algorithm: it alternates between
+evaluating the transport cost (\cref{alg:riccati-eval}) and
+contracting the posterior to satisfy the information-gain budget.
+The covariance decay $\tr(\Sigma_n) \searrow 0$
+(\cref{rmk:mpc}) tightens the posterior over iterations,
+analogous to the annealing $\varepsilon \to 0$ in entropic
+OT~\cite{Villani}.
 
 \emph{Locomotion as constrained transport.}
 A walking robot transports its center-of-mass distribution through a
@@ -883,14 +893,13 @@ $\sum_k \sigma_k \Pi_k$.
 The dual $\varepsilon$ is now a \emph{nonuple} unification:
 \begin{enumerate}[nosep]
 \item contact sharpness ($\lambda_k = \varepsilon/h_k$, barrier force),
-\item exploration temperature ($w \propto e^{-J/\varepsilon}$,
-      Boltzmann weight),
+\item Boltzmann target ($\pi \propto e^{-J/\varepsilon}$,
+      GP posterior limit; \cref{prop:kl-contract}),
 \item entropic regularization ($\pi_\varepsilon \propto e^{-c/\varepsilon}$,
-      Sinkhorn coupling): the MPPI softmax reweighting
-      $w^{(i)} = e^{-J^{(i)}/\varepsilon}/\sum_j e^{-J^{(j)}/\varepsilon}$
-      is one row-normalization step of the Sinkhorn algorithm applied
-      to the cost matrix $c_{ij} = J(\phi_i, g_j)$ between sampled
-      gaits and rollout endpoints, with $\varepsilon$ as the
+      Sinkhorn coupling): the GP posterior contraction toward the
+      Boltzmann target is the Bayesian analogue of Sinkhorn
+      row-normalization on the cost matrix
+      $c_{ij} = J(\phi_i, g_j)$, with $\varepsilon$ as the
       entropic regularization strength~\cite{Cuturi2013},
 \item impedance modulation ($K_p(\sigma_k)$, stance/swing interpolation),
 \item joint-limit softness ($V_{\mathrm{joint}} = -\varepsilon\log(\tilde{q}-a)
@@ -908,13 +917,13 @@ The dual $\varepsilon$ is now a \emph{nonuple} unification:
       $\sigma_k$ that controls $A(t)$ and $B(t)$),
 \item action-cycle parameterization ($\sigma_k = \mathrm{sigmoid}(\beta_k)$:
       the contact mode is the exponential image of the unconstrained
-      log-space B-spline \eqref{eq:log-contact}, so the MPPI samples live
+      log-space B-spline \eqref{eq:log-contact}, so the GP-UCB queries live
       in $\mathfrak{g} = \R^{4n_k}$ while the physical schedule lives in
       $G = (0,1)^4$---the same $\beta \leftrightarrow e^\beta$ duality
       of \cref{rmk:hpc}).
 \end{enumerate}
 All nine converge as $\varepsilon \to 0$: contact forces sharpen to
-complementarity, the MPPI distribution concentrates on the optimal gait,
+complementarity, the GP posterior concentrates on the optimal gait,
 the entropic OT coupling converges to the Monge map,
 impedance gains become binary stance/swing,
 joint limits become hard constraints,
@@ -939,63 +948,63 @@ J_{\mathrm{barrier}}(\varphi;\varepsilon)
 = O(\varepsilon),
 \]
 the total cost $J$ is \emph{not} expected to decrease monotonically across
-MPPI iterations: during the early dual-ascent phase, $\varepsilon$ increases
-(to satisfy the entropy constraint $S \geq H_{\mathrm{target}}$), inflating
-$J_{\mathrm{barrier}}$ even when $J_{\mathrm{track}}$ is flat or improving.
-The cost path traces a transient hump before $\varepsilon$ begins to anneal.
+re-cycle iterations: at fixed $\varepsilon$, the barrier contribution is
+constant, so $J_{\mathrm{barrier}} = O(\varepsilon)$ while
+$J_{\mathrm{track}}$ decreases as the GP posterior concentrates.
+If $\varepsilon$ is annealed (e.g., on a fixed schedule),
+$J_{\mathrm{barrier}}$ changes with $\varepsilon$ independently of
+optimization progress.
 
-This is the barrier method working as designed, not a convergence failure.
-Monotonicity holds for $J_{\mathrm{track}}$ at fixed $\varepsilon$, and
-for $J$ once the dual variable stabilizes.
-The correct convergence diagnostic is therefore to monitor the two components
-separately: $J_{\mathrm{track}}$ should decrease (the optimizer is finding
-better gaits) while $J_{\mathrm{barrier}}$ follows $\varepsilon$ (the barrier
-is tightening toward complementarity).
+The correct convergence diagnostic is therefore to monitor
+$J_{\mathrm{track}}$ and $\tr(\Sigma_n)$ (\cref{rmk:mpc}):
+$J_{\mathrm{track}}$ should decrease (the optimizer is finding
+better gaits) while $\tr(\Sigma_n) \searrow 0$ (the GP is
+resolving uncertainty).
 
 \medskip\noindent\emph{Path integral and multiple shooting.}
-The outer MPPI loop is a \emph{path integral} over the contact-schedule
-space.
-Each sample $\beta^{(i)}(\cdot)$ defines a ``path'' (contact schedule);
-the inner Riccati solve evaluates the ``action'' $S[\beta^{(i)}]$
-(closed-loop cost); the Boltzmann weight
-$w^{(i)} \propto e^{-S[\beta^{(i)}]/\varepsilon}$ is the
-Feynman--Kac kernel.
-The weighted update
-$\bar{\beta} = \sum_i w^{(i)} \beta^{(i)}$ is a Monte Carlo
-approximation of
+The re-cycle outer loop (\cref{alg:recycle}) performs
+\emph{Bayesian quadrature} of the path integral over the
+contact-schedule space.
+Each GP query $\beta_n$ defines a ``path'' (contact schedule);
+the inner Riccati solve (\cref{alg:riccati-eval}) evaluates the
+``action'' $S[\beta_n]$ (closed-loop cost); the GP posterior
+update models the Boltzmann landscape
+$\pi(\beta) \propto e^{-S[\beta]/\varepsilon}$
+\cite{WilliamsMPPI}.
+The GP posterior mean approximates the path-integral mean
 \[
   \bar{\beta}
   = \frac{\int \beta\, e^{-S[\beta]/\varepsilon}\,
     \mathcal{D}[\beta]}
   {\int e^{-S[\beta]/\varepsilon}\, \mathcal{D}[\beta]},
 \]
-which is the \emph{path-integral mean} in the infinite-sample limit
-\cite{WilliamsMPPI}.
+with convergence governed by the information gain~$\gamma_T$
+rather than the Monte Carlo rate~$O(N^{-1/2})$.
 The inner Riccati solve is exact for the linear centroidal dynamics
 (the Gauss--Newton approximation is exact,
 \eqref{eq:joseph-form}), so the cost functional $S[\beta]$ is
 the true closed-loop cost---the ``Lagrangian'' of the path
 integral---not an approximation.
 
-This makes the MPPI loop a form of
+This makes the re-cycle a form of
 \emph{multiple shooting at the dynamics level}:
-each sample $\beta^{(i)}$ is a ``shooting node'' in the space of
-contact schedules; the Boltzmann weighting closes the
+each GP query $\beta_n$ is a ``shooting node'' in the space of
+contact schedules; the posterior contraction closes the
 ``optimality defect'' (concentrating on low-cost schedules)
 in the same way that Newton steps close continuity defects in
 classical multiple shooting.
-As $\varepsilon \to 0$, the path integral concentrates on
+As $n \to \infty$, the GP posterior concentrates on
 $\beta^*$---the deterministic limit of the variational principle
 \eqref{eq:least-action}.
 
 \medskip\noindent\emph{Three-level hierarchy and the Kalman dual.}
 The complete control architecture separates three timescales:
 \begin{enumerate}[nosep]
-\item \emph{Policy level} (per-stride): MPPI samples gait schedules
-  $\beta_k$ as B-spline coefficients in $\R^{4n_k}$
-  (log-contact space, unconstrained \eqref{eq:log-contact}),
-  Boltzmann-reweights on trajectory cost---the combinatorial search over
-  contact modes.
+\item \emph{Policy level} (per-stride): GP-UCB (\cref{alg:recycle})
+  queries gait schedules $\beta_k$ as B-spline coefficients in
+  $\R^{4n_k}$ (log-contact space, unconstrained
+  \eqref{eq:log-contact}), updating the GP posterior on trajectory
+  cost---the Bayesian search over contact modes.
 \item \emph{Action level} (per-timestep): two sub-mechanisms.
   \emph{Coverage}: TV-LQR derives optimal
   $K(t), k(t)$ via backward Riccati \eqref{eq:riccati-tvlqr} with
@@ -1021,167 +1030,358 @@ Levels 2 and 3 solve the same matrix Riccati ODE with different data:
 the control Riccati uses $(A, B, Q, R)$; the estimation Riccati uses
 $(A, C, V, W)$ where $C$ is the sensor model and $V, W$ are process
 and measurement noise covariances.
-The barrier parameter $\varepsilon$ connects all three: MPPI temperature
-(level~1), Riccati cost weights (level~2), and the process-noise
-scale in the Kalman filter (level~3).
+The barrier parameter $\varepsilon$ connects all three: Boltzmann target
+temperature (level~1), Riccati cost weights (level~2), and the
+process-noise scale in the Kalman filter (level~3).
 
 \begin{remark}[Action-driven dynamics]
 \label{rem:action-driven}
 The B-spline parameterization \eqref{eq:log-contact} treats
-$\beta_k(t)$ as a \emph{predetermined schedule}---the MPPI loop
-optimizes the coefficients $c_{k,j}$, and the Riccati inner solve
+$\beta_k(t)$ as a \emph{predetermined schedule}---the re-cycle
+(\cref{alg:recycle}) optimizes the coefficients $c_{k,j}$, and the
+Riccati inner solve (\cref{alg:riccati-eval})
 takes $\sigma_k(t) = \mathrm{sigmoid}(\beta_k(t))$ as given.
 An alternative formulation promotes $\beta_k$ to a
 \emph{dynamical state}: augment the state vector
 $(x, \beta) \in \R^{13} \times \R^4$ with the contact action
-rate as control:
-\[
-  \dot{\beta}_k = a_k, \qquad a_k \in \R.
-\]
+rate as control, $\dot{\beta}_k = a_k$, $a_k \in \R$.
 The augmented system is still exactly linear in $(x, \beta, u, a)$,
 so the Riccati framework applies.
-The MPPI loop now samples action \emph{rates} $a_k^{(i)}(t)$
+The re-cycle then queries action \emph{rates} $a_k(t)$
 rather than B-spline coefficients---a finer-grained search that
 can express non-periodic and transient contact schedules.
 Feasibility defects (e.g.\ the contact budget
 \eqref{eq:contact-budget}) need not hold pointwise during
-iteration; the MPPI iterations close them in the same way that
+iteration; the GP posterior contraction closes them in the same
+way that
 multiple-shooting iterations close continuity defects.
-We defer the implementation to future work.
+\cref{alg:action-rate} implements this formulation.
 \end{remark}
 
-\medskip\noindent\emph{The optimal cycle algorithm.}
-The preceding paragraphs assemble the components of the
-barrier-smoothed MPPI controller.
-We consolidate them into a single specification,
-referencing each equation as it appears.
+\begin{algorithm}[H]
+\caption{Quadruped re-cycle: concrete instantiation of
+\cref{alg:riccati-eval,alg:recycle} for centroidal gait
+optimization}
+\label{alg:quadruped}
+\begin{algorithmic}[1]
+\Require Robot model $(M,\mathcal{I},r_k,q^{\min},q^{\max},
+  \tau_{\max})$;\;
+  task $(v^*,z^*,H,\Delta t)$;\;
+  GP prior $\GP(\mu_0,k)$ over $\varphi \in \bT^3$;\;
+  seed $\varphi_0$ with $J(\varphi_0) \leq c_{\max}$;\;
+  barrier $\varepsilon$
+\Ensure Optimized gait $\varphi^*$, feedback gains
+  $K(t),k(t)$, posterior $(\mu_T,\sigma_T)$
+\Statex \textcolor{ConColor}{$\triangleright$ \textbf{Precompute}
+  (constant throughout)}
+\State $A_{\mathrm{kin}} \in \R^{13 \times 13}$
+  (double integrator);\;
+  $c \in \R^{13}$ (gravity + phase clock);\;
+  $\Pi_k = I_3 - \hat{n}_k \otimes \hat{n}_k$;\;
+  $x^{\mathrm{ref}}_t$
+\Statex \textcolor{CycleColor}{$\triangleright$
+  \textbf{Phase~1} ($n \leq 2d{+}1 = 7$): sigma-point warm start;\;
+  \textbf{Phase~2} ($n > 7$): LCB refinement}
+\State $\{\varphi^{(j)}\}_{j=1}^{7} \gets$ sigma points from
+  $(\mu_0, \Sigma_0)$ in~$\bT^3 \cap S_1$
+  \hfill\textcolor{CycleColor}{\small unscented
+  (\cref{rmk:unscented})}
+\Statex \textcolor{ConColor}{$\triangleright$
+  $S_1 \gets \{\varphi : \mu_0(\varphi)
+  + \sqrt{\bar\beta_1}\,\sigma_0(\varphi)
+  \leq c_{\max}\}$, seeded from~$\varphi_0$}
+\For{$n = 1, \ldots, T$}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{AcqColor}{$\triangleright$ \textbf{Acquisition}
+    (\cref{alg:recycle}, line~3)}
+  \State $\varphi_n \gets
+    \begin{cases}
+      \varphi^{(n)} & n \leq 7
+        \quad\textcolor{CycleColor}{\text{\small(sigma-point)}}
+        \\[3pt]
+      \displaystyle\arg\min_{\varphi \in S_n}\bigl[
+        \mu_{n-1}(\varphi)
+        - \sqrt{\bar\beta_n}\;\sigma_{n-1}(\varphi)
+      \bigr] & n > 7
+        \quad\textcolor{AcqColor}{\text{\small(GP-LCB)}}
+    \end{cases}$
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Barrier bridge}
+    (\cref{alg:riccati-eval}, line~1)}
+  \State $\beta_k(t) \gets$ B-spline$(\varphi_n)$
+    \eqref{eq:log-contact};\;
+    $\sigma_k \gets \mathrm{sigmoid}(\beta_k)$
+    \eqref{eq:sigmoid-contact};\;
+    $h_k \gets \varepsilon\,e^{-\beta_k}$
+  \State $A_d(t) \gets e^{A(t)\Delta t}$,\;
+    $V(t)\,B(\sigma(t))$
+    via \eqref{eq:matrix-exp};\;
+    $P_\infty$ via DARE \eqref{eq:dare-terminal}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Backward solve}
+    (\cref{alg:riccati-eval}, line~2; or CUDP
+    \cref{rmk:unscented})}
+  \State $P_H \gets P_\infty$;\;
+    $Q(t) \gets Q + w_{\mathrm{slip}}(\sum_k \sigma_k)\,
+    E_{v_x,v_y}$
+    \hfill\textcolor{ConColor}{\small no-slip}
+  \State Riccati \eqref{eq:riccati-tvlqr}
+    $\to K_t \in \R^{12 \times 13}$,\;
+    $k_t \in \R^{12}$,\;
+    $t = H{-}1, \ldots, 0$
+\algstore{quadrupedalg}
+\end{algorithmic}
+\end{algorithm}
 
-\smallskip
-\noindent\textsc{Input.}
-Robot model $(M, \mathcal{I}, r_k, q^{\min}, q^{\max},
-\tau_{\max})$;
-task $(v^*, z^*, H, \Delta t)$.
+\begin{algorithm}[H]
+\addtocounter{algorithm}{-1}
+\caption{Quadruped re-cycle (continued)}
+\begin{algorithmic}[1]
+\algrestore{quadrupedalg}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Forward simulate}
+    (\cref{alg:riccati-eval}, lines~3--4)}
+  \For{$m = 1, \ldots, M$}
+    \hfill\textcolor{ConColor}{\small domain-rand
+    \cref{rem:domain-rand}}
+    \For{$t = 0, \ldots, H{-}1$}
+      \State $u_t \gets k_t - K_t(x_t - x^{\mathrm{ref}}_t)$;\;
+        project $\sum_k \sigma_k f_{k,z} \geq mg$
+        \hfill\textcolor{ConColor}{\small support floor}
+      \State $x_{t+1} \gets e^{A(t)\Delta t}\,x_t
+        + V(t)(B(t)\,u_t + c)$
+        \hfill\eqref{eq:matrix-exp}
+    \EndFor
+  \EndFor
+  \State $J_n \gets \frac{1}{M}\sum_{m=1}^{M}
+    \bigl[\sum_t (\|x_t^{(m)}\!-\!x^{\mathrm{ref}}_t\|_Q^2
+    + \|u_t^{(m)}\|_R^2
+    - \varepsilon\sum_k\!\log(h_k\!+\!\varepsilon))\Delta t
+    + \Phi(x_H^{(m)})\bigr]$
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{PostColor}{$\triangleright$ \textbf{Posterior update}
+    (\cref{alg:recycle}, lines~5--6)}
+  \State $\mathcal{D}_n \gets \mathcal{D}_{n-1}
+    \cup \{(\varphi_n, J_n)\}$;\;
+    update GP: $\mu_n, \sigma_n \mid \mathcal{D}_n$
+    \hfill\textcolor{PostColor}{\small Bayesian}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Safety \&
+    contraction} (\cref{alg:recycle}, line~7)}
+  \State $S_{n+1} \gets \bigl\{\varphi :
+    \mu_n(\varphi)
+    + \sqrt{\bar\beta_n}\,\sigma_n(\varphi)
+    \leq c_{\max}\bigr\}$
+    \hfill\textcolor{ConColor}{\small pessimistic safe set}
+\EndFor
+\Statex \textcolor{CycleColor}{$\triangleright$
+  \textbf{Deployment} (per timestep)}
+\State \textbf{Impedance:}\;
+  $\sigma_k$ modulates PID \eqref{eq:pid-impedance};\;
+  joint barrier \eqref{eq:joint-barrier};\;
+  anti-windup \eqref{eq:anti-windup}
+\State \Return $\varphi^* = \arg\min_n J_n$,\;
+  $K(t),\, k(t)$,\;
+  $(\mu_T, \sigma_T)$
+\end{algorithmic}
+\end{algorithm}
 
-\smallskip
-\noindent\textsc{Precompute} (constant throughout).
-\begin{itemize}[nosep]
-\item $A_{\mathrm{kin}} \in \R^{13 \times 13}$: double integrator
-  ($\dot{p} = v$, $\dot{\phi} = \omega$).
-\item $c \in \R^{13}$: gravity ($c_5 = -g$) and
-  phase clock ($c_{12} = f_{\mathrm{stride}}$).
-\item $c_d = \Delta t\, c$.
-\item Contact normals $\hat{n}_k \in S^2$, $k = 1, \ldots, 4$
-  (default: $\hat{e}_z$ for flat ground);
-  projectors $\Pi_k = I_3 - \hat{n}_k \otimes \hat{n}_k$.
-\item Reference trajectory
-  $x^{\mathrm{ref}}_t$.
-\end{itemize}
-
-\smallskip
-\noindent\textsc{Initialize.}
-Gait phase $\varphi \in \bT^3$ (e.g.\ trot);
-$\varepsilon \leftarrow \varepsilon_0$;
-$H_{\mathrm{target}} \leftarrow \gamma_0 \log N$.
-
-\smallskip
-\noindent\textsc{Outer loop} (re-cycle, once per stride $T_s$).
-\begin{enumerate}[label=\textup{\arabic*.},nosep]
-\item \textbf{Sample.}
-  $\varphi^{(i)} = \varphi + \delta\varphi^{(i)}$,
-  \; $\delta\varphi^{(i)} \sim \cN(0, \Sigma_\varphi)$,
-  \; $i = 1, \ldots, N$.
-
-\item \textbf{Barrier bridge.}
-  For each $i$ and $t = 0, \ldots, H{-}1$:
-  log-contact mode
-  $\beta_k^{(i)}(t)$ via B-spline \eqref{eq:log-contact};
-  contact mode
-  $\sigma_k = \mathrm{sigmoid}(\beta_k)$ via \eqref{eq:sigmoid-contact};
-  foot height
-  $h_k = \varepsilon\, e^{-\beta_k}$;
-  state matrix
-  $A_d(t) = e^{A(t)\Delta t}$ via \eqref{eq:matrix-exp};
-  input matrix effect
-  $V(t)\, B(\sigma(t))$ via \eqref{eq:matrix-exp}.
-  Terminal cost $P_\infty^{(i)}$ via DARE
-  \eqref{eq:dare-terminal} from time-averaged dynamics.
-
-\item \textbf{Backward Riccati.}
-  Initialize $P_H = P_\infty^{(i)}$ (coverage).
-  Running cost $Q(t) = Q + w_{\mathrm{slip}}(\sum_k \sigma_k(t))\,E_{v_x,v_y}$
-  (no-slip).
-  For $t = H{-}1, \ldots, 0$, the recursion
-  \eqref{eq:riccati-tvlqr} with $Q \to Q(t)$ yields
-  $K_t^{(i)} \in \R^{12 \times 13}$,
-  $k_t^{(i)} \in \R^{12}$.
-
-\item \textbf{Forward simulate.}
-  $u_t = k_t - K_t(x_t - x^{\mathrm{ref}}_t)$;
-  \emph{support floor}: project onto
-  $\sum_k \sigma_k f_{k,z} \geq mg$;
-  then $x_{t+1} = e^{A(t)\Delta t}\, x_t + V(t)\,(B(t)\, u_t + c)$
-  via \eqref{eq:matrix-exp}.
-  Accumulate
-  \[
-  J^{(i)} \;=\; \textstyle\sum_t \bigl[
-    \|x_t - x^{\mathrm{ref}}_t\|_Q^2
-    + \|u_t\|_R^2
-    - \varepsilon \sum_k \log(h_k + \varepsilon)
-  \bigr]\Delta t \;+\; \Phi(x_H).
-  \]
-
-\item \textbf{Boltzmann reweight.}
-  $w^{(i)} = e^{-J^{(i)}/\varepsilon}
-  \big/ {\textstyle\sum_j} e^{-J^{(j)}/\varepsilon}$.
-
-\item \textbf{Update.}
-  $\varphi \leftarrow
-  \mathrm{arg}\!\bigl(\sum_i w^{(i)}
-  e^{2\pi i \varphi^{(i)}}\bigr)/(2\pi)$
-  \quad (circular mean on $\bT^3$).
-
-\item \textbf{Dual ascent.}
-  $S \leftarrow -\sum_i w^{(i)} \log w^{(i)}$.
-  If $S < H_{\mathrm{target}}$:
-  $\varepsilon \leftarrow
-  \alpha_{\mathrm{up}}\,\varepsilon$;
-  else
-  $\varepsilon \leftarrow
-  \alpha_{\mathrm{down}}\,\varepsilon$.
-  Then
-  $H_{\mathrm{target}} \leftarrow
-  \gamma\, H_{\mathrm{target}}$.
-\end{enumerate}
-
-\smallskip
-\noindent\textsc{Inner loop} (per timestep,
-impedance realization).
-\begin{enumerate}[label=\textup{\arabic*.},nosep,start=8]
-\item \textbf{Impedance realization.}
-  The barrier scale $\sigma_k$ from step~1 modulates the
-  PID impedance controller \eqref{eq:pid-impedance}:
-  stance legs ($\sigma_k \approx 1$) are stiff, swing legs
-  ($\sigma_k \approx 0$) compliantly track $h_k$.
-  The rigid-body simulator provides ground reaction forces
-  through contact---no Jacobian transpose mapping is needed.
-  Joint-limit barrier \eqref{eq:joint-barrier} and
-  anti-windup \eqref{eq:anti-windup} apply.
-\end{enumerate}
-
-\begin{remark}[Arithmetic completeness of the algorithm]
-Every operation in steps~1--7 is a finite composition of
+\begin{remark}[Arithmetic completeness of \cref{alg:quadruped}]
+\label{rem:arithmetic-complete}
+Every operation in lines~3--15 is a finite composition of
 $\exp$, $\log$, and linear algebra
 (\cref{prop:forward-only}).
-Step~3 is exact---not sampled: the centroidal dynamics is
-affine in $x$ with time-varying $A(t)$ and $B(t)$, so the Riccati
-recursion gives closed-form optimal feedback within each
-gait sample (\S\ref{sec:riccati}).
-MPPI pays $O(N^{-1/2})$ only for gait mode selection
-over $\bT^3$.
-Each outer iteration increases the effective $\nu$
-and decreases $H(f)$
-(\cref{prop:student-convergence}):
-the re-cycle converges to the cycle.
+The backward solve (lines~7--8) is exact---not sampled: the
+centroidal dynamics is affine in $x$ with time-varying $A(t)$
+and $B(t)$, so the Riccati recursion gives closed-form optimal
+feedback (\S\ref{sec:riccati}); the CUDP alternative
+(\cref{rmk:unscented}) achieves the same without linearization.
+GP-UCB replaces MPPI's $O(N^{-1/2})$ Monte Carlo rate with
+the information-theoretic rate $R_T/T \to 0$ via
+$\gamma_T$ (\cref{prop:gp-regret}), while the safe set~$S_n$
+provides per-step constraint satisfaction
+(\cref{prop:safe-gp}).
+Each outer iteration contracts the Lyapunov function
+$V_n = \tr(\Sigma_n)$ (\cref{rmk:mpc}), with
+$\gamma_T$ playing the role of holonomy
+(\cref{rmk:omd-regret}): the re-cycle converges to the
+Gaussian fixed point $H(f) = 0$
+(\cref{prop:student-convergence}).
+\end{remark}
+
+\newpage
+\noindent\emph{Action-rate formulation.}
+The B-spline parameterization (\cref{alg:quadruped}) treats
+the contact schedule $\sigma_k(t) = \mathrm{sigmoid}(\beta_k(t))$ as
+\emph{predetermined}: the re-cycle optimizes the spline coefficients
+$c_{k,j}$, and the Riccati inner solve takes $\sigma_k(t)$ as given.
+\cref{rem:action-driven} observes that promoting $\beta_k$ to a
+\emph{dynamical state} with $\dot\beta_k = a_k$ yields an augmented
+system that is still exactly linear for frozen~$\sigma$:
+\begin{gather}
+\label{eq:augmented-dynamics}
+\dot{z} = \tilde{A}(\sigma)\,z + \tilde{B}(\sigma)\,v + \tilde{c},
+\qquad
+z = \begin{pmatrix} x \\ \beta \end{pmatrix}\!\in \R^{17},
+\quad
+v = \begin{pmatrix} u \\ a \end{pmatrix}\!\in \R^{16},
+\\[4pt]
+\notag
+\tilde{A} = \begin{pmatrix} A(\sigma) & 0 \\ 0 & 0 \end{pmatrix}\!,
+\quad
+\tilde{B} = \begin{pmatrix} B(\sigma) & 0 \\ 0 & I_4 \end{pmatrix}\!,
+\quad
+\tilde{c} = \begin{pmatrix} c \\ 0 \end{pmatrix}\!,
+\\[4pt]
+\notag
+\tilde{Q} = \begin{pmatrix} Q & 0 \\ 0 & 0 \end{pmatrix}\!,
+\quad
+\tilde{R} = \begin{pmatrix} R_u & 0 \\ 0 & R_a I_4 \end{pmatrix}\!.
+\end{gather}
+The Riccati framework applies to the $17$-state system:
+the backward solve produces joint feedback
+$K_z(t) \in \R^{16 \times 17}$ and feedforward $k_z(t) \in \R^{16}$,
+co-optimizing locomotion forces $u(t)$ and contact rates $a(t)$ in
+one shot.
+The re-cycle queries $\theta = (\beta(0),\, \log R_a) \in \R^5$,
+where $\beta(0)$ sets the initial contact configuration and
+$R_a > 0$ controls the cost of reshaping the schedule
+(\cref{rem:action-driven}):
+\begin{itemize}[nosep]
+\item $R_a \to \infty$: contact frozen, recovers
+  \cref{alg:quadruped};
+\item $R_a \to 0$: contact fully co-optimized with locomotion.
+\end{itemize}
+
+\begin{algorithm}[H]
+\caption{Action-rate re-cycle: co-optimized contact and locomotion
+  via augmented Riccati (\cref{rem:action-driven})}
+\label{alg:action-rate}
+\begin{algorithmic}[1]
+\Require Robot model as in \cref{alg:quadruped};\;
+  GP prior $\GP(\mu_0, k)$ over
+  $\theta = (\beta_0, \log R_a) \in \R^5$;\;
+  seed $\theta_0$ with $J(\theta_0) \leq c_{\max}$;\;
+  barrier $\varepsilon$
+\Ensure Optimized $\theta^*$, augmented feedback
+  $(K_z(t), k_z(t))$, posterior $(\mu_T, \sigma_T)$
+\Statex \textcolor{CycleColor}{$\triangleright$
+  \textbf{Phase~1} ($n \leq 11$): sigma-point warm start;\;
+  \textbf{Phase~2} ($n > 11$): LCB refinement}
+\State $\{\theta^{(j)}\}_{j=1}^{11} \gets$ sigma points from
+  $(\mu_0, \Sigma_0)$ in~$\R^5 \cap S_1$
+  \hfill\textcolor{CycleColor}{\small $d = 5$}
+\Statex \textcolor{ConColor}{$\triangleright$
+  $S_1 \gets \{\theta : \mu_0(\theta)
+  + \sqrt{\bar\beta_1}\,\sigma_0(\theta) \leq c_{\max}\}$}
+\For{$n = 1, \ldots, T$}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{AcqColor}{$\triangleright$ \textbf{Acquisition}
+    (\cref{alg:recycle}, line~3)}
+  \State $\theta_n \gets
+    \begin{cases}
+      \theta^{(n)} & n \leq 11
+        \quad\textcolor{CycleColor}{\text{\small(sigma-point)}}
+        \\[3pt]
+      \displaystyle\arg\min_{\theta \in S_n}\bigl[
+        \mu_{n-1}(\theta)
+        - \sqrt{\bar\beta_n}\;\sigma_{n-1}(\theta)
+      \bigr] & n > 11
+        \quad\textcolor{AcqColor}{\text{\small(GP-LCB)}}
+    \end{cases}$
+  \State $(\beta_0^{(n)},\, R_a^{(n)}) \gets \theta_n$
+    \hfill\textcolor{CycleColor}{\small unpack}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Augment \& freeze}
+    \eqref{eq:augmented-dynamics}}
+  \State $\sigma_k(t) \gets \mathrm{sigmoid}(\beta_k(t))$
+    from prior trajectory;\;
+    build $\tilde{A}(t), \tilde{B}(t)$
+  \State $\tilde{Q} \gets \mathrm{diag}(Q, 0_4)$;\;
+    $\tilde{R} \gets \mathrm{diag}(R_u,\, R_a^{(n)} I_4)$
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Backward solve}
+    ($17$-state Riccati)}
+  \State $\tilde{P}_H \gets \tilde{P}_\infty$
+    via DARE \eqref{eq:dare-terminal} on
+    $(\bar{\tilde{A}}_d,\, \bar{\tilde{B}}_d,\,
+    \tilde{Q},\, \tilde{R})$
+  \State Riccati \eqref{eq:riccati-tvlqr}
+    on $(\tilde{A}_d(t),\, \tilde{B}_d(t))$
+    $\to K_{z,t} \in \R^{16 \times 17}$,\;
+    $k_{z,t} \in \R^{16}$,\;
+    $t = H{-}1, \ldots, 0$
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Forward simulate}}
+  \For{$m = 1, \ldots, M$}
+    \hfill\textcolor{ConColor}{\small domain-rand
+    \cref{rem:domain-rand}}
+    \For{$t = 0, \ldots, H{-}1$}
+      \State $[u_t;\, a_t] \gets k_{z,t}
+        - K_{z,t}(z_t - z_t^{\mathrm{ref}})$;\;
+        project support floor
+      \State $x_{t+1} \gets e^{A(t)\Delta t}\,x_t
+        + V(t)(B(t)\,u_t + c)$;\;
+        $\beta_{t+1} \gets \beta_t + a_t\,\Delta t$
+      \State $\sigma_k \gets \mathrm{sigmoid}(\beta_k)$;\;
+        $h_k \gets \varepsilon\,e^{-\beta_k}$
+        \hfill\textcolor{ConColor}{\small update contact}
+    \EndFor
+  \EndFor
+  \State $J_n \gets \frac{1}{M}\sum_{m=1}^{M}
+    \bigl[\sum_t (\|x_t^{(m)}\!-\!x^{\mathrm{ref}}_t\|_Q^2
+    + \|u_t^{(m)}\|_{R_u}^2
+    + \|a_t^{(m)}\|_{R_a}^2
+    - \varepsilon\sum_k\!\log(h_k\!+\!\varepsilon))\Delta t
+    + \Phi(x_H^{(m)})\bigr]$
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{PostColor}{$\triangleright$ \textbf{Posterior update}
+    (\cref{alg:recycle}, lines~5--6)}
+  \State $\mathcal{D}_n \gets \mathcal{D}_{n-1}
+    \cup \{(\theta_n, J_n)\}$;\;
+    update GP: $\mu_n, \sigma_n \mid \mathcal{D}_n$
+    \hfill\textcolor{PostColor}{\small Bayesian}
+  \Statex \hspace{\algorithmicindent}%
+    \textcolor{ConColor}{$\triangleright$ \textbf{Safety \&
+    contraction} (\cref{alg:recycle}, line~7)}
+  \State $S_{n+1} \gets \bigl\{\theta :
+    \mu_n(\theta)
+    + \sqrt{\bar\beta_n}\,\sigma_n(\theta)
+    \leq c_{\max}\bigr\}$
+    \hfill\textcolor{ConColor}{\small pessimistic safe set}
+\EndFor
+\State \Return $\theta^* = \arg\min_n J_n$,\;
+  $(K_z(t),\, k_z(t))$,\;
+  $(\mu_T, \sigma_T)$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Properties of \cref{alg:action-rate}]
+\label{rem:action-rate-recovery}
+\begin{enumerate}[label=(\roman*),nosep]
+\item \emph{Recovery.}
+  As $R_a \to \infty$, the augmented Riccati forces $a_t \to 0$
+  and $\beta(t) \equiv \beta(0)$: the contact schedule is
+  frozen and \cref{alg:action-rate} reduces to
+  \cref{alg:quadruped} with $\varphi = \mathrm{sigmoid}(\beta(0))$.
+\item \emph{Arithmetic completeness.}
+  The augmented system \eqref{eq:augmented-dynamics} preserves
+  the $(\exp, \log, \text{linear algebra})$ closure of
+  \cref{rem:arithmetic-complete}: the only new operation is the
+  integrator $\beta_{t+1} = \beta_t + a_t\Delta t$ (linear).
+\item \emph{Dimension.}
+  State $17 \times 17$ vs.\ $13 \times 13$; control $16 \times 16$
+  vs.\ $12 \times 12$.
+  The Riccati cost per backstep grows as $O(n^3)$,
+  so the overhead is $(17/13)^3 \approx 2.2\times$.
+  The GP search dimension increases from $d = 3$ to $d = 5$
+  ($2d{+}1 = 11$ sigma points vs.\ $7$).
+\item \emph{Feasibility defects.}
+  The contact budget \eqref{eq:contact-budget} need not hold
+  pointwise during iteration; the GP posterior contraction
+  (\cref{rmk:mpc}) closes feasibility defects progressively,
+  analogous to multiple-shooting continuity closure.
+\end{enumerate}
 \end{remark}
 
 \medskip\noindent\textbf{(F) Lie--Poisson duality: velocity
@@ -1220,7 +1420,7 @@ is the spectral-domain counterpart: ABA factors the Riccati in the spatial
 domain (tree topology), while Peter--Weyl factors it in the spectral domain
 (representation blocks).
 
-\item \emph{Stochastic extension and MPPI.}
+\item \emph{Stochastic extension and the re-cycle.}
 Adding noise to joint torques or base forces gives an SDE on
 $SE(3) \times \bT^n$.
 The Hopf--Cole linearization (\S\ref{sec:mppi}) converts the HJB for the
@@ -1230,13 +1430,13 @@ $\lambda_k = \varepsilon/h_k(t;\varphi)$ (preceding paragraphs),
 the landscape is smooth in both the gait phase
 $\varphi \in \bT^3$ and the diffusion parameter $\varepsilon$:
 no contact mode switching is needed.
-Each forward sample of the SDE can be computed in $O(n)$ per time step using
-the recursive structure---the tree factorization is preserved under
-randomization.
-The Monte Carlo estimator converges at the CLT rate $O(N^{-1/2})$,
-independently of $n$ and $\dim G = 6 + n$:
-Featherstone provides the $O(n)$ forward simulator; the CLT provides the
-dimension-free convergence guarantee.
-This is the MPPI framework for articulated rigid-body control.
+Each forward evaluation (\cref{alg:riccati-eval}) can be computed in
+$O(n)$ per time step using the recursive structure---the tree
+factorization is preserved under domain randomization.
+The GP-UCB outer loop (\cref{alg:recycle}) replaces the Monte Carlo
+$O(N^{-1/2})$ rate with the information-theoretic rate $R_T/T \to 0$
+via $\gamma_T$ (\cref{prop:gp-regret}), while Featherstone
+provides the $O(n)$ forward simulator.
+This is the re-cycle framework for articulated rigid-body control.
 \end{enumerate}
 

@@ -3,14 +3,27 @@
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathrsfs}
 \usepackage{mathtools}
+\usepackage[dvipsnames]{xcolor}
 \usepackage{tikz-cd}
 \usepackage{enumitem}
 \usepackage{graphicx} % for \rotatebox
 \usepackage[pdfencoding=auto,psdextra]{hyperref}
 \usepackage{cleveref}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\crefname{algorithm}{Algorithm}{Algorithms}
 
 % Allow slight extra inter-word stretch to reduce overfull boxes
 \emergencystretch=1.5em
+
+% Prevent vertical stretching on pages with short content (e.g., before large floats)
+\raggedbottom
+
+% Color annotations for algorithm
+\definecolor{AcqColor}{named}{MidnightBlue}   % acquisition / exploration
+\definecolor{PostColor}{named}{OliveGreen}     % GP posterior update
+\definecolor{ConColor}{named}{BrickRed}        % contraction / constraint
+\definecolor{CycleColor}{named}{Violet}        % cycle connection M→A→Â→M
 
 % Suppress hyperref warnings from math in PDF bookmark strings
 \pdfstringdefDisableCommands{%
@@ -59,6 +72,10 @@
 \newcommand{\Proj}{\mathsf{Proj}}
 \newcommand{\Chu}{\mathrm{Chu}}
 \DeclareMathOperator{\op}{op}
+\newcommand{\GP}{\mathcal{GP}}
+\newcommand{\cO}{\mathcal{O}}
+\DeclareMathOperator{\KL}{KL}
+\DeclareMathOperator{\diag}{diag}
 \newcommand{\parr}{\mathbin{\rotatebox[origin=c]{180}{\&}}}
 
 \title[Optimal Cycle Theory]{Optimal Cycle Theory:\\ holonomy of the additive-multiplicative loop\\ via Fourier analysis on groups}

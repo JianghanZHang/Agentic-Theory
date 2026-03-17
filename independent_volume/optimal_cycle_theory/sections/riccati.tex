@@ -5,16 +5,19 @@ The acronym GPI in the in-context GPI theorem (\cref{thm:in-context-gpi}) admits
 \emph{Generalized Path Integral}.
 The two readings coincide.
 
-The MPPI estimator of \cref{prop:forward-only} supplies the
-improvement half: sample $N$ trajectories, assign Boltzmann weights
-$w^{(i)} \propto \exp\!\bigl(-J^{(i)}/\varepsilon\bigr)$, and compute
-the weighted average.
-The Boltzmann reweighting is exactly the exponential bridge applied to
-the path measure---it converts the uniform (prior) measure over
-trajectories to the optimal (posterior) measure, with the cost
-functional $J$ playing the role of the negative log-likelihood.
-Convergence at $O(N^{-1/2})$ is guaranteed by the CLT
-(\cref{thm:add-clt,thm:mult-clt}), independently of $\dim G$.
+The forward estimator of \cref{prop:forward-only} supplies the
+inner evaluation: for a given gait parameter~$\beta$, sample $M$
+domain-randomized trajectories and average to obtain $J(\beta)$
+(\cref{alg:riccati-eval}).
+The Boltzmann target
+$\pi(\beta) \propto \exp\!\bigl(-J(\beta)/\varepsilon\bigr)$
+converts the uniform (prior) measure over trajectories to the
+optimal (posterior) measure, with the cost functional $J$
+playing the role of the negative log-likelihood.
+The re-cycle outer loop (\cref{alg:recycle}) replaces the
+Monte Carlo convergence rate $O(N^{-1/2})$ with the
+information-theoretic rate $R_T/T \to 0$ via
+$\gamma_T$ (\cref{prop:gp-regret}).
 
 \medskip\noindent\textbf{Riccati compression.}
 Specialize to $G = (\R^n, +)$ with linear dynamics
@@ -41,5 +44,83 @@ the cost of leaving the Riccati regime: on a nonlinear Lie group~$G$
 with non-quadratic cost, the path integral cannot be evaluated
 analytically and one pays $O(N^{-1/2})$ per sample for the Monte Carlo
 approximation.
+\end{remark}
+
+\medskip\noindent\textbf{FONC and SOSC: prior and posterior Riccati.}
+The Boltzmann prior-to-posterior conversion above
+(uniform measure $\to$ $\pi \propto e^{-J/\varepsilon}$)
+has an exact counterpart in the backward pass.
+Two variants of the Riccati recursion arise, distinguished by
+their treatment of dynamics curvature---the second-order terms
+$V'_x \cdot f_{xx}$ in the Q-function expansion.
+
+\begin{remark}[FONC and SOSC backward passes]
+\label{rem:fonc-sosc}
+The DDP backward pass expands
+$Q(x_t, u_t) = \ell_t + V_{t+1}(f_t)$ to second order.
+The $Q_{uu}$ block decomposes as
+\begin{equation}\label{eq:fonc-sosc}
+Q_{uu}^{\mathrm{SOSC}}
+= \underbrace{\ell_{uu} + f_u^\top V'_{xx}\, f_u}_{%
+    Q_{uu}^{\mathrm{FONC}} \;\succeq\; 0}
+  \;+\; \underbrace{\lambda^{*\top}_{t+1}\,\nabla^2_{uu} f_t}_{%
+    \text{dynamics curvature}},
+\end{equation}
+where $V'_x = \lambda^*_{t+1}$ at optimality
+(similarly for $Q_{xx}$ and $Q_{ux}$).
+The \emph{first-order necessary conditions} (FONC) backward pass
+drops the dynamics curvature, recovering
+iLQR~\cite{TassaErezTodorov,MastalliCrocoddyl}:
+$Q_{uu}^{\mathrm{FONC}} \succeq 0$ unconditionally---a
+\emph{prior} on the cost landscape that ignores
+how nonlinear the dynamics are.
+The \emph{second-order sufficient conditions} (SOSC) backward pass
+retains it, updating the prior with the dynamics Lagrangian Hessian
+$\lambda^{*\top}\nabla^2 f$---a \emph{posterior} that is
+positive-definite only on the dynamically reachable subspace
+(the reduced Hessian
+$Q_{uu}^{\mathrm{feas}}
+= Q_{uu} - Q_{ux}\,Q_{xx}^{-1}\,Q_{xu} \succ 0$).
+For \emph{linear} dynamics, $\nabla^2 f = 0$ and the prior
+equals the posterior: FONC $=$ SOSC.
+Frey et al.~\cite{FreyDiffMPC} prove the converse:
+the QP (FONC) and NLP (SOSC) sensitivities
+$\partial z^\star/\partial\theta$ coincide \emph{if and only if}
+the Lagrangian Hessian is exact---equivalently, $\nabla^2 f = 0$.
+For nonlinear dynamics, FONC sensitivities can be
+``completely off''~\cite[Section~5.1]{FreyDiffMPC}.
+\end{remark}
+
+\begin{remark}[Implications for the re-cycle]
+\label{rem:fonc-recycle}
+The FONC/SOSC decomposition \eqref{eq:fonc-sosc} has three
+consequences for the re-cycle architecture.
+\begin{enumerate}[label=(\roman*),nosep]
+\item \emph{Centroidal model.}
+  The dynamics $\dot x = A(\sigma)\,x + B(\sigma)\,u + c$ is
+  affine in $(x, u)$ for frozen contact~$\sigma$, so
+  $\nabla^2 f = 0$ and FONC $=$ SOSC\@.
+  The iLQR backward pass (\cref{alg:riccati-eval}) gives
+  exact NLP sensitivities, not approximate ones---for
+  both \cref{alg:quadruped} ($13$-state) and
+  \cref{alg:action-rate} ($17$-state augmented).
+\item \emph{GP-LCB architecture.}
+  The re-cycle (\cref{alg:recycle}) evaluates $J(\theta)$
+  as a black box: the GP posterior provides Bayesian
+  ``sensitivities'' $(\mu_n, \sigma_n)$ through function
+  evaluations, without computing
+  $\partial z^\star/\partial\theta$ via the implicit function
+  theorem.
+  The two-level contraction (\cref{prop:unconditional})
+  therefore holds unconditionally---it does not require
+  the SOSC backward pass at either level.
+\item \emph{Holonomy convergence.}
+  The re-cycle converges to $H(f) = 0$
+  (\cref{prop:student-convergence}), the Gaussian regime
+  where the dynamics curvature correction vanishes and
+  FONC $=$ SOSC\@.
+  The distinction between prior and posterior Riccati
+  dissolves at the fixed point.
+\end{enumerate}
 \end{remark}
 

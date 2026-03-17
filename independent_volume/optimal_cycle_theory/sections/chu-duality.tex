@@ -266,15 +266,15 @@ in log space, exactly as Pratt's $\beta(t)$; and
 $\sigma_k = \mathrm{sigmoid}(\beta_k) = 1/(1 + e^{-\beta_k})$ is the
 smooth contact mode, exactly as Pratt's
 $\varepsilon = e^\beta + \delta$.
-The MPPI outer loop optimizes the B-spline coefficients
-$c_{k,j} \in \R$---the ``tuning-free'' log-domain
+The re-cycle outer loop (\cref{alg:recycle}) optimizes the B-spline
+coefficients $c_{k,j} \in \R$---the ``tuning-free'' log-domain
 representation---while the Riccati inner solve computes optimal gains
 from the resulting $\sigma_k(t)$---the physical-domain trajectory.
-The MPPI outer loop, viewed as a path integral over log-space contact
+The re-cycle, viewed as Bayesian quadrature over log-space contact
 schedules (\S\ref{sec:articulated}), makes this Chu duality
 computational: the forward map $\beta \to x(T)$ evaluates the Chu
-pairing, while the Boltzmann-weighted inverse (path-integral mean)
-is the adjunction condition.
+pairing, while the GP posterior mean (conditional expectation) is
+the adjunction condition.
 \end{remark}
 
 \subsection*{Linear logic interpretation}
@@ -308,9 +308,9 @@ configuration space.
 As $\varepsilon \to 0$, the smooth potential sharpens to the hard
 constraint---the $!$ ``forgets'' and the resource becomes linear
 again.
-The dual ascent on $\varepsilon$ (\S\ref{sec:cycle}) is the
-\emph{dereliction} map $!A \to A$: each iteration tightens the
-barrier, consuming one layer of the exponential modality.
+The barrier schedule $\varepsilon \to 0$ (\S\ref{sec:cycle}) is the
+\emph{dereliction} map $!A \to A$: each tightening step consumes
+one layer of the exponential modality.
 
 \medskip\noindent\emph{(b) Hopf--Cole as $!$.}
 The substitution $\psi = e^{-V/(2\varepsilon)}$ converts the
@@ -325,7 +325,7 @@ semantic content.
 
 \begin{remark}[The $\varepsilon$-dereliction path]
 \label{rmk:dereliction}
-In the dual ascent $\varepsilon \to 0$:
+In the barrier schedule $\varepsilon \to 0$:
 \begin{enumerate}[nosep]
 \item the Boltzmann distribution
   $w \propto e^{-J/\varepsilon}$ concentrates on the optimal
@@ -571,9 +571,10 @@ Fourier inversion) that mediates the product; swapping inputs
 through this mediator reverses the sign, yielding
 anti-commutativity $e_a \cdot e_b = -e_b \cdot e_a$
 automatically.
-Triad~T1 is the contact Jacobian constructed in detail below;
-the remaining six triads are identified by their physical content
-but their full Chu tensor-product verification is deferred.
+Triads~T1, T2, and~T6 are constructed in full below
+(\cref{thm:fano-triads}); the remaining four (T3--T5, T7)
+are identified by their physical content with key identities
+verified (\cref{rmk:remaining-triads}).
 
 \medskip\noindent\emph{Three doublings, three laws.}
 The three Cayley--Dickson doublings correspond to Newton's three
