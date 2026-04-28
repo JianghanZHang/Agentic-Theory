@@ -211,9 +211,9 @@ Laplacian (ordering vertices $b_{1}, b_{2}, \text{table}$) is
 \end{equation}
 Direct computation shows that $L_{c}$ has eigenvalue $0$ with
 eigenvector $\mathbf{1}_{V}$, plus two further eigenvalues
-whose product equals
-$\det(L_{c}|_{\mathbf{1}^{\perp}}) = w_{12}\,w_{1t} +
-w_{12}\,w_{1t}$ up to scaling, and which are both positive
+whose product is $\mu_{1}\mu_{2} = 3\,w_{12}\,w_{1t}$ by the
+matrix-tree theorem applied to the path graph
+$b_{2}\!-\!b_{1}\!-\!\text{table}$, and which are both positive
 exactly when both $w_{12}$ and $w_{1t}$ are positive. The
 spectral gap therefore satisfies
 \begin{equation}
@@ -301,19 +301,15 @@ with the phase numbering of \cref{sec:phase-cycle}: phase 2 is
 the bang arc concentrated at $t_{1}$ and phase 4 is the bang
 arc concentrated at $t_{4}$.
 
-The two crossings partition $[0, T]$ into three intervals:
-\emph{pre-contact} $[0, t_{1}]$ on which $\rcontact < 1$,
-\emph{in-contact} $[t_{1}, t_{4}]$ on which $\rcontact \ge 1$,
-and \emph{post-contact} $[t_{4}, T]$ on which $\rcontact < 1$
-again. Section~\ref{sec:phase-cycle} will further subdivide
-the in-contact interval $[t_{1}, t_{4}]$ into the bang arcs
-(phases 2 and 4) localized at the two crossings and the
-singular arc (phase 3) on the open interior $(t_{1}, t_{4})$
-where the spectral-gap maintenance condition $\specgap \ge
-\varepsilon$ of \cref{sec:specgap} is in force. The pre- and
-post-contact intervals together with the in-contact transport
-arc account for the five-phase decomposition of the cycle
-introduced in the next section.
+The two crossings partition $[0, T]$ into out-of-contact
+intervals $\rcontact < 1$ outside $[t_{1}, t_{4}]$ and an
+in-contact interval $\rcontact \ge 1$ inside.
+\Cref{sec:phase-cycle} subdivides the in-contact interval
+further---the two crossings themselves are bang arcs, and the
+open interior $(t_{1}, t_{4})$ is a singular arc subject to
+the spectral-gap maintenance condition $\specgap \ge
+\varepsilon$ of \cref{sec:specgap}---yielding the five-phase
+decomposition.
 
 The two-crossing lemma should be read as a forced
 consequence of two facts only: the continuity of $\rcontact$
@@ -364,7 +360,7 @@ subject to the manipulator--object dynamics $\dot x = f(x, u)$
 and to the spectral-gap constraint
 \begin{equation}
 \label{eq:specgap-constraint}
-  \rcontact(t) > 1
+  \rcontact(t) \ge 1
   \;\Longrightarrow\;
   \specgap\bigl(L_{c}(t)\bigr) \;\ge\; \varepsilon
 \end{equation}
@@ -586,28 +582,23 @@ instantiation that follows.
 The pick--place OCP \eqref{eq:ocp} decomposes into two coupled
 optimization levels:
 \begin{enumerate}[label=(\roman*),nosep]
-  \item \textbf{Outer (trajectory).} Choose a velocity field
-    $\veltheta(x, t)$ that transports the object from its
-    initial pose $g^{A}$ to its final pose $g^{B} \in SE(3)$,
-    minimizing the trajectory cost
+  \item \textbf{Outer (trajectory).} Solve the pick--place OCP
+    \eqref{eq:ocp} for the control input $u(\cdot)$ that
+    transports the object from its initial pose $g^{A}$ to its
+    final pose $g^{B} \in SE(3)$ along the manipulator--object
+    dynamics $\dot x = f(x, u)$, subject to the spectral-gap
+    maintenance condition
     \begin{equation}
     \label{eq:bilevel-outer}
-      \min_{\veltheta} \;
-      \mathbb{E}\!\left[
-        \int_{0}^{T} L(x, \dot x)\,dt
-        \;+\; \Psi(x_{T})
-      \right]
+      \specgap\!\bigl(L_{c}(t)\bigr) \;\ge\; \varepsilon,
+      \qquad t \in [t_{1}, t_{4}],
     \end{equation}
-    subject to the continuity equation
-    $\partial_{t}\mu_{t} + \nabla\!\cdot\!(\veltheta\, \mu_{t}) = 0$
-    governing the evolution of the state distribution $\mu_{t}$,
-    and to the spectral-gap maintenance condition
-    $\specgap(L_{c}(t)) \ge \varepsilon$ on the in-contact
-    interval $[t_{1}, t_{4}]$ identified in \cref{lem:two-crossing}.
+    on the in-contact interval identified in
+    \cref{lem:two-crossing}.
   \item \textbf{Inner (force closure).} At every instant
     $t \in [t_{1}, t_{4}]$, choose finger contact forces
-    $f(t) = (f_{n}(t), f_{t}(t))$ that maximize the contact
-    graph spectral gap
+    $f(t) = (f_{n}(t), f_{t}(t))$ achieving the largest contact
+    graph spectral gap admissible under the friction cone:
     \begin{equation}
     \label{eq:bilevel-inner}
       \max_{f(t)} \;
@@ -660,8 +651,12 @@ followed by an inner force-closure step at each instant of the
 proposed trajectory, followed by a corrective outer step---or by a
 single-shot reformulation when the inner program admits a
 closed-form maximum-spectral-gap solution. The choice of solver
-is deferred to \cref{sec:hierarchical}; the present subsection
-fixes only the structural decomposition.
+is deferred to \cref{sec:hierarchical}; the
+flow-matching reformulation that parameterizes the outer
+trajectory through a learned velocity field $\veltheta$ over a
+state distribution $\mu_{t}$ is deferred to
+\cref{sec:plan-training}. The present subsection fixes only the
+structural decomposition.
 
 \paragraph{Friction model.}
 The friction-cone constraint $|f_{t}| \le \mu f_{n}$ that appears
@@ -716,7 +711,7 @@ trajectories, with the rigid-body limit recovered only as a
 singular limit. The present subsection makes the modeling regime
 explicit: it names the three formulations of contact dynamics in
 current use, identifies the bridge between them, and states which
-formulation the structural results of §2 are written against.
+formulation the structural results of \cref{sec:framework} are written against.
 
 \paragraph{Three formulations of contact dynamics.}
 Contact dynamics admits three formulations that are mathematically
@@ -889,7 +884,7 @@ alternative to CITO's optimization-based mode discovery, not a
 circumvention of mode handling itself.
 
 \paragraph{Limit stability.}
-The structural results of §2---the five-phase decomposition
+The structural results of \cref{sec:framework}---the five-phase decomposition
 (\cref{lem:two-crossing}), the three-term decomposition
 (\cref{thm:three-term}), the bi-level scaffold
 (\cref{def:bilevel}), and the spectral-gap interpretation
