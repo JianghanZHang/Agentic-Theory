@@ -832,6 +832,62 @@ problem. \emph{The contact-mode pre-specification of the phase
 decomposition is the structural reason this paper does not
 require an outer-loop MPCC formulation.}
 
+\paragraph{Contact-mode discovery as observation, not inference.}
+The pre-specification of \cref{sec:phase-cycle} should be read at
+the level of the \emph{intended} contact mode, not at the level of
+the contact graph $G_{c}$ itself. The framework distinguishes
+three layers, each with its own object and message-passing
+discipline:
+
+\begin{enumerate}[leftmargin=*]
+  \item \emph{Intent} (specified by the plan generator,
+        \cref{sec:plan-training}). A plan $P$ is a discrete
+        ordered sequence of pick--place operations. For each
+        operation the intent layer specifies: the identity of
+        the manipulated body, the identity of the support
+        surface, the phase index $i \in \{1, \ldots, 5\}$, and
+        the regime of $\rcontact$ that phase enforces---no
+        contact ($\rcontact = 0$, phases~1 and~5),
+        $\swsurf$-transition (phases~2 and~4), or contact
+        ($\rcontact > 1$, phase~3). It does \emph{not} specify
+        the contact graph $G_{c}$, the contact forces $f$, or
+        the edge weights $w_{ij}$; nor does it specify the
+        precise crossing times $t_{1}, t_{4}$ beyond the
+        trajectory-optimization estimate.
+  \item \emph{Observation} (produced by the per-step solve and
+        sensors). At each timestep $t$, the per-timestep convex
+        contact solve of formulation~(3) returns the set of
+        active contacts and their force magnitudes; the contact
+        graph $G_{c}(t) = (V, E, w)$ is read off directly from
+        the QP dual variables. On hardware, $G_{c}(t)$ is
+        reconstructed from joint-torque residuals, tactile
+        sensing, and visual proximity. The order parameter
+        $\rcontact(t)$ and the spectral gap $\specgap(t)$ are
+        derived from $G_{c}(t)$ by
+        \cref{def:rho,lem:specgap-interp}.
+  \item \emph{Closed-loop reconciliation} (performed by the
+        finite-state controller of \cref{sec:plan-training}).
+        The reconciliation layer compares the observed
+        $\bigl(\rcontact(t), \specgap(t), G_{c}(t)\bigr)$ to the
+        invariant prescribed by the current phase, emitting a
+        REPLAN signal back to the intent layer when the
+        observation diverges from the prescribed regime---for
+        example, $\rcontact$ dropping below $1$ during phase~3
+        signals object slip and triggers a re-issue of $P$ from
+        the new state.
+\end{enumerate}
+
+The message-passing pattern is: the intent layer sends the phase
+index and the prescribed $\rcontact$ regime downward; the
+observation layer sends $(\rcontact, \specgap, G_{c})$ upward;
+the reconciliation layer forwards the merged $(\text{phase},
+\text{state})$ to the controller of \cref{sec:plan-training} and
+emits REPLAN upward on discrepancy. Contact-mode handling is
+therefore \emph{closed-loop on observation, with intent
+prescribed at the phase level only}. This is the structural
+alternative to CITO's optimization-based mode discovery, not a
+circumvention of mode handling itself.
+
 \paragraph{Limit stability.}
 The structural results of §2---the five-phase decomposition
 (\cref{lem:two-crossing}), the three-term decomposition
