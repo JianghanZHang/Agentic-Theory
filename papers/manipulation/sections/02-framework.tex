@@ -706,6 +706,148 @@ bridge from the structural results of \cref{sec:Sigma} and
 \cref{sec:hierarchical}.
 
 % ---------------------------------------------------------------
+\subsection{Smooth-contact regime and the contact-implicit limit}
+\label{sec:smooth-contact}
+
+The framework of \cref{sec:rho,sec:specgap,sec:Sigma,sec:three-term,sec:task-null,sec:bilevel}
+treats $\rcontact$, $\specgap$, and the contact force $f = (f_{n},
+f_{t})$ as quantities that vary continuously along admissible
+trajectories, with the rigid-body limit recovered only as a
+singular limit. The present subsection makes the modeling regime
+explicit: it names the three formulations of contact dynamics in
+current use, identifies the bridge between them, and states which
+formulation the structural results of §2 are written against.
+
+\paragraph{Three formulations of contact dynamics.}
+Contact dynamics admits three formulations that are mathematically
+equivalent in appropriate limits, each preferred in a different
+computational setting:
+\begin{enumerate}[label=(\arabic*),leftmargin=*]
+  \item \emph{Set-valued continuous-time formulation.} The
+        contact-coupled dynamics is written as a measure-valued
+        differential inclusion
+        \[
+          \dot v \;\in\; F(t, q, v) - \mathcal{N}_{K}(v),
+        \]
+        where $\mathcal{N}_{K}$ is the normal cone to the admissible
+        velocity set induced by the unilateral contact constraints
+        and the friction cone $\frictioncone$. This is the
+        foundational treatment of \citet{Stewart2000} and the
+        modern textbook formulation of \citet{Brogliato2016}.
+  \item \emph{Contact-implicit trajectory optimization (CITO).}
+        Time-discretize the system over a horizon $\{t_{k}\}$ and
+        include the discrete-time complementarity
+        \[
+          0 \;\le\; \mathbf{f}_{k} \;\perp\; \phi_{k} \;\ge\; 0
+        \]
+        as a hard constraint in the trajectory nonlinear program,
+        yielding a Mathematical Program with Complementarity
+        Constraints (MPCC). The foundational time-stepping LCP is
+        \citet{StewartTrinkle1996}; the canonical trajectory-level
+        formulation through contact is
+        \citet{PosaCantuTedrake2014}.
+  \item \emph{Per-timestep convex relaxation.} Replace the
+        discrete-time complementarity at each step with a strictly
+        convex regularization, yielding a per-timestep convex
+        QP/SOCP whose solution converges to the LCP solution as the
+        regularization parameter goes to zero. The foundational
+        optimization-based simulation is \citet{Anitescu2006}; the
+        convex contact model used by current dynamics simulators is
+        \citet{Todorov2014}. (A penalty/spring--damper formulation
+        $f_{n} = K\, \phi_{+} + B\, \dot\phi$ is a different
+        smoothing regime and is not used in this paper.)
+\end{enumerate}
+
+\paragraph{Bridge: set-valued and MPCC are dual formulations.}
+The set-valued formulation~(1) and the MPCC
+formulation~(2) are connected by an explicit identity. The
+Signorini complementarity admits the normal-cone form
+\begin{equation}
+\label{eq:signorini-nc}
+  0 \;\le\; f_{n} \;\perp\; \phi \;\ge\; 0
+  \quad\Longleftrightarrow\quad
+  -\, f_{n} \;\in\; \mathcal{N}_{\mathbb{R}_{+}}(\phi),
+\end{equation}
+and the friction subdifferential inclusion \eqref{eq:friction-di}
+of \cref{sec:bilevel} writes the tangential force as
+$f_{t} \in -\mu\, f_{n}\, \partial \|v_{t}\|$. Together,
+\eqref{eq:signorini-nc} and \eqref{eq:friction-di} are the
+unilateral and tangential components of the set-valued formulation
+(1). Time-discretizing them with an implicit Euler scheme yields
+per-step linear complementarity problems whose
+trajectory-horizon composition is the MPCC of formulation~(2).
+Convex regularization of those per-step LCPs in turn yields
+formulation~(3). The three formulations are therefore a
+\emph{continuous-time} $\to$
+\emph{discrete-time-trajectory} $\to$
+\emph{discrete-time-per-step-convex-regularized} chain, each step
+approximating the previous one. The friction subdifferential
+inclusion already written in \cref{sec:bilevel} is itself a
+member of formulation~(1); the present subsection makes the
+chain to (2) and (3) explicit so that the modeling regime of the
+subsequent subsections is unambiguous.
+
+\paragraph{The framework's modeling regime.}
+The framework of \cref{sec:rho,sec:specgap,sec:Sigma,sec:three-term,sec:task-null,sec:bilevel}
+is consistent with formulation~(3): per-timestep convex
+relaxation of the rigid-body LCP. Under this regime, the contact
+force $f_{n}$ is a continuous function of state and time
+(no impulsive Dirac contributions inside the per-step solve), so
+$\rcontact$ is continuous along admissible trajectories and the
+hypothesis of the two-crossing lemma (\cref{lem:two-crossing}) is
+satisfied. The contact-graph edge weights $w_{ij}$ of
+\cref{sec:specgap} are finite---they are the regularized contact
+stiffnesses produced by the convex per-step solve. The bang arcs
+of \cref{sec:three-term} are high-rate but not literally
+impulsive: the spectral-kick term $u_{s}$ is a high-impulse but
+absolutely continuous control input on a small interval
+surrounding $t_{1}$ and $t_{4}$, not a Dirac mass. This is the
+regime simulated by MuJoCo \citep{Todorov2014} and physically
+realized by manipulators with finite finger compliance, including
+the Franka platform of the experimental staircase.
+
+\paragraph{Why CITO/MPCC is not required here.}
+CITO/MPCC trajectory optimization (formulation~(2)) solves a
+problem the present framework does not pose: it discovers the
+contact mode---which contacts are active in which time
+intervals---jointly with the trajectory, by treating the
+complementarity as an optimization constraint. The present
+framework instead \emph{pre-specifies} the contact mode through
+the phase decomposition of \cref{sec:phase-cycle} (forward
+reference) and the plan generator of \cref{sec:plan-training}
+(forward reference): phase~1 and phase~5 are open-contact
+intervals (no robot--object contact); phases~2 and~4 are
+contact-mode transitions localized at $t_{1}$ and $t_{4}$;
+phase~3 is a closed-contact interval. Given this
+pre-specification, the trajectory-level optimization of
+\cref{def:bilevel} need not search over contact modes---those are
+determined by the plan---and what remains is the per-timestep
+convex contact solve of formulation~(3), which is exactly what
+MuJoCo and similar simulators provide as a primitive. CITO is
+therefore a complementary tool that solves a problem the present
+framework chooses to side-step by leveraging the structural
+pre-specification of phase order; the two approaches are not in
+conflict but target different decompositions of the manipulation
+problem. \emph{The contact-mode pre-specification of the phase
+decomposition is the structural reason this paper does not
+require an outer-loop MPCC formulation.}
+
+\paragraph{Limit stability.}
+The structural results of §2---the five-phase decomposition
+(\cref{lem:two-crossing}), the three-term decomposition
+(\cref{thm:three-term}), the bi-level scaffold
+(\cref{def:bilevel}), and the spectral-gap interpretation
+(\cref{lem:specgap-interp})---are stable as the convex
+regularization parameter goes to zero. The rigid-body LCP limit
+is recovered as a singular limit in which $u_{s}$ becomes a Dirac
+mass and $\rcontact$ acquires one-sided continuity at $t_{1}$
+and $t_{4}$; the structural conclusions persist under
+measure-theoretic interpretation. The choice of regime above is
+therefore modeling convenience, not a structural restriction of
+the framework. Detailed limit analysis is out of scope for this
+paper.
+
+% ---------------------------------------------------------------
 \subsection{Causal observability}
 \label{sec:causal-obs}
 
