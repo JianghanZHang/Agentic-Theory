@@ -93,7 +93,150 @@ null-space decomposition (\cref{def:TS-NS}) per phase.
 
 \subsection{Operator algebra}
 \label{sec:operator-algebra}
-% [DRAFT-LATER]
+
+To each phase of \cref{def:five-phase} we associate a structural
+operator on the joint-space state of the manipulator--object
+system. The collection $\{\phaseop{0}, \phaseop{1}, \phaseop{2},
+\phaseop{3}, \phaseop{4}\}$ forms a closed loop under composition
+in the following precise sense: the composition returns the
+manipulator to its home configuration, but it does not return the
+object to its initial pose. This asymmetry between the
+manipulator (which closes) and the object (which is transported)
+is the structural source of irreversibility in manipulation; the
+present subsection states the operators, the loop theorem, and
+the irreversibility paragraph that names the asymmetry.
+\Cref{fig:operator-loop} depicts the cycle and the corresponding
+$\rcontact$ trace.
+
+\paragraph{State space.}
+Throughout this subsection the operating state is
+\begin{equation}
+\label{eq:operator-state}
+  s \;=\; (\jointvec, \dot{\jointvec}, x_{\mathrm{obj}})
+  \;\in\; \mathbb{R}^{n} \times \mathbb{R}^{n} \times SE(3),
+\end{equation}
+with $\jointvec$ the manipulator joint configuration,
+$\dot{\jointvec}$ the joint velocity, and
+$x_{\mathrm{obj}} \in SE(3)$ the object pose. The contact graph
+$G_{c}(t)$ of \cref{sec:specgap} is not a state component: it is
+\emph{observed} from the per-timestep convex contact solve and
+the perception pipeline, in the sense made precise by
+\cref{sec:smooth-contact}. Consequently $\rcontact$, $\specgap$,
+and $G_{c}$ enter the operator definitions below as derived
+quantities along the trajectory rather than as carried state.
+
+\begin{definition}[Phase operators]\label{def:phase-operators}
+Each phase of \cref{def:five-phase} has an associated structural
+operator on the joint-space state $s = (\jointvec, \dot{\jointvec},
+x_{\mathrm{obj}})$:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $\phaseop{0}$ (\emph{pick}, phase 1):
+        $s_{0} \mapsto s_{t_{1}^{-}}$. Moves the manipulator from
+        a home configuration $\jointvec_{0}$ to the pre-grasp pose
+        $\jointvec_{t_{1}^{-}}$. The object pose $x_{\mathrm{obj}}$
+        is unchanged (no robot--object contact during phase 1).
+  \item $\phaseop{1}$ (\emph{load}, phase 2):
+        $s_{t_{1}^{-}} \mapsto s_{t_{1}^{+}}$. Crosses $\swsurf$
+        upward ($\rcontact: <1 \to >1$). Establishes the contact
+        graph: $\specgap$ rises from $0$ to at least $\varepsilon$.
+        Joint configuration may change by an amount within the
+        precision allowed by the absolutely continuous
+        spectral-kick term $u_{s}$ of \cref{thm:three-term},
+        concentrated on a small interval surrounding $t_{1}$.
+  \item $\phaseop{2}$ (\emph{use}, phase 3):
+        $s_{t_{1}^{+}} \mapsto s_{t_{4}^{-}}$. Singular arc of
+        the OCP \eqref{eq:ocp} under the spectral-gap
+        maintenance constraint $\specgap \ge \varepsilon$. The
+        object pose evolves from the initial support
+        configuration $x_{\mathrm{obj}}^{A}$ to the destination
+        configuration $x_{\mathrm{obj}}^{B}$; the joint
+        configuration tracks the object trajectory through the
+        bi-level scaffold of \cref{def:bilevel}.
+  \item $\phaseop{3}$ (\emph{unload}, phase 4):
+        $s_{t_{4}^{-}} \mapsto s_{t_{4}^{+}}$. Crosses $\swsurf$
+        downward ($\rcontact: >1 \to <1$). Releases the contact
+        graph: $\specgap$ drops from $\ge \varepsilon$ to $0$.
+  \item $\phaseop{4}$ (\emph{place}, phase 5):
+        $s_{t_{4}^{+}} \mapsto s_{T}$. Returns the manipulator
+        from the post-release pose $\jointvec_{t_{4}^{+}}$ toward
+        the home configuration $\jointvec_{T} = \jointvec_{0}$.
+        The object pose $x_{\mathrm{obj}}$ is unchanged in phase
+        5 (no robot--object contact).
+\end{enumerate}
+\end{definition}
+
+\input{figures/operator-loop}
+
+\begin{theorem}[Joint-space loop with object transport]
+\label{thm:joint-loop}
+Let $\phaseop{0}, \ldots, \phaseop{4}$ be the phase operators of
+\cref{def:phase-operators}. Their composition acts on the initial
+state
+$s_{0} = (\jointvec_{0}, \dot{\jointvec}_{0},
+x_{\mathrm{obj}}^{A})$
+as
+\begin{equation}
+\label{eq:joint-loop}
+  (\phaseop{4} \circ \phaseop{3} \circ \phaseop{2} \circ
+   \phaseop{1} \circ \phaseop{0})(s_{0})
+  \;=\; (\jointvec_{0}, \dot{\jointvec}_{0},
+         x_{\mathrm{obj}}^{B}),
+\end{equation}
+where $x_{\mathrm{obj}}^{B} \neq x_{\mathrm{obj}}^{A}$ is the
+destination pose of the manipulated object. The manipulator
+forms a closed loop in joint space; the object does not.
+\end{theorem}
+
+\begin{proof}
+By the boundary conditions \eqref{eq:pick-place-BCs} of
+\cref{lem:two-crossing}, $\rcontact(0) < 1$ and $\rcontact(T) <
+1$, so phases 1 and 5 are out-of-contact arcs by
+\cref{def:five-phase}. On those phases the object is not
+coupled to the manipulator and $x_{\mathrm{obj}}$ is unchanged
+across $\phaseop{0}$ and $\phaseop{4}$. The home-configuration
+specification $\jointvec_{T} = \jointvec_{0}$ is built into
+$\phaseop{4}$ by \cref{def:phase-operators}~(v); together with
+the corresponding velocity boundary condition
+$\dot{\jointvec}_{T} = \dot{\jointvec}_{0}$, this returns the
+manipulator coordinates to their initial values. The object
+coordinate, by contrast, changes only on phase 3, where
+\cref{def:phase-operators}~(iii) carries $x_{\mathrm{obj}}^{A}$
+to $x_{\mathrm{obj}}^{B}$ along the singular arc with $\rcontact
+> 1$; no subsequent operator reverses this transport, since
+phases 4 and 5 act trivially on $x_{\mathrm{obj}}$ (phase 4
+releases the contact instantaneously at $t_{4}$ without object
+motion; phase 5 is out of contact). The composition therefore
+satisfies \eqref{eq:joint-loop}. The associated hybrid-automaton
+factorization is the one identified in \citet{Lygeros2003}.
+\end{proof}
+
+\paragraph{Irreversibility lives in the object.}
+\Cref{thm:joint-loop} elevates the asymmetry between manipulator
+and object to a structural claim. The manipulator returns to
+its home configuration $\jointvec_{0}$: the joint-space cycle is
+closed, and in this sense the manipulator's trajectory is
+reversible (the same operator family run in time-reversed order
+on a time-reversed trajectory would return both endpoints). The
+object, on the other hand, does not return: it is transported
+from $x_{\mathrm{obj}}^{A}$ to $x_{\mathrm{obj}}^{B} \neq
+x_{\mathrm{obj}}^{A}$, and no operator in
+\cref{def:phase-operators} reverses this. The irreversibility
+of a manipulation episode is therefore not in the manipulator
+but in the object: the cycle does work on the object precisely
+because the manipulator's joint-space loop closes around an
+object-space displacement. This is the structural reason a
+pick--place episode is a unit of useful work, and it is the
+property that the perception, planning, and control layers of
+\cref{sec:hierarchical,sec:perception,sec:plan-training}
+must collectively preserve.
+
+\paragraph{Forward references.}
+\Cref{sec:G-equivariance} has already shown that the family
+$\{\phaseop{0}, \ldots, \phaseop{4}\}$ is $\Greflect$-equivariant;
+\cref{sec:hierarchical} will specialize the task-space /
+null-space decomposition (\cref{def:TS-NS}) per operator,
+identifying for each $\phaseop{i}$ what the task variable is
+and what the null-space freedom encodes.
 
 % ---------------------------------------------------------------
 \subsection{$G$-equivariance of the five-phase cycle}
