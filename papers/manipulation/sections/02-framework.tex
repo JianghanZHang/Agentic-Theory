@@ -439,7 +439,112 @@ in the sense of \citet{BrysonHo1975}.
 % ---------------------------------------------------------------
 \subsection{Task-space / null-space decomposition}
 \label{sec:task-null}
-% [DRAFT-LATER]
+
+The three-term decomposition of \cref{sec:three-term} factorizes the
+optimal joint torque \emph{temporally}: a configuration-only gravity
+term, a singular least-action term on the open intervals, and an
+impulsive spectral kick on $\swsurf$. The present subsection
+introduces a complementary \emph{spatial} factorization in joint
+space: at each instant, the joint velocity splits into a part that
+moves the end-effector and a part that rearranges the manipulator
+internally without affecting the end-effector. Together with the
+temporal three-term reading, this spatial split sets up the
+five-phase cycle of \cref{sec:phase-cycle} and the hierarchical
+controller of \cref{sec:hierarchical}.
+
+\paragraph{Setup.}
+Let the manipulator have $n$ joints with configuration
+$\jointvec \in \mathbb{R}^{n}$; for the Franka Emika Panda used in
+the experimental staircase of \cref{sec:experiments}, $n = 7$. The
+end-effector pose lives on a task manifold of dimension
+$m \le n$, typically $m = 6$ for full $SE(3)$ pose tracking. The
+\emph{task Jacobian} $J(\jointvec) \in \mathbb{R}^{m \times n}$
+relates joint velocity to end-effector velocity:
+\begin{equation}
+\label{eq:task-jacobian}
+  \dot x \;=\; J(\jointvec)\, \dot{\jointvec}.
+\end{equation}
+Throughout this subsection we assume that $J$ has full row rank $m$
+generically along the trajectory; isolated kinematic singularities,
+where the rank drops, are handled by standard damped-least-squares
+regularization and are not treated separately here.
+
+\paragraph{Decomposition.}
+Under the redundancy assumption $n > m$ and full row rank of $J$,
+the joint velocity admits the operational-space decomposition
+\begin{equation}
+\label{eq:qdot-split}
+  \dot{\jointvec}
+  \;=\; J^{+}(\jointvec)\, \dot x
+  \;+\; \bigl(I - J^{+}(\jointvec)\, J(\jointvec)\bigr)\, \eta,
+\end{equation}
+where $J^{+} \in \mathbb{R}^{n \times m}$ is the Moore--Penrose
+pseudo-inverse of $J$ and $\eta \in \mathbb{R}^{n}$ parameterizes
+\emph{self-motion}: joint rearrangements that produce zero
+end-effector velocity. Equation \eqref{eq:qdot-split} is the
+operational-space formulation of \citet{Khatib1987} and the
+redundancy-resolution split of \citet{Nakamura1991}; the two
+projectors $J^{+} J$ and $I - J^{+} J$ are orthogonal complements
+in $\mathbb{R}^{n}$ and exhaust every joint-velocity direction.
+
+\begin{definition}[Task-space and null-space subspaces]\label{def:TS-NS}
+The \emph{task-space subspace}, denoted $\TS \subseteq \mathbb{R}^{n}$,
+is the range of $J^{\top}(\jointvec)$:
+\begin{equation}
+\label{eq:TS-def}
+  \TS \;=\; \mathrm{range}\!\bigl(J^{\top}(\jointvec)\bigr).
+\end{equation}
+Joint torques in $\TS$ produce non-zero generalized force at the
+end-effector. The \emph{null-space subspace}, denoted
+$\NS \subseteq \mathbb{R}^{n}$, is the kernel of $J(\jointvec)$:
+\begin{equation}
+\label{eq:NS-def}
+  \NS \;=\; \ker\!\bigl(J(\jointvec)\bigr).
+\end{equation}
+Joint velocities in $\NS$ produce zero end-effector velocity.
+\end{definition}
+
+\paragraph{Dimensions and orthogonality.}
+For full-rank $J$, the rank--nullity theorem and the standard
+properties of the Moore--Penrose pseudo-inverse give
+\begin{equation}
+\label{eq:TS-NS-dims}
+  \dim \TS \;=\; m,
+  \qquad
+  \dim \NS \;=\; n - m,
+  \qquad
+  \mathbb{R}^{n} \;=\; \TS \oplus \NS,
+\end{equation}
+with the direct sum orthogonal under the standard inner product.
+The two projectors $P_{\TS} = J^{\top}(J J^{\top})^{-1} J$ and
+$P_{\NS} = I - P_{\TS}$ are mutually orthogonal idempotents and
+together resolve the identity on $\mathbb{R}^{n}$.
+
+\begin{example}[Franka Panda elbow self-motion]\label{ex:franka-elbow}
+For the Franka Emika Panda, $n = 7$ joints and a task manifold of
+dimension $m = 6$ (full $SE(3)$ end-effector pose) give
+$\dim \TS = 6$ and $\dim \NS = 1$. The single null-space direction
+is the elbow swivel about the line joining the shoulder and the
+wrist: the elbow rotates around this line while the end-effector
+pose remains fixed. This one-dimensional self-motion is the only
+internal reconfiguration available to the arm at a typical
+configuration and is the elementary instance of the decomposition
+\eqref{eq:qdot-split} that recurs throughout the paper.
+\end{example}
+
+\paragraph{Translation note.}
+In the operational-space literature this split is sometimes labeled
+differently; we adopt the task-space / null-space terminology of
+\citet{Khatib1987} and \citet{Nakamura1991} as the most direct, and
+use the macros $\TS$ and $\NS$ consistently throughout the
+paper. \Cref{sec:hierarchical} will specialize
+\cref{def:TS-NS} per phase of the cycle---identifying, for each
+$\phaseop{i}$, what the task variable is and what the null-space
+freedom encodes---and will define a commutator on $(\TS, \NS)$
+that quantifies dexterity in the sense of \citet{Yoshikawa1985}.
+The present subsection states only the decomposition itself;
+per-phase content and the dexterity invariant are deferred to
+\cref{sec:hierarchical}.
 
 % ---------------------------------------------------------------
 \subsection{Bi-level optimization scaffold}
