@@ -121,3 +121,185 @@ defines the commutator $[\TS, \NS]_{\jointvec}$ that quantifies
 the dynamic dexterity of the manipulator on its null-space and
 proves that this commutator is non-zero exactly in the regime
 where internal reconfiguration modulates task-space forces.
+
+% ---------------------------------------------------------------
+\subsection{Bi-level structure for the pick--place cycle}
+\label{sec:hierarchical-bilevel}
+
+\Cref{def:bilevel} of \cref{sec:bilevel} stated the abstract
+bi-level scaffold for the pick--place OCP: an outer
+trajectory-optimization level over the object pose
+$x_{\mathrm{obj}}(t)$ and an inner force-closure level over
+contact forces $f(t)$ at every instant. The coupling
+proposition \cref{prop:bilevel-coupling} stated, in addition,
+that force-closure feasibility induces a state-dependent
+acceleration bound
+$\|\ddot{x}\| \le \alpha(\jointvec, f_{n,\max})$ on the outer
+program but left the explicit form of the function $\alpha$
+unspecified. The present subsection derives that explicit form
+for the parallel-jaw grasp under wind, which is the worked
+instance the experimental staircase of \cref{sec:experiments}
+will exercise. The deliverable is the explicit
+\cref{prop:accel-bound-explicit} below; the per-phase reading
+of the bi-level coupling closes the subsection.
+
+\paragraph{Setup of the parallel-jaw grasp under wind.}
+The two-finger parallel-jaw gripper of
+\cref{ex:parallel-jaw} of \cref{sec:rho} is treated here under
+an additional adversarial horizontal wind force $\Fwind(t)$
+acting on the manipulated body, which is the perturbation regime
+of \cref{sec:curriculum}. Each finger applies a normal force
+of magnitude $f_{n,L}$ and $f_{n,R}$, respectively, to opposite
+vertical faces of a rigid box of mass $m$ in a uniform
+gravitational field of magnitude $\|g\|$. The grasp is symmetric:
+$f_{n,L} = f_{n,R} = f_{n}$. The friction coefficient at each
+finger contact is $\mu$. The static-equilibrium normal-force
+threshold of \cref{def:rho} is now sourced by gravity together
+with the wind: the box is in static equilibrium when the total
+tangential friction available at the two contacts dominates
+the combined load $m \|g\| + \|\Fwind(t)\|$. Reproducing the
+parallel-jaw order-parameter of \cref{eq:rho-grasp} with the
+wind term added,
+\begin{equation}
+\label{eq:rho-grasp-wind}
+  \rcontact_{\mathrm{grasp}}(t)
+  \;=\;
+  \frac{2\, \mu\, f_{n}(t)}{m \|g\| + \|\Fwind(t)\|},
+  \qquad
+  \rcontact_{\mathrm{grasp}}^{\star} \;=\; 1,
+\end{equation}
+which is the natural extension of \cref{ex:parallel-jaw} to the
+wind-perturbed regime. The denominator is now time-varying
+through $\Fwind(t)$, and equality to one is the slipping
+threshold of the wind-perturbed grasp.
+
+\paragraph{Inner level: maximum spectral gap admissible under
+the friction cone.}
+The contact graph of the symmetric two-finger grasp is
+$G_{c} = (\{b, L, R\},\, \{(b, L), (b, R)\})$ with edge weights
+$w_{bL} = w_{bR} = w$ given by the contact stiffness, which is
+proportional to the normal force $f_{n}$ in the linearized
+contact model of \cref{sec:specgap}. Ordering the vertices
+$b, L, R$, the contact-graph Laplacian
+\eqref{eq:laplacian-def} reads
+\begin{equation}
+\label{eq:two-finger-L}
+  L_{c} \;=\;
+  \begin{pmatrix}
+    2 w & -w & -w \\
+    -w & w & 0 \\
+    -w & 0 & w
+  \end{pmatrix},
+\end{equation}
+whose spectrum is $\{0,\, w,\, 3 w\}$. The spectral gap
+\eqref{eq:specgap-def} is therefore
+$\specgap(L_{c}) = w$, equal to the contact stiffness at each
+finger. Substituting back into the inner program
+\eqref{eq:bilevel-inner}, the inner level chooses $f_{n}$ to
+maximize $\specgap = w(f_{n})$ subject to the friction-cone
+constraint $|f_{t}| \le \mu f_{n}$ and the Newton balance
+\eqref{eq:newton-balance}. Given the box mass $m$, gravity
+$g$, wind $\Fwind$, and the desired object acceleration
+$\ddot{x}_{\mathrm{des}}$ all prescribed by the outer level, the
+Newton balance pins the resultant contact force uniquely; the
+inner level reduces to checking that this pinned force lies
+inside the friction cone, and the maximum-spectral-gap solution
+is the inner solution that realizes the pinned $f_{n}$ value.
+This is the operational form of force-closure analysis in the
+sense of \citet{MurrayLiSastry1994}, specialized to the
+two-finger grasp.
+
+\paragraph{Outer level: derivation of the explicit
+acceleration bound.}
+The substantive deliverable of the present subsection is the
+explicit form of the acceleration bound
+$\alpha(\jointvec, f_{n,\max})$ promised by
+\cref{prop:bilevel-coupling}~(ii) of \cref{sec:bilevel}.
+Project the Newton balance \eqref{eq:newton-balance} onto the
+direction tangent to the contact normal at each finger, and let
+$\|\cdot\|_{t}$ denote the tangential component along that
+direction. The tangential projection of the resultant force
+required to accelerate the box at $\ddot{x}_{\mathrm{des}}$
+against the wind is
+\begin{equation}
+\label{eq:ft-projection}
+  |f_{t}|
+  \;=\;
+  m \,\|\ddot{x}_{\mathrm{des},\, t}\|
+  \;+\; \|\Fwind(t)\|_{t},
+\end{equation}
+where the first term is the inertial contribution and the
+second the wind contribution along the tangential direction.
+The friction-cone constraint $|f_{t}| \le \mu f_{n}$ together
+with the per-finger normal-force budget $f_{n} \le f_{n,\max}$
+(a hardware ceiling on the gripper actuator) then bounds the
+tangential acceleration:
+\begin{equation}
+\label{eq:accel-bound-derivation}
+  m \,\|\ddot{x}_{\mathrm{des},\, t}\|
+  \;\le\;
+  \mu \, f_{n,\max} \;-\; \|\Fwind(t)\|_{t}.
+\end{equation}
+Dividing by $m$ yields the explicit form of $\alpha$
+promised in \eqref{eq:accel-bound}. The dependence on the
+configuration $\jointvec$ enters through the orientation of the
+contact normal in the world frame, which determines how much of
+the wind force projects into the tangential direction.
+
+\begin{proposition}[Acceleration bound for the parallel-jaw
+grasp under wind]\label{prop:accel-bound-explicit}
+For a symmetric parallel-jaw grasp of a rigid box of mass $m$
+with friction coefficient $\mu$ at each finger, normal-force
+budget $f_{n,\max}$ per finger, and wind force $\Fwind(t)$, the
+acceleration bound \eqref{eq:accel-bound} of
+\cref{prop:bilevel-coupling} takes the explicit form
+\begin{equation}
+\label{eq:alpha-explicit}
+  \alpha(\jointvec, f_{n,\max})
+  \;=\;
+  \frac{\mu\, f_{n,\max} \;-\; \|\Fwind(t)\|_{t}(\jointvec)}{m},
+\end{equation}
+where $\|\cdot\|_{t}$ denotes the tangential component along the
+gripper contact normal at configuration $\jointvec$.
+\end{proposition}
+
+\begin{proof}
+The friction-cone constraint $|f_{t}| \le \mu f_{n}$ together
+with the per-finger normal-force ceiling $f_{n} \le f_{n,\max}$
+gives $|f_{t}| \le \mu f_{n,\max}$. Project the Newton balance
+\eqref{eq:newton-balance} of \cref{sec:bilevel} onto the
+direction tangent to the contact normal: the tangential
+component of the resultant required to accelerate the box
+against the wind is given by \eqref{eq:ft-projection}.
+Substituting into the cone bound,
+$m \|\ddot{x}_{\mathrm{des},\, t}\| + \|\Fwind\|_{t} \le \mu
+f_{n,\max}$, which rearranges to \eqref{eq:alpha-explicit}.
+The configuration dependence of the right-hand side is through
+the wind-tangential component
+$\|\Fwind(t)\|_{t}(\jointvec)$, which depends on the orientation
+of the contact normal at $\jointvec$.
+\end{proof}
+
+\paragraph{Per-phase reading of the bi-level coupling.}
+The bi-level coupling derived above is non-trivial only on
+phase 3: phases 1 and 5 are out-of-contact reaches with no
+robot--object contact, so the inner program is not posed and
+the outer trajectory is constrained only by the manipulator
+kinematics. Phase 3 is the in-contact transport on the open
+interval $(t_{1}, t_{4})$, and the outer trajectory must
+respect the inner force-closure feasibility throughout: the
+acceleration bound \eqref{eq:alpha-explicit} is active for
+every $t \in (t_{1}, t_{4})$, and the spectral-gap maintenance
+condition \eqref{eq:bilevel-outer} likewise holds on the
+in-contact interior. Phases 2 and 4 are the bang arcs at
+$t_{1}$ and $t_{4}$ at which the inner program transitions
+across its singular boundary: at $t_{1}$ the inner solution
+crosses from $\specgap = 0$ up to $\specgap = \varepsilon$ and
+at $t_{4}$ it crosses back down. The bang force $u_{s}$ of
+\cref{def:three-term} is exactly the impulsive contribution
+that drives $\specgap$ across the threshold $\varepsilon$ at
+each crossing. The explicit acceleration bound
+\eqref{eq:alpha-explicit} is therefore the constraint on the
+outer program throughout phase 3, whereas phases 2 and 4 are
+governed by the bang structure of \cref{thm:three-term} rather
+than by a continuous acceleration bound.
