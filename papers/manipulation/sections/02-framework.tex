@@ -549,7 +549,153 @@ per-phase content and the dexterity invariant are deferred to
 % ---------------------------------------------------------------
 \subsection{Bi-level optimization scaffold}
 \label{sec:bilevel}
-% [DRAFT-LATER]
+
+The three-term decomposition of \cref{sec:three-term} and the
+task/null split of \cref{sec:task-null} characterize the optimal
+control structurally---what shape it has and how it factors. To
+move from structural characterization to a computable formulation
+requires an explicit optimization scaffold. Manipulation OCPs of
+the form \eqref{eq:ocp} naturally split into two coupled levels:
+an \emph{outer} trajectory-optimization level over the object's
+path through space and time, and an \emph{inner} force-closure
+level over contact forces, instantaneously. The present subsection
+states this scaffold formally; \cref{sec:hierarchical} specializes
+it to the pick--place cycle and \cref{sec:experiments} ties it to
+the four experimental stages.
+
+\paragraph{Bi-level optimization preliminaries.}
+A bilevel program in the standard sense is an optimization problem
+whose constraints include the optimality conditions of a second,
+nested optimization problem; an upper-level decision variable
+parameterizes the lower-level program, and the lower-level
+optimum feeds back into the upper-level objective and constraints.
+The reader is referred to the survey of \citet{Colson2007} for a
+contemporary overview and to standard texts on nonsmooth contact
+mechanics \citep{Brogliato2016} and force-closure analysis
+\citep{MurrayLiSastry1994} for the manipulation-specific
+instantiation that follows.
+
+\begin{definition}[Bi-level pick--place scaffold]\label{def:bilevel}
+The pick--place OCP \eqref{eq:ocp} decomposes into two coupled
+optimization levels:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \textbf{Outer (trajectory).} Choose a velocity field
+    $\veltheta(x, t)$ that transports the object from its
+    initial pose $g^{A}$ to its final pose $g^{B} \in SE(3)$,
+    minimizing the trajectory cost
+    \begin{equation}
+    \label{eq:bilevel-outer}
+      \min_{\veltheta} \;
+      \mathbb{E}\!\left[
+        \int_{0}^{T} L(x, \dot x)\,dt
+        \;+\; \Psi(x_{T})
+      \right]
+    \end{equation}
+    subject to the continuity equation
+    $\partial_{t}\mu_{t} + \nabla\!\cdot\!(\veltheta\, \mu_{t}) = 0$
+    governing the evolution of the state distribution $\mu_{t}$,
+    and to the spectral-gap maintenance condition
+    $\specgap(L_{c}(t)) \ge \varepsilon$ on the in-contact
+    interval $[t_{1}, t_{4}]$ identified in \cref{lem:two-crossing}.
+  \item \textbf{Inner (force closure).} At every instant
+    $t \in [t_{1}, t_{4}]$, choose finger contact forces
+    $f(t) = (f_{n}(t), f_{t}(t))$ that maximize the contact
+    graph spectral gap
+    \begin{equation}
+    \label{eq:bilevel-inner}
+      \max_{f(t)} \;
+      \specgap\!\bigl(L_{c}(f(t))\bigr)
+    \end{equation}
+    subject to the friction-cone constraint
+    $|f_{t}| \le \mu f_{n}$ and the Newton balance
+    \begin{equation}
+    \label{eq:newton-balance}
+      \sum_{i} f_{i}
+      \;=\;
+      m\bigl(\ddot{x}_{\mathrm{des}}(t) - g\bigr)
+      \;+\; \Fwind(t),
+    \end{equation}
+    where $\ddot{x}_{\mathrm{des}}(t)$ is the desired object
+    acceleration prescribed by the outer level, $m$ is the object
+    mass, $g$ the gravitational acceleration, and $\Fwind(t)$ the
+    adversarial wind force of \cref{sec:curriculum}.
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[Bi-level coupling]\label{prop:bilevel-coupling}
+In \cref{def:bilevel}, the outer and inner levels are coupled
+bidirectionally:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item \emph{Outer to inner.} The desired object acceleration
+    $\ddot{x}_{\mathrm{des}}(t)$ enters the inner level through
+    the Newton balance \eqref{eq:newton-balance}: faster outer
+    trajectories demand larger contact forces and consume
+    friction-cone margin.
+  \item \emph{Inner to outer.} Force-closure feasibility imposes
+    a state-dependent acceleration bound
+    \begin{equation}
+    \label{eq:accel-bound}
+      \|\ddot{x}\|
+      \;\le\;
+      \alpha\bigl(\jointvec, f_{n,\max}\bigr),
+    \end{equation}
+    which constrains the outer optimization. The function
+    $\alpha$ depends on the current configuration $\jointvec$ and
+    the normal-force budget $f_{n,\max}$ available at the contact;
+    its explicit form for the parallel-jaw grasp under wind is
+    derived in \cref{sec:hierarchical}.
+\end{enumerate}
+\end{proposition}
+
+In practice the coupling of \cref{prop:bilevel-coupling} is
+resolved either by alternating updates---an outer trajectory step,
+followed by an inner force-closure step at each instant of the
+proposed trajectory, followed by a corrective outer step---or by a
+single-shot reformulation when the inner program admits a
+closed-form maximum-spectral-gap solution. The choice of solver
+is deferred to \cref{sec:hierarchical}; the present subsection
+fixes only the structural decomposition.
+
+\paragraph{Friction model.}
+The friction-cone constraint $|f_{t}| \le \mu f_{n}$ that appears
+in the inner program is the convex-cone form of the Coulomb
+friction law. In the unified set-valued formulation of
+\citet{Stewart2000}---also adopted in \citet{Brogliato2016}---the
+friction force is a subdifferential inclusion
+\begin{equation}
+\label{eq:friction-di}
+  f_{t}(t) \;\in\; -\mu\, f_{n}(t)\,
+  \partial \!\left\| v_{t}(t) \right\|,
+\end{equation}
+where $v_{t}$ is the tangential relative velocity at the contact
+and $\partial\|\cdot\|$ is the subdifferential of the Euclidean
+norm. When $v_{t} \neq 0$ (slip) this inclusion selects a unique
+friction force opposing motion; when $v_{t} = 0$ (stick) it yields
+the full friction disc $\|f_{t}\| \le \mu f_{n}$ as a set-valued
+static-friction reaction. The friction cone $\frictioncone$
+of the notation table \eqref{tab:notation} is the closure of this
+set-valued condition: $f \in \frictioncone$ iff $|f_{t}| \le
+\mu f_{n}$ and $f_{n} \ge 0$.
+
+\paragraph{Forward link to grasping.}
+Within the bi-level scaffold of \cref{def:bilevel}, grasping is the
+deliberate creation of a contact singularity at the boundary of
+the inner level. Phase 2 (load) drives the inner solution from no
+contact ($\specgap = 0$) up to the boundary $\specgap = \varepsilon$
+of feasible firm contact, while phase 4 (unload) drives it back
+across the same boundary in the opposite direction. The two
+boundary crossings of the inner program are exactly the two bang
+arcs identified in \cref{def:three-term}: $u_{s}$ at $t_{1}$ is
+the impulsive control input that induces the upward boundary
+crossing of the inner spectral-gap program, and $u_{s}$ at
+$t_{4}$ induces the downward crossing. Phase 3 then operates the
+inner program on its singular interior, maintaining
+$\specgap(t) \ge \varepsilon$ for all $t \in (t_{1}, t_{4})$.
+This identification of the two-crossing geometry of $\swsurf$
+with the singular-boundary geometry of the inner program is the
+bridge from the structural results of \cref{sec:Sigma} and
+\cref{sec:three-term} to the controller architecture of
+\cref{sec:hierarchical}.
 
 % ---------------------------------------------------------------
 \subsection{Causal observability}
