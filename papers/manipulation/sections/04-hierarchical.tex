@@ -303,3 +303,158 @@ each crossing. The explicit acceleration bound
 outer program throughout phase 3, whereas phases 2 and 4 are
 governed by the bang structure of \cref{thm:three-term} rather
 than by a continuous acceleration bound.
+
+% ---------------------------------------------------------------
+\subsection{Commutator $[\TS, \NS]$ as dexterity measure}
+\label{sec:hierarchical-commutator}
+
+The notation table of \cref{sec:notation} introduced the
+commutator $[\TS, \NS]$ as the dexterity object associated with
+the task-space / null-space splitting of \cref{def:TS-NS}, with
+forward reference to the present subsection for its definition.
+The present subsection makes the definition precise and proves
+that the commutator is a quantitative dexterity measure: a
+non-zero commutator corresponds to dexterous manipulation in the
+sense that internal reconfiguration along $\NS$ modulates the
+joint torques required to produce a fixed task-space force; a
+vanishing commutator corresponds to a power-grasp regime where
+the kinematic redundancy of the manipulator is dynamically inert.
+
+\paragraph{Definition.}
+The commutator $[\TS, \NS]$ is a configuration-dependent linear
+map that captures how the joint torque required to produce a
+fixed task-space force varies as the manipulator moves in
+null-space directions. Geometrically, it is the directional
+derivative of the task-space-to-joint-space transpose map
+$F \mapsto J^{\top}(\jointvec)\, F$ along null-space velocity
+directions, evaluated at the current configuration $\jointvec$.
+
+\begin{definition}[Commutator {$[\TS, \NS]$}]
+\label{def:commutator}
+For a manipulator with task Jacobian
+$J(\jointvec) \in \mathbb{R}^{m \times n}$, joint configuration
+$\jointvec \in \mathbb{R}^{n}$, and inertia matrix
+$M(\jointvec) \in \mathbb{R}^{n \times n}$, the
+\emph{commutator} $[\TS, \NS]_{\jointvec}$ at $\jointvec$ is the
+linear map
+\[
+  [\TS, \NS]_{\jointvec} \colon
+  \NS \times \mathbb{R}^{m} \;\to\; \mathbb{R}^{n},
+  \qquad
+  \bigl(\dot{\jointvec}_{\mathrm{null}}, F\bigr)
+  \;\mapsto\;
+  \left.\frac{\partial}{\partial \epsilon}\right|_{0}
+  J^{\top}\!\bigl(\jointvec + \epsilon\, \dot{\jointvec}_{\mathrm{null}}\bigr)\, F
+  \;-\;
+  J^{\top}(\jointvec)\, F,
+\]
+i.e., the directional derivative of the joint torque
+$J^{\top} F$ produced by a fixed task-space force $F$, taken
+along the null-space direction
+$\dot{\jointvec}_{\mathrm{null}} \in \NS$.
+\end{definition}
+
+The commutator terminology adopted here matches the operational-space
+convention in which $[\TS, \NS]$ measures the obstruction to $\TS$
+being parallel-transported along $\NS$ at a given configuration; it
+is not a Lie commutator of operators on a Hilbert space. The
+configuration-dependent nature of $[\TS, \NS]_{\jointvec}$ reflects
+that the splitting $\mathbb{R}^{n} = \TS \oplus \NS$ of
+\cref{def:TS-NS} is itself configuration-dependent: as
+$\jointvec$ moves in $\NS$, the subspaces $\TS$ and $\NS$
+themselves rotate in $\mathbb{R}^{n}$, and the commutator
+quantifies the failure of this rotation to commute with the
+torque-producing transpose map.
+
+\paragraph{Dexterity theorem.}
+
+\begin{theorem}[Commutator and dexterity]\label{thm:commutator-dexterity}
+Let $[\TS, \NS]_{\jointvec}$ be the commutator of
+\cref{def:commutator}. The following are equivalent:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $[\TS, \NS]_{\jointvec} \neq 0$;
+  \item the inertia matrix $M(\jointvec)$ depends non-trivially
+        on $\NS$-coordinates at $\jointvec$;
+  \item the manipulator can modulate task-space forces by
+        reconfiguring its internal state at fixed task variable
+        (\emph{dexterous manipulation}).
+\end{enumerate}
+Equivalently, $[\TS, \NS]_{\jointvec} = 0$ iff
+(i)--(iii) all fail, in which case the manipulator's redundancy
+is kinematic but not dynamically dexterous (\emph{power-grasp
+regime}).
+\end{theorem}
+
+The proof, which combines the rigid-body relation between the
+task Jacobian and the inertia matrix with the standard
+operational-space-inertia identity, is deferred to
+\cref{app:proof:commutator-dexterity}.
+
+\paragraph{Connection to Yoshikawa manipulability.}
+The classical Yoshikawa manipulability index of
+\citet{Yoshikawa1985} is
+\[
+  w(\jointvec) \;=\; \sqrt{\det\!\bigl(J(\jointvec) J^{\top}(\jointvec)\bigr)},
+\]
+which is the volume of the velocity ellipsoid generated at the
+end-effector by unit-norm joint velocities at $\jointvec$.
+Yoshikawa's $w$ and the commutator
+$[\TS, \NS]_{\jointvec}$ are complementary dexterity quantities:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $w(\jointvec)$ is a \emph{kinematic} dexterity measure.
+        It captures how easily the manipulator can produce
+        arbitrary task-space velocities at $\jointvec$, and it
+        vanishes at kinematic singularities of $J$.
+  \item $[\TS, \NS]_{\jointvec}$ is a \emph{dynamic} dexterity
+        measure. It captures whether internal reconfiguration in
+        $\NS$ modulates task-space \emph{forces}---not
+        velocities.
+\end{enumerate}
+The two measures are independent in both directions. A
+manipulator can have $w(\jointvec) > 0$ (kinematically
+non-singular) and yet $[\TS, \NS]_{\jointvec} = 0$ (dynamically
+inert in null-space): an arm with all link masses concentrated
+at its joints has constant inertia matrix $M(\jointvec)$ and
+therefore vanishing commutator everywhere, regardless of the
+kinematic manipulability index. Conversely a manipulator may
+have $w(\jointvec) \to 0$ at a kinematic singularity while
+$[\TS, \NS]_{\jointvec}$ remains non-zero, indicating that the
+arm retains its dynamic dexterity even as it loses an
+instantaneous task-space velocity direction.
+
+\paragraph{Per-phase reading.}
+The commutator $[\TS, \NS]_{\jointvec}$ is most active in
+phase 3 (transport): the controller exploits null-space
+reconfiguration to satisfy the spectral-gap maintenance
+constraint $\specgap \ge \varepsilon$ of
+\cref{eq:bilevel-outer} without sacrificing object-pose
+trajectory tracking, and a non-zero commutator is the precise
+condition under which this null-space reconfiguration translates
+into modulation of the contact-force budget. In phases 1 and 5
+(out-of-contact reach) the null-space subspace $\NS$ is
+exercised only kinematically: the arm rearranges its internal
+configuration as the end-effector traces its pre-grasp or
+retreat trajectory, but no contact force is produced and the
+dexterity commutator does not enter the bi-level inner program.
+In phases 2 and 4 (the bang arcs at $t_{1}$ and $t_{4}$) the
+commutator controls how the bang torque $u_{s}$ of
+\cref{def:three-term} is distributed across the joints: the
+spectral-kick contribution that drives $\specgap$ across the
+threshold $\varepsilon$ is allocated through the same
+torque-to-task map $J^{\top}$ whose null-space-directional
+variation defines $[\TS, \NS]$.
+
+\paragraph{Forward references.}
+The commutator $[\TS, \NS]_{\jointvec}$ is the structural
+quantity that the controller of \cref{sec:plan-training} learns
+implicitly through CFM training: the velocity field
+$\veltheta$ is trained on object trajectories whose realization
+through the bi-level scaffold of
+\cref{sec:hierarchical-bilevel} requires precisely the
+null-space modulation that a non-zero commutator quantifies. The
+experimental staircase of \cref{sec:experiments} progressively
+activates this dexterity measure in its kinematic stages
+(Stages II--IV) by composing object-trajectory specifications
+that demand null-space-directional torque reallocation, with
+the deployment cadence of those stages set by the curriculum
+of \cref{sec:curriculum}.

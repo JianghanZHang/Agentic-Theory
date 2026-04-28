@@ -171,3 +171,67 @@ $t_{1}, t_{4}$ is the impulse required to shift $\rcontact$
 across $\swsurf$; under $\sigma$ the direction of the required
 shift reverses, hence $u_{s} \to -u_{s}$.
 \end{proof}
+
+% ---------------------------------------------------------------
+\subsection{Proof of \cref{thm:commutator-dexterity}}
+\label{app:proof:commutator-dexterity}
+
+\begin{proof}
+We prove the equivalence (i) $\Leftrightarrow$ (ii)
+$\Leftrightarrow$ (iii) by establishing the two implications
+(i) $\Leftrightarrow$ (ii) and (ii) $\Leftrightarrow$ (iii) in
+turn.
+
+\emph{(i) $\Leftrightarrow$ (ii).} The commutator
+$[\TS, \NS]_{\jointvec}$ of \cref{def:commutator} is the
+directional derivative
+\[
+  [\TS, \NS]_{\jointvec}(\dot{\jointvec}_{\mathrm{null}}, F)
+  \;=\;
+  \left.\frac{\partial}{\partial \epsilon}\right|_{0}
+  J^{\top}\!\bigl(\jointvec + \epsilon\, \dot{\jointvec}_{\mathrm{null}}\bigr)\, F,
+\]
+which vanishes for all
+$\dot{\jointvec}_{\mathrm{null}} \in \NS$ and all
+$F \in \mathbb{R}^{m}$ if and only if the map
+$\jointvec \mapsto J^{\top}(\jointvec)$ has zero directional
+derivative along every direction in $\NS$. By the rigid-body
+structure of an articulated arm with fixed link inertias, the
+task Jacobian $J(\jointvec)$ and the inertia matrix
+$M(\jointvec)$ are coupled through the joint-space-to-task-space
+kinematic chain: both are smooth functions of $\jointvec$
+determined by the same body-frame rigid-body parameters, and
+their dependence on $\jointvec$ is linked by the standard
+operational-space identity
+$\Lambda(\jointvec) = (J(\jointvec) M(\jointvec)^{-1}
+J^{\top}(\jointvec))^{-1}$ for the task-space inertia
+$\Lambda$. The directional derivative of $J^{\top}$ along
+$\NS$ vanishes if and only if the directional derivative of
+$M$ along $\NS$ vanishes, since both are computed from the same
+rigid-body chain through identical Jacobian-of-Jacobian
+contractions. Hence (i) holds iff $M(\jointvec)$ depends
+non-trivially on $\NS$-coordinates, which is (ii).
+
+\emph{(ii) $\Leftrightarrow$ (iii).} The torque-to-task-force
+map at fixed configuration $\jointvec$ is
+$F = (J M^{-1} J^{\top})\, J^{-\top} \tau$, equivalently
+$\tau = J^{\top}(\jointvec)\, F + (\text{null-space terms})$
+under the operational-space decomposition
+\eqref{eq:qdot-split} of \cref{sec:task-null}. If
+$M(\jointvec)$ is constant along $\NS$, then for any
+$\dot{\jointvec}_{\mathrm{null}} \in \NS$ the joint torque
+required to produce a fixed task-space force $F$ at
+$\jointvec + \epsilon \dot{\jointvec}_{\mathrm{null}}$ equals
+the joint torque required at $\jointvec$, so reconfiguration in
+$\NS$ does not modulate the relationship between joint torques
+and task-space forces: the kinematic redundancy is dynamically
+inert, and (iii) fails. Conversely, if $M(\jointvec)$ depends
+on $\NS$, the operational-space inertia $\Lambda(\jointvec)$
+inherits that dependence, and a null-space reconfiguration
+changes the torque-to-task-force map---which is exactly the
+modulation of task-space forces by internal reconfiguration in
+the sense of (iii). The contrapositive equivalence is therefore
+$[\TS, \NS]_{\jointvec} = 0$ iff (i)--(iii) all fail, in which
+case the manipulator's redundancy is the power-grasp regime
+named in the theorem statement.
+\end{proof}
