@@ -1,18 +1,15 @@
 % =====================================================================
 % macros.tex -- centralized symbol definitions for the manipulation paper
+% Every macro here corresponds to a row in the section 2.8 notation table.
 % =====================================================================
 
 % --- Order parameter and switching ---
 \newcommand{\rcontact}{\rho}
 \newcommand{\swsurf}{\Sigma}
-\newcommand{\specgap}{\lambda_1}
-\newcommand{\specgapeff}{\lambda_1^{\mathrm{eff}}}
+\newcommand{\specgap}{\lambda_{1}}
+\newcommand{\specgapeff}{\lambda_{1}^{\mathrm{eff}}}
 
-% --- Workspaces and observation ---
-\newcommand{\Wreach}{\mathcal{W}_{\mathrm{reach}}}
-\newcommand{\obsmap}{h}
-
-% --- Phase operators and reflection group ---
+% --- Phase structure ---
 \newcommand{\phaseop}[1]{T_{#1}}
 \newcommand{\Greflect}{G}
 
@@ -24,10 +21,14 @@
 \newcommand{\TS}{\mathcal{S}}
 \newcommand{\NS}{\mathcal{N}}
 
-% --- Contact / forces ---
+% --- Contact and forces ---
 \newcommand{\frictioncone}{\mathcal{F}}
 \newcommand{\Fwind}{F_{\mathrm{wind}}}
 \newcommand{\Fmax}{F_{\max}}
+
+% --- Perception ---
+\newcommand{\Wreach}{\mathcal{W}_{\mathrm{reach}}}
+\newcommand{\obsmap}{h}
 
 % --- Plan and training ---
 \newcommand{\veltheta}{v_{\theta}}
@@ -39,7 +40,7 @@
 \newcommand{\risklock}{\delta}
 \newcommand{\softrisk}{\hat{\mathcal{R}}}
 \newcommand{\actrough}{\hat{\mathcal{S}}}
-\newcommand{\curriculumeps}{\varepsilon_k}
+\newcommand{\curriculumeps}{\varepsilon_{k}}
 
 % --- Generic placeholders ---
 \newcommand{\todonote}[1]{\textcolor{red}{[TODO: #1]}}

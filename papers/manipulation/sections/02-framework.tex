@@ -1,3 +1,149 @@
 \section{Framework}
 \label{sec:framework}
-% [DRAFT-LATER]
+
+% Subsections 2.1--2.7 will be drafted in subsequent tasks.
+
+% ---------------------------------------------------------------
+\subsection{Notation}
+\label{sec:notation}
+
+Throughout the paper we use the symbols collected in
+\cref{tab:notation}. Where a symbol is overloaded across the
+robotics literature, we adopt the convention closest to the
+manipulation context (Khatib--Nakamura for task/null-space,
+Brogliato for nonsmooth contact, Lipman et al.\ for the trained
+velocity field). Two symbol overloads internal to this paper are
+called out below the table.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Symbol & Meaning & First introduced \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Order parameter and switching}}\\
+$\rcontact$                & contact order parameter
+                           & \S2.1 \\
+$\swsurf = \{\rcontact = 1\}$ & switching surface
+                           & \S2.3 \\
+$\specgap$                 & spectral gap of contact graph Laplacian
+                           & \S2.2 \\
+$\specgapeff$              & effective spectral gap with wind correction
+                           & \S7.2 \\
+$\varepsilon$              & spectral gap threshold (firm contact)$^{\dagger}$
+                           & \S3.1 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Phase structure}}\\
+$\phaseop{0},\dots,\phaseop{4}$
+                           & phase operators (pick / load / use / unload / place)
+                           & \S3.2 \\
+$\varphi$                  & phase indicator (one-hot in $\mathbb{R}^{5}$)
+                           & \S6.3 \\
+$\Greflect$                & reflection group $\{z \mapsto -z,\ g \mapsto -g,\ F \mapsto -F\}$
+                           & \S3.3 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Robot kinematics and dynamics}}\\
+$\jointvec, \dot{\jointvec}, \ddot{\jointvec} \in \mathbb{R}^{n}$
+                           & joint configuration, velocity, acceleration ($n = 7$ for Franka)
+                           & \S2.5 \\
+$J(\jointvec)$             & task Jacobian
+                           & \S2.5 \\
+$J^{+}$                    & Moore--Penrose pseudo-inverse
+                           & \S2.5 \\
+$M(\jointvec), C(\jointvec, \dot{\jointvec}), g(\jointvec)$
+                           & inertia, Coriolis, gravity terms
+                           & \S4.2 \\
+$\InvDyn$                  & inverse dynamics operator
+                           & \S6.3 \\
+$u$                        & joint torque control input
+                           & \S2.4 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Task-space / null-space}}\\
+$\TS$                      & task-space subspace (range of $J^{\top}$)
+                           & \S2.5 \\
+$\NS$                      & null-space subspace (kernel of $J$)
+                           & \S2.5 \\
+$[\TS, \NS]$               & dexterity commutator
+                           & \S4.3 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Contact and forces}}\\
+$f = (f_{n}, f_{t})$       & contact force (normal, tangential)
+                           & \S4.2 \\
+$\frictioncone$            & friction cone
+                           & \S4.2 \\
+$\mu$                      & friction coefficient
+                           & \S4.2 \\
+$\Fwind, \Fmax$            & adversarial wind force, ceiling
+                           & \S7.2 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Perception}}\\
+$\obsmap(\cdot)$           & observation map
+                           & \S2.7 \\
+$\Wreach$                  & reachable workspace
+                           & \S2.7 \\
+$D(\jointvec)$             & camera FOV at configuration $\jointvec$
+                           & \S5.1 \\
+$\tau_{\mathrm{sensor}}, \tau_{\mathrm{compute}}, \tau_{\mathrm{deadline}}$
+                           & timeliness latencies
+                           & \S5.3 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Plan and training}}\\
+$P, P^{*}$                 & plan, optimal plan
+                           & \S6.1 \\
+$\veltheta$                & CFM-trained velocity field
+                           & \S6.2 \\
+$\polphi$                  & RLMD-trained policy
+                           & \S6.4 \\
+$\actpsi$                  & actuator residual net
+                           & \S6.4 / \S8.2 \\
+$\mmdloss(\theta)$         & MMD loss
+                           & \S6.2 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{RLMD (risk lock)}}\\
+$\risklock$                & risk lock threshold
+                           & \S6.4 \\
+$\softrisk$                & soft-surrogate failure rate
+                           & \S6.4 \\
+$\actrough$                & action roughness penalty
+                           & \S6.4 \\
+$\beta$                    & sigmoid temperature for $\softrisk$
+                           & \S6.4 \\
+$\curriculumeps$           & curriculum perturbation at iteration $k$$^{\dagger}$
+                           & \S6.4 \\
+\midrule
+\multicolumn{3}{@{}l}{\textit{Curriculum}}\\
+$L$                        & stack layers
+                           & \S7.1 \\
+$N_{\mathrm{blocks}}$      & number of blocks$^{\ddagger}$
+                           & \S7.1 \\
+$K_{\mathrm{type}}$        & number of block types
+                           & \S7.1 \\
+\bottomrule
+\end{tabular}
+\caption{Notation. Subsection references point to the first
+introduction of the symbol.
+$^{\dagger}$~The two symbols $\varepsilon$ (spectral gap threshold,
+\S3.1) and $\curriculumeps$ (curriculum perturbation at iteration $k$,
+\S6.4) share the Greek letter $\varepsilon$ but denote distinct
+quantities; we always disambiguate by the subscript $k$.
+$^{\ddagger}$~The base letter $N$ is also used in \S6.4 for the
+RLMD rollout count $N_{\mathrm{rollout}}$; both occurrences carry
+explicit subscripts in the body to avoid ambiguity.}
+\label{tab:notation}
+\end{table}
+
+\begin{remark}[Symbol overloads]
+\label{rem:overloads}
+Two notational collisions are unavoidable in a manipulation paper
+of this scope and are flagged here for the reader.
+\emph{(i)} The Greek letter $\varepsilon$ appears as the spectral
+gap threshold $\specgap \ge \varepsilon$ in \S3.1 and as the
+indexed curriculum perturbation $\curriculumeps$ in \S6.4. The
+subscript $k$ disambiguates the latter and is always present.
+\emph{(ii)} The base letter $N$ appears as $N_{\mathrm{blocks}}$
+(the number of blocks in the stacking task, \S7.1) and as
+$N_{\mathrm{rollout}}$ (the RLMD rollout count, \S6.4); both
+occurrences carry explicit subscripts and the bare symbol $N$ is
+not used in the body.
+\end{remark}
