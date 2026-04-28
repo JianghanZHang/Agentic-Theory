@@ -9,11 +9,13 @@ A robotic manipulation episode is, at root, a sequence of contact
 events: the robot approaches a passive object, applies enough force
 to support it against gravity, transports it, and releases it onto
 another passive support. The full pipeline of perception, planning,
-and control is organized around the question of \emph{how firmly}
-the manipulator is in contact with the object at each instant. We
-take this firmness to be the central interface variable of the
-paper and capture it with a single dimensionless quantity, the
-\emph{contact order parameter} $\rcontact$. Subsequent subsections
+and control is organized around a single graded property of the
+robot--object contact at each instant: \emph{the ratio of the
+normal contact force the manipulator applies to the normal force
+required for the object to be in static equilibrium}. We call
+this dimensionless ratio the \emph{contact order parameter}
+$\rcontact$ and take it to be the central interface variable of
+the paper. Subsequent subsections
 build the spectral, geometric, and control structure of the
 five-phase cycle on top of $\rcontact$; the present subsection
 defines it.
@@ -42,7 +44,8 @@ We adopt the following sign convention throughout the paper:
     level set defines the \emph{switching surface}
     $\swsurf = \{\rcontact = 1\}$, formalized in \cref{sec:Sigma}.
   \item $\rcontact > 1$ --- the contact force exceeds the
-    equilibrium requirement; the body is in firm contact.
+    equilibrium requirement; the manipulator is supporting the
+    body against its load.
 \end{itemize}
 
 Two literature anchors place $\rcontact$ in context. In nonsmooth
@@ -84,7 +87,7 @@ The three regimes specialize as expected:
 $\rcontact_{\mathrm{grasp}} < 1$ corresponds to the box slipping
 through the fingers, $\rcontact_{\mathrm{grasp}} = 1$ to the
 critical grasp force, and $\rcontact_{\mathrm{grasp}} > 1$ to a
-firm grasp that can transmit acceleration to the box.
+grasp that supports the box and can transmit acceleration to it.
 \end{example}
 
 The remainder of \cref{sec:framework} develops three structural
@@ -99,17 +102,18 @@ surface), and the control implications of those crossings
 \subsection{Spectral gap $\specgap$ of the contact graph}
 \label{sec:specgap}
 
-The order parameter $\rcontact$ of \cref{def:rho} characterizes
-the firmness of a single contact between one body and a
-counterpart support. Manipulation tasks of practical interest
+The order parameter $\rcontact$ of \cref{def:rho} is defined at a
+single contact between one body and a counterpart support.
+Manipulation tasks of practical interest
 typically involve more than one such contact: a stack of two or
 more blocks transmits load through a chain of body--body
 contacts, a grasped object simultaneously contacts two fingers
 and (transiently) a placement surface, and an in-hand
 manipulation maneuver relies on several finger--object contacts
 arranged around the object. In each case the relevant question
-is no longer the firmness of any individual contact alone but
-the connectivity of the entire \emph{contact graph} that links
+is no longer the value of $\rcontact$ at any individual contact
+alone but the connectivity of the entire \emph{contact graph}
+that links
 the bodies in play to the supporting environment. The spectral
 gap $\specgap$ measures this connectivity.
 
@@ -127,9 +131,9 @@ $w_{ij} \ge 0$ on $\{i, j\} \in E$ is the contact stiffness at
 the $(i, j)$ contact, equivalently the magnitude of the contact
 force at that contact. (These two interpretations are
 equivalent up to a positive scaling: under the linearized
-contact model used throughout \cref{sec:framework} a contact in
-firm engagement transmits force in proportion to local
-stiffness, so taking either as the edge weight produces the
+contact model used throughout \cref{sec:framework} a contact at
+$\rcontact > 1$ transmits force in proportion to local stiffness,
+so taking either as the edge weight produces the
 same connectivity structure.) We adopt the convention that the
 environment (a fixed inertial support such as a tabletop)
 appears as a distinguished vertex in $V$.
@@ -167,11 +171,11 @@ in keeping with the macro definition of \cref{sec:notation}.
 Following \citet{Fiedler1973}, $\specgap$ is the
 \emph{algebraic connectivity} of $G_{c}$; the broader spectral
 graph-theoretic background is collected in \citet{Chung1997}.
-The spectral gap is the central quantity that promotes the
-single-contact firmness of $\rcontact$ to a multi-body
-firmness: it asks whether every body in $V$ is tied, possibly
-through a chain of intermediate contacts, to the supporting
-environment.
+The spectral gap is the central quantity that promotes
+$\rcontact$ from a single-contact scalar to a multi-body
+connectivity measure: it asks whether every body in $V$ is tied,
+possibly through a chain of intermediate contacts, to the
+supporting environment.
 
 \begin{lemma}[Spectral gap interpretation]\label{lem:specgap-interp}
 Let $L_{c}$ be the weighted Laplacian of the contact graph
@@ -223,8 +227,9 @@ Translated back into the order-parameter language of
 $\rcontact_{b_{2} \to b_{1}} \ge 1$ (the upper cube does not
 slip on the lower) and $\rcontact_{b_{1} \to \text{table}} \ge
 1$ (the lower cube does not slip on the table). The spectral
-gap is positive precisely when the entire stack is firmly
-seated on the environment as one connected support structure;
+gap is positive precisely when every contact in the stack
+satisfies $\rcontact \ge 1$, so that the chain forms a single
+connected support structure rooted in the environment;
 it collapses to zero the moment any single contact in the chain
 fails. This is the multi-body extension of $\rcontact$ promised
 above and the connectivity criterion that the controller will
@@ -249,9 +254,11 @@ none of the qualitative structure of this subsection depends on
 the additional coordinates $(x, \dot x)$, it is sometimes
 sufficient to view $\swsurf$ as a level set of $\rcontact$ on
 its own. The complement of $\swsurf$ partitions the joint state
-space into the slipping/no-contact region $\{\rcontact < 1\}$
-on one side and the firm-contact region $\{\rcontact > 1\}$ on
-the other. The robot's task is to traverse a trajectory whose
+space into the region $\{\rcontact < 1\}$ (no contact, or contact
+without sufficient force to support the object) on one side and
+the region $\{\rcontact > 1\}$ (the manipulator supports the
+object) on the other. The robot's task is to traverse a
+trajectory whose
 $\rcontact$-projection visits both sides exactly when needed.
 
 \paragraph{Boundary conditions of a pick--place task.}
@@ -363,10 +370,10 @@ and to the spectral-gap constraint
 \end{equation}
 on the in-contact interval, with $\varepsilon$ the spectral-gap
 threshold of the notation table (\cref{sec:notation}). The
-constraint \eqref{eq:specgap-constraint} encodes the firmness
-requirement of \cref{sec:specgap}: while the robot supports the
-object, the contact graph must remain connected with quantitative
-margin.
+constraint \eqref{eq:specgap-constraint} encodes the spectral
+connectivity requirement of \cref{sec:specgap}: while the robot
+supports the object, the contact graph must remain connected with
+quantitative margin.
 
 \begin{definition}[Three-term decomposition]\label{def:three-term}
 For a pick--place OCP as above, an admissible control input
@@ -682,7 +689,8 @@ Within the bi-level scaffold of \cref{def:bilevel}, grasping is the
 deliberate creation of a contact singularity at the boundary of
 the inner level. Phase 2 (load) drives the inner solution from no
 contact ($\specgap = 0$) up to the boundary $\specgap = \varepsilon$
-of feasible firm contact, while phase 4 (unload) drives it back
+of the feasible region for the inner spectral-gap constraint,
+while phase 4 (unload) drives it back
 across the same boundary in the opposite direction. The two
 boundary crossings of the inner program are exactly the two bang
 arcs identified in \cref{def:three-term}: $u_{s}$ at $t_{1}$ is
@@ -730,7 +738,7 @@ $\specgap$                 & spectral gap of contact graph Laplacian
                            & \S2.2 \\
 $\specgapeff$              & effective spectral gap with wind correction
                            & \S7.2 \\
-$\varepsilon$              & spectral gap threshold (firm contact)$^{\dagger}$
+$\varepsilon$              & spectral gap threshold ($\specgap \ge \varepsilon$ on contact)$^{\dagger}$
                            & \S3.1 \\
 \midrule
 \multicolumn{3}{@{}l}{\textit{Phase structure}}\\
