@@ -1,7 +1,129 @@
 \section{Framework}
 \label{sec:framework}
 
-% Subsections 2.1--2.7 will be drafted in subsequent tasks.
+% ---------------------------------------------------------------
+\subsection{Contact order parameter $\rcontact$}
+\label{sec:rho}
+
+A robotic manipulation episode is, at root, a sequence of contact
+events: the robot approaches a passive object, applies enough force
+to support it against gravity, transports it, and releases it onto
+another passive support. The full pipeline of perception, planning,
+and control is organized around the question of \emph{how firmly}
+the manipulator is in contact with the object at each instant. We
+take this firmness to be the central interface variable of the
+paper and capture it with a single dimensionless quantity, the
+\emph{contact order parameter} $\rcontact$. Subsequent subsections
+build the spectral, geometric, and control structure of the
+five-phase cycle on top of $\rcontact$; the present subsection
+defines it.
+
+\begin{definition}[Contact order parameter]
+\label{def:rho}
+For a body $b$ in instantaneous contact with the environment via a
+contact set with outward unit normal $\hat{\mathbf n}$, let
+$f_{n} \ge 0$ denote the magnitude of the contact force projected
+onto $\hat{\mathbf n}$, and let $f_{n}^{\star} > 0$ denote the
+normal force required for $b$ to be in static equilibrium under
+gravity and any task-relevant external load. The
+\emph{contact order parameter} of $b$ is
+\begin{equation}
+\label{eq:rho-def}
+\rcontact \;\coloneqq\; \frac{f_{n}}{f_{n}^{\star}} \;\in\; [0, \infty).
+\end{equation}
+\end{definition}
+
+The order parameter $\rcontact$ is dimensionless and non-negative.
+We adopt the following sign convention throughout the paper:
+\begin{itemize}[leftmargin=*]
+  \item $\rcontact < 1$ --- the contact force is insufficient to
+    support $b$; the body is slipping or out of contact.
+  \item $\rcontact = 1$ --- the static-equilibrium threshold; this
+    level set defines the \emph{switching surface}
+    $\swsurf = \{\rcontact = 1\}$, formalized in \cref{sec:Sigma}.
+  \item $\rcontact > 1$ --- the contact force exceeds the
+    equilibrium requirement; the body is in firm contact.
+\end{itemize}
+
+Two literature anchors place $\rcontact$ in context. In nonsmooth
+contact mechanics one classically tracks a discrete contact-mode
+indicator that toggles between \emph{contact} and \emph{no
+contact} with complementarity conditions on the force and the gap
+function~\citep{Brogliato2016}. The order parameter $\rcontact$
+generalizes that indicator by replacing the binary toggle with a
+continuous measure that smooths the transition through
+$\rcontact = 1$. In grasping and force-closure analysis one
+analogously tracks the friction-cone margin between the applied
+contact wrench and the boundary of the friction
+cone~\citep{MurrayLiSastry1994}; the regime $\rcontact > 1$
+corresponds to wrenches strictly inside that
+margin, while $\rcontact = 1$ marks its boundary. Both
+characterizations are recovered by appropriate choice of the
+denominator $f_{n}^{\star}$.
+
+\begin{example}[Parallel-jaw grasp of a rigid box]
+\label{ex:parallel-jaw}
+Consider a parallel-jaw gripper grasping a rigid box of mass $m$
+in a uniform gravitational field of magnitude $g$. Each finger
+applies a normal force of magnitude $f_{n}$ to a vertical face of
+the box; let $\mu$ denote the static friction coefficient between
+finger and box. The static equilibrium condition for the box is
+that the total tangential friction available at the two finger
+contacts supports the weight,
+\[
+2 \mu f_{n} \;\ge\; m g,
+\]
+with equality at the slipping threshold. The grasp-specific
+order parameter is therefore
+\begin{equation}
+\label{eq:rho-grasp}
+\rcontact_{\mathrm{grasp}} \;\coloneqq\; \frac{2 \mu f_{n}}{m g},
+\end{equation}
+which realizes \cref{def:rho} with $f_{n}^{\star} = m g / (2 \mu)$.
+The three regimes specialize as expected:
+$\rcontact_{\mathrm{grasp}} < 1$ corresponds to the box slipping
+through the fingers, $\rcontact_{\mathrm{grasp}} = 1$ to the
+critical grasp force, and $\rcontact_{\mathrm{grasp}} > 1$ to a
+firm grasp that can transmit acceleration to the box.
+\end{example}
+
+The remainder of \cref{sec:framework} develops three structural
+consequences of \cref{def:rho}: the spectral content of multi-body
+contact (\cref{sec:specgap}, where $\specgap$ characterizes the
+connectivity of the contact graph), the geometry of crossings of
+the level set $\rcontact = 1$ (\cref{sec:Sigma}, the switching
+surface), and the control implications of those crossings
+(\cref{sec:three-term} onward).
+
+% ---------------------------------------------------------------
+\subsection{Spectral gap $\specgap$ of the contact graph}
+\label{sec:specgap}
+% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{Switching surface $\swsurf$ and the two-crossing lemma}
+\label{sec:Sigma}
+% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{Three-term control decomposition}
+\label{sec:three-term}
+% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{Task-space / null-space decomposition}
+\label{sec:task-null}
+% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{Bi-level optimization scaffold}
+\label{sec:bilevel}
+% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{Causal observability}
+\label{sec:causal-obs}
+% [DRAFT-LATER]
 
 % ---------------------------------------------------------------
 \subsection{Notation}
