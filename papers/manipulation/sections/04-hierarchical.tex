@@ -1,3 +1,123 @@
 \section{Hierarchical decomposition}
 \label{sec:hierarchical}
-% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{Task-space / null-space at each phase}
+\label{sec:hierarchical-tn}
+
+\Cref{def:TS-NS} of \cref{sec:task-null} introduced the
+task-space subspace
+$\TS = \mathrm{range}(J^{\top}(\jointvec))$ and the null-space
+subspace $\NS = \ker(J(\jointvec))$ as a configuration-dependent
+splitting of the joint-velocity space $\mathbb{R}^{n}$.
+\Cref{sec:phase-cycle} established the five-phase decomposition
+of a pick--place trajectory together with the structural
+operators $\phaseop{0}, \ldots, \phaseop{4}$ associated with the
+phases. The present subsection ties the two together. For each
+phase $k \in \{1, \ldots, 5\}$ we identify the \emph{task
+variable}---what the manipulator is required to control on $\TS$
+during that phase---and the \emph{null-space freedom}---what the
+manipulator is free to vary in $\NS$ without affecting the task
+variable. The per-phase reading is the structural prerequisite
+for the bi-level specialization of \cref{sec:hierarchical-bilevel}
+and for the dexterity commutator of
+\cref{sec:hierarchical-commutator}.
+
+\paragraph{Per-phase specialization.}
+The task variable on $\TS$ and the null-space freedom on $\NS$
+specialize phase-by-phase as in \cref{tab:tn-per-phase}. Phases 1
+and 5 are out-of-contact reaches, so the task variable is the
+end-effector pose alone; phases 2 and 4 are the bang arcs at
+$t_{1}$ and $t_{4}$, so the task variable is the contact wrench
+at the corresponding $\swsurf$-crossing; phase 3 is the in-contact
+transport, so the task variable is the object pose trajectory.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}clll@{}}
+\toprule
+$k$ & Phase & Task variable on $\TS$ & Null-space freedom on $\NS$ \\
+\midrule
+1 & pick (approach) & end-effector pose $g \in SE(3)$
+  & redundant arm configuration (e.g.\ elbow swivel) \\
+2 & load (contact establishment) & contact-wrench at $\rcontact = 1^{+}$
+  & wrist orientation consistent with grasp geometry \\
+3 & use (transport) & object pose trajectory $x_{\mathrm{obj}}(t) \in SE(3)$
+  & redundant gripper-arm trajectory \\
+4 & unload (release) & contact-wrench at $\rcontact = 1^{-}$
+  & wrist orientation as in phase 2 \\
+5 & place (retreat) & end-effector pose $g \in SE(3)$
+  & redundant arm configuration as in phase 1 \\
+\bottomrule
+\end{tabular}
+\caption{Per-phase specialization of the task-space /
+null-space split of \cref{def:TS-NS}. Phases 1 and 5 control the
+end-effector pose; phases 2 and 4 control the contact wrench at
+the $\swsurf$-crossings; phase 3 controls the object pose
+trajectory through the contact.}
+\label{tab:tn-per-phase}
+\end{table}
+
+\paragraph{Per-phase dimension count for the Franka Panda.}
+For the concrete instance used in the experimental staircase of
+\cref{sec:experiments}, the manipulator is the Franka Emika Panda
+with $n = 7$ joints. In phases 1, 3, and 5 the task variable is a
+full $SE(3)$ pose (end-effector pose, object pose, end-effector
+pose, respectively), so $m = 6$ and the dimensions of the
+splitting are
+\[
+  \dim \TS \;=\; 6,
+  \qquad
+  \dim \NS \;=\; n - m \;=\; 1,
+\]
+with the single null-space direction the elbow-swivel self-motion
+of \cref{ex:franka-elbow}. In phases 2 and 4 the task variable
+is the contact wrench at the $\swsurf$-crossing; in the
+three-dimensional world the wrench has six independent components
+(three force, three moment), so the task dimension is again
+$m = 6$ and $\dim \NS = 1$, which is now realized by the wrist
+orientation freedom that maintains the grasp normal aligned with
+the contact face. (For a planar grasp the wrench dimension drops
+to three and $\NS$ correspondingly enlarges; the Franka platform
+with a parallel-jaw end-effector executes the planar specialization
+when the manipulated face is vertical.) The same arm therefore
+exposes the same one-dimensional self-motion in every phase, but
+the physical interpretation of that self-motion changes with the
+phase: an elbow swivel in phases 1, 3, 5 and a wrist-orientation
+freedom in phases 2 and 4.
+
+\paragraph{Phase 3 in detail.}
+Phase 3 is the substantive in-contact transport phase and the
+only phase where the task variable is the object pose rather than
+the end-effector pose. The manipulator must track an object pose
+trajectory $x_{\mathrm{obj}}(t) \in SE(3)$ on the open interval
+$(t_{1}, t_{4})$ through the bi-level coupling of
+\cref{def:bilevel}: the outer level prescribes
+$x_{\mathrm{obj}}(t)$ and the inner level chooses contact forces
+that realize the corresponding object acceleration while
+maintaining $\specgap(t) \ge \varepsilon$. The null-space freedom
+on $\NS$ is the redundant gripper-arm trajectory: multiple arm
+configurations realize the same object pose, and the controller
+exploits this redundancy to satisfy the spectral-gap constraint
+$\specgap \ge \varepsilon$ of \cref{eq:bilevel-outer} while
+remaining strictly inside the friction cone $\frictioncone$. This
+is the per-phase realization of the operational-space framework
+of \citet{Khatib1987} and \citet{Nakamura1991}, specialized to
+the contact-mediated transport regime: the same orthogonal
+projector $P_{\NS} = I - J^{+} J$ that
+\eqref{eq:qdot-split} of \cref{sec:task-null} writes generally is
+applied here to the contact-coupled dynamics of phase 3, with the
+null-space command directed by the inner force-closure program.
+
+\paragraph{Forward references.}
+\Cref{sec:hierarchical-bilevel} specializes the abstract bi-level
+scaffold of \cref{def:bilevel} and the coupling proposition
+\cref{prop:bilevel-coupling} to the per-phase task and null
+variables identified above, deriving the explicit form of the
+acceleration bound $\alpha(\jointvec, f_{n,\max})$ for the
+parallel-jaw grasp under wind. \Cref{sec:hierarchical-commutator}
+defines the commutator $[\TS, \NS]_{\jointvec}$ that quantifies
+the dynamic dexterity of the manipulator on its null-space and
+proves that this commutator is non-zero exactly in the regime
+where internal reconfiguration modulates task-space forces.
