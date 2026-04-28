@@ -123,3 +123,51 @@ configuration. The decomposition \eqref{eq:three-term} is
 therefore unique up to the standard ambiguity present in OCPs
 without strict convexity of $L$.
 \end{proof}
+
+% ---------------------------------------------------------------
+\subsection{Proof of \cref{lem:G-equivariance}}
+\label{app:proof:G-equivariance}
+
+\begin{proof}
+We prove the four claims in order.
+
+\emph{(i) $\rcontact$ is $\Greflect$-invariant.} The order
+parameter $\rcontact = f_{n}/f_{n}^{\star}$ is the ratio of two
+non-negative magnitudes (\cref{def:rho}). Under $\sigma$, the
+contact normal $\hat{\mathbf n}$ reverses sign because the
+relative position of the bodies in contact reverses ($z \to -z$),
+and the contact force $F$ reverses sign by hypothesis. Hence
+the inner product $F \cdot \hat{\mathbf n}$ is unchanged, and
+$f_{n} = |F \cdot \hat{\mathbf n}|$ is invariant. The
+equilibrium force $f_{n}^{\star}$ likewise depends on $|g_{z}|$,
+which is invariant. Consequently $\rcontact$ is
+$\Greflect$-invariant.
+
+\emph{(ii) $\swsurf$ is $\Greflect$-invariant.} Direct corollary
+of (i): $\swsurf = \{\xi : \rcontact(\xi) = 1\}$, and (i) gives
+$\rcontact(\sigma \cdot \xi) = \rcontact(\xi)$, so
+$\xi \in \swsurf \iff \sigma \cdot \xi \in \swsurf$.
+
+\emph{(iii) Phase operators commute with $\sigma$.} The phase
+operators $\phaseop{i}$ are defined in
+\cref{sec:operator-algebra} through the geometry of $\rcontact$
+around its two crossings of $\swsurf$ (\cref{lem:two-crossing}).
+Both objects are $\Greflect$-invariant by (i)--(ii); hence
+$\phaseop{i}$ depends on $\xi$ only through
+$\Greflect$-invariant quantities, and the commutation
+$\phaseop{i} \circ \sigma = \sigma \circ \phaseop{i}$ follows.
+
+\emph{(iv) Three-term decomposition is linearly
+$\Greflect$-covariant.} The gravity-compensation term
+$u_{g}(\jointvec, g_{z})$ is the joint torque required to balance
+gravity; under $\sigma$ the $z$-component of gravity reverses,
+hence $u_{g} \to -u_{g}$. The least-action term $u_{a}$ is
+determined by the first-order conditions on the singular interior
+of each phase, which depend on the costate $\lambda$ and on
+$\Greflect$-invariant state quantities only; the costate
+transforms linearly with $\sigma$, yielding $u_{a} \to -u_{a}$.
+The spectral-kick term $u_{s}$ at the $\swsurf$-crossings
+$t_{1}, t_{4}$ is the impulse required to shift $\rcontact$
+across $\swsurf$; under $\sigma$ the direction of the required
+shift reverses, hence $u_{s} \to -u_{s}$.
+\end{proof}

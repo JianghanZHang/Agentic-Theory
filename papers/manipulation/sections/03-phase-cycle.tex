@@ -1,3 +1,122 @@
 \section{The five-phase cycle}
 \label{sec:phase-cycle}
+
+\subsection{Phase structure}
+\label{sec:phase-structure}
 % [DRAFT-LATER]
+
+\subsection{Operator algebra}
+\label{sec:operator-algebra}
+% [DRAFT-LATER]
+
+% ---------------------------------------------------------------
+\subsection{$G$-equivariance of the five-phase cycle}
+\label{sec:G-equivariance}
+
+The framework so far has treated each manipulation episode as a
+single trajectory: one robot, one object, one ground. The same
+operator algebra in fact applies---without modification---to a
+family of dynamical configurations related by a discrete symmetry.
+Two configurations make this concrete. In a basketball dribble,
+the hand strikes the ball downward at the apex of a bounce; in
+ball juggling, the hand strikes the ball upward from below. Both
+admit the same five-phase decomposition (free-flight, approach,
+impact, separation, free-flight) with the same control structure
+(gravity compensation plus least-action interior plus a
+spectral-kick at each $\swsurf$-crossing). The present subsection
+identifies the symmetry group $\Greflect$ that relates such
+configurations, formalizes its action on the extended state, and
+proves that the operator algebra of \cref{sec:operator-algebra}
+is $\Greflect$-equivariant. The corollary at the end of the
+subsection provides the structural reason a single controller
+realizes both branches of the orbit; Stage~III of the experimental
+staircase (\cref{sec:exp-stage-III}) is the corresponding
+deployment.
+
+\begin{definition}[Reflection group $\Greflect$]
+\label{def:G-action}
+Let $\Greflect = \{e, \sigma\}$ be the discrete reflection group
+of order two, with $\sigma^{2} = e$. The group $\Greflect$ acts
+on the $z$-component of the extended state $(z, \dot z, g_{z},
+F_{z})$ by simultaneous sign-reversal:
+\[
+  \sigma \cdot (z, \dot z, g_{z}, F_{z})
+  \;=\;
+  (-z, -\dot z, -g_{z}, -F_{z}),
+\]
+where $z, \dot z$ are the vertical position and velocity, and
+$g_{z}, F_{z}$ are the $z$-components of the gravitational
+acceleration and the relevant external force, respectively. The
+horizontal components $(x, y, \dot x, \dot y, g_{x}, g_{y},
+F_{x}, F_{y})$ are fixed by $\sigma$.
+\end{definition}
+
+\begin{remark}[$\Greflect$ is a coordinate symmetry, not a physical symmetry]
+\label{rem:G-coord-sym}
+The action of $\sigma$ in \cref{def:G-action} is a symmetry of
+the \emph{equations of motion under coordinate relabeling}, not a
+physical symmetry of the laboratory frame: gravitational
+acceleration in the laboratory always points downward. The claim
+of $\Greflect$-equivariance is that the dynamics written in
+$(z, \dot z, g_{z}, F_{z})$ coordinates is identical to the
+dynamics written in $(-z, -\dot z, -g_{z}, -F_{z})$ coordinates,
+so that configurations related by $\sigma$ admit the same
+controller modulo a deterministic sign-flip on the control
+input. This is the formal counterpart to the empirical
+observation that a basketball dribble and a ball-juggle are run
+by the same software with a single sign parameter.
+\end{remark}
+
+\begin{lemma}[$\Greflect$-equivariance of the five-phase cycle]
+\label{lem:G-equivariance}
+Let $\Greflect = \{e, \sigma\}$ act on the extended state
+$(z, \dot z, g_{z}, F_{z})$ as in \cref{def:G-action}, and let
+$\rcontact, \swsurf, \phaseop{0}, \ldots, \phaseop{4}$ denote
+the order parameter, switching surface, and phase operators of
+\cref{sec:rho,sec:Sigma,sec:operator-algebra}. Then:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item the order parameter is $\Greflect$-invariant:
+        $\rcontact(\sigma \cdot \xi) = \rcontact(\xi)$ for every
+        admissible state $\xi$;
+  \item the switching surface is $\Greflect$-invariant:
+        $\sigma(\swsurf) = \swsurf$;
+  \item the phase operators commute with $\sigma$:
+        $\phaseop{i} \circ \sigma = \sigma \circ \phaseop{i}$ for
+        $i = 0, \ldots, 4$;
+  \item the three-term control decomposition of
+        \cref{thm:three-term} is linearly $\Greflect$-covariant:
+        $\sigma$ acts on each component by sign-reversal,
+        $\sigma \cdot u_{g} = -u_{g}$,
+        $\sigma \cdot u_{a} = -u_{a}$,
+        $\sigma \cdot u_{s} = -u_{s}$.
+\end{enumerate}
+\end{lemma}
+
+The proof is deferred to \cref{app:proof:G-equivariance}.
+
+\begin{corollary}[Single controller across the $\Greflect$-orbit]
+\label{cor:G-controller}
+A controller $\pi$ whose feedback law depends on the state only
+through $\Greflect$-invariant quantities---in particular through
+$\rcontact$, $\specgap$, and the contact gap $\phi$---is
+automatically $\Greflect$-equivariant: applying $\pi$ to state
+$\xi$ and applying $\pi$ to state $\sigma \cdot \xi$ produce
+control inputs related by $\sigma \cdot u = -u$. A single such
+controller therefore realizes both branches of the
+$\Greflect$-orbit. Stage~III (\cref{sec:exp-stage-III})
+instantiates this corollary in the dual-dribble experiment, in
+which one controller drives both basketball dribble and ball
+juggling without per-mode tuning.
+\end{corollary}
+
+The corollary is the structural reason the same code base
+handles both Stage~III dual-dribble configurations: the feedback
+law depends on the state only through $\Greflect$-invariant
+scalars, so the sign-flip prescribed by $\sigma$ is absorbed by
+the linear covariance of the three-term decomposition. The
+basketball-versus-juggle pair is the simplest non-trivial example
+of a $\Greflect$-orbit of manipulation tasks; the same machinery
+extends, mutatis mutandis, to richer discrete symmetries that
+relate larger families of pick--place configurations under the
+same operator algebra. \Cref{sec:exp-stage-III} reports the
+dual-dribble deployment of this single-controller architecture.
