@@ -1,3 +1,39 @@
 \section{Deferred proofs}
 \label{app:proofs}
-% [DRAFT-LATER]
+
+This appendix collects the proofs of the structural lemmas and
+theorems stated in \cref{sec:framework}.
+
+% ---------------------------------------------------------------
+\subsection{Proof of \cref{lem:specgap-interp}}
+\label{app:proof:specgap-interp}
+
+The result is the standard characterization of algebraic
+connectivity in spectral graph theory \citep{Chung1997,Fiedler1973};
+we sketch the proof here for self-containment.
+
+\begin{proof}
+$(\Leftarrow)$ Suppose $G_{c}$ is disconnected. Partition $V$
+into two non-empty subsets $V_{1}, V_{2}$ with no edges between
+them. The indicator vector $\mathbf{1}_{V_{1}} \in
+\mathbb{R}^{|V|}$ (which assigns $1$ to vertices of $V_{1}$ and
+$0$ to those of $V_{2}$) satisfies $\mathbf{1}_{V_{1}}^{\top}
+L_{c}\, \mathbf{1}_{V_{1}} = 0$ by the quadratic form
+\eqref{eq:laplacian-quadform}, since $(x_{i} - x_{j})^{2} = 0$
+on every edge $\{i, j\} \in E$ (each such edge lies entirely
+within $V_{1}$ or entirely within $V_{2}$). Hence
+$\mathbf{1}_{V_{1}} \in \ker L_{c}$. Since $\mathbf{1}_{V_{1}}$
+is not a scalar multiple of $\mathbf{1}_{V}$, the kernel of
+$L_{c}$ has dimension at least two, and therefore
+$\specgap(L_{c}) = \mu_{1} = 0$.
+
+$(\Rightarrow)$ Conversely, assume $G_{c}$ is connected. Suppose
+$\mathbf{x} \in \ker L_{c}$. By
+\eqref{eq:laplacian-quadform}, $\mathbf{x}^{\top} L_{c}\,
+\mathbf{x} = 0$ implies $w_{ij}(x_{i} - x_{j})^{2} = 0$ for
+every $\{i, j\} \in E$, hence $x_{i} = x_{j}$ on every edge with
+positive weight. Connectivity then forces $\mathbf{x}$ to be
+constant on $V$, i.e., $\mathbf{x} \in \mathrm{span}(\mathbf{1}_{V})$.
+The kernel is therefore one-dimensional and the second-smallest
+eigenvalue $\specgap(L_{c}) = \mu_{1}$ is strictly positive.
+\end{proof}

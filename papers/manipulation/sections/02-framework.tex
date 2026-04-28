@@ -98,7 +98,137 @@ surface), and the control implications of those crossings
 % ---------------------------------------------------------------
 \subsection{Spectral gap $\specgap$ of the contact graph}
 \label{sec:specgap}
-% [DRAFT-LATER]
+
+The order parameter $\rcontact$ of \cref{def:rho} characterizes
+the firmness of a single contact between one body and a
+counterpart support. Manipulation tasks of practical interest
+typically involve more than one such contact: a stack of two or
+more blocks transmits load through a chain of body--body
+contacts, a grasped object simultaneously contacts two fingers
+and (transiently) a placement surface, and an in-hand
+manipulation maneuver relies on several finger--object contacts
+arranged around the object. In each case the relevant question
+is no longer the firmness of any individual contact alone but
+the connectivity of the entire \emph{contact graph} that links
+the bodies in play to the supporting environment. The spectral
+gap $\specgap$ measures this connectivity.
+
+\paragraph{Contact graph.}
+At a fixed instant $t$, let
+\begin{equation}
+\label{eq:contact-graph}
+  G_{c}(t) \;=\; (V, E, w),
+\end{equation}
+where the vertex set $V$ collects the bodies currently in
+contact with at least one other body or with the environment,
+the edge set $E \subseteq \binom{V}{2}$ collects pairs of
+bodies in direct contact, and the edge weight
+$w_{ij} \ge 0$ on $\{i, j\} \in E$ is the contact stiffness at
+the $(i, j)$ contact, equivalently the magnitude of the contact
+force at that contact. (These two interpretations are
+equivalent up to a positive scaling: under the linearized
+contact model used throughout \cref{sec:framework} a contact in
+firm engagement transmits force in proportion to local
+stiffness, so taking either as the edge weight produces the
+same connectivity structure.) We adopt the convention that the
+environment (a fixed inertial support such as a tabletop)
+appears as a distinguished vertex in $V$.
+
+The weighted Laplacian of $G_{c}$ is the standard
+spectral-graph-theoretic object
+\begin{equation}
+\label{eq:laplacian-def}
+  L_{c} \;\coloneqq\; D - W,
+\end{equation}
+where $W \in \mathbb{R}^{|V| \times |V|}$ is the weighted
+adjacency matrix with entries $W_{ij} = w_{ij}$ for $\{i, j\}
+\in E$ and zero otherwise, and $D$ is the diagonal degree
+matrix with $D_{ii} = \sum_{j} W_{ij}$. The matrix $L_{c}$ is
+symmetric positive semidefinite and admits the quadratic-form
+representation
+\begin{equation}
+\label{eq:laplacian-quadform}
+  \mathbf{x}^{\top} L_{c}\, \mathbf{x}
+  \;=\; \tfrac{1}{2}\!\sum_{\{i, j\} \in E}\! w_{ij}\,(x_{i} - x_{j})^{2},
+  \qquad \mathbf{x} \in \mathbb{R}^{|V|},
+\end{equation}
+from which the all-ones vector $\mathbf{1}_{V}$ visibly lies in
+the kernel of $L_{c}$.
+
+\paragraph{Spectral gap.}
+The eigenvalues of $L_{c}$ are non-negative and may be ordered
+$0 = \mu_{0} \le \mu_{1} \le \dots \le \mu_{|V|-1}$. We denote
+the second-smallest eigenvalue by
+\begin{equation}
+\label{eq:specgap-def}
+  \specgap(L_{c}) \;\coloneqq\; \mu_{1},
+\end{equation}
+in keeping with the macro definition of \cref{sec:notation}.
+Following \citet{Fiedler1973}, $\specgap$ is the
+\emph{algebraic connectivity} of $G_{c}$; the broader spectral
+graph-theoretic background is collected in \citet{Chung1997}.
+The spectral gap is the central quantity that promotes the
+single-contact firmness of $\rcontact$ to a multi-body
+firmness: it asks whether every body in $V$ is tied, possibly
+through a chain of intermediate contacts, to the supporting
+environment.
+
+\begin{lemma}[Spectral gap interpretation]\label{lem:specgap-interp}
+Let $L_{c}$ be the weighted Laplacian of the contact graph
+$G_{c} = (V, E, w)$ with non-negative edge weights. Then
+$\specgap(L_{c}) = 0$ if and only if $G_{c}$ is disconnected,
+i.e., at least one body in $V$ is not connected via a chain of
+positively-weighted contacts to the supporting environment.
+Equivalently, $\specgap(L_{c}) > 0$ if and only if every body
+in $V$ belongs to a single connected support structure.
+\end{lemma}
+
+The proof, a standard consequence of the spectral theory of
+weighted graphs, is deferred to
+\cref{app:proof:specgap-interp}.
+
+\paragraph{Two-block stack.}
+The simplest nontrivial example exhibits all three elements
+($\rcontact$, $L_{c}$, and $\specgap$) at once. Consider two
+cubes $b_{1}$, $b_{2}$ stacked vertically with $b_{1}$ resting
+on a table and $b_{2}$ resting on $b_{1}$. The vertex set is
+$V = \{b_{1}, b_{2}, \text{table}\}$ and the edge set is
+$E = \{\{b_{2}, b_{1}\},\,\{b_{1}, \text{table}\}\}$ with edge
+weights $w_{12}$ and $w_{1t}$, respectively. The associated
+Laplacian (ordering vertices $b_{1}, b_{2}, \text{table}$) is
+\begin{equation}
+\label{eq:two-block-L}
+  L_{c} \;=\;
+  \begin{pmatrix}
+    w_{12} + w_{1t} & -w_{12} & -w_{1t} \\
+    -w_{12} & w_{12} & 0 \\
+    -w_{1t} & 0 & w_{1t}
+  \end{pmatrix}.
+\end{equation}
+Direct computation shows that $L_{c}$ has eigenvalue $0$ with
+eigenvector $\mathbf{1}_{V}$, plus two further eigenvalues
+whose product equals
+$\det(L_{c}|_{\mathbf{1}^{\perp}}) = w_{12}\,w_{1t} +
+w_{12}\,w_{1t}$ up to scaling, and which are both positive
+exactly when both $w_{12}$ and $w_{1t}$ are positive. The
+spectral gap therefore satisfies
+\begin{equation}
+\label{eq:two-block-specgap}
+  \specgap(L_{c}) > 0
+  \quad\Longleftrightarrow\quad
+  w_{12} > 0 \;\;\text{and}\;\; w_{1t} > 0.
+\end{equation}
+Translated back into the order-parameter language of
+\cref{def:rho}, $\specgap > 0$ requires that both
+$\rcontact_{b_{2} \to b_{1}} \ge 1$ (the upper cube does not
+slip on the lower) and $\rcontact_{b_{1} \to \text{table}} \ge
+1$ (the lower cube does not slip on the table). The spectral
+gap is positive precisely when the entire stack is firmly
+seated on the environment as one connected support structure;
+it collapses to zero the moment any single contact in the chain
+fails. This is the multi-body extension of $\rcontact$ promised
+above and the connectivity criterion that the controller will
+maintain through phase 3 of the cycle (\cref{sec:three-term}).
 
 % ---------------------------------------------------------------
 \subsection{Switching surface $\swsurf$ and the two-crossing lemma}
