@@ -324,7 +324,117 @@ bounded torque rates. The intermediate value theorem
 % ---------------------------------------------------------------
 \subsection{Three-term control decomposition}
 \label{sec:three-term}
-% [DRAFT-LATER]
+
+The combinatorial picture of \cref{sec:Sigma}---a pick--place
+trajectory crosses $\swsurf$ exactly twice, at times $t_{1}$
+and $t_{4}$---has a precise control-theoretic counterpart. The
+optimal joint torque $u$ along such a trajectory factors into
+three structurally distinct contributions: a configuration-only
+gravity term, a singular-arc least-action term that lives on
+the open intervals away from the crossings, and an impulsive
+spectral kick concentrated on $\swsurf$ itself. This subsection
+states the decomposition; the proof is deferred to
+\cref{app:proof:three-term}.
+
+\paragraph{Optimal control problem.}
+Throughout this subsection we consider a pick--place optimal
+control problem (OCP) on the time interval $[0, T]$ with state
+$x = (\jointvec, \dot{\jointvec}, x_{\mathrm{obj}})$ comprising
+the manipulator joint configuration $\jointvec$ and velocity
+$\dot{\jointvec}$ together with the object pose
+$x_{\mathrm{obj}} \in SE(3)$. Let $L(x, \dot x, u, t)$ be a
+running cost (energy, smoothness) and let $\Psi(x_{T})$ be a
+terminal cost (placement accuracy). The OCP is
+\begin{equation}
+\label{eq:ocp}
+  \min_{u} \;
+  J[u]
+  \;=\;
+  \int_{0}^{T} L(x, \dot x, u, t)\,dt
+  \;+\; \Psi(x_{T}),
+\end{equation}
+subject to the manipulator--object dynamics $\dot x = f(x, u)$
+and to the spectral-gap constraint
+\begin{equation}
+\label{eq:specgap-constraint}
+  \rcontact(t) > 1
+  \;\Longrightarrow\;
+  \specgap\bigl(L_{c}(t)\bigr) \;\ge\; \varepsilon
+\end{equation}
+on the in-contact interval, with $\varepsilon$ the spectral-gap
+threshold of the notation table (\cref{sec:notation}). The
+constraint \eqref{eq:specgap-constraint} encodes the firmness
+requirement of \cref{sec:specgap}: while the robot supports the
+object, the contact graph must remain connected with quantitative
+margin.
+
+\begin{definition}[Three-term decomposition]\label{def:three-term}
+For a pick--place OCP as above, an admissible control input
+$u \colon [0, T] \to \mathbb{R}^{n}$ is said to admit a
+\emph{three-term decomposition} if it can be written as
+\begin{equation}
+\label{eq:three-term}
+  u(t) \;=\; u_{g}(t) \;+\; u_{a}(t) \;+\; u_{s}(t),
+\end{equation}
+where:
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $u_{g}(t)$ is the \emph{gravity-compensation term}: the
+    joint torque required to support the manipulator and any
+    in-contact object against gravity at the current configuration
+    $\jointvec(t)$.
+  \item $u_{a}(t)$ is the \emph{least-action term}: the residual
+    control effort allocated by the OCP first-order conditions on
+    the singular interior of each phase, away from $\swsurf$.
+  \item $u_{s}(t)$ is the \emph{spectral-kick term}: an impulsive
+    or near-impulsive contribution supported on the
+    $\swsurf$-crossing times $\{t_{1}, t_{4}\}$ that establishes
+    or releases the contact graph spectral gap.
+\end{enumerate}
+\end{definition}
+
+\begin{theorem}[Three-term optimal decomposition]\label{thm:three-term}
+Under standard regularity assumptions on $L$, $\Psi$, and the
+dynamics $f$, the optimal control of the pick--place OCP
+\eqref{eq:ocp} admits a three-term decomposition in the sense
+of \cref{def:three-term}, with $u_{s}$ supported on
+$\{t : x(t) \in \swsurf\}$ and $u_{a}$ satisfying the
+Pontryagin necessary conditions on the complement.
+\end{theorem}
+
+The proof, an application of Pontryagin's maximum principle
+together with the bang--singular structure of OCPs with a
+switching constraint, is given in
+\cref{app:proof:three-term}.
+
+\paragraph{Per-phase reading.}
+Aligned with the labels $t_{1}, t_{4}$ of the two-crossing
+lemma, the three terms light up in different combinations
+across the five phases that \cref{sec:phase-cycle} will
+formalize. On phases 1 (pre-contact, $t \in [0, t_{1}]$) and 5
+(post-contact, $t \in [t_{4}, T]$) the trajectory is a pure
+singular arc: there is no $\swsurf$-crossing in its interior,
+so $u_{s} = 0$ and the control consists of $u_{g}$ plus the
+least-action $u_{a}$ alone. On phases 2 (load, at $t = t_{1}$)
+and 4 (unload, at $t = t_{4}$) the trajectory is a bang arc
+concentrated at the corresponding $\swsurf$-crossing and the
+spectral-kick term $u_{s}$ is active; the gravity and
+least-action terms remain present but are dominated by the
+impulsive contribution. On phase 3 (transport, $t \in (t_{1},
+t_{4})$) the trajectory is again a singular arc (so $u_{s} =
+0$ on the open interior) but now subject to the additional
+spectral-maintenance constraint $\specgap(t) \ge \varepsilon$,
+which the inner level of the bi-level optimization in
+\cref{sec:bilevel} will enforce. The decomposition therefore
+serves both as a qualitative reading of the optimal cycle and
+as the template against which the controller of
+\cref{sec:bilevel} is structured.
+
+The maximum principle invoked in
+\cref{thm:three-term} is the version of
+\citet{Pontryagin1962}, and the bang--singular structure at the
+$\swsurf$-crossings is the standard consequence of a switching
+constraint with discontinuous right-hand side at the level set,
+in the sense of \citet{BrysonHo1975}.
 
 % ---------------------------------------------------------------
 \subsection{Task-space / null-space decomposition}

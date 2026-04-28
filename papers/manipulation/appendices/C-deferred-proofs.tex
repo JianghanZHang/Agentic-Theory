@@ -73,3 +73,53 @@ extra crossings. The remaining two crossings are the upward
 crossing at $t_{1}$ and the downward crossing at $t_{4}$, as
 claimed.
 \end{proof}
+
+% ---------------------------------------------------------------
+\subsection{Proof of \cref{thm:three-term}}
+\label{app:proof:three-term}
+
+\begin{proof}[Sketch]
+Apply Pontryagin's maximum principle \citep{Pontryagin1962} to
+the pick--place OCP \eqref{eq:ocp}. The Hamiltonian factors as
+\[
+  H(x, u, \lambda, t)
+  \;=\; \lambda^{\top} f(x, u) \;-\; L(x, \dot x, u, t),
+\]
+with $\lambda$ the costate. The optimal $u$ minimizes $H$
+pointwise in $u$ subject to the manipulator dynamics and the
+spectral-gap constraint \eqref{eq:specgap-constraint}.
+
+Decompose the optimal $u$ into three structurally distinct
+parts. The first part, $u_{g}$, is the joint torque required to
+balance gravity at the current configuration: it is a
+configuration-only function determined by $\jointvec$ together
+with any object inertia in firm contact, independently of the
+costate. The second part, $u_{a}$, is determined by the
+first-order conditions on the singular subset where $\swsurf$
+is not active---i.e., on the open complement of the crossing
+times $\{t_{1}, t_{4}\}$. There the control varies smoothly with
+the state and costate as the singular-arc solution of the
+maximum principle. The third part, $u_{s}$, is the impulsive
+boundary contribution at the $\swsurf$-crossings: it is
+supported on a measure-zero set in the interior of $[0, T]$ but
+carries finite total impulse, sufficient to drive $\rcontact$
+across the level set $\swsurf$ in finite time while maintaining
+feasibility of the inner spectral-gap constraint.
+
+The bang--singular structure of $u$ at the $\swsurf$-crossings
+is the standard consequence of a switching constraint with
+discontinuous right-hand side at the level set
+\citep{BrysonHo1975}; the impulsive component $u_{s}$ is
+precisely the magnitude required to shift $\rcontact$ across
+$\swsurf$ in finite time while keeping the contact graph
+Laplacian's spectral gap above the threshold $\varepsilon$ on
+the in-contact side.
+
+The three contributions are linearly independent in
+$L^{2}([0, T])$: $u_{s}$ has support on the measure-zero set
+$\{t_{1}, t_{4}\}$, $u_{a}$ has support on the open complement
+of that set, and $u_{g}$ is determined deterministically by the
+configuration. The decomposition \eqref{eq:three-term} is
+therefore unique up to the standard ambiguity present in OCPs
+without strict convexity of $L$.
+\end{proof}
