@@ -1,6 +1,6 @@
 # Design Spec — *Toward Interface Elimination in Robotic Manipulation*
 
-**Status:** Draft v1, 2026-04-28
+**Status:** Draft v2, 2026-04-28
 **Source:** Spinoff of `appendices/manipulation.tex` (Appendix J of agentic-theory main manuscript) into a standalone IJRR paper.
 **Companion (deferred):** `appendices/catching.tex` (Appendix K) — to be brainstormed separately after this spec is locked.
 
@@ -45,6 +45,8 @@ Adopted: **Functional grouping** (Brainstorm proposal 2). Nine main sections + t
 ```
 §1   Introduction                                              ~1 pg
        └─ thesis: 5-phase architecture + interface-elimination staircase
+       └─ pipeline overview figure (system block diagram:
+            camera → observer → planner → controller → Franka)
        └─ optional Chinese epigraph (TBD when drafting)
 
 §2   Framework (γ self-contained)                              ~5 pg
@@ -82,7 +84,16 @@ Adopted: **Functional grouping** (Brainstorm proposal 2). Nine main sections + t
        §6.1  Plans, feasibility, and the two-level architecture
        §6.2  Training: conditional flow matching with measure-matching reward (MMD-only)
        §6.3  Phase-conditioned MLP (network architecture, summary)
-       §6.4  Risk-locked training, sketch of sim-to-real transfer
+       §6.4  Risk-Locked Mirror Descent (RLMD) for sim-to-real transfer
+              ├─ MUST be grounded in literature: first sentence reads
+              │   "RLMD is an instance of chance-constrained policy
+              │    optimization (Chow & Ghavamzadeh 2014; Achiam et al.
+              │    2017) augmented with curriculum gating."
+              ├─ Algorithmic body: soft-surrogate chance constraint
+              │   on failure probability + mirror-descent updates +
+              │   curriculum advancement gated by lock satisfaction
+              └─ Curriculum gating is the originality claim (not the
+                  chance constraint alone)
        (Detailed deployment / inference flow deferred to Appendix B)
 
 §7   Curriculum                                                ~1.5 pg
@@ -91,7 +102,9 @@ Adopted: **Functional grouping** (Brainstorm proposal 2). Nine main sections + t
 
 §8   Sim-to-real bridge                                        ~1.5 pg
        §8.1  What sim-to-real has to transfer (state model, perception, control)
-       §8.2  Risk-locked training as the bridge mechanism
+       §8.2  RLMD as the bridge mechanism (cross-ref §6.4 for definition)
+              ├─ Actuator residual net A_ψ on top of frozen π_φ
+              └─ Risk lock preserved across the sim → real boundary
        §8.3  Failure modes anticipated (declarative only — no measured numbers)
 
 §9   Experiments: the interface-elimination staircase          ~3 pg [PLACEHOLDER]
@@ -161,6 +174,7 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 | causal observability | partial observability with delay; explicit reading-bridge in §2.7 |
 | **interface elimination** | **the** paper keyword — title and §1 thesis |
 | G-action / G-dual | discrete reflection group; standard group-theory language |
+| Risk-Locked Mirror Descent (RLMD) | retained as branded algorithm name; **must** be grounded in chance-constrained policy optimization (Chow & Ghavamzadeh 2014; Achiam et al. 2017) on first mention — see §6.4 |
 
 ## 7. Housekeeping
 
@@ -182,7 +196,7 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 | O1 | §1 epigraph: include classical-Chinese line or pure English? | when drafting §1 |
 | O2 | Exact mathematical re-statement of the two-crossing lemma in §2.3 (must avoid sword/path-a/b/c language) | when drafting §2 |
 | O3 | How to phrase "Toward" hedge in abstract without sounding weak | when drafting abstract |
-| O4 | Whether to include a system-block diagram in §1 (Franka pipeline overview) | when drafting §1 |
+| ~~O4~~ | ~~Whether to include a system-block diagram in §1 (Franka pipeline overview)~~ — **resolved YES** in v2 review (camera → observer → planner → controller → Franka) | resolved 2026-04-28 |
 
 ## 10. Companion paper (Appendix K → catching)
 
@@ -210,3 +224,14 @@ This spec is the outcome of a brainstorming session on 2026-04-28, with the foll
 9. Q9 (rules) → conclusion empty; no experimental claims anywhere
 10. Q10 (stage naming) → **Scheme A** (interface as primary)
 11. Q11 (housekeeping) → no codebase rename; three-body as Easter egg; G-action early in §3
+
+## 12. Changelog
+
+### v2 (2026-04-28)
+
+User reviewed Draft v1 and approved with the following adjustments:
+
+- **§9 / O4 resolved YES** — §1 will include a pipeline overview figure (system block diagram).
+- **§3 hard rule #4 unchanged** — no softening of the "no main-manuscript citation" rule.
+- **§5 Stage III task list unchanged** — kept compact (G-dual dribble + juggle; xy-trajectory tracked transport) without further splitting.
+- **§6.4 / §8.2 RLMD terminology grounded** — the brand name "Risk-Locked Mirror Descent" is retained, but the first sentence introducing it (§6.4) **must** anchor it explicitly to chance-constrained policy optimization literature (Chow & Ghavamzadeh 2014; Achiam et al. 2017), with curriculum gating identified as the originality claim. §6.2 Retained terminology table updated accordingly.
