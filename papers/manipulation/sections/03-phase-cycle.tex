@@ -3,7 +3,93 @@
 
 \subsection{Phase structure}
 \label{sec:phase-structure}
-% [DRAFT-LATER]
+
+The two-crossing lemma (\cref{lem:two-crossing}) reduces every
+admissible pick--place trajectory to a fixed combinatorial type:
+between the upward crossing at $t_{1}$ and the downward crossing
+at $t_{4}$, the contact order parameter satisfies $\rcontact > 1$
+(the manipulator supports the object); outside the closed interval
+$[t_{1}, t_{4}]$, $\rcontact < 1$ (the robot is out of contact
+with the object). The two crossings themselves, the in-contact
+interior, and the two out-of-contact intervals together form
+five distinguishable arcs of $[0, T]$, and the present subsection
+labels them. This labeling is forced---no implementation choice
+enters---and it is the combinatorial scaffold against which the
+operator algebra of \cref{sec:operator-algebra} and the
+$\Greflect$-equivariance of \cref{sec:G-equivariance} are stated.
+
+\begin{definition}[Five-phase decomposition]\label{def:five-phase}
+A pick--place trajectory satisfying the boundary conditions
+\eqref{eq:pick-place-BCs} of \cref{lem:two-crossing} decomposes
+into five phases, indexed $k = 1, \ldots, 5$, with the following
+arc types and order-parameter regimes:
+
+\begin{center}
+\small
+\begin{tabular}{@{}clccc@{}}
+\toprule
+$k$ & Phase & Time interval & $\rcontact$ & $\specgap$ \\
+\midrule
+1 & pick (approach) & $[0, t_{1}]$ & $< 1$ & --- \\
+2 & load (contact establishment) & $\{t_{1}\}$ & $\uparrow 1$ & $0 \to \varepsilon$ \\
+3 & use (transport) & $(t_{1}, t_{4})$ & $> 1$ & $\ge \varepsilon$ \\
+4 & unload (release) & $\{t_{4}\}$ & $\downarrow 1$ & $\varepsilon \to 0$ \\
+5 & place (retreat) & $[t_{4}, T]$ & $< 1$ & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Phases 1 and 5 are singular arcs of the OCP \eqref{eq:ocp};
+phases 2 and 4 are bang arcs concentrated at the
+$\swsurf$-crossings; phase 3 is a singular arc subject to the
+spectral-gap maintenance condition $\specgap \ge \varepsilon$.
+\end{definition}
+
+\paragraph{Per-phase reading of the three-term decomposition.}
+The three-term decomposition (\cref{thm:three-term}) lights up
+in different combinations across the five phases of
+\cref{def:five-phase}. On phase 1 (pick) the trajectory is a
+pure singular arc with no $\swsurf$-crossing in its interior, so
+the spectral-kick term vanishes ($u_{s} = 0$) and the control is
+$u = u_{g} + u_{a}$: gravity compensation plus the least-action
+pre-contact reach. On phase 2 (load) the spectral-kick term
+$u_{s}$ is active at $t_{1}$, producing the impulsive
+contribution that drives $\rcontact$ across $\swsurf$ upward and
+brings $\specgap$ from $0$ up to the threshold $\varepsilon$. On
+phase 3 (use) the trajectory is again a singular arc on the open
+interior $(t_{1}, t_{4})$, so $u_{s} = 0$ and the control returns
+to $u = u_{g} + u_{a}$, now subject to the spectral-gap
+maintenance constraint $\specgap \ge \varepsilon$ enforced
+through the inner level of \cref{def:bilevel}. On phase 4
+(unload) the spectral-kick term is active again at $t_{4}$,
+driving $\rcontact$ back across $\swsurf$ downward and releasing
+the contact graph spectral gap. On phase 5 (place) the
+trajectory is once more a pure singular arc with $u = u_{g} +
+u_{a}$ and $u_{s} = 0$: the post-contact retreat to the home
+configuration.
+
+\paragraph{Hybrid-systems reading.}
+\Cref{def:five-phase} is the hybrid-automaton instantiation of
+the pick--place OCP. Each phase $k$ is a discrete mode of the
+automaton, the in-contact and out-of-contact regimes of $\rcontact$
+are the continuous-time invariants of the corresponding modes,
+and the two transitions $\swsurf$-upward at $t_{1}$ and
+$\swsurf$-downward at $t_{4}$ are guard conditions in the sense
+of \citet{Lygeros2003} and \citet{GoebelSanfeliceTeel2012}. The
+structural force of \cref{lem:two-crossing} is that this hybrid
+automaton is determined: any admissible trajectory factors
+through these five modes in the prescribed order, with the two
+guard crossings exactly once each. There is no admissible
+manipulation episode that visits the five modes in a different
+sequence.
+
+\paragraph{Forward references.}
+\Cref{sec:operator-algebra} associates a structural operator
+$\phaseop{k-1}$ to each phase $k$, and \cref{sec:G-equivariance}
+has already shown that the resulting family
+$\{\phaseop{0}, \ldots, \phaseop{4}\}$ is $\Greflect$-equivariant.
+\Cref{sec:hierarchical} will specialize the task-space /
+null-space decomposition (\cref{def:TS-NS}) per phase.
 
 \subsection{Operator algebra}
 \label{sec:operator-algebra}
