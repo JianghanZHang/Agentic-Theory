@@ -37,3 +37,39 @@ constant on $V$, i.e., $\mathbf{x} \in \mathrm{span}(\mathbf{1}_{V})$.
 The kernel is therefore one-dimensional and the second-smallest
 eigenvalue $\specgap(L_{c}) = \mu_{1}$ is strictly positive.
 \end{proof}
+
+% ---------------------------------------------------------------
+\subsection{Proof of \cref{lem:two-crossing}}
+\label{app:proof:two-crossing}
+
+\begin{proof}
+By assumption, $\rcontact$ is continuous on $[0, T]$ with
+$\rcontact(0) < 1$ and $\rcontact(T) < 1$, and there exists
+$t^{*} \in (0, T)$ with $\rcontact(t^{*}) > 1$. Apply the
+intermediate value theorem \citep{Rudin1976} on the interval
+$[0, t^{*}]$: since $\rcontact(0) < 1 < \rcontact(t^{*})$ and
+$\rcontact$ is continuous, there exists $t_{1} \in (0, t^{*})$
+with $\rcontact(t_{1}) = 1$. This is the upward crossing.
+Apply the intermediate value theorem again on the interval
+$[t^{*}, T]$: since $\rcontact(t^{*}) > 1 > \rcontact(T)$ and
+$\rcontact$ is continuous, there exists $t_{4} \in (t^{*}, T)$
+with $\rcontact(t_{4}) = 1$. This is the downward crossing.
+The two crossings $t_{1} < t^{*} < t_{4}$ are distinct, so
+$\rcontact$ crosses $\swsurf$ at least twice in $(0, T)$.
+
+A trajectory of minimal complexity makes exactly two crossings.
+Suppose, for contradiction, that some admissible $\rcontact$
+crosses $\swsurf$ four or more times. Each additional pair of
+crossings beyond the first two corresponds to a transient
+release-and-reacquire of the robot--object contact strictly
+within the in-contact interval, and any such transient
+strictly increases the integrated control effort
+(\cref{sec:three-term}) without altering the boundary
+configurations at $t = 0$ and $t = T$. Eliminating each such
+transient by smoothing the trajectory through the corresponding
+sub-arc strictly decreases the cost while preserving
+feasibility, so a minimal-complexity trajectory has no such
+extra crossings. The remaining two crossings are the upward
+crossing at $t_{1}$ and the downward crossing at $t_{4}$, as
+claimed.
+\end{proof}
