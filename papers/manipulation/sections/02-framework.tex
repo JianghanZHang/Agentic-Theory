@@ -708,7 +708,154 @@ bridge from the structural results of \cref{sec:Sigma} and
 % ---------------------------------------------------------------
 \subsection{Causal observability}
 \label{sec:causal-obs}
-% [DRAFT-LATER]
+
+The framework of \cref{sec:rho,sec:specgap,sec:Sigma,sec:three-term,sec:task-null,sec:bilevel}
+treats the contact order parameter $\rcontact$, the contact graph
+$G_{c}$, and the object pose as quantities known to the controller
+at every instant. In a real manipulation pipeline these
+quantities are not given but estimated, and the estimates flow
+through sensors with limited field of view (FOV), latency, and
+noise. The present subsection adds the perception-side companion
+of the contact-side framework: where $\rcontact$ is the central
+\emph{interface variable} of \cref{sec:rho}, the
+\emph{observation map} $\obsmap(\cdot)$ introduced below is the
+central perception-side interface, and the notion of
+\emph{causal observability} formalized in
+\cref{def:causal-obs} states the temporal precondition under
+which the perception subsystem can deliver state estimates in
+time for the controller to act on them.
+
+\begin{definition}[Observation map]\label{def:obsmap}
+For a manipulator state $s \in \mathcal{S}$ (joint configuration,
+velocity, and any object pose information present in the scene)
+and a sensor reading $y$ in some sensor space $\mathcal{Y}$, the
+\emph{observation map}
+\[
+  \obsmap : \mathcal{S} \to \mathcal{Y}
+\]
+is the deterministic noise-free mapping from manipulator state to
+sensor reading. A real sensor produces $y_{t} = \obsmap(s_{t}) +
+\nu_{t}$ where $\nu_{t}$ is bounded measurement noise; we suppress
+$\nu$ for the present subsection and add it back when analyzing
+specific modalities in \cref{sec:perception}.
+\end{definition}
+
+\paragraph{Cognitive boundary.}
+Not every scene quantity produces a sensor reading from which it
+can be uniquely recovered. For a wrist-mounted camera, only
+objects within the camera's FOV cone at the current configuration
+project onto the image plane at all; for proprioception, only
+joints with non-degenerate Jacobian rows are individually
+distinguishable; for haptics, only the contact patch in immediate
+contact with the fingertip is sensed. The observable subset of
+the scene is configuration-dependent.
+
+\begin{definition}[Cognitive boundary]\label{def:cognitive-boundary}
+The \emph{cognitive boundary} of the observation map $\obsmap$
+at configuration $\jointvec$ is the subset
+\[
+  D(\jointvec)
+  \;\subseteq\; \mathbb{R}^{3} \times SE(3)
+\]
+of object positions and orientations whose images under
+$\obsmap$ are distinguishable from one another given $\jointvec$.
+For a wrist-mounted camera, $D(\jointvec)$ is the projection
+into world coordinates of the camera's FOV cone at the current
+configuration.
+\end{definition}
+
+The cognitive boundary $D(\jointvec)$ is a static notion: at a
+fixed configuration, it tells us which scene quantities are even
+in principle recoverable. Manipulation control, however, runs
+against task deadlines determined by the phase structure of
+\cref{sec:Sigma}, and a scene quantity that is recoverable in
+principle but only after the relevant deadline has passed is, for
+control purposes, indistinguishable from one that is not
+recoverable at all. The temporal version of distinguishability is
+the central concept of this subsection.
+
+\begin{definition}[Causal observability]\label{def:causal-obs}
+A scene quantity $r$ (e.g.\ an object's pose) is \emph{causally
+observable} at time $t$ along a trajectory $\jointvec(\cdot)$ if
+there exists a time $t' \le t + \tau_{\mathrm{deadline}}$ such
+that
+\begin{enumerate}[label=(\roman*),nosep]
+  \item $r$ lies in the cognitive boundary $D(\jointvec(t''))$ for
+        some $t'' \in [t, t']$ (the sensor can capture it);
+  \item the latency budget
+        $\tau_{\mathrm{sensor}} + \tau_{\mathrm{compute}}
+        \le t' - t''$
+        is respected (the estimate reaches the controller before
+        the deadline).
+\end{enumerate}
+A scene quantity that fails (i) is \emph{spatially invisible}; one
+that fails only (ii) is \emph{visible but late}. \emph{Causally
+invisible} means it fails at least one of (i), (ii).
+\end{definition}
+
+\paragraph{Relation to standard frameworks.}
+\Cref{def:causal-obs} is partial observability with explicit
+deadline awareness. It is the manipulation specialization of the
+partially observable Markov decision process (POMDP) framework
+\citep{KaelblingLittmanCassandra1998}, in which the state is
+hidden but partially recoverable through observations; the
+manipulation specialization adds the requirement that the
+observation be obtained before a \emph{task-relevant} deadline.
+The relevant deadline in our setting is the next
+$\swsurf$-crossing time of \cref{sec:Sigma}, or any other
+phase-determined event time identified by the phase decomposition
+of \cref{sec:three-term}. Standard POMDP analysis quantifies
+\emph{what} is recoverable from a given observation history;
+causal observability adds the \emph{when}.
+
+\paragraph{Observation--action coupling.}
+In manipulation, action moves the FOV: the wrist-mounted camera
+rides the end-effector, so the cognitive boundary
+$D(\jointvec)$ depends on the trajectory $\jointvec(\cdot)$.
+This makes observation closed-loop: what is causally observable
+at time $t$ depends on actions taken before $t$. Formally, the
+observation history is
+$y_{0:t} = \obsmap(s_{0:t})$
+where $s_{0:t}$ depends on the control history $u_{0:t-1}$
+through the dynamics of \cref{sec:task-null}. A robot that has
+not yet looked at the object cannot have observed it, and a
+robot that has not yet observed the object cannot plan a look
+that is sure to bring it into the FOV. This is the manipulation
+analog of \emph{active perception} \citep{Bajcsy1988}, in which
+the sensor's pose is itself a control variable.
+
+\paragraph{Information timeliness.}
+A causally observable scene quantity has positive control value
+if and only if the latency budget closes the loop in time:
+\begin{equation}
+\label{eq:timeliness}
+  \tau_{\mathrm{sensor}} + \tau_{\mathrm{compute}}
+  \;<\; \tau_{\mathrm{deadline}},
+\end{equation}
+where the three latencies are tabulated in \cref{tab:notation}:
+$\tau_{\mathrm{sensor}}$ is the time from photon arrival to
+sensor read-out, $\tau_{\mathrm{compute}}$ is the time from
+sensor read-out to a state estimate available at the controller,
+and $\tau_{\mathrm{deadline}}$ is the time until the next
+phase-determined event the estimate is needed for. The strict
+inequality \eqref{eq:timeliness} is the temporal analog of the
+spectral-gap margin condition $\specgap \ge \varepsilon$ of
+\cref{sec:specgap}: the controller maintains a quantitative
+force margin during transport and a quantitative latency margin
+during perception, and both margins are state-dependent
+quantities the controller actively manages.
+
+\paragraph{Forward references.}
+\Cref{sec:perception} specializes the observation map to three
+sensory modalities (vision, proprioception, haptics), each with
+its own cognitive boundary $D(\jointvec)$ and its own latency
+profile, and treats the stochastic extension in which $D$ is
+replaced by a probability-of-detection field.
+\Cref{sec:plan-training} uses causal observability as a
+feasibility precondition on plans: a plan that requires the
+controller to act on a causally invisible scene quantity at any
+phase boundary is rejected before being passed to the
+controller.
 
 % ---------------------------------------------------------------
 \subsection{Notation}
