@@ -1,6 +1,6 @@
 # Design Spec — *Toward Interface Elimination in Robotic Manipulation*
 
-**Status:** Draft v2, 2026-04-28
+**Status:** Draft v3, 2026-04-28
 **Source:** Spinoff of `appendices/manipulation.tex` (Appendix J of agentic-theory main manuscript) into a standalone IJRR paper.
 **Companion (deferred):** `appendices/catching.tex` (Appendix K) — to be brainstormed separately after this spec is locked.
 
@@ -22,7 +22,7 @@
 |---|---|
 | **Theory freeze** | §1–§8 written; §2 proofs verified; spec approved | aiming: as soon as §1–§8 drafted |
 | **arXiv v1** | grjl4 fully works **in simulation** (FSM + planner + controller + training + curriculum on Franka with vision in MuJoCo, no real robot yet) |
-| **arXiv v2 / IJRR submission** | grjl4 reproduces the simulation result on **real Franka with real vision** under wind |
+| **arXiv v2 / IJRR submission** | grjl4 reproduces the simulation result on **real bi-manual hardware (Flexiv Rizon + Franka Panda) with real vision** for the hammer-and-nail task |
 | **Conclusion section written** | only after IJRR submission gate is met |
 
 The author has **not** committed to a calendar date. arXiv v1 is gated by software, not the clock.
@@ -115,7 +115,7 @@ Adopted: **Functional grouping** (Brainstorm proposal 2). Nine main sections + t
        §9.3  Stage III — Kinematic Interface
               (G-dual dribble + juggle; xy-tracked transport)
        §9.4  Stage IV — Visual Interface
-              (Franka block stacking under wind, sim → real)
+              (bi-manual hammer-and-nail: Flexiv Rizon swings, Franka Panda holds nail; sim → real)
 
 §10  Discussion / Conclusion                                   ~1 pg [EMPTY]
 
@@ -133,7 +133,7 @@ Appendix C  Proofs deferred from §2
 | `grjl/` (1.0) | **Stage I — Force Interface** | force F, discrete contact modes | parallel-jaw grasp; gravitational three-body damper (Easter egg) |
 | `grjl2/` (2.0) | **Stage II — Continuous-ρ Interface** | smooth ρ = F_rep/F_att (still force-derived) | basketball dribble; three-body in ρ form (Easter egg) |
 | `grjl3/` (3.0) | **Stage III — Kinematic Interface** | ρ = \|q̈_z/g + 1\|, no force in interface | dribble + juggle G-dual; xy-trajectory tracked transport |
-| `grjl4/` (4.0) | **Stage IV — Visual Interface** | vision + kinematic; pixel in, torque out | Franka block stacking under adversarial wind |
+| `grjl4/` (4.0) | **Stage IV — Visual Interface** | vision + kinematic; pixel in, torque out | bi-manual hammer-and-nail (Flexiv Rizon swings hammer, Franka Panda holds nail) |
 
 The Stage label always carries the **interface state** as primary (matching the paper's thesis); the **task** appears in italics in subsection titles and figure captions.
 
@@ -181,6 +181,7 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 1. **Codebase not renamed.** Directories `grjl/`, `grjl2/`, `grjl3/`, `grjl4/` keep their current names. Paper's README (or §experiments preamble) provides a one-line mapping `grjl(N) ↔ Stage N`.
 2. **Three-body as Easter egg.** Stages I, II, III each contain a celestial three-body sub-experiment that demonstrates universality of the controller. In the paper these are mentioned as one-line remarks pointing to a supplementary section, not in the main flow.
 3. **G-action is defined early.** §3.3 introduces the discrete reflection group {z→−z, g→−g, F→−F} so that Stage III's dual-dribble in §9.3 has framework to attach to. Without this, §9.3 would have to introduce the duality ad hoc.
+4. **Cross-paper hardware reuse.** The Flexiv Rizon used in Stage IV (impact-generator: swings the hammer) is the same physical platform used in the catching paper (Appendix K, where it is the impact-receiver). Different role, same arm; the manipulation paper does not cite the catching paper, but the lab note is recorded here so that figure captions and hardware tables remain consistent across the two manuscripts. Franka Panda (nail-holding role in Stage IV) is unique to this paper.
 
 ## 8. Out of scope (intentionally)
 
@@ -197,6 +198,7 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 | O2 | Exact mathematical re-statement of the two-crossing lemma in §2.3 (must avoid sword/path-a/b/c language) | when drafting §2 |
 | O3 | How to phrase "Toward" hedge in abstract without sounding weak | when drafting abstract |
 | ~~O4~~ | ~~Whether to include a system-block diagram in §1 (Franka pipeline overview)~~ — **resolved YES** in v2 review (camera → observer → planner → controller → Franka) | resolved 2026-04-28 |
+| O5 | **Stage IV adversary choice.** Wind no longer fits the bi-manual hammer-and-nail task. Replace with one of: (a) **wood-density variability** (different blocks of wood / different woods → variable nail-driving resistance), (b) **nail-orientation jitter** (nail not exactly perpendicular at the start), (c) **holding-arm pose jitter** (Franka deliberately wobbles the nail under hold). Current preference: (c) holding-arm jitter, because it stress-tests bi-manual coordination — the Flexiv must adapt its swing trajectory to a moving target — which is the unique technical contribution of going bi-manual. Recommendation pending §7 design. | when drafting §7 |
 
 ## 10. Companion paper (Appendix K → catching)
 
@@ -226,6 +228,17 @@ This spec is the outcome of a brainstorming session on 2026-04-28, with the foll
 11. Q11 (housekeeping) → no codebase rename; three-body as Easter egg; G-action early in §3
 
 ## 12. Changelog
+
+### v3 (2026-04-28)
+
+Stage IV task pivot, after a second pass on what "actual tool use" means for the visual-interface stage:
+
+- **§5 Stage IV row** — task pivoted from *Franka block stacking under adversarial wind* to **bi-manual hammer-and-nail**: Flexiv Rizon swings the hammer (impact-generator), Franka Panda holds the nail. Rationale: block stacking is a place primitive (Phase 5 dominates); hammer-and-nail is genuine tool use — the hammer is a passive object whose dynamics must be exploited via Phase 3, and the bi-manual coordination forces both arms to share the phase cycle. This better exemplifies the paper's core thesis that the architecture survives interface elimination across modalities.
+- **§2 timeline gates** — arXiv v2 / IJRR submission gate updated to reference the bi-manual hardware (Flexiv + Franka) and the hammer-and-nail task instead of the Franka-only wind setup.
+- **§7 Housekeeping #4 added** — Flexiv Rizon shared with the catching paper (Appendix K). Same arm, different role: impact-generator here, impact-receiver in catching. Franka Panda is unique to this paper.
+- **§9 Open items O5 added** — Stage IV adversary choice deferred to §7 design: candidates are (a) wood-density variability, (b) nail-orientation jitter, (c) holding-arm pose jitter. Current preference is (c) because it stress-tests bi-manual coordination, which is the substantive new dimension introduced by the pivot. Wind is no longer applicable.
+- **§7.2 (in section structure block) implicitly stale** — the line "wind as the sole external perturbation" will need rewriting once O5 resolves; left in place pending that resolution rather than overwriting prematurely.
+- **No code/section files affected by this pivot.** §4.2 still uses the parallel-jaw + box + wind setup as an *illustrative warm-up* for the bi-level scaffold; that instance is pedagogical and does not commit Stage IV to wind. §1–§3 are task-agnostic.
 
 ### v2 (2026-04-28)
 
