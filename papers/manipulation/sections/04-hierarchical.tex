@@ -215,69 +215,100 @@ The substantive deliverable of the present subsection is the
 explicit form of the acceleration bound
 $\alpha(\jointvec, f_{n,\max})$ promised by
 \cref{prop:bilevel-coupling}~(ii) of \cref{sec:bilevel}.
+For the parallel-jaw geometry of \cref{ex:parallel-jaw}, each
+finger contacts a vertical face of the box; the contact normals
+are horizontal (mutually opposing along the grasp axis), and the
+two-dimensional tangential plane at each contact contains the
+vertical direction. Gravity therefore lies fully in the
+tangential plane and must be supported by friction. Let
+$\|\cdot\|_{t}$ denote the tangential component along the
+fixed-direction (vertical-plus-wind) tangential axis at the
+contact, and let $f_{t,L}$, $f_{t,R}$ denote the magnitudes of
+the tangential friction forces produced by the left and right
+fingers along that axis. By the symmetry assumption
+$f_{t,L} = f_{t,R} = f_{t}$, so the total tangential force
+delivered to the box is $2 f_{t}$.
+
 Project the Newton balance \eqref{eq:newton-balance} onto the
-direction tangent to the contact normal at each finger, and let
-$\|\cdot\|_{t}$ denote the tangential component along that
-direction. The tangential projection of the resultant force
-required to accelerate the box at $\ddot{x}_{\mathrm{des}}$
-against the wind is
+tangential axis. The right-hand side
+$m(\ddot{x}_{\mathrm{des}} - g) + \Fwind$, projected
+tangentially, has three contributions: the inertial component
+$m\,\|\ddot{x}_{\mathrm{des},\, t}\|$, the gravity-support
+component $m\,\|g\|$ (gravity is fully tangential in this
+geometry), and the wind component $\|\Fwind(t)\|_{t}$.
+Worst-casing the alignment of inertial, gravity, and wind
+contributions along the tangential axis gives the budget
 \begin{equation}
 \label{eq:ft-projection}
-  |f_{t}|
+  2\, |f_{t}|
   \;=\;
   m \,\|\ddot{x}_{\mathrm{des},\, t}\|
-  \;+\; \|\Fwind(t)\|_{t},
+  \;+\; m\,\|g\|
+  \;+\; \|\Fwind(t)\|_{t}.
 \end{equation}
-where the first term is the inertial contribution and the
-second the wind contribution along the tangential direction.
-The friction-cone constraint $|f_{t}| \le \mu f_{n}$ together
-with the per-finger normal-force budget $f_{n} \le f_{n,\max}$
-(a hardware ceiling on the gripper actuator) then bounds the
+The friction-cone constraint $|f_{t}| \le \mu f_{n}$ at each
+finger, together with the per-finger normal-force budget
+$f_{n} \le f_{n,\max}$ (a hardware ceiling on the gripper
+actuator), gives $2|f_{t}| \le 2 \mu f_{n,\max}$. Combining
+with \eqref{eq:ft-projection} and rearranging bounds the
 tangential acceleration:
 \begin{equation}
 \label{eq:accel-bound-derivation}
   m \,\|\ddot{x}_{\mathrm{des},\, t}\|
   \;\le\;
-  \mu \, f_{n,\max} \;-\; \|\Fwind(t)\|_{t}.
+  2\, \mu \, f_{n,\max} \;-\; m\,\|g\| \;-\; \|\Fwind(t)\|_{t}.
 \end{equation}
 Dividing by $m$ yields the explicit form of $\alpha$
 promised in \eqref{eq:accel-bound}. The dependence on the
-configuration $\jointvec$ enters through the orientation of the
-contact normal in the world frame, which determines how much of
-the wind force projects into the tangential direction.
+configuration $\jointvec$ enters through the orientation of
+the contact normal in the world frame, which determines how
+much of the wind force projects into the tangential direction.
 
 \begin{proposition}[Acceleration bound for the parallel-jaw
 grasp under wind]\label{prop:accel-bound-explicit}
 For a symmetric parallel-jaw grasp of a rigid box of mass $m$
 with friction coefficient $\mu$ at each finger, normal-force
-budget $f_{n,\max}$ per finger, and wind force $\Fwind(t)$, the
-acceleration bound \eqref{eq:accel-bound} of
-\cref{prop:bilevel-coupling} takes the explicit form
+budget $f_{n,\max}$ per finger, gravitational acceleration of
+magnitude $\|g\|$, and wind force $\Fwind(t)$, the acceleration
+bound \eqref{eq:accel-bound} of \cref{prop:bilevel-coupling}
+takes the explicit form
 \begin{equation}
 \label{eq:alpha-explicit}
   \alpha(\jointvec, f_{n,\max})
   \;=\;
-  \frac{\mu\, f_{n,\max} \;-\; \|\Fwind(t)\|_{t}(\jointvec)}{m},
+  \frac{2\, \mu\, f_{n,\max}
+        \;-\; m\,\|g\|
+        \;-\; \|\Fwind(t)\|_{t}(\jointvec)}{m},
 \end{equation}
-where $\|\cdot\|_{t}$ denotes the tangential component along the
-gripper contact normal at configuration $\jointvec$.
+where $\|\cdot\|_{t}$ denotes the tangential component along
+the (vertical-plus-wind) tangential axis at the contact, and
+$\|\Fwind(t)\|_{t}(\jointvec)$ is the configuration-dependent
+projection of the wind force into that axis.
 \end{proposition}
 
 \begin{proof}
-The friction-cone constraint $|f_{t}| \le \mu f_{n}$ together
-with the per-finger normal-force ceiling $f_{n} \le f_{n,\max}$
-gives $|f_{t}| \le \mu f_{n,\max}$. Project the Newton balance
+By symmetry, the two fingers each apply a tangential friction
+force of magnitude $f_{t}$, with total tangential force on the
+box equal to $2 f_{t}$. Project the Newton balance
 \eqref{eq:newton-balance} of \cref{sec:bilevel} onto the
-direction tangent to the contact normal: the tangential
-component of the resultant required to accelerate the box
-against the wind is given by \eqref{eq:ft-projection}.
-Substituting into the cone bound,
-$m \|\ddot{x}_{\mathrm{des},\, t}\| + \|\Fwind\|_{t} \le \mu
-f_{n,\max}$, which rearranges to \eqref{eq:alpha-explicit}.
-The configuration dependence of the right-hand side is through
-the wind-tangential component
-$\|\Fwind(t)\|_{t}(\jointvec)$, which depends on the orientation
-of the contact normal at $\jointvec$.
+tangential axis: the right-hand side $m(\ddot{x}_{\mathrm{des}}
+- g) + \Fwind$, projected tangentially, contributes
+$m \|\ddot{x}_{\mathrm{des},\, t}\| + m \|g\| +
+\|\Fwind\|_{t}$ in the worst-case alignment, giving
+\eqref{eq:ft-projection}. The per-finger friction-cone
+constraint $|f_{t}| \le \mu f_{n}$ combined with the per-finger
+normal-force ceiling $f_{n} \le f_{n,\max}$ yields
+$2|f_{t}| \le 2\mu f_{n,\max}$; substituting into
+\eqref{eq:ft-projection} and rearranging gives
+\eqref{eq:alpha-explicit}. The configuration dependence enters
+through $\|\Fwind(t)\|_{t}(\jointvec)$, which depends on the
+orientation of the contact normal at $\jointvec$. As a
+consistency check, setting $\ddot{x}_{\mathrm{des}} = 0$ in
+\eqref{eq:accel-bound-derivation} reproduces the static-grasp
+slipping threshold $2\mu f_{n,\max} = m\|g\| +
+\|\Fwind\|_{t}$ that defines $\rcontact_{\mathrm{grasp}} = 1$
+in the wind-perturbed extension \eqref{eq:rho-grasp-wind} of
+\cref{ex:parallel-jaw}.
 \end{proof}
 
 \paragraph{Per-phase reading of the bi-level coupling.}
