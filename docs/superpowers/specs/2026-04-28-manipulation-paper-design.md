@@ -1,6 +1,6 @@
 # Design Spec — *Toward Interface Elimination in Robotic Manipulation*
 
-**Status:** Draft v4, 2026-04-28
+**Status:** Draft v5, 2026-04-28
 **Source:** Spinoff of `appendices/manipulation.tex` (Appendix J of agentic-theory main manuscript) into a standalone IJRR paper.
 **Companion (deferred):** `appendices/catching.tex` (Appendix K) — to be brainstormed separately after this spec is locked.
 
@@ -22,7 +22,7 @@
 |---|---|
 | **Theory freeze** | §1–§8 written; §2 proofs verified; spec approved | aiming: as soon as §1–§8 drafted |
 | **arXiv v1** | grjl4 fully works **in simulation** (FSM + planner + controller + training + curriculum on Franka with vision in MuJoCo, no real robot yet) |
-| **arXiv v2 / IJRR submission** | grjl4 reproduces the simulation result on **real bi-manual hardware (Flexiv Rizon + Franka Panda) with real vision** for the sequential pick-place-then-hammer task |
+| **arXiv v2 / IJRR submission** | grjl4 reproduces the simulation result on **real bi-manual hardware (Flexiv Rizon + Franka Panda) with real vision** for the bi-manual block-place + nail-hold + hammer task |
 | **Conclusion section written** | only after IJRR submission gate is met |
 
 The author has **not** committed to a calendar date. arXiv v1 is gated by software, not the clock.
@@ -115,11 +115,16 @@ Adopted: **Functional grouping** (Brainstorm proposal 2). Nine main sections + t
        §9.3  Stage III — Kinematic Interface
               (G-dual dribble + juggle; xy-tracked transport)
        §9.4  Stage IV — Visual Interface
-              (bi-manual sequential two-cycle task: Franka Panda picks
-               and places a wooden block on a fixture; Flexiv Rizon
-               then picks up a hammer and strikes the placed block.
-               Two consecutive 5-phase cycles with very different
-               $\rho$ profiles (gentle transport vs. impulsive impact). sim → real)
+              (bi-manual three-cycle block-place + nail-hold + hammer:
+               Franka Panda places a wooden block on a fixture (cycle 1)
+               then picks a nail, positions it on the block, and holds
+               it as a passive fixture (cycle 2); Flexiv Rizon picks a
+               hammer and strikes the held nail repeatedly (cycle 3,
+               with a composite multi-impulse Phase 3); a vision-triggered
+               synchronization event causes Franka to release the nail
+               mid-task once the nail is partially driven; Flexiv
+               continues striking until the nail is fully seated.
+               sim → real.)
 
 §10  Discussion / Conclusion                                   ~1 pg [EMPTY]
 
@@ -137,7 +142,7 @@ Appendix C  Proofs deferred from §2
 | `grjl/` (1.0) | **Stage I — Force Interface** | force F, discrete contact modes | parallel-jaw grasp; gravitational three-body damper (Easter egg) |
 | `grjl2/` (2.0) | **Stage II — Continuous-ρ Interface** | smooth ρ = F_rep/F_att (still force-derived) | basketball dribble; three-body in ρ form (Easter egg) |
 | `grjl3/` (3.0) | **Stage III — Kinematic Interface** | ρ = \|q̈_z/g + 1\|, no force in interface | dribble + juggle G-dual; xy-trajectory tracked transport |
-| `grjl4/` (4.0) | **Stage IV — Visual Interface** | vision + kinematic; pixel in, torque out | bi-manual sequential pick-place-then-hammer (Franka Panda picks/places a wooden block on a fixture; Flexiv Rizon then picks up a hammer and strikes the placed block — two consecutive 5-phase cycles) |
+| `grjl4/` (4.0) | **Stage IV — Visual Interface** | vision + kinematic; pixel in, torque out | bi-manual block-place + nail-hold + hammer (Franka Panda places block then holds nail; Flexiv Rizon strikes held nail repeatedly; vision-triggered Franka mid-task release once nail is partially driven; three 5-phase cycles, the hammer cycle's Phase 3 is composite multi-impulse) |
 
 The Stage label always carries the **interface state** as primary (matching the paper's thesis); the **task** appears in italics in subsection titles and figure captions.
 
@@ -185,8 +190,10 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 1. **Codebase not renamed.** Directories `grjl/`, `grjl2/`, `grjl3/`, `grjl4/` keep their current names. Paper's README (or §experiments preamble) provides a one-line mapping `grjl(N) ↔ Stage N`.
 2. **Three-body as Easter egg.** Stages I, II, III each contain a celestial three-body sub-experiment that demonstrates universality of the controller. In the paper these are mentioned as one-line remarks pointing to a supplementary section, not in the main flow.
 3. **G-action is defined early.** §3.3 introduces the discrete reflection group {z→−z, g→−g, F→−F} so that Stage III's dual-dribble in §9.3 has framework to attach to. Without this, §9.3 would have to introduce the duality ad hoc.
-4. **Cross-paper hardware reuse.** The Flexiv Rizon used in Stage IV (impact-generator: swings the hammer at the placed block) is the same physical platform used in the catching paper (Appendix K, where it is the impact-receiver). Different role, same arm; the manipulation paper does not cite the catching paper, but the lab note is recorded here so that figure captions and hardware tables remain consistent across the two manuscripts. Franka Panda (block pick-and-place role in Stage IV) is unique to this paper.
-5. **Stage IV is a two-cycle sequence, not a single cycle.** §3.2's operator algebra $T_{0} \to T_{1} \to T_{2} \to T_{3} \to T_{4} \to T_{0}$ is one cycle; Stage IV exercises the cycle twice in sequence (block cycle on Franka, then hammer cycle on Flexiv). This is a substantive demonstration that the architecture composes cleanly across heterogeneous tool-use sub-tasks. §3.2 (or §9.4) should add a one-paragraph remark on operator-sequence composition; the underlying theorems do not change.
+4. **Cross-paper hardware reuse.** The Flexiv Rizon used in Stage IV (impact-generator: swings the hammer at the held nail) is the same physical platform used in the catching paper (Appendix K, where it is the impact-receiver). Different role, same arm; the manipulation paper does not cite the catching paper, but the lab note is recorded here so that figure captions and hardware tables remain consistent across the two manuscripts. Franka Panda (block pick-and-place + nail-hold role in Stage IV) is unique to this paper.
+5. **Stage IV is a three-cycle composition with a synchronization event.** §3.2's operator algebra $T_{0} \to T_{1} \to T_{2} \to T_{3} \to T_{4} \to T_{0}$ describes one 5-phase cycle. Stage IV exercises three 5-phase cycles in coordinated sequence: Franka cycle 1 (block place), Franka cycle 2 (nail place + hold + mid-task release), Flexiv cycle (hammer with composite multi-impulse Phase 3). The mid-task release of Franka cycle 2 is triggered by a *vision-mediated synchronization event* (when nail depth crosses a threshold, observed visually). This is a substantive demonstration that the architecture composes cleanly across (a) heterogeneous sub-tasks within a single arm and (b) parallel multi-cycle threads on two arms with vision-mediated synchronization. §3.2 (or §9.4) should add a one-paragraph remark on operator-sequence composition and on vision-mediated synchronization between two cycles; the underlying theorems do not change.
+6. **Franka holds the nail as passive fixture, not as active reactive coordinator.** "Hold" is implemented via high-impedance position control with a vise-grip pinch on the nail; the impulsive jolt at each hammer strike is absorbed passively through gripper compliance and joint impedance, not through an active reaction loop. This is the standard human nail-holding primitive (pinch firmly, brace, let the jolt pass through). The architectural consequence is that the impact instant does *not* require real-time bi-manual coordination: each arm runs its own 5-phase cycle, and the two cycles couple only through (i) state hand-off (nail position) and (ii) the single vision-mediated synchronization event (mid-task release).
+7. **Nail penetration in simulation: telescoping prismatic joint with yield friction (primary), counted strikes (fallback).** The nail-into-block interaction is modeled in MuJoCo via a hidden prismatic joint between the nail and the block, with Coulomb-style static friction at a yield threshold $\tau_{\text{yield}}$ that may ramp with depth (modeling wood compression). Each hammer impact delivers an impulse $J = m_{h} v_{h} (1+e)$; if $J > \tau_{\text{yield}} \, \Delta t$, the joint advances by $\Delta d \propto J - \tau_{\text{yield}} \, \Delta t$. This is a standard MuJoCo trick that runs at native sim rate and produces physically reasonable behavior. Fallback if Option 1 proves fiddly: a counted-strike depth update (advance nail by $1/N$ each strike for predetermined $N$). The architectural claims do not depend on which option is chosen; they depend only on Phase 3 of the hammer cycle being genuinely impulsive and on vision driving the withdrawal decision.
 
 ## 8. Out of scope (intentionally)
 
@@ -203,8 +210,9 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 | O2 | Exact mathematical re-statement of the two-crossing lemma in §2.3 (must avoid sword/path-a/b/c language) | when drafting §2 |
 | O3 | How to phrase "Toward" hedge in abstract without sounding weak | when drafting abstract |
 | ~~O4~~ | ~~Whether to include a system-block diagram in §1 (Franka pipeline overview)~~ — **resolved YES** in v2 review (camera → observer → planner → controller → Franka) | resolved 2026-04-28 |
-| ~~O5~~ (v3) | ~~Stage IV adversary choice between wind / wood-density / nail-orientation / holding-arm jitter for the hammer-and-nail task~~ — **superseded** in v4 by the pick-place-then-hammer pivot, which decouples the two arms temporally. See O5' below. | superseded 2026-04-28 |
-| O5' | **Stage IV adversary choice (post-pivot).** With the two arms decoupled in time (Franka places the block, then Flexiv hammers it), the adversary acts on the placed block, which is now a *static* target. Candidates: (a) **block-mass variability** (different woods → different impact response), (b) **block-orientation jitter** (the placed block is not exactly aligned with the nominal pose), (c) **block-position jitter** (placement noise from Franka's pick-place cycle propagates into the hammer cycle's target localization, exercising vision under upstream uncertainty). Current preference: (c) block-position jitter, because it makes the second cycle's vision pipeline non-trivial — the Flexiv must visually localize a block whose pose was only approximately set by the first cycle. This couples the two cycles through perception rather than through real-time mechanical coordination, which is the right level of coupling for Stage IV. | when drafting §7 |
+| ~~O5~~ (v3) | ~~Stage IV adversary choice between wind / wood-density / nail-orientation / holding-arm jitter for the hammer-and-nail task~~ — **superseded** in v4 by the pick-place-then-hammer pivot, which decouples the two arms temporally. See O5'. | superseded 2026-04-28 |
+| ~~O5'~~ (v4) | ~~Stage IV adversary acting on the placed block (block-mass / block-orientation / block-position jitter)~~ — **superseded** in v5 by the block-place + nail-hold + hammer scheme, which reintroduces the nail and so changes the adversary surface. See O5'' below. | superseded 2026-04-28 |
+| O5'' | **Stage IV adversary choice (v5).** With the nail back in scope and Franka acting as a passive nail-fixture, the adversary acts on the nail-driving dynamics. Candidates: (a) **wood-density / hardness variability** (different blocks of wood → different $\tau_{\text{yield}}$ → variable strike count and per-strike depth advance), (b) **nail-orientation jitter at placement** (Franka cycle 2 imprecision in setting nail upright; Flexiv must visually re-localize the nail head before each strike), (c) **synchronization-threshold noise** (when does vision say "halfway in"? threshold noise on the mid-task release event). Current preference: (a) wood-density variability, because it directly perturbs the hammer cycle's Phase 3 dynamics, creates a real sim-to-real challenge (real wood is heterogeneous), and ties the adversary into the architectural quantity ($\rho$ on impact, $\tau_{\text{yield}}$ as wood-dependent friction). | when drafting §7 |
 
 ## 10. Companion paper (Appendix K → catching)
 
@@ -234,6 +242,18 @@ This spec is the outcome of a brainstorming session on 2026-04-28, with the foll
 11. Q11 (housekeeping) → no codebase rename; three-body as Easter egg; G-action early in §3
 
 ## 12. Changelog
+
+### v5 (2026-04-28)
+
+Stage IV third refinement within the same day: reintroduce the nail and reframe the bi-manual coupling as vision-mediated synchronization rather than as either real-time impedance coordination (v3) or pure temporal decoupling (v4).
+
+- **§5 Stage IV row + §section-structure §9.4** — task changed from *bi-manual sequential pick-place-then-hammer (Franka places block, Flexiv strikes block)* to **bi-manual block-place + nail-hold + hammer**: Franka places block (cycle 1) then picks a nail and holds it on the block as a passive fixture (cycle 2); Flexiv picks the hammer and strikes the held nail repeatedly with a composite multi-impulse Phase 3 (cycle 3); a vision-triggered synchronization event causes Franka to release the nail mid-task once the nail is partially driven; Flexiv continues striking until the nail is fully seated. Three 5-phase cycles total. Rationale: (1) v4 required a pre-drilled hole or some way for the nail to stand alone — contrived and not how real nailing works; (2) v5 is more realistic — humans hold nails with one hand and hammer with the other, releasing once the nail self-supports; (3) the impact-coordination concern that motivated v4 is resolved by the *passive-fixture* framing (Franka holds via high-impedance position control; impact absorbed through gripper compliance, no active reaction loop required); (4) the bi-manual coupling becomes a single vision-mediated synchronization event (mid-task release), which is the right level of coupling for the visual-interface stage.
+- **§2 timeline gates** — arXiv v2 / IJRR submission gate task name updated.
+- **§7 Housekeeping #4 updated** — Flexiv role refined ("strikes the held nail"); Franka role refined ("block place + nail hold").
+- **§7 Housekeeping #5 rewritten** — Stage IV is now *three* cycles, not two; one cycle on Flexiv (with composite multi-impulse Phase 3) and two on Franka (with mid-cycle vision-triggered release on cycle 2). One-paragraph remark on operator-sequence composition AND on vision-mediated synchronization between two cycles belongs in §3.2 (or §9.4); no theorems change.
+- **§7 Housekeeping #6 added** — Franka holds the nail as a *passive fixture*, not as an active reactive coordinator. High-impedance position control + gripper compliance absorbs impact passively. This is the standard human nail-holding primitive and the architectural reason real-time bi-manual coordination at impact is not required.
+- **§7 Housekeeping #7 added** — Nail penetration in MuJoCo simulated via a **telescoping prismatic joint with yield friction** (primary): hidden 1-DoF joint between nail and block, Coulomb-style static friction at $\tau_{\text{yield}}$ ramping with depth, advances under impulse $J = m_{h} v_{h}(1+e)$ when $J > \tau_{\text{yield}} \Delta t$. Standard MuJoCo trick. **Counted-strike depth update** as fallback. Architectural claims do not depend on which option is chosen — only on Phase 3 being genuinely impulsive and on vision driving the withdrawal decision.
+- **§9 O5' superseded; O5'' added** — adversary surface shifts back to nail-driving dynamics. Candidates (a) wood-density / hardness variability, (b) nail-orientation jitter at placement, (c) synchronization-threshold noise. Current preference (a) — directly perturbs Phase 3 dynamics, ties into the architectural quantity $\rho$ at impact and $\tau_{\text{yield}}$ as wood-dependent friction, creates a real sim-to-real challenge.
 
 ### v4 (2026-04-28)
 
