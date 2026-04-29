@@ -1,3 +1,493 @@
 \section{Perception under causal observability}
 \label{sec:perception}
-% [DRAFT-LATER]
+
+\Cref{sec:causal-obs} of the framework introduced the perception
+side of the architecture: the observation map $\obsmap$ of
+\cref{def:obsmap}, the cognitive boundary $D(\jointvec)$ of
+\cref{def:cognitive-boundary}, and the causal-observability
+condition of \cref{def:causal-obs} that adds an explicit deadline
+to the partial-observation reading. The present section specializes
+that abstract framework to a concrete manipulation pipeline and
+develops it in four steps: \cref{sec:perception-wrist-fov} gives
+the explicit FOV-cone form of the cognitive boundary for a
+wrist-mounted camera; \cref{sec:obs-action-coupling} formalizes the
+observation--action coupling that is implicit in any wrist-mounted
+sensor and identifies its place in the bi-level scaffold of
+\cref{sec:bilevel}; \cref{sec:perception-timeliness} sharpens the
+latency-budget inequality \eqref{eq:timeliness} into a per-phase
+condition aligned with the five-phase decomposition of
+\cref{sec:phase-cycle}; and \cref{sec:perception-three-modalities}
+specializes the single observation map to three sensory modalities
+(vision, proprioception, haptics), each with its own cognitive
+boundary, latency profile, and best-served phases of the cycle. The
+stochastic extension in which $D(\jointvec)$ is replaced by a
+probability-of-detection field is deferred to
+\cref{app:stochastic-fov}.
+
+% ---------------------------------------------------------------
+\subsection{Cognitive boundary of a wrist-mounted sensor}
+\label{sec:perception-wrist-fov}
+
+\Cref{def:cognitive-boundary} of \cref{sec:causal-obs} introduced
+the cognitive boundary $D(\jointvec) \subseteq \mathbb{R}^{3}
+\times SE(3)$ of the observation map $\obsmap$ as the
+configuration-dependent subset of object positions and
+orientations distinguishable from the sensor reading. The
+abstract definition leaves the geometry of $D(\jointvec)$
+unspecified. The present subsection specializes
+$D(\jointvec)$ to the wrist-mounted-camera case used throughout
+\cref{sec:perception}, with the camera frame rigidly attached to
+the manipulator's end-effector and the field of view modeled as a
+right circular cone with apex at the camera optical center.
+
+\paragraph{Wrist-mounted FOV cone.}
+Let $T_{\mathrm{cam}}(\jointvec) \in SE(3)$ denote the
+camera-to-world transform at joint configuration $\jointvec$,
+obtained by composing the manipulator forward kinematics from
+the base to the end-effector with the fixed end-effector-to-camera
+mounting transform. The camera FOV is parametrized by the
+half-angle $\theta \in (0, \pi/2)$ of the cone about the optical
+axis $\hat{z}_{\mathrm{cam}}$ and by the near and far clipping
+planes $z_{\mathrm{near}}, z_{\mathrm{far}} \in \mathbb{R}_{>0}$
+with $z_{\mathrm{near}} < z_{\mathrm{far}}$. The FOV cone in the
+camera frame is the truncated cone
+\begin{equation}
+\label{eq:fov-cone-cam}
+  C_{\mathrm{cam}}
+  \;=\;
+  \bigl\{\, p^{\mathrm{cam}} \in \mathbb{R}^{3}
+  \;:\;
+  z_{\mathrm{near}} \le p^{\mathrm{cam}}_{z} \le z_{\mathrm{far}},
+  \;\;
+  \|p^{\mathrm{cam}}_{xy}\| \le p^{\mathrm{cam}}_{z} \tan\theta
+  \,\bigr\}.
+\end{equation}
+
+\begin{definition}[Wrist-mounted FOV cognitive boundary]
+\label{def:wrist-fov}
+For a wrist-mounted camera with mounting transform
+$T_{\mathrm{cam}}(\jointvec)$, half-angle $\theta$, and clipping
+planes $(z_{\mathrm{near}}, z_{\mathrm{far}})$, the cognitive
+boundary $D(\jointvec) \subseteq \mathbb{R}^{3} \times SE(3)$ of
+\cref{def:cognitive-boundary} is the set
+\begin{equation}
+\label{eq:wrist-fov-D}
+  D(\jointvec)
+  \;=\;
+  \bigl\{\, (x, R) \in \mathbb{R}^{3} \times SE(3)
+  \;:\;
+  T_{\mathrm{cam}}(\jointvec)^{-1}\, x \;\in\; C_{\mathrm{cam}}
+  \,\bigr\},
+\end{equation}
+i.e., the set of object poses whose position $x$ lies inside the
+camera-frame truncated cone $C_{\mathrm{cam}}$ of
+\eqref{eq:fov-cone-cam} after pull-back through
+$T_{\mathrm{cam}}(\jointvec)$. The orientation component $R$ is
+unconstrained at the level of the FOV containment test; finer
+recoverability of $R$ from a single image is treated by the
+modality-specific noise model in \cref{sec:perception}.
+\end{definition}
+
+\paragraph{Occlusion shrinks $D(\jointvec)$.}
+The set $D(\jointvec)$ in \eqref{eq:wrist-fov-D} accounts only
+for the FOV containment test. An object inside the cone but
+whose line of sight from the camera optical center is blocked by
+other geometry in the scene does not project onto the image
+plane and is therefore not distinguishable from the sensor
+reading. The deterministic FOV cone of \cref{def:wrist-fov} thus
+overestimates the true cognitive boundary, and occlusion further
+shrinks it. The exact treatment, in which $D(\jointvec)$ is
+replaced by a probability-of-detection field over
+$\mathbb{R}^{3} \times SE(3)$ that integrates FOV containment,
+occlusion, and sensor noise, is deferred to
+\cref{app:stochastic-fov}.
+
+\paragraph{Bi-manual dependence on both configurations.}
+For a Stage IV-type bi-manual scene in which a hammer, nail, and
+block are manipulated by a primary arm in the presence of a
+second arm, the second arm's links can occlude the workpiece
+from the primary arm's wrist camera. The FOV cone is determined
+by the primary arm's configuration $\jointvec_{\mathrm{self}}$
+through $T_{\mathrm{cam}}(\jointvec_{\mathrm{self}})$, but the
+occluding geometry depends on the second arm's configuration
+$\jointvec_{\mathrm{other}}$. The cognitive boundary is
+therefore a function of both,
+$D(\jointvec_{\mathrm{self}}, \jointvec_{\mathrm{other}})$,
+and the architectural plan-feasibility check of
+\cref{def:causal-obs} will be evaluated against the joint
+configuration of both arms. The detailed probabilistic model of
+the joint dependence is deferred to \cref{app:stochastic-fov}.
+
+\begin{example}[Wrist FOV for a parallel-jaw end-effector]
+\label{ex:wrist-fov-pj}
+Consider a parallel-jaw end-effector with a wrist camera mounted
+just above the gripper such that the optical axis
+$\hat{z}_{\mathrm{cam}}$ points along the approach direction of
+the jaws. Let the mounting transform at a typical pre-grasp
+configuration $\jointvec_{0}$ place the camera optical center at
+height $h$ above the table, with $\hat{z}_{\mathrm{cam}}$
+pointing vertically downward. The world-frame footprint of the
+FOV cone on the table is then the annular disk obtained by
+intersecting $C_{\mathrm{cam}}$ pulled forward through
+$T_{\mathrm{cam}}(\jointvec_{0})$ with the table plane: a disk
+of radius $h \tan\theta$ centered under the camera, restricted to
+$z_{\mathrm{near}} \le h \le z_{\mathrm{far}}$. As the arm swings
+in the null-space direction of \cref{sec:hierarchical-tn} during
+phase 1, $T_{\mathrm{cam}}(\jointvec)$ rotates and the world-frame
+footprint sweeps over the workspace; the cognitive boundary
+$D(\jointvec)$ of \cref{def:wrist-fov} sweeps along with it.
+\end{example}
+
+% ---------------------------------------------------------------
+\subsection{Observation--action coupling}
+\label{sec:obs-action-coupling}
+
+The causal-observability framework of \cref{sec:causal-obs}
+exposed a structural feature of manipulation perception that
+distinguishes it from passive partial-observation settings: the
+wrist-mounted sensor rides the end-effector, so the cognitive
+boundary $D(\jointvec)$ of \cref{def:cognitive-boundary} is
+itself a function of the control history. The
+observation--action paragraph at the end of
+\cref{sec:causal-obs} stated this informally; the present
+subsection formalizes it as the \emph{observability lift} of
+\cref{def:obs-action-coupling} below and records the
+architectural consequence in
+\cref{prop:active-perception}. The order parameter
+$\rcontact$ is not modified by this subsection: the contact-side
+interface remains the only named scalar of the framework, and
+the observability lift acts on the perception-side map
+$\obsmap$ of \cref{def:obsmap} through the configuration
+$\jointvec(t)$ that the controller realizes.
+
+\begin{definition}[Observability lift]\label{def:obs-action-coupling}
+For a control history $u_{0:t-1}$ producing the trajectory
+$\jointvec(\cdot)$ via the joint-space dynamics of
+\cref{sec:bilevel}, the \emph{observability lift} is the
+composite map
+\[
+  u_{0:t-1}
+  \;\longmapsto\;
+  \jointvec(t)
+  \;\longmapsto\;
+  D\!\bigl(\jointvec(t)\bigr),
+\]
+where the first arrow integrates the dynamics under
+$u_{0:t-1}$ and the second arrow evaluates the cognitive
+boundary of \cref{def:cognitive-boundary} at the realized
+configuration. The image of the lift is the cognitive boundary
+realized at time $t$ along the trajectory induced by the
+control history.
+\end{definition}
+
+\begin{proposition}[Active perception in the bi-level scaffold]
+\label{prop:active-perception}
+Under the bi-level scaffold of \cref{def:bilevel}, the outer
+level may include in the least-action term $u_{a}$ of
+\cref{def:three-term} a perception-augmenting contribution
+whose role is to enlarge $D(\jointvec(t))$ at upcoming
+phase transitions identified by the operator algebra
+$\phaseop{0}, \ldots, \phaseop{4}$ of
+\cref{sec:operator-algebra}, subject to the timeliness
+condition \eqref{eq:timeliness}.
+\end{proposition}
+
+\begin{proof}
+By direct substitution: $u_{a}$ enters the control input
+through \cref{def:three-term} and acts on $\jointvec(t)$ via
+the dynamics of \cref{sec:bilevel}; the cognitive boundary
+$D(\jointvec(t))$ depends on $\jointvec(t)$ by
+\cref{def:cognitive-boundary}; therefore an outer-level choice
+of $u_{a}$ that steers $\jointvec(t)$ toward configurations
+with larger $D(\jointvec(t))$ enlarges the realized image of
+the observability lift of
+\cref{def:obs-action-coupling} at the upcoming phase boundary.
+\end{proof}
+
+\paragraph{Relation to active perception.}
+\Cref{prop:active-perception} is the manipulation specialization
+of active perception in the sense of \citet{Bajcsy1988}: the
+sensor is rigidly attached to the controlled kinematic chain,
+so every action moves the sensor, and active perception is
+automatic rather than an additional control mode layered on a
+fixed sensor pose. The same observability lift is in principle
+available to a free-standing observer that pans a camera, but
+in the manipulation setting the lift is realized by the same
+$u_{a}$ that the bi-level scaffold of \cref{def:bilevel}
+already issues for task purposes; perception augmentation and
+task control share an actuation channel.
+
+\paragraph{Forward references.}
+\Cref{sec:perception-three-modalities} catalogs which sensory
+modalities benefit from the observability lift of
+\cref{def:obs-action-coupling}: vision benefits strongly,
+because the FOV cone of a wrist-mounted camera is reoriented
+by every motion of the arm; haptics benefits moderately, since
+contact-patch sensing is enlarged by reorienting the fingertip
+across the contact face; proprioception does not benefit, since
+the joint-encoder map is independent of $\jointvec$.
+
+% ---------------------------------------------------------------
+\subsection{Information timeliness}
+\label{sec:perception-timeliness}
+
+\Cref{def:causal-obs} of \cref{sec:causal-obs} states the latency
+budget \eqref{eq:timeliness},
+$\tau_{\mathrm{sensor}} + \tau_{\mathrm{compute}} <
+\tau_{\mathrm{deadline}}$, as a single global condition. The
+five-phase decomposition \cref{def:five-phase} of
+\cref{sec:phase-cycle} forces a finer reading: each phase
+$k \in \{1, \ldots, 5\}$ has its own controlling event---either a
+$\swsurf$-crossing in the sense of \cref{lem:two-crossing} or a
+phase-internal waypoint---which sets a phase-local deadline
+$\tau_{\mathrm{deadline}}^{(k)}$. The latency-budget inequality
+\eqref{eq:timeliness} must hold separately at every phase, since
+a single overrun at any phase invalidates the cycle through the
+operator composition of \cref{thm:joint-loop}.
+
+\paragraph{Per-phase deadlines.}
+\Cref{tab:per-phase-deadlines} collects the controlling event and
+the qualitative scale of $\tau_{\mathrm{deadline}}^{(k)}$ phase by
+phase. The bang-arc phases 2 and 4, at which the spectral-kick
+torque $u_{s}$ of \cref{def:three-term} drives $\specgap$ across
+the threshold $\varepsilon$, set the tightest deadlines: the
+estimate must reach the controller within the window in which the
+$\swsurf$-crossing remains actionable. The out-of-contact reaches
+1 and 5 set looser deadlines determined by the next pose
+waypoint; the in-contact transport phase 3 sets an intermediate
+deadline determined by the next force-closure correction along
+the singular arc.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}cllc@{}}
+\toprule
+$k$ & Phase & Controlling event & Scale of $\tau_{\mathrm{deadline}}^{(k)}$ \\
+\midrule
+1 & pick (approach)            & next pose waypoint along $\phaseop{0}$        & loose \\
+2 & load (contact)             & $\swsurf$-crossing at $t_{1}$                 & very tight \\
+3 & use (transport)            & next force-closure correction on $(t_{1}, t_{4})$ & intermediate \\
+4 & unload (release)           & $\swsurf$-crossing at $t_{4}$                 & very tight \\
+5 & place (retreat)            & rest configuration at $t = T$                 & loose \\
+\bottomrule
+\end{tabular}
+\caption{Per-phase deadlines for the latency-budget inequality
+\eqref{eq:timeliness}. Phases 2 and 4, at which the bang torque
+$u_{s}$ of \cref{def:three-term} must arrive at the right
+instant, set the tightest deadlines; phases 1 and 5 are out-of-contact
+reaches with the loosest deadlines; phase 3 sets an intermediate
+deadline along the singular transport arc.}
+\label{tab:per-phase-deadlines}
+\end{table}
+
+\begin{proposition}[Per-phase timeliness]
+\label{prop:per-phase-timeliness}
+The manipulation pipeline is causally observable, in the sense of
+\cref{def:causal-obs}, on a full pick--place cycle if and only if
+the latency-budget inequality \eqref{eq:timeliness} holds with
+$\tau_{\mathrm{deadline}}$ replaced by
+$\tau_{\mathrm{deadline}}^{(k)}$ for every phase
+$k \in \{1, \ldots, 5\}$ of \cref{def:five-phase}.
+\end{proposition}
+
+\begin{proof}
+Each phase has a phase-determined event whose deadline
+$\tau_{\mathrm{deadline}}^{(k)}$ enters \eqref{eq:timeliness}
+locally; failing the inequality at some phase $k$ produces a
+state estimate that arrives after the corresponding event, hence
+fails \cref{def:causal-obs}~(ii) on that phase. By the joint-space
+loop theorem \cref{thm:joint-loop}, the cycle composes through
+the operators $\phaseop{0}, \ldots, \phaseop{4}$, so a phase-local
+failure cascades to the cycle. Conversely, holding the inequality
+at every phase yields a cycle-wide causally observable trajectory.
+\end{proof}
+
+\paragraph{Parallel with the spectral-gap margin.}
+The strict inequality \eqref{eq:timeliness} is the temporal
+analog of the spectral-gap margin condition $\specgap \ge
+\varepsilon$ of \cref{sec:specgap}, in the precise sense already
+noted in \cref{sec:causal-obs}: both are quantitative margins the
+controller maintains, the spectral-gap margin during in-contact
+transport (phase 3) and the latency margin during perception at
+every phase. Both degrade gracefully---a small shrinkage of the
+margin does not break feasibility---and both are state-dependent
+quantities the controller actively manages rather than
+once-and-for-all design parameters.
+
+\paragraph{Forward references.}
+\Cref{sec:perception} treats three sensory modalities (vision,
+proprioception, haptics), each with a distinct
+$(\tau_{\mathrm{sensor}}, \tau_{\mathrm{compute}})$ profile.
+The per-phase deadline schedule of
+\cref{tab:per-phase-deadlines} determines, for each modality,
+which phases its profile is compatible with: a modality with a
+large $\tau_{\mathrm{sensor}} + \tau_{\mathrm{compute}}$ may
+serve phases 1 and 5 but not the bang-arc phases 2 and 4, while a
+modality with a small latency profile may serve every phase
+including the $\swsurf$-crossings.
+
+% ---------------------------------------------------------------
+\subsection{Three sensory modalities}
+\label{sec:perception-three-modalities}
+
+The observation map $\obsmap$ of \cref{def:obsmap} in
+\cref{sec:causal-obs} was introduced as a single deterministic
+mapping from manipulator state to sensor reading. A real
+manipulation pipeline operates on multiple sensors in parallel,
+each with its own cognitive boundary in the sense of
+\cref{def:cognitive-boundary} and its own latency profile in the
+sense of \cref{eq:timeliness}. The present subsection
+specializes $\obsmap$ to three modalities: a wrist-mounted
+RGB(-D) camera, joint encoders together with joint-torque
+sensors, and a fingertip tactile sensor. Each modality is
+described by its own observation map---written
+$\obsmap_{v}$ (vision), $\obsmap_{p}$ (proprioception), and
+$\obsmap_{h}$ (haptics)---with its own per-configuration
+cognitive boundary
+$D_{v}(\jointvec)$, $D_{p}(\jointvec)$, $D_{h}(\jointvec)$ and
+its own qualitative position on the latency budget of
+\eqref{eq:timeliness}. The deliverable of the subsection is
+\cref{tab:modality-comparison}, which catalogs the three
+modalities along the dimensions of cognitive boundary, latency
+profile, best-served phases of the five-phase cycle of
+\cref{def:five-phase}, and coupling to the active-perception
+mechanism of \cref{sec:obs-action-coupling}.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}p{0.13\linewidth}p{0.21\linewidth}p{0.13\linewidth}p{0.16\linewidth}p{0.21\linewidth}@{}}
+\toprule
+Modality & Cognitive boundary $D(\jointvec)$
+         & Latency profile (qualitative)
+         & Best-served phases
+         & Active-perception coupling \\
+\midrule
+Vision ($\obsmap_{v}$)
+  & wrist-camera FOV cone of \cref{def:wrist-fov}
+  & moderate (image read-out plus neural decoder)
+  & 1, 3, 5
+  & strong (camera rides end-effector) \\
+Proprioception ($\obsmap_{p}$)
+  & all of joint space (no FOV restriction)
+  & low (kHz-rate encoder bus)
+  & 2, 4
+  & none (encoder map independent of $\jointvec$) \\
+Haptics ($\obsmap_{h}$)
+  & immediate fingertip contact patch (empty out-of-contact)
+  & low (analog contact transduction)
+  & 2, 3, 4
+  & moderate (fingertip must touch the object) \\
+\bottomrule
+\end{tabular}
+\caption{Specialization of the observation map $\obsmap$ of
+\cref{def:obsmap} to three sensory modalities. Cognitive
+boundaries $D(\jointvec)$ are taken in the sense of
+\cref{def:cognitive-boundary}; latency profiles are positioned on
+the budget \eqref{eq:timeliness} of \cref{sec:causal-obs}
+qualitatively; best-served phases refer to the five-phase
+cycle of \cref{def:five-phase}; active-perception coupling refers
+to the observability lift of \cref{def:obs-action-coupling} in
+\cref{sec:obs-action-coupling}.}
+\label{tab:modality-comparison}
+\end{table}
+
+\paragraph{Vision.}
+The vision modality is realized by a wrist-mounted RGB or RGB-D
+camera whose mounting transform $T_{\mathrm{cam}}(\jointvec)$
+rides the end-effector. The corresponding observation map
+$\obsmap_{v}$ takes a scene state to the image (and, for RGB-D,
+depth) read off the sensor at configuration $\jointvec$, and the
+cognitive boundary $D_{v}(\jointvec)$ is the wrist-camera FOV
+cone of \cref{def:wrist-fov}, with occlusion further shrinking
+$D_{v}$ as discussed there and treated probabilistically in
+\cref{app:stochastic-fov}. The latency profile is moderate:
+$\tau_{\mathrm{sensor}}$ includes image read-out and any
+demosaicing or rectification, and $\tau_{\mathrm{compute}}$
+includes the neural pose-decoder forward pass that maps an image
+to an object-pose estimate. Vision is best-served in the
+out-of-contact reaches (phases 1 and 5) and the in-contact
+transport (phase 3), where the controller must track an object
+or end-effector pose against a $\swsurf$-distant deadline. The
+modality is strongly coupled to active perception in the sense of
+\cref{prop:active-perception}: every motion of the arm reorients
+$T_{\mathrm{cam}}(\jointvec)$ and therefore $D_{v}(\jointvec)$,
+so the outer level of the bi-level scaffold may steer the
+configuration toward larger $D_{v}(\jointvec)$ at upcoming phase
+boundaries identified by the operator algebra
+$\phaseop{0}, \ldots, \phaseop{4}$.
+
+\paragraph{Proprioception.}
+The proprioception modality is realized by joint encoders---and,
+on manipulators so equipped, joint-torque sensors at each
+actuator. The corresponding observation map $\obsmap_{p}$ takes
+the manipulator state to the encoder reading $\jointvec$
+(together with $\dot{\jointvec}$ from differentiation or a
+dedicated tachometer channel, and joint torques where present).
+The cognitive boundary $D_{p}(\jointvec)$ is essentially all of
+joint space: encoders observe $\jointvec$ itself, with no FOV
+restriction and no occlusion. The latency profile is the lowest
+of the three modalities, with the encoder bus running at
+several orders of magnitude above the slowest closed-loop control
+rate, so $\tau_{\mathrm{sensor}} + \tau_{\mathrm{compute}}$ is
+small relative to any phase-boundary deadline. Proprioception is
+best-served in the bang arcs at the $\swsurf$-crossings (phases 2
+and 4) of \cref{lem:two-crossing}, where fast joint-velocity
+feedback is the prerequisite for detecting that the order
+parameter $\rcontact$ has crossed the threshold of
+\cref{sec:Sigma}. Proprioception is not coupled to active
+perception: $D_{p}(\jointvec) = D_{p}$ is independent of the
+configuration, and the observability lift of
+\cref{def:obs-action-coupling} acts trivially on $\obsmap_{p}$.
+
+\paragraph{Haptics.}
+The haptics modality is realized by a fingertip tactile sensor or
+a fingertip force sensor, sensing pressure or shear distribution
+across the contact patch. The corresponding observation map
+$\obsmap_{h}$ takes the manipulator-and-object state to the local
+contact-patch reading at the fingertip. The cognitive boundary
+$D_{h}(\jointvec)$ is the immediate contact patch at
+$\jointvec$: empty when the fingertip is out of contact (so that
+the modality reports nothing distinguishable), non-empty during
+the in-contact phases identified by $\rcontact \ge 1$ in the
+sense of \cref{sec:causal-obs}. The latency profile is low: the
+contact transduction stage is analog and short, and the
+$\tau_{\mathrm{compute}}$ stage is a localized signal-processing
+pass rather than a global neural decoder. Haptics is best-served
+across the contact-mediated portion of the cycle: contact
+establishment in phase 2, in-contact transport in phase 3, and
+release in phase 4. The modality is moderately coupled to active
+perception: a non-empty $D_{h}(\jointvec)$ requires that phase 2
+has closed the contact and the fingertip is touching the object,
+so haptics depends on the controller's ability to bring the
+fingertip into contact, but once contact is established the
+sensor reading is determined by the local geometry rather than by
+continued reorientation of the arm.
+
+\paragraph{Modality complementarity.}
+The three modalities are complementary across the five-phase
+cycle. Vision dominates the out-of-contact reaches (phases 1 and
+5), where the relevant scene quantities lie outside the
+fingertip's contact patch and the latency budget is large enough
+to absorb the moderate $\obsmap_{v}$ pipeline. Proprioception
+dominates the bang arcs (phases 2 and 4) at the
+$\swsurf$-crossings, where the timeliness condition
+\eqref{eq:timeliness} is tightest and only the encoder-bus rate
+is fast enough to close the loop on the $\rcontact$-threshold
+detection. Haptics dominates the contact-mediated portion of the
+in-contact transport (phase 3), where the contact patch carries
+exactly the local-equilibrium information that the bi-level
+inner program of \cref{def:bilevel} requires. The Stage IV
+bi-manual block-place + nail-hold + hammer task of
+\cref{sec:experiments} exercises all three modalities: vision
+locates the block, the nail, and the hammer for the pre-grasp and
+retreat reaches; proprioception detects each $\swsurf$-crossing
+during contact establishment and release with the block, the
+nail, and the hammer; and haptics carries the contact-patch
+information during the in-contact transport segments of each
+sub-task. The three observation maps
+$\obsmap_{v}, \obsmap_{p}, \obsmap_{h}$ together specialize the
+single-sensor abstraction of \cref{def:obsmap} to the
+multi-sensor architecture that the controller of
+\cref{sec:plan-training} will consume.
