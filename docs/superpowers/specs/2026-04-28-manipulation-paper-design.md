@@ -1,6 +1,6 @@
 # Design Spec — *Toward Interface Elimination in Robotic Manipulation*
 
-**Status:** Draft v3, 2026-04-28
+**Status:** Draft v4, 2026-04-28
 **Source:** Spinoff of `appendices/manipulation.tex` (Appendix J of agentic-theory main manuscript) into a standalone IJRR paper.
 **Companion (deferred):** `appendices/catching.tex` (Appendix K) — to be brainstormed separately after this spec is locked.
 
@@ -22,7 +22,7 @@
 |---|---|
 | **Theory freeze** | §1–§8 written; §2 proofs verified; spec approved | aiming: as soon as §1–§8 drafted |
 | **arXiv v1** | grjl4 fully works **in simulation** (FSM + planner + controller + training + curriculum on Franka with vision in MuJoCo, no real robot yet) |
-| **arXiv v2 / IJRR submission** | grjl4 reproduces the simulation result on **real bi-manual hardware (Flexiv Rizon + Franka Panda) with real vision** for the hammer-and-nail task |
+| **arXiv v2 / IJRR submission** | grjl4 reproduces the simulation result on **real bi-manual hardware (Flexiv Rizon + Franka Panda) with real vision** for the sequential pick-place-then-hammer task |
 | **Conclusion section written** | only after IJRR submission gate is met |
 
 The author has **not** committed to a calendar date. arXiv v1 is gated by software, not the clock.
@@ -115,7 +115,11 @@ Adopted: **Functional grouping** (Brainstorm proposal 2). Nine main sections + t
        §9.3  Stage III — Kinematic Interface
               (G-dual dribble + juggle; xy-tracked transport)
        §9.4  Stage IV — Visual Interface
-              (bi-manual hammer-and-nail: Flexiv Rizon swings, Franka Panda holds nail; sim → real)
+              (bi-manual sequential two-cycle task: Franka Panda picks
+               and places a wooden block on a fixture; Flexiv Rizon
+               then picks up a hammer and strikes the placed block.
+               Two consecutive 5-phase cycles with very different
+               $\rho$ profiles (gentle transport vs. impulsive impact). sim → real)
 
 §10  Discussion / Conclusion                                   ~1 pg [EMPTY]
 
@@ -133,7 +137,7 @@ Appendix C  Proofs deferred from §2
 | `grjl/` (1.0) | **Stage I — Force Interface** | force F, discrete contact modes | parallel-jaw grasp; gravitational three-body damper (Easter egg) |
 | `grjl2/` (2.0) | **Stage II — Continuous-ρ Interface** | smooth ρ = F_rep/F_att (still force-derived) | basketball dribble; three-body in ρ form (Easter egg) |
 | `grjl3/` (3.0) | **Stage III — Kinematic Interface** | ρ = \|q̈_z/g + 1\|, no force in interface | dribble + juggle G-dual; xy-trajectory tracked transport |
-| `grjl4/` (4.0) | **Stage IV — Visual Interface** | vision + kinematic; pixel in, torque out | bi-manual hammer-and-nail (Flexiv Rizon swings hammer, Franka Panda holds nail) |
+| `grjl4/` (4.0) | **Stage IV — Visual Interface** | vision + kinematic; pixel in, torque out | bi-manual sequential pick-place-then-hammer (Franka Panda picks/places a wooden block on a fixture; Flexiv Rizon then picks up a hammer and strikes the placed block — two consecutive 5-phase cycles) |
 
 The Stage label always carries the **interface state** as primary (matching the paper's thesis); the **task** appears in italics in subsection titles and figure captions.
 
@@ -181,7 +185,8 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 1. **Codebase not renamed.** Directories `grjl/`, `grjl2/`, `grjl3/`, `grjl4/` keep their current names. Paper's README (or §experiments preamble) provides a one-line mapping `grjl(N) ↔ Stage N`.
 2. **Three-body as Easter egg.** Stages I, II, III each contain a celestial three-body sub-experiment that demonstrates universality of the controller. In the paper these are mentioned as one-line remarks pointing to a supplementary section, not in the main flow.
 3. **G-action is defined early.** §3.3 introduces the discrete reflection group {z→−z, g→−g, F→−F} so that Stage III's dual-dribble in §9.3 has framework to attach to. Without this, §9.3 would have to introduce the duality ad hoc.
-4. **Cross-paper hardware reuse.** The Flexiv Rizon used in Stage IV (impact-generator: swings the hammer) is the same physical platform used in the catching paper (Appendix K, where it is the impact-receiver). Different role, same arm; the manipulation paper does not cite the catching paper, but the lab note is recorded here so that figure captions and hardware tables remain consistent across the two manuscripts. Franka Panda (nail-holding role in Stage IV) is unique to this paper.
+4. **Cross-paper hardware reuse.** The Flexiv Rizon used in Stage IV (impact-generator: swings the hammer at the placed block) is the same physical platform used in the catching paper (Appendix K, where it is the impact-receiver). Different role, same arm; the manipulation paper does not cite the catching paper, but the lab note is recorded here so that figure captions and hardware tables remain consistent across the two manuscripts. Franka Panda (block pick-and-place role in Stage IV) is unique to this paper.
+5. **Stage IV is a two-cycle sequence, not a single cycle.** §3.2's operator algebra $T_{0} \to T_{1} \to T_{2} \to T_{3} \to T_{4} \to T_{0}$ is one cycle; Stage IV exercises the cycle twice in sequence (block cycle on Franka, then hammer cycle on Flexiv). This is a substantive demonstration that the architecture composes cleanly across heterogeneous tool-use sub-tasks. §3.2 (or §9.4) should add a one-paragraph remark on operator-sequence composition; the underlying theorems do not change.
 
 ## 8. Out of scope (intentionally)
 
@@ -198,7 +203,8 @@ Possible exception: a single classical line **may** appear once as a §1 epigrap
 | O2 | Exact mathematical re-statement of the two-crossing lemma in §2.3 (must avoid sword/path-a/b/c language) | when drafting §2 |
 | O3 | How to phrase "Toward" hedge in abstract without sounding weak | when drafting abstract |
 | ~~O4~~ | ~~Whether to include a system-block diagram in §1 (Franka pipeline overview)~~ — **resolved YES** in v2 review (camera → observer → planner → controller → Franka) | resolved 2026-04-28 |
-| O5 | **Stage IV adversary choice.** Wind no longer fits the bi-manual hammer-and-nail task. Replace with one of: (a) **wood-density variability** (different blocks of wood / different woods → variable nail-driving resistance), (b) **nail-orientation jitter** (nail not exactly perpendicular at the start), (c) **holding-arm pose jitter** (Franka deliberately wobbles the nail under hold). Current preference: (c) holding-arm jitter, because it stress-tests bi-manual coordination — the Flexiv must adapt its swing trajectory to a moving target — which is the unique technical contribution of going bi-manual. Recommendation pending §7 design. | when drafting §7 |
+| ~~O5~~ (v3) | ~~Stage IV adversary choice between wind / wood-density / nail-orientation / holding-arm jitter for the hammer-and-nail task~~ — **superseded** in v4 by the pick-place-then-hammer pivot, which decouples the two arms temporally. See O5' below. | superseded 2026-04-28 |
+| O5' | **Stage IV adversary choice (post-pivot).** With the two arms decoupled in time (Franka places the block, then Flexiv hammers it), the adversary acts on the placed block, which is now a *static* target. Candidates: (a) **block-mass variability** (different woods → different impact response), (b) **block-orientation jitter** (the placed block is not exactly aligned with the nominal pose), (c) **block-position jitter** (placement noise from Franka's pick-place cycle propagates into the hammer cycle's target localization, exercising vision under upstream uncertainty). Current preference: (c) block-position jitter, because it makes the second cycle's vision pipeline non-trivial — the Flexiv must visually localize a block whose pose was only approximately set by the first cycle. This couples the two cycles through perception rather than through real-time mechanical coordination, which is the right level of coupling for Stage IV. | when drafting §7 |
 
 ## 10. Companion paper (Appendix K → catching)
 
@@ -228,6 +234,16 @@ This spec is the outcome of a brainstorming session on 2026-04-28, with the foll
 11. Q11 (housekeeping) → no codebase rename; three-body as Easter egg; G-action early in §3
 
 ## 12. Changelog
+
+### v4 (2026-04-28)
+
+Stage IV task refined within the same day as v3, after a second-pass on what makes the hammer task *practical* and what tests the architecture most strongly:
+
+- **§5 Stage IV row + §section-structure §9.4** — task changed from *bi-manual hammer-and-nail (Flexiv swings, Franka holds nail)* to **bi-manual sequential pick-place-then-hammer**: Franka Panda picks a wooden block and places it on a fixture; Flexiv Rizon then picks up a hammer and strikes the placed block. The two arms are decoupled in time — there is no real-time bi-manual coordination at the impact instant. Rationale: (1) Stage IV now exercises the full 5-phase cycle **twice** in sequence (block cycle on Franka with gentle transport, then hammer cycle on Flexiv with impulsive Phase 3) — strongest possible demonstration that the architecture composes across heterogeneous tool-use sub-tasks; (2) the original bi-manual scheme required real-time impedance coordination between the swinging Flexiv and the holding Franka at impact, which is very hard sim-to-real; the temporal decoupling makes the task actually runnable; (3) tool use is preserved — the hammer is still a passive object whose dynamics must be exploited via Phase 3 of the second cycle.
+- **§2 timeline gates** — arXiv v2 / IJRR submission gate updated: "sequential pick-place-then-hammer task" instead of "hammer-and-nail task".
+- **§7 Housekeeping #4 updated** — Flexiv role refined: "swings the hammer at the placed block" (not "swings the hammer" alone). Franka role refined: "block pick-and-place" (not "nail-holding").
+- **§7 Housekeeping #5 added** — Stage IV is now a *two-cycle sequence*. §3.2's operator algebra describes one cycle; Stage IV exercises it twice. A one-paragraph remark on operator-sequence composition belongs in §3.2 (or §9.4); no theorems change.
+- **§9 Open items O5 superseded; O5' added** — adversary candidates change to (a) block-mass variability, (b) block-orientation jitter, (c) block-position jitter (placement noise from cycle 1 propagates into cycle 2's vision). Current preference (c) — couples the two cycles through perception, which is the right level of coupling. Holding-arm jitter is no longer applicable (no holding arm).
 
 ### v3 (2026-04-28)
 
