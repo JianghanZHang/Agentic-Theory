@@ -177,7 +177,87 @@ Concrete edits, in priority order:
 
 ---
 
-## I. Status
+## I. Algorithm + math cross-check (Task 12)
+
+### I.1 alg:minpg vs monograph alg:loco
+
+Source: `sections/calculus.tex` lines 1276–1368 (monograph `alg:loco`) vs
+`paper_minimalist/sections/method.tex` Algorithm 1 (`alg:minpg`).
+
+| Monograph alg:loco element | MinPG counterpart | Status | Notes |
+|---|---|---|---|
+| Phase loop (Stand / Walk / Work curriculum) | (none) | Dropped | Curriculum is out of scope; MinPG is single-phase, no phase-gating. |
+| `\varphi_{\mathrm{vis}}(I_t)` — DINOv2 frozen vision encoder | (none) | Dropped | Walker2d-v4 is proprioceptive-only ($n_s = 17$); no image input. |
+| Demonstrations `D` for Work phase | (none) | Dropped | No imitation loss in MinPG; `D = ∅` throughout. |
+| `u ~ U` command sampling per rollout | (none) | Dropped | Walker2d has a single fixed-speed task; no command distribution. |
+| Truncated Student-$t$ action sample `τ_t ~ π_θ(· | o_t, u)` | Algorithm 1 line 3 | Same | Identical policy family; truncation and score-function philosophy unchanged. |
+| `softmin_β` viability margin (height, orientation, foot-z for go2) | §3.1 eq. (1) + §6.1 instantiation | Adapted | Walker2d uses 3 margins: torso height, pitch angle, foot clearance. Quadruped-specific `‖R_t − I‖_F` orientation replaced by scalar pitch for biped. |
+| Score-function gradient `s_t = ∇_θ log π_θ(τ_t | o_t, u)` | Algorithm 1 line 5 | Same | Stops gradient at engine; score through `π` only. |
+| Weight update with L2 decay `W_ℓ ← W_ℓ + η[∇W_ℓ − γW_ℓ]` | (none; hard projection instead) | Different | MinPG replaces soft L2 decay with hard Frobenius projection eq. (3). Justified in §3.3: projection is sharper and admits a clean closed form. |
+| Capacity clamp `‖W_ℓ‖_F ← min(‖W_ℓ‖_F, c_max(e_ℓ))` | Algorithm 1 line 7 | Same | Same projection step; caps sourced from per-layer XML limits vs. per-actuator torque envelope. |
+| In-episode reset on fall (`|φ|_β ≤ 0`) | (none) | Dropped | Standard Gymnasium episode-end termination replaces in-episode weight reinitialisation; no mid-episode hard reset of parameters. |
+| Imitation margin augmentation `softmin(|φ|_β, ε − ‖τ_t − τ_t*‖)` | (none) | Dropped | Pure margin objective; no demonstration-following term. |
+| MuJoCo engine `mj_step` (MJX/JAX) | Walker2d-v4 step (Gymnasium / MuJoCo) | Adapted | Same gradient-stops-at-engine philosophy; engine call unchanged in spirit. |
+| Convergence criterion: `max|φ| = min|C|` for N consecutive rollouts | Epoch loop (no explicit criterion) | Adapted | MinPG runs for a fixed number of epochs; no formal convergence check (appropriate for benchmark comparison). |
+
+**Verdict:** All differences are intentional and consistent with the standalone-paper scope (single-task, proprioceptive, benchmark). No accidental semantic drift detected. The weight-decay-vs-projection difference is the one design departure worth documenting in §3.3 (it is already noted there but not cross-referenced to the monograph).
+
+### I.2 Lemma hypothesis consistency
+
+**Lemma 1 (Mollifier smoothness) — hypothesis: `σ > 0` and `ν > 2`**
+
+- Method §3.2 outputs `(μ, log σ, log ν)` as three network heads. The actual `ν(s)` is `exp(head)`, which is positive but **unconstrained below**: as the head → −∞, `ν(s) → 0`. No architecture or loss term enforces `ν(s) > 2`.
+- Consequence: Lemma 1's hypothesis can fail at any state where the network outputs a sufficiently negative `log ν` head. The proof sketch explicitly requires `ν > 2` for "finite second moment of the score via the Fisher information formula for the Student-$t$ family" — this is mathematically necessary, not just sufficient. Weakening to `ν > 1` would be incorrect (Fisher information for μ in the Student-t family is finite iff ν > 2).
+- **Severity: Medium.** The algorithm as written does not guarantee Lemma 1 holds for all reachable states.
+- **Recommended fix (method.tex, not theory.tex):** Replace the `log ν` head with a `softplus + 2` transform: `ν(s) = 2 + softplus(head)`, so `ν(s) ∈ (2, ∞)` always. This is a one-line change in §3.2 and Algorithm 1. The lemma hypothesis is then satisfied by construction.
+- **theory.tex fix: NOT applied.** Weakening to `ν > 1` would be mathematically wrong (see above). Strengthening the hypothesis statement (e.g., adding "enforced by a softplus + 2 output transform") requires coordinating with method.tex; left as a recommended fix in F.3/F.7 rather than a silent edit.
+- This inconsistency is already partially captured in section F (item 3 mentions the ν(s) mechanism), but the direct link to Lemma 1's formal hypothesis was not previously flagged.
+
+**Lemma 2 (Bounded score under clamp) — depends on `‖s‖` bounded**
+
+- Lemma 2 invokes `‖s‖` in the proof sketch: "`σ` bounded below by `exp(−Σ_ℓ c_ℓ ‖s‖)`". This bound is vacuous if `‖s‖ = ∞`.
+- The lemma statement does not explicitly assume `‖s‖ ≤ S_max`; the bound `C` is stated as depending on "`the input bound ‖s‖`" but no value or justification is given.
+- For Walker2d-v4 the observation is bounded by simulator constraints: joint angles are clipped by MuJoCo joint limits, velocities are bounded by contact dissipation, torso height is bounded by gravity. The observation vector is therefore bounded for all reachable states, but the paper does not state this.
+- **Severity: Low (for Walker2d-v4 specifically).** The bound holds in practice; it just needs to be stated.
+- **Recommended fix:** Add one sentence to Lemma 2 statement: "Assume `‖s‖ ≤ S_max` for all reachable states (satisfied for Walker2d-v4 by joint and velocity limits; see §6.1)." This is already flagged in F.7 and B.5 above.
+
+### I.3 Variance bound algebra
+
+§4.3 claims `Var(g^hat) ≤ M² H C`. Re-derivation:
+
+- `g^hat = J_β(τ) · Σ_t ∇_θ log π_θ(a_t | s_t)` where `s_t = ∇_θ log π_θ(a_t | s_t)` is the per-step score.
+- `J_β ∈ [−M, 0]` deterministically given the trajectory, so `|J_β|² ≤ M²`.
+- By Cauchy–Schwarz: `‖Σ_{t=0}^H s_t‖² ≤ (H+1) Σ_{t=0}^H ‖s_t‖²`. Treating H+1 ≈ H for large H, this gives the linear-in-H factor.
+- `E[‖s_t‖²] ≤ C` by Lemma 2 (conditionally on `ν(s) > 2` — see I.2).
+- Therefore `Var(g^hat) ≤ E[‖g^hat‖²] ≤ M² · H · H · C / H = M² H C`.
+
+Wait — more carefully: `E[‖g^hat‖²] ≤ M² · E[‖Σ_t s_t‖²] ≤ M² · H · E[Σ_t ‖s_t‖²] ≤ M² · H · H · C`. That is `M² H² C`, not `M² H C`. The paper writes `M² H C` — the algebra as written appears to be off by a factor of H.
+
+Re-check: Cauchy–Schwarz gives `‖Σ_t s_t‖² ≤ (H+1) Σ_t ‖s_t‖²`. So `E[‖Σ_t s_t‖²] ≤ H · H · C = H² C`. Hence `E[‖g^hat‖²] ≤ M² H² C`. The variance bound should read `M² H² C`, not `M² H C`.
+
+**Correction:** The variance bound in §4.3 eq. (variance-bound) loses one factor of H. The correct Cauchy–Schwarz bound is `Var(g^hat) ≤ M² H² C`. This is still finite without a baseline (the key qualitative claim holds), but the quantitative exponent is H² not H.
+
+**Consequence for the paper:** The comparison paragraph in §4.3 ("order-10³ reduction") is comparing `M² H C` against a task-return estimator with scale `(cumulative return)² ≈ O(10⁶)` for H = 1000. With the corrected bound `M² H² C`, the soft-min bound is `O(H²)` = `O(10⁶)` for H = 1000 — the same order as the task-return estimator. The claimed "order-10³ reduction" disappears. This is a material error in §4.3.
+
+**Severity: High.** The variance comparison paragraph's central quantitative claim is based on an incorrect exponent. The paragraph needs to be rewritten or the bound strengthened. (The qualitative claim — "finite without baseline" — still holds, but the quantitative advantage claim does not.)
+
+### I.4 Final verdict
+
+| Item | Status | Severity |
+|---|---|---|
+| alg:minpg vs alg:loco: all differences intentional | PASS | — |
+| Lemma 1 `ν > 2` not enforced by algorithm | FLAG | Medium |
+| Lemma 2 observation bound not stated | FLAG | Low |
+| Variance bound exponent: H² not H in §4.3 | ERROR | High |
+
+- **Algorithm extraction:** correctly derived from alg:loco; all differences are intentional simplifications for the Walker2d / standalone scope.
+- **Lemma 1:** holds conditionally on `ν(s) > 2`. The algorithm does not enforce this. Fix: add `softplus + 2` transform on the `log ν` head in §3.2 / Algorithm 1.
+- **Lemma 2:** holds conditionally on `‖s‖ ≤ S_max`. Satisfied by Walker2d-v4 physics, but must be stated explicitly.
+- **Variance bound:** the H² vs H discrepancy is a mathematical error that undermines the quantitative comparison in §4.3. Requires a rewrite of that paragraph or a corrected proof. The qualitative finiteness result is unaffected.
+
+---
+
+## J. Status
 
 - Paper draft compiles cleanly: **7 pages**, 0 errors, 0 undefined refs, 0 overfull boxes (Task 9 verification).
 - All bibliography entries in references.bib: 17 entries. `henderson2018` appears in the bib but is not cited in any section body — either cite it or remove it before submission.
