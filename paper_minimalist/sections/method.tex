@@ -3,4 +3,133 @@
 \section{Method}
 \label{sec:method}
 
-% TODO: filled by a subsequent task in the plan.
+\subsection{Problem setup}
+\label{sec:setup}
+
+We consider a continuous-control Markov decision process with state $s \in
+\mathcal{S} \subseteq \R^{n_s}$, action $a \in \mathcal{A} \subseteq \R^{n_a}$,
+and deterministic transition $s_{t+1} = f(s_t, a_t)$ implemented by a
+black-box physics engine $\mathcal{E}$ (no gradient through $\mathcal{E}$).
+The agent is a stochastic policy $\pi_\theta(a \mid s)$ with parameters
+$\theta \in \R^p$ (a multilayer perceptron).
+
+The viability of a trajectory $\tau = (s_0, a_0, \dots, s_H)$ is measured by
+$k$ scalar margins $m_1(s_t), \dots, m_k(s_t)$, each positive when the
+constraint is satisfied (height above floor, body upright, no foot
+penetration, etc.). For Walker2d-v4 ($n_s = 17$, $n_a = 6$) we use $k = 3$:
+torso height, pitch angle, and minimum foot-clearance
+(Section~\ref{sec:exp}). The training objective is the soft-minimum
+(log-sum-exp) over the trajectory:
+\begin{equation}
+  \label{eq:soft-margin}
+  J_\beta(\theta) \;=\;
+  \mathbb{E}_{\tau \sim \pi_\theta}\!\left[
+    -\frac{1}{\beta}\,\log\sum_{t,j} e^{-\beta\, m_j(s_t)}
+  \right].
+\end{equation}
+This is the only training signal: no auxiliary task return, no shaping, no
+exploration bonus.
+
+\subsection{Truncated Student-$t$ mollifier policy}
+\label{sec:mollifier}
+
+The policy is a per-coordinate, truncated Student-$t$:
+\begin{equation}
+  \label{eq:mollifier}
+  \pi_\theta(a \mid s) \;=\;
+  \prod_{i=1}^{n_a}
+  \frac{t_{\nu(s)}\!\bigl(a_i;\, \mu_i(s),\, \sigma_i(s)\bigr)}
+       {Z_i\bigl(\mu_i(s), \sigma_i(s), \nu(s),\, \bar a_i\bigr)},
+\end{equation}
+where $(\mu(s), \log\sigma(s), \log\nu(s))$ are the three output heads of
+the network, $|a_i| \le \bar a_i$ is the per-actuator torque bound, and
+$Z_i$ is the truncation constant. The Student-$t$ density $t_\nu$ is
+$C^\infty$ in $a$ and has full support on $[-\bar a_i, \bar a_i]$. The
+degrees of freedom $\nu(s)$ are state-dependent: at $\nu \to \infty$ the
+distribution recovers the Gaussian (peaked, exploitative); at small
+$\nu$ the heavy tails enable exploratory escape from local plateaus
+arising at contact-mode boundaries.
+
+This mollifying property is the central technical reason a value function
+is unnecessary; we prove smoothness of $J_\beta$ in $\theta$ in
+Section~\ref{sec:theory}.
+
+\subsection{Capacity-clamped network}
+\label{sec:capacity}
+
+Let $\pi_\theta$ be an $L$-layer ReLU MLP with weights
+$\{W_\ell, b_\ell\}_{\ell=1}^L$. After every gradient step we project
+each weight matrix back to a Frobenius ball:
+\begin{equation}
+  \label{eq:clamp}
+  W_\ell \;\leftarrow\;
+  \frac{W_\ell}{\max(1,\, \|W_\ell\|_F / c_\ell)},
+\end{equation}
+where the per-layer cap $c_\ell$ is determined from the
+control-authority bounds of the task (Section~\ref{sec:hyper}). The
+clamp plays the role of $L_2$ weight decay but is sharper: it enforces
+a hard Lipschitz bound on each layer rather than a soft penalty in the
+loss.
+
+\subsection{Algorithm}
+\label{sec:algorithm}
+
+\begin{algorithm}[H]
+\caption{Minimalist policy gradient (\textsc{MinPG}).}
+\label{alg:minpg}
+\begin{algorithmic}[1]
+\Require Engine $\mathcal{E}$, env model (XML); margin functions
+$\{m_j\}_{j=1}^k$; horizon $H$; eval count $N$;
+network depth $L$, width $n$;
+learning rate $\eta$; soft-min sharpness $\beta$;
+capacity caps $\{c_\ell\}$.
+\State Initialise $\theta = \{W_\ell, b_\ell\}_{\ell=1}^L$ randomly,
+then apply clamp~\eqref{eq:clamp} per layer.
+\For{epoch $= 1, 2, \dots$}
+  \State Sample $N$ rollouts: for each, draw
+  $a_t \sim \pi_\theta(\cdot \mid s_t)$, step $\mathcal{E}$, record
+  $(s_t, a_t)_{t=0}^H$.
+  \State For each rollout compute $J_\beta$ via~\eqref{eq:soft-margin}.
+  \State Compute score-function gradient
+  $\hat g \;=\; \frac{1}{N}\sum_n J_\beta^{(n)} \cdot
+  \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a_t^{(n)} \mid s_t^{(n)})$.
+  \State Update $\theta \leftarrow \theta + \eta\, \hat g$.
+  \State Re-apply clamp~\eqref{eq:clamp} to every $W_\ell$.
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{What is absent.} \textsc{MinPG} has no value baseline, no
+GAE, no replay buffer, no clipped surrogate, no entropy bonus, no
+target network, no DAgger correction, no reward normalisation, and no
+gradient through $\mathcal{E}$. The score function is computed through
+$\pi_\theta$ only.
+
+\subsection{Hyperparameter atlas}
+\label{sec:hyper}
+
+The seven scalars that govern \textsc{MinPG} split sharply into two
+tiers.
+
+\paragraph{Tier I (physics-determined; not free choices).}
+$\eta$ -- the learning rate, bounded above by the contractivity
+condition $\eta \ll 1/\gamma$ where $\gamma$ is the simulator's
+intrinsic damping (read from the engine XML).
+$H$ -- the horizon, set by the task: typically $500$--$2000$ steps at
+the engine timestep $\Delta t$.
+$\{c_\ell\}$ -- per-layer capacity caps, derived from the
+torque/velocity envelope of the actuators.
+
+\paragraph{Tier II (user choices; tune on validation rollouts).}
+$L \in \{3, 4, 5\}$ -- depth.
+$n \in \{128, 256, 512\}$ -- width.
+$N \in \{64, \dots, 4096\}$ -- rollouts per gradient step.
+$\beta \in \{1, \dots, 100\}$ -- soft-min sharpness; see
+Remark~\ref{rem:annealing}.
+
+\begin{remark}[Sharpness annealing]
+\label{rem:annealing}
+Small $\beta$ averages the gradient across all timesteps; large $\beta$
+concentrates on the worst-margin step. We anneal $\beta$ upward with
+training progress: explore broadly first, then sharpen the focus.
+\end{remark}
