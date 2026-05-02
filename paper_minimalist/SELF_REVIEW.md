@@ -130,7 +130,54 @@ Concrete edits, in priority order:
 
 ---
 
-## G. Status
+## H. Literature audit cross-check (Task 11)
+
+- **Total `\cite` keys used in draft:** 16 (across sections/*.tex and main.tex)
+- **Total entries in `references.bib`:** 17
+- **Dead references (in bib, never cited):** `henderson2018` — as flagged in D.5 above.
+- **All cited keys resolve in bib:** YES — every one of the 16 cited keys has a matching `@` entry.
+
+### Year / venue / author verification
+
+- **tokutake2019** — VERIFIED. Springer Link confirms "Student-t policy in reinforcement learning to acquire global optimum of robot control," Applied Intelligence, published June 2019. Authors Tokutake & Yamashita. Title, year, journal match exactly. ✓
+- **garg2021heavytails** — VERIFIED. ICML 2021 proceedings (mlr.press/v139/garg21b.html); Spotlight talk confirmed. Full author list matches bib entry (Garg, Zhanson, Parisotto, Prasad, Kolter, Lipton, Balakrishnan, Salakhutdinov, Ravikumar). Title matches exactly. ✓
+- **engstrom2020** — VERIFIED. Appears in ICLR 2020 proceedings (iclr.cc/virtual_2020/poster_r1etN1rtPB.html; OpenReview r1etN1rtPB). Note: there is a separate arXiv version 2005.12729 titled slightly differently ("Deep Policy Gradients" instead of "Deep RL") — but the official ICLR 2020 publication uses the bib title "Implementation Matters in Deep RL." Bib entry is correct. ✓
+- **andrychowicz2021** — VERIFIED. ICLR 2021, Oral/Spotlight (openreview.net/forum?id=nIAxjsniDzg; dblp AndrychowiczRSO21). Title "What Matters for On-Policy Deep Actor-Critic Methods? A Large-Scale Study" matches. Note: the bib title says "What Matters for On-Policy Deep Actor-Critic Methods?" — the ICLR listing adds a question mark and "A Large-Scale Study"; bib matches. ✓
+- **oquab2024dinov2** — VERIFIED. Published in Transactions on Machine Learning Research (TMLR), accepted January 2024 (openreview.net/forum?id=a68SUt6zFt). Author list and title match. ✓
+- **hwangbo2019anymal** — VERIFIED. Science Robotics, DOI 10.1126/scirobotics.aau5872, 2019. Authors Hwangbo, Lee, Dosovitskiy, Bellicoso, Tsounis, Koltun, Hutter match. Title "Learning agile and dynamic motor skills for legged robots" matches; bib entry is correct (note: bib has volume=4, number=26 which corresponds to the article number eaau5872 — plausible for Science Robotics Vol. 4). ✓
+- **henderson2018** — NOT CITED; bib entry itself is accurate (Henderson et al., AAAI 2018, "Deep Reinforcement Learning that Matters"). No factual error; simply unused.
+- **schulman2017ppo, haarnoja2018sac, williams1992, achiam2017cpo, aubin1991, yoshida2017spectral, miyato2018spectral, todorov2012mujoco, gymnasium2023, folland1999real** — standard well-known references; titles, years, and venues are consistent with widely-used citations in the RL literature. No discrepancies identified. [verify: venue for schulman2017ppo is listed as "arXiv preprint arXiv:1707.06347" — PPO was never formally published at a conference; arXiv listing is the canonical reference. ✓ intentional.]
+
+### Missing citations a reviewer would expect
+
+1. **Stable-Baselines3** — §6.1 ("Baselines" paragraph) names "Stable-Baselines3" as the baseline implementation but provides no citation. Raffin et al. (2021), "Stable-Baselines3: Reliable Reinforcement Learning Implementations," JMLR 22(268):1–8, is the standard reference and should be added. **File:** `sections/experiments.tex`, §6.1 baseline paragraph.
+
+2. **Hamilton–Jacobi reachability** — §2 ("Safe RL and margin-based reward" paragraph) mentions "the Hamilton–Jacobi reachability literature" with no citation. Bansal et al. 2017 ("Hamilton-Jacobi reachability: A brief overview and recent advances," IEEE CDC 2017) is the standard survey citation here. **File:** `sections/related_work.tex`, line ~21.
+
+3. **REINFORCE with normalization / recent pure-PG variants** — §2 paragraph 3 states "Subsequent work in language-model fine-tuning has shown pure score-function methods can match clipped surrogates in discrete-text regimes" with no citation. This sentence invites a reviewer to demand references (e.g., REINFORCE++, GRPO). Either cite specific papers or remove the sentence. **File:** `sections/related_work.tex`, final sentence of "Implementation matters" paragraph.
+
+4. **DINOv2 citation placement** — `oquab2024dinov2` is cited in §2 ("What we are not") in a sentence that positions DINOv2 as "complementary" work the paper neither uses nor competes with. This is a legitimate defensive citation; no omission. However, it may draw reviewer attention to a perceived scope mismatch (vision encoder in a proprioceptive-only locomotion paper). Risk is positional, not factual.
+
+5. **Walker2d-v4 reward function** — §4.3 compares variance of soft-min vs. task return and states "default per-step task return ranges over O(1)." No citation or measurement supports this. A reviewer may request either a Gymnasium source reference for the Walker2d reward function or a measurement. **File:** `sections/theory.tex`, variance comparison paragraph.
+
+### Risk citations (papers that could be claimed as preempting our work)
+
+- **tokutake2019** — distinguished in §2.1 (pure REINFORCE vs. actor-critic; state-dependent ν; soft-min objective). ✓
+- **garg2021heavytails** — distinguished in §2.1 (characterises gradients, does not propose heavy-tailed policies). ✓
+- **achiam2017cpo** — distinguished in §2.2 by one sentence (Lagrangian vs. objective). Thin but present; see B.4 for recommended expansion.
+- **engstrom2020, andrychowicz2021** — framed correctly as motivation ("tricks matter"; we ask converse). ✓
+
+### Recommendations
+
+1. **Add `raffin2021sb3` to bib and cite it in §6.1** — "Stable-Baselines3" is named without attribution; this is a clear missing citation that any reviewer would flag. Bib entry: Raffin et al., JMLR 2021, vol. 22, no. 268.
+2. **Add a HJ-reachability citation in §2** — one sentence mentioning "the Hamilton–Jacobi reachability literature" without a cite is a gap. Add Bansal et al. 2017 (IEEE CDC) or Herbert et al. 2017 as the standard pointer.
+3. **Either cite the LM-finetuning pure-PG work or remove that sentence** — the "language-model fine-tuning" sentence in §2 is uncited and could frustrate a reviewer expecting REINFORCE++ / GRPO references.
+4. **Keep `henderson2018` in bib but note it as dead** — removing it is fine for camera-ready; keeping it is fine for a draft. Do not cite it gratuitously.
+5. **Verify Walker2d-v4 reward scale empirically** — the O(1) per-step / O(10³) cumulative claim in §4.3 should be grounded by a simulator measurement or a Gymnasium env-spec reference.
+
+---
+
+## I. Status
 
 - Paper draft compiles cleanly: **7 pages**, 0 errors, 0 undefined refs, 0 overfull boxes (Task 9 verification).
 - All bibliography entries in references.bib: 17 entries. `henderson2018` appears in the bib but is not cited in any section body — either cite it or remove it before submission.
