@@ -1,0 +1,140 @@
+% ===== Foundational policy-gradient =====
+
+@article{williams1992,
+  author    = {Ronald J. Williams},
+  title     = {Simple statistical gradient-following algorithms for connectionist reinforcement learning},
+  journal   = {Machine Learning},
+  volume    = {8},
+  number    = {3--4},
+  pages     = {229--256},
+  year      = {1992}
+}
+
+@article{schulman2017ppo,
+  author    = {John Schulman and Filip Wolski and Prafulla Dhariwal and Alec Radford and Oleg Klimov},
+  title     = {Proximal Policy Optimization Algorithms},
+  journal   = {arXiv preprint arXiv:1707.06347},
+  year      = {2017}
+}
+
+@inproceedings{haarnoja2018sac,
+  author    = {Tuomas Haarnoja and Aurick Zhou and Pieter Abbeel and Sergey Levine},
+  title     = {Soft Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic Actor},
+  booktitle = {ICML},
+  year      = {2018}
+}
+
+% ===== "Tricks matter" / minimalist RL =====
+
+@inproceedings{engstrom2020,
+  author    = {Logan Engstrom and Andrew Ilyas and Shibani Santurkar and Dimitris Tsipras and Firdaus Janoos and Larry Rudolph and Aleksander Madry},
+  title     = {Implementation Matters in Deep {RL}: A Case Study on {PPO} and {TRPO}},
+  booktitle = {ICLR},
+  year      = {2020}
+}
+
+@inproceedings{andrychowicz2021,
+  author    = {Marcin Andrychowicz and Anton Raichuk and Piotr Sta{\'n}czyk and Manu Orsini and Sertan Girgin and Raphael Marinier and L{\'e}onard Hussenot and Matthieu Geist and Olivier Pietquin and Marcin Michalski and Sylvain Gelly and Olivier Bachem},
+  title     = {What Matters for On-Policy Deep Actor-Critic Methods? A Large-Scale Study},
+  booktitle = {ICLR},
+  year      = {2021}
+}
+
+@inproceedings{henderson2018,
+  author    = {Peter Henderson and Riashat Islam and Philip Bachman and Joelle Pineau and Doina Precup and David Meger},
+  title     = {Deep Reinforcement Learning that Matters},
+  booktitle = {AAAI},
+  year      = {2018}
+}
+
+% ===== Heavy-tailed / Student-t =====
+
+@article{tokutake2019,
+  author    = {Yuhei Tokutake and Hiroaki Yamashita},
+  title     = {{Student}-$t$ policy in reinforcement learning to acquire global optimum of robot control},
+  journal   = {Applied Intelligence},
+  year      = {2019}
+}
+
+@inproceedings{garg2021heavytails,
+  author    = {Saurabh Garg and Joshua Zhanson and Emilio Parisotto and Adarsh Prasad and J. Zico Kolter and Zachary C. Lipton and Sivaraman Balakrishnan and Ruslan Salakhutdinov and Pradeep Ravikumar},
+  title     = {On Proximal Policy Optimization's Heavy-tailed Gradients},
+  booktitle = {ICML},
+  year      = {2021}
+}
+
+% ===== Safe RL / margin-based reward =====
+
+@inproceedings{achiam2017cpo,
+  author    = {Joshua Achiam and David Held and Aviv Tamar and Pieter Abbeel},
+  title     = {Constrained Policy Optimization},
+  booktitle = {ICML},
+  year      = {2017}
+}
+
+@book{aubin1991,
+  author    = {Jean-Pierre Aubin},
+  title     = {Viability Theory},
+  publisher = {Birkh{\"a}user},
+  year      = {1991}
+}
+
+% ===== Capacity / spectral regularization =====
+
+@article{yoshida2017spectral,
+  author    = {Yuichi Yoshida and Takeru Miyato},
+  title     = {Spectral Norm Regularization for Improving the Generalizability of Deep Learning},
+  journal   = {arXiv preprint arXiv:1705.10941},
+  year      = {2017}
+}
+
+@inproceedings{miyato2018spectral,
+  author    = {Takeru Miyato and Toshiki Kataoka and Masanori Koyama and Yuichi Yoshida},
+  title     = {Spectral Normalization for Generative Adversarial Networks},
+  booktitle = {ICLR},
+  year      = {2018}
+}
+
+% ===== Vision encoders =====
+
+@article{oquab2024dinov2,
+  author    = {Maxime Oquab and Timoth{\'e}e Darcet and Th{\'e}o Moutakanni and Huy V. Vo and Marc Szafraniec and Vasil Khalidov and Pierre Fernandez and Daniel Haziza and Francisco Massa and Alaaeldin El-Nouby and Mahmoud Assran and Nicolas Ballas and Wojciech Galuba and Russell Howes and Po-Yao Huang and Shang-Wen Li and Ishan Misra and Michael Rabbat and Vasu Sharma and Gabriel Synnaeve and Hu Xu and Herv{\'e} Jegou and Julien Mairal and Patrick Labatut and Armand Joulin and Piotr Bojanowski},
+  title     = {{DINOv2}: Learning Robust Visual Features without Supervision},
+  journal   = {Transactions on Machine Learning Research},
+  year      = {2024}
+}
+
+% ===== Locomotion baselines =====
+
+@article{hwangbo2019anymal,
+  author    = {Jemin Hwangbo and Joonho Lee and Alexey Dosovitskiy and Dario Bellicoso and Vassilios Tsounis and Vladlen Koltun and Marco Hutter},
+  title     = {Learning agile and dynamic motor skills for legged robots},
+  journal   = {Science Robotics},
+  volume    = {4},
+  number    = {26},
+  year      = {2019}
+}
+
+@inproceedings{todorov2012mujoco,
+  author    = {Emanuel Todorov and Tom Erez and Yuval Tassa},
+  title     = {{MuJoCo}: A physics engine for model-based control},
+  booktitle = {IROS},
+  year      = {2012}
+}
+
+@misc{gymnasium2023,
+  author    = {Mark Towers and Ariel Kwiatkowski and Jordan K. Terry and others},
+  title     = {Gymnasium: A standard interface for reinforcement learning environments},
+  howpublished = {\url{https://github.com/Farama-Foundation/Gymnasium}},
+  year      = {2023}
+}
+
+% ===== Mollifier theory =====
+
+@book{folland1999real,
+  author    = {Gerald B. Folland},
+  title     = {Real Analysis: Modern Techniques and Their Applications},
+  edition   = {2nd},
+  publisher = {Wiley},
+  year      = {1999}
+}
