@@ -3,4 +3,69 @@
 \section{Introduction}
 \label{sec:intro}
 
-% TODO: filled by a subsequent task in the plan.
+Modern deep reinforcement learning for continuous control rests on a
+substantial collection of algorithmic patches. Proximal Policy
+Optimization~\cite{schulman2017ppo} adds a clipped surrogate, value
+baseline, generalised advantage estimation, observation
+normalisation, reward scaling, and entropy regularisation to the
+basic policy gradient~\cite{williams1992}. Soft
+Actor-Critic~\cite{haarnoja2018sac} adds two target networks, a
+replay buffer, automatic temperature tuning, and twin Q-functions.
+Each addition has been justified by an empirical problem -- variance,
+off-policyness, exploration -- but together they form a system whose
+individual contributions are difficult to isolate.
+
+Two careful studies have argued that much of the gain attributed to
+specific algorithms is in fact attributable to implementation
+details. Engstrom et~al.~\cite{engstrom2020} found that code-level
+optimisations explain most of PPO's lead over TRPO.
+Andrychowicz et~al.~\cite{andrychowicz2021} trained nearly a quarter
+of a million agents and identified roughly fifty hyperparameters
+whose interactions dominate performance. Both papers conclude that
+the standard tricks matter; we ask the converse:
+\emph{which tricks could be removed if the underlying objective were
+better behaved?}
+
+We propose a minimalist baseline, \textsc{MinPG}, built from three
+ideas:
+\begin{enumerate}[leftmargin=*]
+  \item A truncated Student-$t$ policy, with state-dependent degrees of
+    freedom, replaces the standard Tanh-Gaussian. Heavy tails and a
+    full $C^\infty$ density act as a mollifier that smooths the
+    contact-discontinuous viability margin.
+  \item A soft-minimum over per-step margins replaces the task return
+    as the \emph{sole} training signal. There is no shaped task
+    reward, no exploration bonus, no curriculum-aware multiplier.
+  \item A Frobenius-norm capacity clamp on every layer replaces $L_2$
+    weight decay with a hard Lipschitz bound, ensuring bounded score
+    variance without a learned baseline.
+\end{enumerate}
+Given these three pieces, the score-function gradient is sufficient.
+We use no value function, no replay buffer, no PPO clipping, no
+entropy bonus, no DAgger correction. The simulator is treated as a
+black box; no gradient flows through physics.
+
+\paragraph{Contributions.}
+(1)~We give a smoothness lemma showing that the Student-$t$ mollifier
+restores $C^\infty$ dependence of the soft-min expected objective on
+$\theta$, even when the underlying margins are non-differentiable
+through contact transitions (Section~\ref{sec:theory}).
+(2)~We prove a finite-variance bound for the score-function estimator
+under the capacity clamp, eliminating the standard variance argument
+for value baselines.
+(3)~We benchmark \textsc{MinPG} against PPO and SAC on Walker2d-v4
+(Section~\ref{sec:exp}). \emph{[Empirical claim placeholder pending
+experiments.]}
+(4)~Ablations isolate the contribution of each component:
+Student-$t$ vs.\ Gaussian, soft-min vs.\ task return, with vs.\
+without capacity clamp.
+
+\paragraph{Scope.}
+This is a study of \emph{whether} the minimalist combination is
+viable on a single locomotion task, not a claim of state-of-the-art
+across continuous control. The paper succeeds if \textsc{MinPG} is
+competitive with default-configured PPO and SAC on Walker2d-v4 given
+the margin formulation; it fails as an empirical claim if the
+variance of REINFORCE swamps the mollifier benefit. We hold
+exploration mechanisms, representation learning, and sim-to-real
+transfer constant: this paper isolates a single axis of variation.
