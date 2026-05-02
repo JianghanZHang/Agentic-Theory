@@ -3,4 +3,94 @@
 \section{Experiments}
 \label{sec:exp}
 
-% TODO: filled by a subsequent task in the plan.
+\subsection{Setup}
+\label{sec:exp-setup}
+
+\paragraph{Environment.}
+Walker2d-v4 from Gymnasium~\cite{gymnasium2023}, MuJoCo
+backend~\cite{todorov2012mujoco}: 17-dimensional observation (joint
+angles, velocities, torso pose), 6-dimensional torque action,
+episode length $H = 1000$, control frequency $25$\,Hz.
+
+\paragraph{Margins.}
+We instantiate the soft-min objective~\eqref{eq:soft-margin} with
+$k = 3$ margins read from the simulator state at each step:
+$m_1 = z_{\mathrm{torso}} - 0.8$ (height above floor in metres),
+$m_2 = \cos\theta_{\mathrm{pitch}} - 0.7$ (upright orientation), and
+$m_3 = \min_i z_i^{\mathrm{foot}} + \epsilon$ (no foot penetration,
+with $\epsilon = 3$\,mm). No reward shaping beyond these three
+quantities.
+
+\paragraph{Baselines.}
+PPO~\cite{schulman2017ppo} and SAC~\cite{haarnoja2018sac} from
+Stable-Baselines3 with default hyperparameters; a vanilla
+REINFORCE-Gaussian control. All methods use the same MLP backbone
+($L = 3$, $n = 256$) and are run for five random seeds.
+
+\paragraph{Metrics.}
+Episodic return at $\{0.5, 1, 2, 5\} \times 10^6$ environment steps.
+For \textsc{MinPG} we additionally report the soft-min margin
+$J_\beta(\theta)$ and a viability rate (fraction of episodes
+reaching $H = 1000$ steps without termination).
+
+\subsection{Main results}
+\label{sec:exp-main}
+
+\begin{table}[h]
+\centering
+\caption{Walker2d-v4 episodic return at four sample budgets, mean
+$\pm$ standard deviation over 5 random seeds. \emph{Numbers pending
+experiments.}}
+\label{tab:main}
+\begin{tabular}{lcccc}
+\toprule
+Method & 0.5M & 1M & 2M & 5M \\
+\midrule
+PPO (SB3 default) & TBD & TBD & TBD & TBD \\
+SAC (SB3 default) & TBD & TBD & TBD & TBD \\
+REINFORCE-Gaussian & TBD & TBD & TBD & TBD \\
+\textsc{MinPG} (ours) & TBD & TBD & TBD & TBD \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The hypothesis to be tested: \textsc{MinPG} matches or exceeds PPO at
+$\ge\!2$M steps, loses to SAC in sample efficiency at low budgets due
+to on-policy variance, and decisively beats REINFORCE-Gaussian thanks
+to the mollifier (Lemma~\ref{lem:smoothness}).
+
+\subsection{Ablations}
+\label{sec:exp-abl}
+
+We ablate three orthogonal axes: policy family (Student-$t$ vs.\
+Gaussian), training signal (soft-min margin vs.\ Walker2d default
+return), and capacity clamp (with vs.\ without). Eight configurations,
+five seeds each.
+
+\begin{table}[h]
+\centering
+\caption{Ablation grid: episodic return at 2M steps. \emph{Pending.}}
+\label{tab:ablation}
+\begin{tabular}{lcc}
+\toprule
+Configuration & Soft-min reward & Task return \\
+\midrule
+Student-$t$ + clamp & TBD & TBD \\
+Student-$t$, no clamp & TBD & TBD \\
+Gaussian + clamp & TBD & TBD \\
+Gaussian, no clamp & TBD & TBD \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sensitivity}
+\label{sec:exp-sens}
+
+We sweep the four Tier-II hyperparameters of the
+algorithm~(Section~\ref{sec:hyper})
+$L \in \{3, 4, 5\}$, $n \in \{128, 256, 512\}$,
+$N \in \{256, 1024, 4096\}$, $\beta \in \{1, 10, 100\}$
+one at a time around a centre point $(L, n, N, \beta) =
+(3, 256, 1024, 10)$. The Tier-I parameters
+($\eta$, $H$, $\{c_\ell\}$) are read from the environment XML and
+held fixed.
