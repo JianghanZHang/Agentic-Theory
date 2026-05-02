@@ -3,4 +3,117 @@
 \section{Theory}
 \label{sec:theory}
 
-% TODO: filled by a subsequent task in the plan.
+The contact-rich nature of locomotion makes the per-step margins
+$m_j(s_t)$ non-differentiable in $\theta$ along switching surfaces
+(foot strike/release, joint-limit hits). We show that the Student-$t$
+mollifier restores smoothness of the expected objective without any
+gradient through the simulator.
+
+\subsection{Mollifier smoothness}
+\label{sec:smoothness}
+
+\begin{lemma}[Mollifier smoothness]
+\label{lem:smoothness}
+Let $Q : \R^{n_a} \to \R$ be Lipschitz with constant $L_Q$ but possibly
+discontinuous in derivative. Let $\pi_\theta(\cdot \mid s)$ be the
+truncated Student-$t$ density~\eqref{eq:mollifier} with parameters
+$(\mu(s; \theta), \sigma(s; \theta), \nu(s; \theta))$ that are
+$C^\infty$ in $\theta$, with $\sigma > 0$ and $\nu > 2$. Then the
+expected value
+\[
+  \bar Q(\theta; s) \;=\;
+  \int_{[-\bar a, \bar a]^{n_a}} Q(a)\,
+  \pi_\theta(a \mid s)\, da
+\]
+is $C^\infty$ in $\theta$, and
+\[
+  \nabla_\theta \bar Q(\theta; s) \;=\;
+  \int Q(a)\, \nabla_\theta \pi_\theta(a \mid s)\, da
+  \;=\;
+  \mathbb{E}_{a \sim \pi_\theta}\!\bigl[
+    Q(a)\, \nabla_\theta \log \pi_\theta(a \mid s)
+  \bigr].
+\]
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+Differentiation under the integral applies because (i) $|Q(a)| \le L_Q
+\|a\|_\infty + |Q(0)|$ is bounded on the compact support
+$[-\bar a, \bar a]^{n_a}$; (ii) $\pi_\theta$ has full support and is
+$C^\infty$ in both $a$ and $\theta$; (iii) the score
+$\nabla_\theta \log \pi_\theta$ has finite second moment for $\nu > 2$
+via the Fisher information formula for the Student-$t$ family. Apply
+the dominated convergence theorem to interchange $\nabla_\theta$ and
+$\int da$~\cite{folland1999real}.
+\end{proof}
+
+\subsection{Capacity-clamped gradient bound}
+\label{sec:gradbound}
+
+\begin{lemma}[Bounded score under clamp]
+\label{lem:bounded-score}
+Let $\pi_\theta$ be an $L$-layer ReLU network whose weights satisfy
+$\|W_\ell\|_F \le c_\ell$ for all $\ell$, producing
+$(\mu, \log\sigma, \log\nu)$ as outputs. Then there exists a constant
+$C$ depending only on $\{c_\ell\}$, the input bound $\|s\|$, and the
+truncation $\bar a$ such that
+\[
+  \mathbb{E}_{a \sim \pi_\theta(\cdot \mid s)}\!\bigl[
+    \|\nabla_\theta \log \pi_\theta(a \mid s)\|^2
+  \bigr]
+  \;\le\; C.
+\]
+\end{lemma}
+
+\begin{proof}[Proof sketch]
+The forward pass output is bounded by $\|\mu(s)\| \le \prod_\ell c_\ell
+\|s\|$ (and similarly for $\log\sigma, \log\nu$) because each layer's
+Frobenius norm bounds its operator norm. The Student-$t$ score has the
+closed form
+\[
+  \nabla_\mu \log t_\nu(a; \mu, \sigma) \;=\;
+  \frac{(\nu+1)(a - \mu)}
+       {\sigma^2 \bigl(\nu + (a - \mu)^2 / \sigma^2\bigr)},
+\]
+which is bounded on the compact support $[-\bar a, \bar a]^{n_a}$ given
+$\sigma$ bounded below by $e^{-\sum_\ell c_\ell \|s\|}$.
+Backpropagating through the network multiplies by at most
+$\prod_\ell c_\ell$. The result follows.
+\end{proof}
+
+The practical consequence: the gradient of~\eqref{eq:soft-margin} has
+finite variance even without baseline subtraction, eliminating one of
+the standard motivations for value functions in policy-gradient
+methods.
+
+\subsection{Variance of the soft-min REINFORCE estimator}
+\label{sec:variance}
+
+The soft-min objective~\eqref{eq:soft-margin} is bounded:
+$J_\beta \in [-M, 0]$, where
+$M = \sup_{j, s \in \mathcal{S}} m_j(s)^- + \log(kH)/\beta$ and
+$x^- = \max(0, -x)$. Combined with Lemma~\ref{lem:bounded-score}, the
+single-trajectory gradient estimator
+\[
+  \hat g \;=\; J_\beta(\tau)\,
+  \sum_{t=0}^H \nabla_\theta \log \pi_\theta(a_t \mid s_t)
+\]
+has variance
+\begin{equation}
+  \label{eq:variance-bound}
+  \mathrm{Var}(\hat g) \;\le\; M^2 H\, C,
+\end{equation}
+which is finite without a learned baseline.
+
+\paragraph{Comparison to task-return REINFORCE.}
+On Walker2d-v4 the default per-step task return ranges over
+$O(1)$, but accumulated returns over $H = 1000$ steps reach $O(10^3)$.
+A vanilla REINFORCE estimator with the standard return therefore
+carries a reward-scale factor of $O(10^3)$, which dominates the
+variance budget. The soft-min objective is bounded by $M = O(1)$
+regardless of horizon, an order-$10^3$ reduction in the reward-scale
+contribution to variance.
+
+This is the formal counterpart to the experimental observation
+(Section~\ref{sec:exp}) that \textsc{MinPG} converges with batch sizes
+comparable to PPO despite using no value baseline.
