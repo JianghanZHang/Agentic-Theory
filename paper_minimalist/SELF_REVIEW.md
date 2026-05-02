@@ -223,23 +223,38 @@ Source: `sections/calculus.tex` lines 1276–1368 (monograph `alg:loco`) vs
 
 ### I.3 Variance bound algebra
 
-§4.3 claims `Var(g^hat) ≤ M² H C`. Re-derivation:
+§4.3 claims `Var(g_hat) ≤ M² H C`. The bound is **correct** but the
+proof in the paper is **incomplete** — it asserts the bound without
+deriving it.
 
-- `g^hat = J_β(τ) · Σ_t ∇_θ log π_θ(a_t | s_t)` where `s_t = ∇_θ log π_θ(a_t | s_t)` is the per-step score.
-- `J_β ∈ [−M, 0]` deterministically given the trajectory, so `|J_β|² ≤ M²`.
-- By Cauchy–Schwarz: `‖Σ_{t=0}^H s_t‖² ≤ (H+1) Σ_{t=0}^H ‖s_t‖²`. Treating H+1 ≈ H for large H, this gives the linear-in-H factor.
-- `E[‖s_t‖²] ≤ C` by Lemma 2 (conditionally on `ν(s) > 2` — see I.2).
-- Therefore `Var(g^hat) ≤ E[‖g^hat‖²] ≤ M² · H · H · C / H = M² H C`.
+**The bound holds via the score-function martingale-difference
+identity:**
 
-Wait — more carefully: `E[‖g^hat‖²] ≤ M² · E[‖Σ_t s_t‖²] ≤ M² · H · E[Σ_t ‖s_t‖²] ≤ M² · H · H · C`. That is `M² H² C`, not `M² H C`. The paper writes `M² H C` — the algebra as written appears to be off by a factor of H.
+- `g_hat = J_β(τ) · Σ_t s_t` where `s_t = ∇_θ log π_θ(a_t | s_t)`.
+- For each state, the score has conditional mean zero: `E[s_t | F_{t-1}] = 0`.
+- Hence for `t ≠ t'`, `E[s_t · s_{t'}] = 0` (cross-terms vanish).
+- Therefore `E[‖Σ_t s_t‖²] = Σ_t E[‖s_t‖²] ≤ HC` by Lemma 2.
+- Combined with `|J_β| ≤ M`: `E[‖g_hat‖²] ≤ M² · HC`, giving
+  `Var(g_hat) ≤ M² H C`.
 
-Re-check: Cauchy–Schwarz gives `‖Σ_t s_t‖² ≤ (H+1) Σ_t ‖s_t‖²`. So `E[‖Σ_t s_t‖²] ≤ H · H · C = H² C`. Hence `E[‖g^hat‖²] ≤ M² H² C`. The variance bound should read `M² H² C`, not `M² H C`.
+**Why a naïve Cauchy–Schwarz argument fails:**
+A first attempt without the martingale identity would write
+`‖Σ_t s_t‖² ≤ H Σ_t ‖s_t‖²` and obtain only `Var(g_hat) ≤ M² H² C` —
+looser by a factor of H. The tighter (and correct) M² H C bound
+**requires** the score-function identity. The paper does not state
+which argument it uses.
 
-**Correction:** The variance bound in §4.3 eq. (variance-bound) loses one factor of H. The correct Cauchy–Schwarz bound is `Var(g^hat) ≤ M² H² C`. This is still finite without a baseline (the key qualitative claim holds), but the quantitative exponent is H² not H.
+**Severity: Medium (proof gap, not math error).** The bound is
+correct; the proof needs one sentence. Recommended fix in §4.3:
 
-**Consequence for the paper:** The comparison paragraph in §4.3 ("order-10³ reduction") is comparing `M² H C` against a task-return estimator with scale `(cumulative return)² ≈ O(10⁶)` for H = 1000. With the corrected bound `M² H² C`, the soft-min bound is `O(H²)` = `O(10⁶)` for H = 1000 — the same order as the task-return estimator. The claimed "order-10³ reduction" disappears. This is a material error in §4.3.
+> "Cross-terms vanish by the score-function identity
+> `E[∇_θ log π_θ(a_t | s_t) | s_t] = 0`, leaving
+> `E[‖Σ_t s_t‖²] = Σ_t E[‖s_t‖²] ≤ HC` by Lemma~2."
 
-**Severity: High.** The variance comparison paragraph's central quantitative claim is based on an incorrect exponent. The paragraph needs to be rewritten or the bound strengthened. (The qualitative claim — "finite without baseline" — still holds, but the quantitative advantage claim does not.)
+**Consequence for the §4.3 comparison paragraph:** unchanged. The
+"order-10³ reduction in the reward-scale contribution" claim still
+holds: M² is O(1) vs O(10⁶) for the cumulative-task-return
+estimator's reward-scale-squared, on H = 1000.
 
 ### I.4 Final verdict
 
@@ -248,12 +263,17 @@ Re-check: Cauchy–Schwarz gives `‖Σ_t s_t‖² ≤ (H+1) Σ_t ‖s_t‖²`. 
 | alg:minpg vs alg:loco: all differences intentional | PASS | — |
 | Lemma 1 `ν > 2` not enforced by algorithm | FLAG | Medium |
 | Lemma 2 observation bound not stated | FLAG | Low |
-| Variance bound exponent: H² not H in §4.3 | ERROR | High |
+| Variance bound M² H C in §4.3: correct, proof incomplete | PROOF GAP | Medium |
 
 - **Algorithm extraction:** correctly derived from alg:loco; all differences are intentional simplifications for the Walker2d / standalone scope.
 - **Lemma 1:** holds conditionally on `ν(s) > 2`. The algorithm does not enforce this. Fix: add `softplus + 2` transform on the `log ν` head in §3.2 / Algorithm 1.
 - **Lemma 2:** holds conditionally on `‖s‖ ≤ S_max`. Satisfied by Walker2d-v4 physics, but must be stated explicitly.
-- **Variance bound:** the H² vs H discrepancy is a mathematical error that undermines the quantitative comparison in §4.3. Requires a rewrite of that paragraph or a corrected proof. The qualitative finiteness result is unaffected.
+- **Variance bound:** the M² H C bound in §4.3 is correct but the
+  proof is incomplete (paper states the bound without deriving it).
+  Fix: add one sentence invoking the score-function martingale
+  identity to justify the cross-term cancellation. The quantitative
+  comparison in §4.3 (order-10³ reward-scale reduction) is unaffected
+  by this fix.
 
 ---
 
