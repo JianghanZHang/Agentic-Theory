@@ -3,4 +3,50 @@
 \section{Related work}
 \label{sec:related}
 
-% TODO: filled by a subsequent task in the plan.
+\paragraph{Heavy-tailed policies in RL.}
+Tokutake and Yamashita~\cite{tokutake2019} introduced a Student-$t$
+actor-critic for robot control. Garg
+et~al.~\cite{garg2021heavytails} characterised PPO gradients as
+heavy-tailed and proposed robust estimators rather than heavy-tailed
+policies. To our knowledge, no recent work benchmarks a Student-$t$
+policy with state-dependent degrees of freedom as a drop-in
+replacement for the Tanh-Gaussian on standard MuJoCo locomotion.
+
+\paragraph{Safe RL and margin-based reward.}
+Constrained Policy Optimization~\cite{achiam2017cpo} treats per-step
+margins as constraints in a Lagrangian formulation, retaining a
+separate task return. We do not use a Lagrangian: the soft-min
+margin \emph{is} the objective, not a penalty added to one. The
+Hamilton--Jacobi reachability literature treats margins as value
+functions to be solved offline; we treat them as in-the-loop
+training signals. The closest precursor is the viability-theoretic
+formulation of Aubin~\cite{aubin1991}, which we restrict to a single
+trajectory-level scalar.
+
+\paragraph{Implementation matters and minimalist variants.}
+Engstrom et~al.~\cite{engstrom2020} and Andrychowicz
+et~al.~\cite{andrychowicz2021} demonstrated that PPO's algorithmic
+lead is largely an artifact of code-level details, but neither
+proposes a simpler algorithm: both validate that the existing tricks
+contribute. Subsequent work in language-model fine-tuning has shown
+pure score-function methods can match clipped surrogates in
+discrete-text regimes; we extend this question to continuous-control
+locomotion.
+
+\paragraph{Spectral and Frobenius regularisation.}
+Yoshida and Miyato~\cite{yoshida2017spectral} introduced spectral
+norm regularisation for generalisation; Miyato
+et~al.~\cite{miyato2018spectral} popularised it in GAN training.
+Frobenius clamping is a coarser, cheaper variant; we use it because
+it admits a clean closed-form projection step and yields the
+gradient bound of Lemma~\ref{lem:bounded-score}.
+
+\paragraph{What we are not.}
+This paper does \emph{not} propose a new exploration mechanism, a
+new representation learning approach, or a new sim-to-real
+procedure. We intentionally hold all those axes fixed and ask the
+narrow question of whether the algorithmic core of policy-gradient
+locomotion can be shrunk to a minimal triple. Pretrained visual
+encoders such as DINOv2~\cite{oquab2024dinov2} and quadruped
+locomotion stacks~\cite{hwangbo2019anymal} are complementary; we
+neither use nor compete with them in this paper.
