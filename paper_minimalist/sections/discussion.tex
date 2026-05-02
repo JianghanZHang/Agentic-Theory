@@ -3,4 +3,33 @@
 \section{Discussion}
 \label{sec:discussion}
 
-% TODO: filled by a subsequent task in the plan.
+\paragraph{What this paper does and does not show.}
+If the experiments succeed, \textsc{MinPG} is evidence that the
+standard policy-gradient tricks are not all individually necessary on
+Walker2d-v4, given a heavy-tailed policy and a margin-based
+objective. It is not evidence that they are unnecessary in general,
+in higher dimensions, or in sparse-reward tasks where the margin
+formulation degrades into a constant.
+
+\paragraph{When the mollifier fails.}
+The smoothness in Lemma~\ref{lem:smoothness} relies on a bounded
+Lipschitz constant $L_Q$. Tasks where the per-step margin can be
+unboundedly negative -- for example, an explicit ``fall and reset''
+penalty spike -- violate this assumption. The soft-min handles mild
+non-smoothness but not unbounded jumps.
+
+\paragraph{Variance vs.\ value functions.}
+Lemma~\ref{lem:bounded-score} bounds variance through the policy and
+the bounded objective; it does not eliminate variance. At very large
+horizons the variance still grows linearly in $H$. A control variate
+(state-dependent baseline) would reduce this further; we do not adopt
+one because it would reintroduce the value-function machinery that
+\textsc{MinPG} is designed to avoid.
+
+\paragraph{Limitations.}
+\textsc{MinPG} requires (i) a black-box simulator that supports many
+parallel rollouts, (ii) margins definable purely from the simulator
+state without learned components, and (iii) bounded torque actuation
+(the truncation in~\eqref{eq:mollifier}). It does not address
+sim-to-real transfer, sparse-reward exploration, or partial
+observability beyond what proprioception provides.
