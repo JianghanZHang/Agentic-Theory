@@ -1,0 +1,68 @@
+\documentclass{article}
+
+\usepackage[final]{neurips_2024}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts,amsmath,amssymb,amsthm,mathtools}
+\usepackage{xfrac}        % nicefrac not in basic TeX Live; xfrac provides \sfrac
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{enumitem}
+
+\newcommand{\R}{\mathbb{R}}
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\title{A Minimalist Policy Gradient for Locomotion:\\
+Heavy-Tailed Policies, Per-Step Viability Margins, and No Tricks}
+
+\author{%
+  Jianghan Zhang \\
+  Dartmouth College \\
+  \texttt{Jianghan.Zhang.gr@dartmouth.edu}
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We revisit policy-gradient training for continuous-control locomotion and ask
+which components of modern actor--critic pipelines are actually necessary.
+We propose a minimalist baseline that combines (i)~a truncated Student-$t$
+policy whose degrees of freedom track the active contact-mode count,
+(ii)~a soft-minimum over per-step viability margins as the \emph{sole}
+training signal, and (iii)~a Frobenius-norm capacity clamp on every layer.
+The procedure uses pure score-function gradients through the policy ---
+no value function, no replay buffer, no PPO clipping, no entropy bonus,
+no DAgger. We show that the heavy-tailed policy acts as a mollifier: full
+support and $C^\infty$ density smooth the contact-discontinuous viability
+margin into a differentiable expectation. We evaluate on Walker2d-v4
+[results placeholder]. The contribution is the combination, not the
+primitives: each piece is known, but the integrated minimalist algorithm
+has not been benchmarked against PPO/SAC on standard locomotion tasks.
+\end{abstract}
+
+\input{sections/introduction}
+\input{sections/related_work}
+\input{sections/method}
+\input{sections/theory}
+\input{sections/experiments}
+\input{sections/discussion}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}
